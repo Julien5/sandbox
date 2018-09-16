@@ -2,6 +2,7 @@ Standalone Arduino ISP Breadboard.
 
 Breadboard:
 http://www.netzmafia.de/skripten/hardware/Arduino/Bootloader_Flashen/
+
 - with 2 22pF for the quarz
 - with 22uF between reset and GND
 - and LED 
@@ -9,7 +10,7 @@ http://www.netzmafia.de/skripten/hardware/Arduino/Bootloader_Flashen/
 Good informations at:
 https://learn.sparkfun.com/tutorials/installing-an-arduino-bootloader
 
-using arduino 1.0.2 
+* using arduino 1.0.2 
 burn bootload works
 upload using programmer works
 
