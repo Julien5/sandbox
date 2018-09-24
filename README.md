@@ -2,6 +2,7 @@ Standalone Arduino ISP Breadboard.
 
 Breadboard:
 http://www.netzmafia.de/skripten/hardware/Arduino/Bootloader_Flashen/
+https://www.arduino.cc/en/Tutorial/ArduinoToBreadboard
 
 - with 2 22pF for the quarz
 - with 22uF between reset and GND
@@ -66,7 +67,8 @@ still problems, my batteries are old, i don't get 1.8V with some
 => avrdude -v -patmega328p -cstk500v1 -P/dev/ttyACM0 -b19200 -Uefuse:w:0xFF:m
 
 
-avrdude -v -patmega328p -cstk500v1 -P/dev/ttyACM0 -b19200 -e -Ulock:w:0xFF:m -Uefuse:w:0xFD:m -Uhfuse:w:0xDE:m -Ulfuse:w:0xFF:m 
+avrdude -v -patmega328p -cstk500v1 -P/dev/ttyACM0 -b19200 -e -Ulock:w:0xFF:m -Uefuse:w:0xFF:m -Uhfuse:w:0xDE:m -Ulfuse:w:0xFF:m
+
 
 => this succeeds. STK500 makes sense. Good.
 
@@ -120,3 +122,43 @@ It works. The breadboarded atmega328p runs the sketch.
 
 Now change the quarz to 4mhz and the led blinks slower.
 => yeah.
+
+
+--
+
+Downloading and compiling optiboot bootloader for custom freq:
+https://github.com/Optiboot/optiboot/wiki/CompilingOptiboot
+
+See also:
+https://tttapa.github.io/Pages/Arduino/Bootloaders/ATmega328P-custom-frequency.html
+
+/usr/share/arduino/hardware/arduino/boards.txt
+
+
+--
+microphone
+
+EMY-6027P/N-R-42(IP67) => -42
+EMY-63M/P => -38 => 12mV/pa
+MCE 101 => -45 dB
+
+
+TLC272
+http://davidegironi.blogspot.com/2014/11/an-opamp-based-electret-condenser.html#.W6Yg6ESxX0p
+
+http://tutorial45.com/arduino-projects-arduino-decibel-meter/
+https://www.dfrobot.com/product-1663.html
+
+http://www.analog.com/media/en/technical-documentation/data-sheets/lt1115fa.pdf
+https://www.reichelt.com/de/en/operational-amplifier-dip-8-lt-1115-cn8-p148545.html
+
+
+http://www.bdtic.com/en/linear/LT1677
+http://www.allxref.com/ad/lt1677.htm
+https://www.reichelt.de/operational-amplifier-4mhz-op-184-fsz-p185594.html?r=1
+
+https://electronics.stackexchange.com/questions/53251/arduino-serial-communication-produces-noise-on-electret-microphone
+
+https://learn.sparkfun.com/tutorials/sound-detector-hookup-guide
+
+http://teelsys.com/?p=160
