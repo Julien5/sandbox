@@ -18,10 +18,9 @@ void setup() {
 }
 
 void sleepNow() {
-	return;
 	Serial.println("going to sleep"); Serial.flush();
-	delay(100);
-	LowPower.powerDown(SLEEP_2S, ADC_OFF, BOD_OFF); 
+	// LowPower.powerDown(SLEEP_2S, ADC_OFF, BOD_OFF); 
+	LowPower.powerDown(SLEEP_FOREVER, ADC_OFF, BOD_OFF); 
 }
 
 void display(int m)
@@ -43,4 +42,5 @@ void clear_display() {
 void loop() {
 	display(n);
 	delay(250);
+	sleepNow();
 }
