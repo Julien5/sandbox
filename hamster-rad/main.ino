@@ -4,9 +4,10 @@ const int led_pin = 4;
 const int reed_pin = 2;
 
 int n=0;
-
+bool wake_on_rising_reed=false;
 void on_rising_reed() {
 	n++;
+	wake_on_rising_reed=true;
 }
 
 void setup() {
@@ -20,7 +21,7 @@ void setup() {
 void sleepNow() {
 	Serial.println("going to sleep"); Serial.flush();
 	// LowPower.powerDown(SLEEP_2S, ADC_OFF, BOD_OFF); 
-	LowPower.powerDown(SLEEP_FOREVER, ADC_OFF, BOD_OFF); 
+	LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF); 
 }
 
 void display(int m)
@@ -39,8 +40,18 @@ void clear_display() {
 	display(0);
 }
 
+int np=0;
+
 void loop() {
+	
 	display(n);
-	delay(250);
+	if (!wake_on_rising_reed)
+	{	
+		delay(250);	
+		display(0); // save power.
+	}
+	
+	np=n;
+	wake_on_rising_reed=false;
 	sleepNow();
 }
