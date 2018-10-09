@@ -1,5 +1,5 @@
 #include <LowPower.h>
-
+#include <Arduino.h>
 const int led_pin = 4;
 const int reed_pin = 2;
 
@@ -10,17 +10,30 @@ void on_rising_reed() {
 	wake_on_rising_reed=true;
 }
 
+void alive_check() 
+{
+	pinMode(LED_BUILTIN, OUTPUT);
+	for(int k=0;k<2;k++) {
+		digitalWrite(LED_BUILTIN, HIGH);
+		for(int i=0; i<10; ++i) 
+			digitalWrite(led_pin+i, HIGH);
+		delay(1000);
+		digitalWrite(LED_BUILTIN, LOW);
+		for(int i=0; i<10; ++i) 
+			digitalWrite(led_pin+i, LOW);
+		delay(1000);
+	}	
+}
+
 void setup() {
   for(int k=0; k<10; ++k)
-	pinMode(led_pin+k, OUTPUT);
+  	  pinMode(led_pin+k, OUTPUT);
+  alive_check();
   pinMode(reed_pin, INPUT_PULLUP);
   attachInterrupt(0,on_rising_reed,RISING);
-  Serial.begin(9600);
 }
 
 void sleepNow() {
-	Serial.println("going to sleep"); Serial.flush();
-	// LowPower.powerDown(SLEEP_2S, ADC_OFF, BOD_OFF); 
 	LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF); 
 }
 
@@ -42,9 +55,8 @@ void clear_display() {
 
 int np=0;
 
-void loop() {
-	
-	display(n);
+void loop() {	
+	display(n/2);
 	if (!wake_on_rising_reed)
 	{	
 		delay(250);	
