@@ -1,29 +1,26 @@
-#include <RCSwitch.h>
+#include <PinChangeInterruptHandler.h>
+#include <RFReceiver.h>
 
-RCSwitch mySwitch = RCSwitch();
+// Listen on digital pin 2
+RFReceiver receiver(2);
 
-void setup() 
-{
+void setup() {
   Serial.begin(9600);
-  mySwitch.enableReceive(0);  // Empfänger ist an Interrupt-Pin "0" - Das ist am UNO der Pin2
+  receiver.begin();
+  pinMode(13, INPUT);
 }
 
 void loop() {
-  if (mySwitch.available()) // Wenn ein Code Empfangen wird...
-  {
-    int value = mySwitch.getReceivedValue(); // Empfangene Daten werden unter der Variable "value" gespeichert.
-  
-    if (value == 0) // Wenn die Empfangenen Daten "0" sind, wird "Unbekannter Code" angezeigt.
-    {
-      Serial.println("Unbekannter Code");
-    } 
-    
-    else // Wenn der Empfangene Code brauchbar ist, wird er hier an den Serial Monitor gesendet.
-    {
-      Serial.print("Empfangen: ");
-      Serial.println( mySwitch.getReceivedValue() );
-    }
+  char msg[MAX_PACKAGE_SIZE];
+  byte senderId = 0;
+  byte packageId = 0;
+  byte len = receiver.recvPackage((byte *)msg, &senderId, &packageId);
 
-    mySwitch.resetAvailable(); // Hier wird der Empfänger "resettet"
-  }
+  Serial.println("");
+  Serial.print("Package: ");
+  Serial.println(packageId);
+  Serial.print("Sender: ");
+  Serial.println(senderId);
+  Serial.print("Message: ");
+  Serial.println(msg);
 }

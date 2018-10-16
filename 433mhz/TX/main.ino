@@ -1,11 +1,22 @@
-#include <RCSwitch.h>
+#include <RFTransmitter.h>
 
-RCSwitch mySwitch = RCSwitch();
+#define NODE_ID          1
+#define OUTPUT_PIN       13
+
+// Send on digital pin 11 and identify as node 1
+RFTransmitter transmitter(OUTPUT_PIN, NODE_ID);
+
 void setup() {
-  mySwitch.enableTransmit(12);  // Der Sender wird an Pin 10 angeschlossen
+	pinMode(12, OUTPUT);
 }
+
 void loop() {
-  mySwitch.send(1234, 24); // Der 433mhz Sender versendet die Dezimalzahl „1234“
-  delay(1000);  // Eine Sekunde Pause, danach startet der Sketch von vorne
-} 
-	
+  char *msg = "Hello World!";
+  digitalWrite(12, HIGH);
+  transmitter.send((byte *)msg, strlen(msg) + 1);
+  digitalWrite(12, LOW);
+  delay(5000);
+  digitalWrite(12, HIGH);
+  transmitter.resend((byte *)msg, strlen(msg) + 1);
+  digitalWrite(12, LOW);
+}
