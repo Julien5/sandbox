@@ -26,8 +26,13 @@ boolean sendCommand(String command)
       }
     }
   }
-  Serial.print("received:");
-  Serial.println(response);
+  if (received) {
+    Serial.print("received:");
+    Serial.println(response);
+  } else {
+    Serial.println("timed out");
+  }
+  
   return received;  
 }
 
@@ -43,4 +48,5 @@ void setup()
 void loop() {
   sendCommand("AT+CWLAP");
   delay(250);
+  sendCommand("AT+CWJAP_CUR=\"JBO\",\"00000000001111111111123456\"");
 }
