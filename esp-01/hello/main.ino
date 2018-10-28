@@ -8,7 +8,22 @@ void sendData(const String &command) {
   Altser.write(s.c_str());
 }
 
-boolean sendCommand(String command)
+String waitForResponse() {
+  bool received = false;
+  long int now = millis();
+  long unsigned int deadline = now + 5000;
+  String response;
+  while(millis()<deadline && !received) {
+    while(Altser.available()) {
+      char r=Altser.read();
+      response+=r;
+      Serial.write(r);
+    }
+  }
+  return response;
+}
+
+boolean sendCommand(String command, String okString, String errorString)
 {
   sendData(command);
   long int now = millis();
@@ -22,8 +37,8 @@ boolean sendCommand(String command)
       char r=Altser.read();
       response+=r;
       if (r=='\n') {
-	ok=response == "OK\r\n";
-	error=response == "ERROR\r\n";
+	ok=response == okString+"\r\n";
+	error=response == errorString+"\r\n";
 	received = ok || error;
 	if (!received) {
 	  Serial.println("got:"+response);
@@ -33,14 +48,36 @@ boolean sendCommand(String command)
       }
     }
   }
-  if (received) {
-    Serial.print("received:");
-    Serial.println(response);
-  } else {
-    Serial.println("timed out (or error)");
-  }
+  if (received)
+    Serial.println("received:"+response);
   
+  if (ok) {
+    Serial.println("ok");
+  } else if (error) {
+    Serial.println("error detected");
+  } else {
+    Serial.println("timed out");
+  }
+  Serial.println("-------------");
+  delay(250);
   return ok;  
+}
+
+boolean sendCommand(String command)
+{
+  return sendCommand(command,"OK","ERROR");
+}
+
+void work() {
+  bool ok=false;
+  while(!sendCommand("AT+CWLAP"));
+  while(!sendCommand("AT+CWJAP_CUR=\"JBO\",\"00000000001111111111123456\""))
+    delay(1000);
+  while(!sendCommand("AT+CWJAP_CUR?"));
+  while(!sendCommand("AT+PING=\"192.168.2.62\""));
+  while(!sendCommand("AT+CIPMUX?"));
+  while(!sendCommand("AT+CIPMODE?"));
+  while(!sendCommand("AT+CIPSTART=\"TCP\",\"192.168.2.62\",8080"));
 }
 
 void setup()
@@ -49,42 +86,16 @@ void setup()
   while(!Serial);
   Altser.begin(9600);
   while (!sendCommand("AT"));
-  // sendCommand("AT+CWMODE_CUR=0");
+  while (!sendCommand("AT+RST"));
+  work();
 }
 
-int status=-1;
-
 void loop() {
-  bool ok=false;
-  if (status == -1) {
-     ok=sendCommand("AT+CWLAP");
-     if (ok)
-       status++;
-  }
-  if (status == 0) {
-    delay(250);
-    ok=sendCommand("AT+CWJAP_CUR=\"JBO\",\"00000000001111111111123456\"");
-    delay(1000);
-    if (ok) {
-      ok=sendCommand("AT+CWJAP_CUR?");
-      if (ok)
-	status++;
-    }
-  }
-  if (status == 1) {
-    ok=sendCommand("AT+PING=\"192.168.2.1\"");
-    if (ok) {
-      ok=sendCommand("AT+CIPMUX?");
-      ok=sendCommand("AT+CIPSTART=\"TCP\",\"192.168.2.1\",80");
-      delay(1000);
-      if (ok)
-	status++;
-    }
-  }
-  if (status == 2) {
-    String cmd = "GET / HTTP/1.1";
-    sendData("AT+CIPSEND=" + String(cmd.length() + 4)); // +2?
-    sendCommand(cmd);
-  }
-  delay(1000);
+  String cmd = "GET / HTTP/1.1\r\n";
+  while(!sendCommand("AT+CIPSEND=" + String(cmd.length() + 2),"OK","ERROR"))
+    delay(1000); // +2?
+  while(!sendCommand(cmd,"SEND OK","ERROR"));
+  waitForResponse();
+  Serial.print("done");
+  delay(5000);
 }
