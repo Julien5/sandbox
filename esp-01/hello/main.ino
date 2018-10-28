@@ -9,11 +9,10 @@ void sendData(const String &command) {
 }
 
 String waitForResponse() {
-  bool received = false;
   long int now = millis();
-  long unsigned int deadline = now + 5000;
+  long unsigned int deadline = now + 2500;
   String response;
-  while(millis()<deadline && !received) {
+  while(millis()<deadline) {
     while(Altser.available()) {
       char r=Altser.read();
       response+=r;
@@ -77,7 +76,7 @@ void work() {
   while(!sendCommand("AT+PING=\"192.168.2.62\""));
   while(!sendCommand("AT+CIPMUX?"));
   while(!sendCommand("AT+CIPMODE?"));
-  while(!sendCommand("AT+CIPSTART=\"TCP\",\"192.168.2.62\",8080"));
+  
 }
 
 void setup()
@@ -90,12 +89,16 @@ void setup()
   work();
 }
 
+int x=0;
+
 void loop() {
-  String cmd = "GET / HTTP/1.1\r\n";
+  while(!sendCommand("AT+CIPSTART=\"TCP\",\"192.168.2.62\",8080"));
+  String cmd = "GET /set?x="+String(x++)+" HTTP/1.1\r\n\r\n";
   while(!sendCommand("AT+CIPSEND=" + String(cmd.length() + 2),"OK","ERROR"))
     delay(1000); // +2?
-  while(!sendCommand(cmd,"SEND OK","ERROR"));
-  waitForResponse();
+  if (sendCommand(cmd,"SEND OK","ERROR"))
+    waitForResponse();
   Serial.print("done");
+  sendCommand("AT+CIPCLOSE");
   delay(5000);
 }
