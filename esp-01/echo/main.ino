@@ -14,7 +14,7 @@ void loop() {
     digitalWrite(12, HIGH);
     Serial.write(Serial.read());
     digitalWrite(12, LOW);
-    Serial.write("[");    
+    Serial.write("]");    
   }
   digitalWrite(11, LOW);
   digitalWrite(13, HIGH);

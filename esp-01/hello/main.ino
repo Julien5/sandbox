@@ -15,5 +15,5 @@ void loop() {
   while(Altser.available())
     Serial.write(Altser.read());
   delay(250);
-  // Serial.write('a');
+  Altser.write("AT\r\n");
 }
