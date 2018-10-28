@@ -4,11 +4,11 @@ AltSoftSerial Altser;
 
 boolean sendCommand(String command)
 {
-  Serial.println(("send:")+command);
+  Serial.println("send:"+command);
   const String s = command+"\r\n"; 
   Altser.write(s.c_str());
   long int now = millis();
-  long int deadline = now + 1000;
+  long unsigned int deadline = now + 1000;
   String response;
   bool received = false;
   while(millis()<deadline && !received) {
@@ -19,6 +19,7 @@ boolean sendCommand(String command)
 	if ((response == "OK\r\n") || (response == "ERROR\r\n"))
 	  received=true;
 	else {
+	  Serial.println("got:"+response);
 	  response="";
 	}
 	break;
@@ -36,7 +37,10 @@ void setup()
   while(!Serial);
   Altser.begin(9600);
   sendCommand("AT");
+  sendCommand("AT+CWMODE_CUR=0");
 }
 
 void loop() {
+  sendCommand("AT+CWLAP");
+  delay(250);
 }
