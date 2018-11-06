@@ -13,8 +13,8 @@ String waitForResponse() {
   long unsigned int deadline = now + 2500;
   String response;
   while(millis()<deadline) {
-    while(Altser.available()) {
-      char r=Altser.read();
+    while(Serial.available()) {
+      char r=Serial.read();
       response+=r;
       Serial.write(r);
     }
@@ -32,8 +32,8 @@ boolean sendCommand(String command, String okString, String errorString)
   bool ok=false;
   bool error=false;
   while(millis()<deadline && !received) {
-    while(Altser.available()) {
-      char r=Altser.read();
+    while(Serial.available()) {
+      char r=Serial.read();
       response+=r;
       if (r=='\n') {
 	ok=response == okString+"\r\n";
@@ -90,15 +90,29 @@ void setup()
 }
 
 int x=0;
+int status=0;
+String s;
+char buffer[128];
+int n=0;
 
 void loop() {
-  while(!sendCommand("AT+CIPSTART=\"TCP\",\"192.168.2.62\",8080"));
-  String cmd = "GET /set?x="+String(x++)+" HTTP/1.1\r\n\r\n";
-  while(!sendCommand("AT+CIPSEND=" + String(cmd.length() + 2),"OK","ERROR"))
-    delay(1000); // +2?
-  if (sendCommand(cmd,"SEND OK","ERROR"))
+  if (status==0) {
+    while(!sendCommand("AT+CIPSTART=\"TCP\",\"192.168.2.62\",8000"));
+    String cmd = "GET /set?x="+String(x++)+" HTTP/1.1\r\n\r\n";
+    while(!sendCommand("AT+CIPSEND=" + String(cmd.length() + 2),"OK","ERROR"))
+      delay(1000); // +2?
+    while(!sendCommand(cmd,"SEND OK","ERROR"));
+    status=1;
+    return;
+  }
+  if (status==1) {
     waitForResponse();
-  Serial.print("done");
-  sendCommand("AT+CIPCLOSE");
-  delay(5000);
+    status=2;
+  }
+  if (status==2) {
+    Serial.print("done");
+    sendCommand("AT+CIPCLOSE");
+    delay(5000);
+    status=0;
+  }
 }
