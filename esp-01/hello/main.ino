@@ -8,18 +8,27 @@ void sendData(const String &command) {
   Altser.write(s.c_str());
 }
 
+#define L 16
+
 String waitForResponse() {
   long int now = millis();
-  long unsigned int deadline = now + 2500;
-  String response;
+  long unsigned int deadline = now + 5000;
+  char buffer[L];
+  Serial.println("RX...");
+  int n=0;
   while(millis()<deadline) {
-    while(Serial.available()) {
-      char r=Serial.read();
-      response+=r;
-      Serial.write(r);
+    while(Altser.available() && n<L) {
+      n+=Altser.readBytes(buffer+n,min(Altser.available(),L-n));
+      //buffer[n++]=Altser.read();
+    }
+    if (n>0) {
+      Serial.write(buffer,n);
+      //Serial.print("\n\n[n="+String(n)+"]\n\n");
+      n=0;
     }
   }
-  return response;
+  Serial.println("done");
+  return "done";
 }
 
 boolean sendCommand(String command, String okString, String errorString)
@@ -32,8 +41,8 @@ boolean sendCommand(String command, String okString, String errorString)
   bool ok=false;
   bool error=false;
   while(millis()<deadline && !received) {
-    while(Serial.available()) {
-      char r=Serial.read();
+    while(Altser.available()) {
+      char r=Altser.read();
       response+=r;
       if (r=='\n') {
 	ok=response == okString+"\r\n";
@@ -86,6 +95,8 @@ void setup()
   Altser.begin(9600);
   while (!sendCommand("AT"));
   while (!sendCommand("AT+RST"));
+  while (!sendCommand("AT+UART_CUR=2400,8,1,0,0"));
+  Altser.begin(2400);
   work();
 }
 
