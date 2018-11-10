@@ -1,5 +1,5 @@
 #include "parse.h"
-#include <iostream>
+
 /*
   +IPD,116:HTTP/1.0 200 OK
   Server: BaseHTTP/0.6 Python/3.4.2
@@ -10,7 +10,10 @@
   +IPD,11:thanks,bye
   CLOSED
 */
+#ifndef ARDUINO
+#include <iostream>
 #include <cassert>
+#endif
 
 #define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
 #define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
