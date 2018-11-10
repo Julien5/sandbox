@@ -2,6 +2,9 @@
 
 AltSoftSerial Altser;
 
+#include <LiquidCrystal.h>
+LiquidCrystal lcd(7, 5, 6, 10, 11, 12);
+
 void sendData(const String &command) {
   Serial.println("send:"+command);
   const String s = command+"\r\n"; 
@@ -23,6 +26,8 @@ String waitForResponse() {
     }
     if (n>0) {
       Serial.write(buffer,n);
+      lcd.clear();
+      lcd.print(buffer);
       //Serial.print("\n\n[n="+String(n)+"]\n\n");
       n=0;
     }
@@ -33,6 +38,7 @@ String waitForResponse() {
 
 boolean sendCommand(String command, String okString, String errorString)
 {
+  lcd.print(command);
   sendData(command);
   long int now = millis();
   long unsigned int deadline = now + 5000;
@@ -56,8 +62,13 @@ boolean sendCommand(String command, String okString, String errorString)
       }
     }
   }
-  if (received)
+  
+  if (received) {
     Serial.println("received:"+response);
+    lcd.clear();
+    lcd.print(response);
+  }
+  
   
   if (ok) {
     Serial.println("ok");
@@ -68,6 +79,7 @@ boolean sendCommand(String command, String okString, String errorString)
   }
   Serial.println("-------------");
   delay(250);
+  lcd.clear();
   return ok;  
 }
 
@@ -90,6 +102,8 @@ void work() {
 
 void setup()
 {
+  lcd.begin(16, 2);
+  lcd.clear();
   Serial.begin(9600);
   while(!Serial);
   Altser.begin(9600);
