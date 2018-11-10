@@ -10,28 +10,21 @@
   +IPD,11:thanks,bye
   CLOSED
 */
+#include <cassert>
 
 #define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
 #define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
 
 bool parse::StringAwaiter::read(const char * buffer) {
-  std::cout << std::endl;
-  int k=0;
-  std::cout << " w:" << wanted << std::endl;
-  std::cout << " b:" << buffer << std::endl;
-  std::cout << "nf:" << notfound << std::endl;
-  {
-    std::cout << "----" << std::endl;
     const char * f = strchr(buffer,notfound[0]);
     if (!f)
+      return false;
+    if (notfound != wanted && f != buffer)
       return false;
     int Lw=strlen(notfound);
     int Lf=strlen(f);
     int L=MIN(Lw,Lf);
-    std::cout << "f:" << f << std::endl;
-    std::cout << "L:" << L << std::endl;
     int n=strncmp(f,notfound,L);
-    std::cout << "n=" << n << std::endl;
     if (n==0) {
       if (Lw>Lf) {
 	notfound+=Lf;
@@ -41,30 +34,28 @@ bool parse::StringAwaiter::read(const char * buffer) {
       return true;
     }
     notfound=wanted;
-    buffer=f;
-  }	
-  return false;
+    return false;
 }
 
 int parse::test() {
   {
     StringAwaiter a("OK");
     bool ok=false;
-    if (a.read("OK")==false)
-      return 1;
-    if (a.read("aaaOKaaa")==false)
-      return 1;
-    ok=a.read("buuuh");
-    ok=a.read("buuuO");
-    if (ok)
-      return 1;
-    ok=a.read("KO");
-    if (!ok)
-      return 1;
-    ok=a.read("buuuO");
-    ok=a.read("xKO");
-    if (ok)
-      return 1;
-    return 0;
+    assert(a.read("OK"));
+    assert(a.read("aaaOKaaa"));
+    assert(!a.read("buuuh"));
+    assert(!a.read("buuuO"));
+    assert(a.read("KO"));
+    assert(!a.read("buuuO"));
+    assert(!a.read("xKO"));
   }
+  
+  {
+    StringAwaiter a("1234567890");
+    assert(!a.read("---12"));
+    assert(!a.read("3456"));
+    assert(a.read("7890ssss"));  
+  }
+  
+  return 0;
 }
