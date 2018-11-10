@@ -59,8 +59,12 @@ int parse::test() {
     if (ok)
       return 1;
     ok=a.read("KO");
+    if (!ok)
+      return 1;
+    ok=a.read("buuuO");
+    ok=a.read("xKO");
     if (ok)
-      return 0;
-    return -1;
+      return 1;
+    return 0;
   }
 }
