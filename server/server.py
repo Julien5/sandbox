@@ -21,7 +21,7 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
         self.send_header('Content-type','text/html')
         self.end_headers()
         # Send message back to client
-        message = "thanks,bye"
+        message = "thanks,bye\n"
         # Write content as utf-8 data
         self.wfile.write(bytes(message, "utf8"))
         return
@@ -29,7 +29,7 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
 def run():
     print('starting server...')
     # Server settings
-    server_address = ('0.0.0.0', 8080)
+    server_address = ('0.0.0.0', 8000)
     httpd = HTTPServer(server_address, testHTTPServer_RequestHandler)
     print('running server...')
     httpd.serve_forever()
