@@ -85,6 +85,30 @@ int parse::test() {
     StringAwaiter a("OK");
     assert(a.read("OXOK"));
   }
+
+  {
+    debug("*******");
+    StringAwaiter a("ERROR");
+    assert(!a.read("ERR"));
+    assert(a.read("OR\n"));
+  }
+
+  {
+    debug("*******");
+    StringAwaiter a("OK");
+    assert(!a.read(",\"7"));
+    assert(!a.read("c:f"));
+    assert(!a.read("f:4"));
+    assert(!a.read("d:c"));
+    assert(!a.read("4:6"));
+    assert(!a.read("b:f"));
+    assert(!a.read("3\","));
+    assert(!a.read("11,"));
+    assert(!a.read("130"));
+    assert(!a.read(",0)"));
+    assert(!a.read("\n"));
+    assert(a.read("OK"));
+  }
   
   return 0;
 }

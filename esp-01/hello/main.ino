@@ -20,14 +20,16 @@ bool waitForResponse() {
   long unsigned int deadline = now + 5000;
   char buffer[L+1]={0};
   Serial.println("RX...");
-
   while(millis()<deadline) {
     while(Altser.available()) {
-      Altser.readBytes(buffer,min(Altser.available(),L));
+      int n=Altser.readBytes(buffer,min(Altser.available(),L));
+      buffer[n]='\0';
       if (a.read(buffer))
 	return true; 
     }
   }
+  Serial.print(millis()-now);
+  Serial.println(" ms");
   return false;
 }
 
@@ -45,32 +47,23 @@ boolean sendCommand(const char * command)
   bool error=false;
 
   char buffer[L+1]={0};
-  int n=0;
   
   parse::StringAwaiter ok_wait("OK");
   parse::StringAwaiter error_wait("ERROR");
     
   while(millis()<deadline && !received) {
-
-    long int t0 = millis();    
-    while((Altser.available()||(millis()-t0)<1000) && !received && n<L) {
-      n+=Altser.readBytes(buffer+n,min(Altser.available(),L-n));
+    while(Altser.available() && !received) {
+      int n=Altser.readBytes(buffer,min(Altser.available(),L));
+      buffer[n]='\0';
+      ok=ok_wait.read(buffer);
+      error=error_wait.read(buffer);
+      received = ok || error;
     }
     
-    buffer[n]='\0';
-    ok=ok_wait.read(buffer);
-    error=error_wait.read(buffer);
-    received = ok || error;
-    
-    if (n>0) {
-      Serial.print("n=");
-      Serial.print(n);
-      Serial.print(" got:[");
-      Serial.print(buffer);
-      Serial.println("]");
+    if (strlen(buffer)) {
+      Serial.println(buffer);
     }
     buffer[0]='\0';
-    n=0;
   }
   
   lcd.clear();
@@ -122,10 +115,14 @@ void loop() {
     while(!sendCommand("AT+CIPSTART=\"TCP\",\"192.168.2.62\",8000"));
     
     char cmd[32]={0};
-    snprintf(cmd, 16, "GET /set?x=%d HTTP/1.1\r\n\r\n", x++);
+    snprintf(cmd, 32, "GET /set?x=%d HTTP/1.1\r\n\r\n", x++);
 
+    Serial.print(cmd);
+    
     char buffer[32]={0};
-    snprintf(buffer, 16, "AT+CIPSEND=%d", strlen(cmd)+2);
+    snprintf(buffer, 32, "AT+CIPSEND=%d", strlen(cmd)+2);
+
+    Serial.print(buffer);
     while(!sendCommand(buffer))
       delay(1000); // +2?
     
@@ -140,7 +137,7 @@ void loop() {
   if (status==2) {
     Serial.print("done");
     sendCommand("AT+CIPCLOSE");
-    delay(5000);
+    delay(250);
     status=0;
   }
 }
