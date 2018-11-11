@@ -12,7 +12,7 @@ void sendData(const char * command) {
   Altser.write("\r\n");
 }
 
-#define L 127
+#define L 15
 
 bool waitForResponse() {
   parse::StringAwaiter a("CLOSED");
@@ -61,7 +61,7 @@ boolean sendCommand(const char * command)
     }
     
     if (strlen(buffer)) {
-      Serial.println(buffer);
+      Serial.print(buffer);
     }
     buffer[0]='\0';
   }
