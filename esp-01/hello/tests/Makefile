@@ -1,21 +1,24 @@
 CC=gcc
 CXX=g++
 RM=rm -f
-CPPFLAGS=-I..
+CXXFLAGS=-I..
 LDFLAGS=
 LIBS=
 
-SRCS := test.cpp ../parse.cpp
+debug: CXXFLAGS += -DDEBUG -g
+debug: test
+
+SRCS := test.cpp ../parse.cpp ../wifi.cpp
 # Objs are all the sources, with .cpp replaced by .o
 OBJS := $(SRCS:.cpp=.o)
 
 %.o: %.c 
-	$(CXX) $(CPPFLAGS) -c $<
+	$(CXX) $(CXXFLAGS) -c $<
 
 all: test
 
 test: $(OBJS)
-	$(CXX) $(CPPFLAGS) -o test $(OBJS) $(LFLAGS) $(LIBS)
+	$(CXX) $(CXXFLAGS) -o test $(OBJS) $(LFLAGS) $(LIBS)
 
 clean:
 	$(RM) $(OBJS)
@@ -24,6 +27,6 @@ depend: .depend
 
 .depend: $(SRCS)
 	$(RM) ./.depend
-	$(CXX) $(CPPFLAGS) -MM $^ -MF  ./.depend;
+	$(CXX) $(CXXFLAGS) -MM $^ -MF  ./.depend;
 
 include .depend
