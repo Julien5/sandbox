@@ -1,4 +1,5 @@
 #include "parse.h"
+#include "debug.h"
 
 /*
   +IPD,116:HTTP/1.0 200 OK
@@ -10,18 +11,6 @@
   +IPD,11:thanks,bye
   CLOSED
 */
-#ifndef ARDUINO
-#include <iostream>
-#include <cassert>
-#define debug(X)							\
-  do									\
-    {									\
-      std::cout << __LINE__ << ":" << #X << "=" << (X) << std::endl;	\
-    } while(0)
-#else
-#define assert(ignore)
-#define debug(X)((void) 0)
-#endif
 
 #define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
 #define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))

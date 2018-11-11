@@ -6,6 +6,7 @@ AltSoftSerial Altser;
 LiquidCrystal lcd(7, 5, 6, 10, 11, 12);
 
 #include "parse.h"
+#include "wifi.h"
 
 void sendData(const char * command) {
   Altser.write(command);
@@ -33,6 +34,8 @@ bool waitForResponse() {
   return false;
 }
 
+wifi::AccessPointParser app;
+
 boolean sendCommand(const char * command)
 {
   lcd.print(command);
@@ -50,11 +53,16 @@ boolean sendCommand(const char * command)
   
   parse::StringAwaiter ok_wait("OK");
   parse::StringAwaiter error_wait("ERROR");
-    
+
   while(millis()<deadline && !received) {
     while(Altser.available() && !received) {
       int n=Altser.readBytes(buffer,min(Altser.available(),L));
       buffer[n]='\0';
+
+      if (strcmp(command,"AT+CWLAP")==0) {
+	app.read(buffer);
+      }
+      
       ok=ok_wait.read(buffer);
       error=error_wait.read(buffer);
       received = ok || error;
@@ -66,14 +74,14 @@ boolean sendCommand(const char * command)
     buffer[0]='\0';
   }
   
-  lcd.clear();
   if (received) {
-    Serial.println(buffer);
-    lcd.print(buffer);
   } else {
     Serial.println("timed out");
+    lcd.clear();
     lcd.print("timed out");
   }
+  Serial.print("n=");
+  Serial.println(app.size());
   Serial.println("-------------");
   delay(250);
   lcd.clear();
@@ -102,7 +110,8 @@ void setup()
   while (!sendCommand("AT"));
   while (!sendCommand("AT+RST"));
   while (!sendCommand("AT+UART_CUR=2400,8,1,0,0"));
-  Altser.begin(2400);
+  Altser.begin(2400);while(Altser.available()) Serial.print(Altser.read());
+  delay(250);
   work();
 }
 
@@ -110,13 +119,16 @@ int x=0;
 int status=0;
 int n=0;
 
+
 void loop() {
   if (status==0) {
+    if (n==0)
+      sendCommand("AT+CWLAP");
     while(!sendCommand("AT+CIPSTART=\"TCP\",\"192.168.2.62\",8000"));
+   
+    char cmd[128]={0};
+    snprintf(cmd, 128, "GET /set?name=%s&rssi=%d HTTP/1.1\r\n\r\n", app.get(n).name, app.get(n).rssi);
     
-    char cmd[32]={0};
-    snprintf(cmd, 32, "GET /set?x=%d HTTP/1.1\r\n\r\n", x++);
-
     Serial.print(cmd);
     
     char buffer[32]={0};
@@ -135,6 +147,8 @@ void loop() {
     status=2;
   }
   if (status==2) {
+    if (n++>=app.size())
+      n=0;
     Serial.print("done");
     sendCommand("AT+CIPCLOSE");
     delay(250);
