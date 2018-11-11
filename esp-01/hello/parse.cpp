@@ -13,37 +13,57 @@
 #ifndef ARDUINO
 #include <iostream>
 #include <cassert>
+#define debug(X)							\
+  do									\
+    {									\
+      std::cout << __LINE__ << ":" << #X << "=" << (X) << std::endl;	\
+    } while(0)
+#else
+#define assert(ignore)
+#define debug(X)((void) 0)
 #endif
 
 #define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
 #define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
 
 bool parse::StringAwaiter::read(const char * buffer) {
-    const char * f = strchr(buffer,notfound[0]);
+  const char * f = buffer;
+  while(strlen(f)>0) {
+    f = strchr(f,notfound[0]);
     if (!f)
       return false;
     if (notfound != wanted && f != buffer)
       return false;
     int Lw=strlen(notfound);
     int Lf=strlen(f);
+    debug(Lw);
+    debug(Lf);
+    debug(buffer);
+    debug(f);
+    debug(notfound);
     int L=MIN(Lw,Lf);
     int n=strncmp(f,notfound,L);
+    debug(n);
     if (n==0) {
+      debug(n);
       if (Lw>Lf) {
 	notfound+=Lf;
 	return false;
       }
+      debug(n);
       notfound=wanted;
       return true;
+    } else {
+      f++;
     }
-    notfound=wanted;
-    return false;
+  }
+  notfound=wanted;
+  return false;
 }
 
 int parse::test() {
   {
     StringAwaiter a("OK");
-    bool ok=false;
     assert(a.read("OK"));
     assert(a.read("aaaOKaaa"));
     assert(!a.read("buuuh"));
@@ -58,6 +78,12 @@ int parse::test() {
     assert(!a.read("---12"));
     assert(!a.read("3456"));
     assert(a.read("7890ssss"));  
+  }
+  
+  {
+    debug("*******");
+    StringAwaiter a("OK");
+    assert(a.read("OXOK"));
   }
   
   return 0;

@@ -1,11 +1,11 @@
 CC=gcc
 CXX=g++
 RM=rm -f
-CPPFLAGS=
+CPPFLAGS=-I..
 LDFLAGS=
 LIBS=
 
-SRCS := test.cpp parse.cpp
+SRCS := test.cpp ../parse.cpp
 # Objs are all the sources, with .cpp replaced by .o
 OBJS := $(SRCS:.cpp=.o)
 

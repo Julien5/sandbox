@@ -5,91 +5,90 @@ AltSoftSerial Altser;
 #include <LiquidCrystal.h>
 LiquidCrystal lcd(7, 5, 6, 10, 11, 12);
 
-void sendData(const String &command) {
-  Serial.println("send:"+command);
-  const String s = command+"\r\n"; 
-  Altser.write(s.c_str());
+#include "parse.h"
+
+void sendData(const char * command) {
+  Altser.write(command);
+  Altser.write("\r\n");
 }
 
-#define L 16
+#define L 127
 
-String waitForResponse() {
+bool waitForResponse() {
+  parse::StringAwaiter a("CLOSED");
   long int now = millis();
   long unsigned int deadline = now + 5000;
-  char buffer[L];
+  char buffer[L+1]={0};
   Serial.println("RX...");
-  int n=0;
+
   while(millis()<deadline) {
-    while(Altser.available() && n<L) {
-      n+=Altser.readBytes(buffer+n,min(Altser.available(),L-n));
-      //buffer[n++]=Altser.read();
-    }
-    if (n>0) {
-      Serial.write(buffer,n);
-      lcd.clear();
-      lcd.print(buffer);
-      //Serial.print("\n\n[n="+String(n)+"]\n\n");
-      n=0;
+    while(Altser.available()) {
+      Altser.readBytes(buffer,min(Altser.available(),L));
+      if (a.read(buffer))
+	return true; 
     }
   }
-  Serial.println("done");
-  return "done";
+  return false;
 }
 
-boolean sendCommand(String command, String okString, String errorString)
+boolean sendCommand(const char * command)
 {
   lcd.print(command);
   sendData(command);
+  delay(250);
+  if (strstr(command,"UART_CUR")!=NULL)
+    return true;
   long int now = millis();
   long unsigned int deadline = now + 5000;
-  String response;
   bool received = false;
   bool ok=false;
   bool error=false;
+
+  char buffer[L+1]={0};
+  int n=0;
+  
+  parse::StringAwaiter ok_wait("OK");
+  parse::StringAwaiter error_wait("ERROR");
+    
   while(millis()<deadline && !received) {
-    while(Altser.available()) {
-      char r=Altser.read();
-      response+=r;
-      if (r=='\n') {
-	ok=response == okString+"\r\n";
-	error=response == errorString+"\r\n";
-	received = ok || error;
-	if (!received) {
-	  Serial.println("got:"+response);
-	  response="";
-	}
-	break;
-      }
+
+    long int t0 = millis();    
+    while((Altser.available()||(millis()-t0)<1000) && !received && n<L) {
+      n+=Altser.readBytes(buffer+n,min(Altser.available(),L-n));
     }
+    
+    buffer[n]='\0';
+    ok=ok_wait.read(buffer);
+    error=error_wait.read(buffer);
+    received = ok || error;
+    
+    if (n>0) {
+      Serial.print("n=");
+      Serial.print(n);
+      Serial.print(" got:[");
+      Serial.print(buffer);
+      Serial.println("]");
+    }
+    buffer[0]='\0';
+    n=0;
   }
   
+  lcd.clear();
   if (received) {
-    Serial.println("received:"+response);
-    lcd.clear();
-    lcd.print(response);
-  }
-  
-  
-  if (ok) {
-    Serial.println("ok");
-  } else if (error) {
-    Serial.println("error detected");
+    Serial.println(buffer);
+    lcd.print(buffer);
   } else {
     Serial.println("timed out");
+    lcd.print("timed out");
   }
   Serial.println("-------------");
   delay(250);
   lcd.clear();
+  
   return ok;  
 }
 
-boolean sendCommand(String command)
-{
-  return sendCommand(command,"OK","ERROR");
-}
-
 void work() {
-  bool ok=false;
   while(!sendCommand("AT+CWLAP"));
   while(!sendCommand("AT+CWJAP_CUR=\"JBO\",\"00000000001111111111123456\""))
     delay(1000);
@@ -116,17 +115,21 @@ void setup()
 
 int x=0;
 int status=0;
-String s;
-char buffer[128];
 int n=0;
 
 void loop() {
   if (status==0) {
     while(!sendCommand("AT+CIPSTART=\"TCP\",\"192.168.2.62\",8000"));
-    String cmd = "GET /set?x="+String(x++)+" HTTP/1.1\r\n\r\n";
-    while(!sendCommand("AT+CIPSEND=" + String(cmd.length() + 2),"OK","ERROR"))
+    
+    char cmd[32]={0};
+    snprintf(cmd, 16, "GET /set?x=%d HTTP/1.1\r\n\r\n", x++);
+
+    char buffer[32]={0};
+    snprintf(buffer, 16, "AT+CIPSEND=%d", strlen(cmd)+2);
+    while(!sendCommand(buffer))
       delay(1000); // +2?
-    while(!sendCommand(cmd,"SEND OK","ERROR"));
+    
+    while(!sendCommand(cmd));
     status=1;
     return;
   }
