@@ -1,12 +1,20 @@
 #include "AltSoftSerial.h"
 
+#ifndef HARDWARE_SERIAL
 AltSoftSerial Altser;
+#else
+#define Altser Serial
+#endif
 
 #include <LiquidCrystal.h>
 LiquidCrystal lcd(7, 5, 6, 10, 11, 12);
 
 #include "parse.h"
 #include "wifi.h"
+
+void debug(String msg) {
+  Serial.println(msg);
+}
 
 void sendData(const char * command) {
   Altser.write(command);
@@ -29,15 +37,15 @@ bool waitForResponse() {
 	return true; 
     }
   }
-  Serial.print(millis()-now);
-  Serial.println(" ms");
+  debug(String(millis()-now)+" ms");
   return false;
 }
 
 wifi::AccessPointParser app;
-
+ 
 boolean sendCommand(const char * command)
 {
+  lcd.clear();
   lcd.print(command);
   sendData(command);
   delay(250);
@@ -89,7 +97,38 @@ boolean sendCommand(const char * command)
   return ok;  
 }
 
-void work() {
+void display(char * msg) {
+  lcd.clear();
+  lcd.print(msg);
+}
+
+void setup()
+{
+  lcd.begin(16, 2);
+  lcd.clear();
+  
+  for(int d=0; d<3; ++d)
+  {
+    char msg[16]={0};
+    snprintf(msg, 16, "INIT LCD: %d", d);    
+    display(msg);
+    delay(500);
+  }
+
+  display("init serial");
+  Serial.begin(9600);
+  while(!Serial);
+
+  display("init soft.serial");
+  Altser.begin(9600);
+
+  display("init ESP");
+  delay(250);
+  while (!sendCommand("AT"));
+  while (!sendCommand("AT+RST"));
+  while (!sendCommand("AT+UART_CUR=2400,8,1,0,0"));
+  Altser.begin(2400);while(Altser.available()) Serial.print(Altser.read());
+  delay(250);
   while(!sendCommand("AT+CWLAP"));
   while(!sendCommand("AT+CWJAP_CUR=\"JBO\",\"00000000001111111111123456\""))
     delay(1000);
@@ -97,22 +136,8 @@ void work() {
   while(!sendCommand("AT+PING=\"192.168.2.62\""));
   while(!sendCommand("AT+CIPMUX?"));
   while(!sendCommand("AT+CIPMODE?"));
-  
-}
-
-void setup()
-{
-  lcd.begin(16, 2);
-  lcd.clear();
-  Serial.begin(9600);
-  while(!Serial);
-  Altser.begin(9600);
-  while (!sendCommand("AT"));
-  while (!sendCommand("AT+RST"));
-  while (!sendCommand("AT+UART_CUR=2400,8,1,0,0"));
-  Altser.begin(2400);while(Altser.available()) Serial.print(Altser.read());
-  delay(250);
-  work();
+  display("init done. good.");
+  delay(1000);
 }
 
 int x=0;
