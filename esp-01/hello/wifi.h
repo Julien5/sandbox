@@ -19,7 +19,7 @@ namespace wifi {
   };
 
   class AccessPointParser {
-    AccessPoint m_aps[6];
+    AccessPoint m_aps[8];
     int N;
     char buffer[128];
     char retain[16];
@@ -32,7 +32,7 @@ namespace wifi {
       , retain{}
       , parse_index(0)
     {}
-    void read(char * buffer);
+    void read(const char * buffer);
     int size() const {
       return N+1;
     }

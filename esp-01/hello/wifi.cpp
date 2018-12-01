@@ -10,17 +10,12 @@ void escape(char * buffer, char c) {
 }
 
 
-void wifi::AccessPointParser::read(char * _buffer) {
+void wifi::AccessPointParser::read(const char * _buffer) {
   if (strlen(retain)>0) {
     strcat(buffer,retain);
     retain[0]='\0';
   }
-  if (false && strchr(_buffer,'\r')) {
-    int L=strcspn(_buffer,"\r");
-    strncat(buffer,_buffer,L);
-    strcat(buffer,"\n");
-  } else
-    strcat(buffer,_buffer);
+  strcat(buffer,_buffer);
   
   if (!strchr(buffer,')'))
     return;
