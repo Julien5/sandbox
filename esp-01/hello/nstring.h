@@ -49,7 +49,10 @@ namespace nstring {
     
   };
 
-  auto make(const char * s);
+  template<int N>
+  auto make(const char s[N]) {
+    return STR<N>(s);
+  }
 
   int test();
   
