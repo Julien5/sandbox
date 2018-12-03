@@ -36,7 +36,7 @@ namespace wifi {
     {}
     void read(const char * buffer);
     int size() const {
-      return N+1;
+      return N;
     }
     AccessPoint get(int index) {
       return m_aps[index];

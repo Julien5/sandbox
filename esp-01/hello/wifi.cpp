@@ -17,35 +17,38 @@ void wifi::AccessPointParser::read(const char * _buffer) {
   buffer.append(_buffer);
   if (!buffer.contains(')'))
     return;
+
+  debug(buffer);
+  if (buffer.contains("AT")) {
+    N=0;
+  }
+  debug(N);
+  
   buffer.zeroes("(),\r\n+");
-  while(char * p = buffer.tok()) {
-    if (strstr(p,"AT")) {
-      // fuzzy compare, p contains sometimes garbage.
-      // (1) not enough.
-      N=-1;
-      parse_index=0;
-    }
-    if (!strcmp(p,"CWLAP:")) {
+  while(char * _p = buffer.tok()) {
+    debug(_p);
+    nstring::STR<32> p(_p);
+    if (p=="CWLAP:") {
       N++;
+      debug(N);
       parse_index=0;
     }
-    
     parse_index++;
-    
+    debug(parse_index);
     if (parse_index==3) {
-      escape(p,' ');
+      p.replace(' ','_');
       // remove char " in "JBO"
-      int Lp = strlen(p);
-      strncpy(m_aps[N].name,p+1,15);
-      m_aps[N].name[Lp-2]='\0';
+      int Lp = p.size();
+      strncpy(m_aps[N-1].name,_p+1,15);
+      m_aps[N-1].name[Lp-2]='\0';
     }
     if (parse_index==4) {
-      m_aps[N].rssi=atoi(p);
+      m_aps[N-1].rssi=p.toInt();
     }
     if (parse_index==9) {
-      if (strcmp(p,"OK") != 0) {// (1), "p does not contain OK"
+      if (!p.contains("OK")) { // strcmp(p,"OK") != 0) {// (1), "p does not contain OK"
 	retain.clear();
-	retain.append(p);
+	retain.append(_p);
       }
     }
   }

@@ -49,13 +49,31 @@ namespace nstring {
     }
 
     bool contains(const char *b) {
-      return !strcmp(s,b);
+      return strstr(s,b)!=0;
     }
 
     bool contains(const char b) {
       return strchr(s,b) != 0;
     }
 
+    bool operator==(const char *b) {
+      return strcmp(s,b)==0;
+    }
+    bool operator==(const STR<N> &b) {
+      return operator=(b.c_str());
+    }
+    
+    void replace(char a, char b) {
+      for(int k=0; k<N; ++k) {
+	if (s[k]==a)
+	  s[k]=b;
+      }
+    }
+
+    int toInt() {
+      return atoi(s);
+    }
+    
     char * zeroes(const char *b) {
       tok_addr=0;
       const int Nb=strlen(b);
