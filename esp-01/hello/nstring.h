@@ -56,10 +56,6 @@ namespace nstring {
       return tok_addr;
     }
 
-    char * tok() {
-      return tok_addr;
-    }
-
     char * zeroes() {
       for(int k=0;k<N;++k) {
 	z[k] = (s[k]=='\0') ? '0' : '*';
@@ -68,13 +64,9 @@ namespace nstring {
       return z;
     }
 
-    char * next_tok() {
-      if (tok_addr-s >= N) {
-	tok_addr=0;
-	return tok_addr;
-      }
+    char * tok() {
       tok_addr += strlen(tok_addr)+1;
-      if (strlen(tok_addr)==0) {
+      if (tok_addr-s >= N || strlen(tok_addr)==0) {
 	tok_addr=0;
       }
       return tok_addr;
