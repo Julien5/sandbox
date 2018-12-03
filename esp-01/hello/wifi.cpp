@@ -48,7 +48,7 @@ void wifi::AccessPointParser::read(const char * _buffer) {
     if (parse_index==9) {
       if (!p.contains("OK")) { // strcmp(p,"OK") != 0) {// (1), "p does not contain OK"
 	retain.clear();
-	retain.append(_p);
+	retain.append(p.c_str());
       }
     }
   }
