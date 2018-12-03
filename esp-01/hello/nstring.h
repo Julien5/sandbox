@@ -1,11 +1,7 @@
 #pragma once
 
-#include <cstddef>
-#include <ostream>
 #include <string.h>
 
-#include <iostream>
-#include <cassert>
 #include "debug.h"
 
 
@@ -16,28 +12,36 @@ namespace nstring {
   private:
     using ref = char [N];
     ref s;
-    ref z;
+    char z[N+1];
     char * tok_addr;
   public:
     STR(const char* x)
-      : s{}
+      : s{0},z{0}
     {
       strcat(s,x);
     }
     
     STR()
-      : s{}
+      : s{0},z{0}
     {}
     
-    std::size_t size() const { return strlen(s); }
-    std::size_t capacity() const { return N; }
+    int size() const { return strlen(s); }
+    bool empty() const {
+      return s[0]=='\0';
+    }
+    void clear() {
+      memset(s,'\0',N);
+    }
+    int capacity() const { return N; }
     const char* c_str() const { return s; }
     
     
+#ifndef ARDUINO
     friend std::ostream& operator<<(std::ostream& os, STR s)
     {
       return os.write(s.c_str(), s.size());
     }
+#endif
 
     void append(const char * b)
     {
@@ -48,24 +52,46 @@ namespace nstring {
       return !strcmp(s,b);
     }
 
+    bool contains(const char b) {
+      return strchr(s,b) != 0;
+    }
+
     char * zeroes(const char *b) {
-      tok_addr=s;
-      char *a=::strtok(s,b);
-      while(::strtok(NULL,b))
-	{}
+      tok_addr=0;
+      const int Nb=strlen(b);
+      for(int k=0; k<N; ++k) {
+	for(int n=0;n<Nb; ++n) {
+	  if (s[k]==b[n]) {
+	    s[k] = '\0';
+	    break;
+	  }
+	}
+      }
       return tok_addr;
     }
 
     char * zeroes() {
       for(int k=0;k<N;++k) {
-	z[k] = (s[k]=='\0') ? '0' : '*';
+	z[k] = s[k];
+	if (s[k] == '\0')
+	  z[k] = '_';
+	if (s[k] == '\r')
+	  z[k] = '#';
+	if (s[k] == '\n')
+	  z[k] = '#';
       }
-      z[N-1]='\0';
+      z[N]='\0';
       return z;
     }
 
     char * tok() {
-      tok_addr += strlen(tok_addr)+1;
+      if (tok_addr==0) {
+	tok_addr=s;
+	return tok_addr;
+      }
+      tok_addr += strlen(tok_addr);
+      while(*tok_addr == '\0')
+	tok_addr++;
       if (tok_addr-s >= N || strlen(tok_addr)==0) {
 	tok_addr=0;
       }
@@ -75,7 +101,7 @@ namespace nstring {
   };
 
   template<int N, int M>
-  auto operator+(const STR<N> &a, const STR<M> &b) {
+  STR<N+M> operator+(const STR<N> &a, const STR<M> &b) {
     STR<N+M> r;
     r.append(a.c_str());
     r.append(b.c_str());
@@ -83,7 +109,7 @@ namespace nstring {
   }
 
   template<int N>
-  auto make(const char (&s)[N]) {
+  STR<N> make(const char (&s)[N]) {
     return STR<N>(s);
   }
 

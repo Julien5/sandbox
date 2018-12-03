@@ -15,8 +15,8 @@ int display(int exitcode) {
 
 int main(int argc, char ** argv) {
   std::cout << "test\n";
-  // display(parse::test());
-  // display(wifi::test());
-  display(nstring::test());
+  //display(parse::test());
+  display(wifi::test());
+  // display(nstring::test());
   return 0;
 }

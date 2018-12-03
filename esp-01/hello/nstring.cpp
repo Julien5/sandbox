@@ -15,17 +15,14 @@ int nstring::test() {
   auto z = x + y; 
   debug(z);
 
-  auto a = nstring::make("aaa,bb;cc"); // 9 chars
+  auto a = nstring::make("aaa,bb\r\n+cc"); // 9 chars
   debug(a);
-  debug(a.capacity());
-  debug(a.zeroes());
-  a.zeroes(";,;");
+  a.zeroes(",\r\n+");
   debug(a);
   debug(a.zeroes());
   while(char *p=a.tok()) {
     debug(p);
     assert(p);
-    a.next_tok();
   }
   return 0;
 }

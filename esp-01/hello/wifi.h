@@ -6,6 +6,8 @@
   +CWLAP:(3,"FRITZ!Box 7430 TJ",-78,"7c:ff:4d:c4:6b:f3",11,132,0)
 */
 
+#include "nstring.h"
+
 namespace wifi {
   class AccessPoint {
   public:
@@ -21,8 +23,8 @@ namespace wifi {
   class AccessPointParser {
     AccessPoint m_aps[8];
     int N;
-    char buffer[128];
-    char retain[16];
+    nstring::STR<128> buffer;
+    nstring::STR<64> retain;
     int parse_index;
   public:
     AccessPointParser()

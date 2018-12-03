@@ -12,7 +12,7 @@ LiquidCrystal lcd(7, 5, 6, 10, 11, 12);
 #include "parse.h"
 #include "wifi.h"
 
-void debug(String msg) {
+void print(String msg) {
   Serial.println(msg);
 }
 
@@ -37,7 +37,7 @@ bool waitForResponse() {
 	return true; 
     }
   }
-  debug(String(millis()-now)+" ms");
+  print(String(millis()-now)+" ms");
   return false;
 }
 
