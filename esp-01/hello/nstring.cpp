@@ -9,6 +9,8 @@ auto nstring::make(const char *s) {
 int nstring::test() {
   auto x = nstring::make("hello");
   debug(x);
+  auto y = nstring::make(" foo ");
+  x = x + y; 
   x.append("bar");
   debug(x);  
   return 0;

@@ -27,7 +27,7 @@ namespace nstring {
       : s{}
     {}
     
-    std::size_t size() const { return N; }
+    std::size_t size() const { return strlen(s); }
     const char* c_str() const { return s; }
 
 
@@ -40,6 +40,13 @@ namespace nstring {
     {
       return os.write(s.c_str(), s.size());
     }
+
+    STR& operator+(const STR<N> &o) {
+      append(o.s);
+      return *this;
+    }
+
+    
   };
 
   auto make(const char * s);
