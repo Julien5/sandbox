@@ -12,9 +12,8 @@ int nstring::test() {
   auto x = nstring::make("hello");
   debug(x);
   auto y = nstring::make(" foo ");
-  x = x + y; 
-  x.append("bar");
-  debug(x);  
+  auto z = x + y; 
+  debug(z); 
   return 0;
 }
 

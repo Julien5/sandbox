@@ -41,16 +41,21 @@ namespace nstring {
       return os.write(s.c_str(), s.size());
     }
 
-    STR& operator+(const STR<N> &o) {
-      append(o.s);
-      return *this;
-    }
+    
 
     
   };
 
+  template<int N, int M>
+  auto operator+(const STR<N> &a, const STR<M> &b) {
+    STR<N+M> r;
+    r.append(a.c_str());
+    r.append(b.c_str());
+    return r;
+  }
+
   template<int N>
-  auto make(const char s[N]) {
+  auto make(const char (&s)[N]) {
     return STR<N>(s);
   }
 
