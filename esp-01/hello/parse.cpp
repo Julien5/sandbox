@@ -1,114 +1,52 @@
 #include "parse.h"
 #include "debug.h"
 
-/*
-  +IPD,116:HTTP/1.0 200 OK
-  Server: BaseHTTP/0.6 Python/3.4.2
-  Date: Sat, 10 Nov 2018 18:48:57 GMT
-  Content-type: text/html
-
-
-  +IPD,11:thanks,bye
-  CLOSED
+/* We want to find if either
+   (1) substr is contained in buffer at position 'startbuffer' OR if
+   (2) the beginning of substr if contained at the end of buffer.
+   * This function returns
+   * 0 iff not (1) and not (2)
+   * -1 if (1)
+   * k iff (2) and k is the first index of substr not contained in buffer.
 */
-
-#define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
-#define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
-
-// returns the index for the "next search"
-const int firstdiff(const char * buffer, const char * substr, int s0, int l0) {
-  assert(s0<strlen(buffer));
-  assert(l0<strlen(substr));
+const int firstdiff(const char * buffer, const char * substr, int startbuffer, int startindex) {
+  assert(startbuffer<strlen(buffer));
+  assert(startindex<strlen(substr));
+  if (startindex!=0 && startbuffer!=0) {
+    // startindex not null
+    // => startbuffer must be zero (otherwise retry from zero);
+    return 0;
+  }
   int l = 0;
-  while(buffer[s0+l] != 0 && substr[l0+l] != 0 && buffer[s0+l]==substr[l0+l]) {
+  while(buffer[startbuffer+l] != 0 && substr[startindex+l] != 0 && buffer[startbuffer+l]==substr[startindex+l]) {
     l++;
   }
-  if (substr[l0+l]==0)
+  if (substr[startindex+l]==0) // end of substr => all found
     return -1;
-  if (buffer[s0+l]==0)
-    return l0+l;
-  return 0;
+  if (buffer[startbuffer+l]==0) // end of buffer => part found
+    return startindex+l;
+  return 0; // nothing found.
 }
 
-/* 
-   -1 = found
-   0  = not found 
-   >0 = part found (up to k)
+/* This function scans buffer for substr (starting at startindex).
+   Return value => see above.
  */
 int find(const char * buffer, const char * substr, int startindex=0) {
   const int Ls = strlen(substr);
   const int Lb = strlen(buffer);
   int p=0;
   int k=0;
-  while(p<Lb && (k=firstdiff(buffer, substr, p, startindex))==0)
+  while(p<Lb && startindex<Ls && (k=firstdiff(buffer, substr, p, startindex))==0)
     p++;
-  return k;
-
-  bool must_be_first=false;
-  int l=0;
-  bool eq=false;
-  while(k==0 || (eq=buffer[l]==substr[k])) {
-    debug(k);
-    debug(l);
-    l++; k++;
-    if (k==Ls)
-      return -1;
-    if (l==Lb) // out of bound
-      break;
-    if (!eq)
-      k=0;
-  }
-  debug(k);
-  return k;
-
-  for(int l=0; l<Lb; ++l) {
-    debug("--");
-    debug(l);
-    debug(k);
-    assert(k<Ls);
-    debug(buffer[l] == substr[k]);
-    debug(buffer[l]);
-    debug(substr[k]);
-    if (buffer[l] == substr[k])
-      k++;
-    else {
-      k=0;
-      if (buffer[l] == substr[k])
-	k++;
-      if (must_be_first) // none found
-	break;
-    }    
-    if (k==Ls) // all found
-      return -1;
-  }
-  assert(k<Ls);
   return k;
 }
 
 bool parse::StringAwaiter::read(const char * buffer) {
-  const char * f = buffer;
-  while(strlen(f)>0) {
-    f = strchr(f,notfound[0]);
-    if (!f)
-      return false;
-    if (notfound != wanted && f != buffer)
-      return false;
-    int Lw=strlen(notfound);
-    int Lf=strlen(f);
-    int L=MIN(Lw,Lf);
-    int n=strncmp(f,notfound,L);
-    if (n==0) {
-      if (Lw>Lf) {
-	notfound+=Lf;
-	return false;
-      }
-      notfound=wanted;
-      return true;
-    } else {
-      f++;
-    }
+  first_not_found=find(buffer,wanted,first_not_found);
+  if (first_not_found==-1) {
+    first_not_found=0;
+    return true;
   }
-  notfound=wanted;
   return false;
 }
 

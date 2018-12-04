@@ -6,11 +6,11 @@ namespace parse {
   class StringAwaiter
   {
     const char * wanted; // 0-terminated
-    const char * notfound;
+    int first_not_found;
   public:
     StringAwaiter(const char *w)
       :wanted(w)
-      ,notfound(w)
+      ,first_not_found(0)
     {};
     bool read(const char * buffer);
   };
