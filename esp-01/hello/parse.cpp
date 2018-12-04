@@ -44,8 +44,6 @@ int find(const char * buffer, const char * substr, int startindex=0) {
   debug(substr);
   int p=0;
   int k=0;
-  k=firstdiff(buffer, substr, k, startindex);
-  debug(k);
   while(p<Lb && (k=firstdiff(buffer, substr, p++, startindex))==0)
     debug(k);
   debug(p);
