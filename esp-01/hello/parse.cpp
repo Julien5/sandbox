@@ -15,15 +15,61 @@
 #define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
 #define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
 
+const int firstdiff(const char * buffer, const char * substr, int s0, int l0) {
+  assert(s0<strlen(buffer));
+  assert(l0<strlen(substr));
+  int l = 0;
+  while(buffer[s0+l] != 0 && substr[l0+l] != 0 && buffer[s0+l]==substr[l0+l]) {
+    l++;
+  }
+  if (substr[l0+l]==0)
+    return -1;
+  if (buffer[s0+l]==0)
+    return l0+l;
+  return 0;
+}
 
+/* 
+   -1 = found
+   0  = not found 
+   >0 = part found (up to k)
+ */
 int find(const char * buffer, const char * substr, int startindex=0) {
   const int Ls = strlen(substr);
   const int Lb = strlen(buffer);
   const bool must_be_first = startindex > 0;
-  int k=startindex;
+  int k2=startindex;
   // invariant: k is the index of the first byte in substr not found in buffer.
   debug(buffer);
   debug(substr);
+  int p=0;
+  int k=0;
+  k=firstdiff(buffer, substr, k, startindex);
+  debug(k);
+  while(p<Lb && (k=firstdiff(buffer, substr, p++, startindex))==0)
+    debug(k);
+  debug(p);
+  k=firstdiff(buffer, substr, p-1, startindex);
+  debug(k);
+  return k;
+
+  
+  int l=0;
+  bool eq=false;
+  while(k==0 || (eq=buffer[l]==substr[k])) {
+    debug(k);
+    debug(l);
+    l++; k++;
+    if (k==Ls)
+      return -1;
+    if (l==Lb) // out of bound
+      break;
+    if (!eq)
+      k=0;
+  }
+  debug(k);
+  return k;
+
   for(int l=0; l<Lb; ++l) {
     debug("--");
     debug(l);
@@ -76,9 +122,22 @@ bool parse::StringAwaiter::read(const char * buffer) {
 }
 
 int parse::test() {
+
+  {
+    assert(firstdiff("aabbcc","ab",0,0)==0);
+    assert(firstdiff("aabbcc","ab",1,0)==-1);
+    assert(firstdiff("aabbcc","ab",2,0)==0);
+    assert(find("aabbcc","ab")==-1);
+    assert(find("aabbcc","ccc")==2);
+    assert(find("cx","ccc",2)==-1);
+    assert(find("cx","ccc")==0);
+ }
+  
   {
     assert(find("aabbcc","ab")==-1);
     assert(find("aabbcc","ccc")==2);
+    assert(find("cx","ccc",2)==-1);
+    assert(find("cx","ccc")==0);
   }
   
   {
