@@ -15,6 +15,7 @@
 #define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
 #define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
 
+// returns the index for the "next search"
 const int firstdiff(const char * buffer, const char * substr, int s0, int l0) {
   assert(s0<strlen(buffer));
   assert(l0<strlen(substr));
@@ -37,21 +38,13 @@ const int firstdiff(const char * buffer, const char * substr, int s0, int l0) {
 int find(const char * buffer, const char * substr, int startindex=0) {
   const int Ls = strlen(substr);
   const int Lb = strlen(buffer);
-  const bool must_be_first = startindex > 0;
-  int k2=startindex;
-  // invariant: k is the index of the first byte in substr not found in buffer.
-  debug(buffer);
-  debug(substr);
   int p=0;
   int k=0;
-  while(p<Lb && (k=firstdiff(buffer, substr, p++, startindex))==0)
-    debug(k);
-  debug(p);
-  k=firstdiff(buffer, substr, p-1, startindex);
-  debug(k);
+  while(p<Lb && (k=firstdiff(buffer, substr, p, startindex))==0)
+    p++;
   return k;
 
-  
+  bool must_be_first=false;
   int l=0;
   bool eq=false;
   while(k==0 || (eq=buffer[l]==substr[k])) {
