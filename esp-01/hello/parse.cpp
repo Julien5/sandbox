@@ -15,6 +15,39 @@
 #define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
 #define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
 
+
+int find(const char * buffer, const char * substr, int startindex=0) {
+  const int Ls = strlen(substr);
+  const int Lb = strlen(buffer);
+  const bool must_be_first = startindex > 0;
+  int k=startindex;
+  // invariant: k is the index of the first byte in substr not found in buffer.
+  debug(buffer);
+  debug(substr);
+  for(int l=0; l<Lb; ++l) {
+    debug("--");
+    debug(l);
+    debug(k);
+    assert(k<Ls);
+    debug(buffer[l] == substr[k]);
+    debug(buffer[l]);
+    debug(substr[k]);
+    if (buffer[l] == substr[k])
+      k++;
+    else {
+      k=0;
+      if (buffer[l] == substr[k])
+	k++;
+      if (must_be_first) // none found
+	break;
+    }    
+    if (k==Ls) // all found
+      return -1;
+  }
+  assert(k<Ls);
+  return k;
+}
+
 bool parse::StringAwaiter::read(const char * buffer) {
   const char * f = buffer;
   while(strlen(f)>0) {
@@ -25,21 +58,13 @@ bool parse::StringAwaiter::read(const char * buffer) {
       return false;
     int Lw=strlen(notfound);
     int Lf=strlen(f);
-    debug(Lw);
-    debug(Lf);
-    debug(buffer);
-    debug(f);
-    debug(notfound);
     int L=MIN(Lw,Lf);
     int n=strncmp(f,notfound,L);
-    debug(n);
     if (n==0) {
-      debug(n);
       if (Lw>Lf) {
 	notfound+=Lf;
 	return false;
       }
-      debug(n);
       notfound=wanted;
       return true;
     } else {
@@ -51,6 +76,11 @@ bool parse::StringAwaiter::read(const char * buffer) {
 }
 
 int parse::test() {
+  {
+    assert(find("aabbcc","ab")==-1);
+    assert(find("aabbcc","ccc")==2);
+  }
+  
   {
     StringAwaiter a("OK");
     assert(a.read("OK"));
