@@ -11,7 +11,7 @@ namespace wifi {
     bool reset();
     bool join();
     bool ping();
-    nstring::STR<128> httpGET(const nstring::STR<128> &req);      
+    bool get(const char* req);
   };
 
   int test();

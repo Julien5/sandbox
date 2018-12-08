@@ -1,6 +1,7 @@
 #include "wifi.h"
 #include "parse.h"
 #include "nstring.h"
+#include "lcd.h"
 
 #ifndef HARDWARE_SERIAL
 #include "AltSoftSerial.h"
@@ -10,10 +11,6 @@ AltSoftSerial Altser;
 #define espser Serial
 #endif
 
-void sendData(const char * command) {
-  espser.write(command);
-  espser.write("\r\n");
-}
 
 
 parse::AccessPointParser app;
@@ -35,14 +32,22 @@ bool waitForResponse() {
   return false;
 }
 
-boolean sendCommand(const char * command)
+void sendData(const char * command) {
+  espser.write(command);
+  espser.write("\r\n");
+}
+
+boolean sendCommand(const char * command, const int timeout)
 {
-  sendData(command);
   delay(250);
+  sendData(command);
+  display::lcd.print(command);
   if (strstr(command,"UART_CUR")!=NULL)
     return true;
-  long int now = millis();
-  long unsigned int deadline = now + 5000;
+
+  long unsigned int now = millis();
+  long unsigned int deadline = now + timeout;
+
   bool received = false;
   bool ok=false;
   bool error=false;
@@ -65,29 +70,23 @@ boolean sendCommand(const char * command)
       error=error_wait.read(buffer);
       received = ok || error;
     }
-    
-    if (strlen(buffer)) {
-      Serial.print(buffer);
-    }
     buffer[0]='\0';
   }
-  
-  if (received) {
-  } else {
-    Serial.println("timed out");
-  }
-  Serial.print("n=");
-  Serial.println(app.size());
-  Serial.println("-------------");
-  delay(250);
-  
   return ok;  
 }
 
+void resetSerial(const int baudrate=9600) {
+  espser.begin(baudrate);
+  while(espser.available())
+    espser.read();
+}
+
+const int short_timeout = 1000;
+const int long_timeout = 20000;
 
 wifi::esp8266::esp8266()
   :timeout(3000) {
-espser.begin(9600);
+  resetSerial();
 }
 
 void wifi::esp8266::setTimeout(int t) {
@@ -95,8 +94,40 @@ void wifi::esp8266::setTimeout(int t) {
 }
 
 bool wifi::esp8266::reset() {
-  return false;
+  resetSerial();
+  return sendCommand("AT+RST",short_timeout);
 }
+
+bool wifi::esp8266::join() {
+  return sendCommand("AT+CWJAP_CUR=\"JBO\",\"00000000001111111111123456\"",long_timeout);
+}
+
+bool wifi::esp8266::ping() {
+  return sendCommand("AT+PING=\"192.168.2.62\"",long_timeout);
+}
+
+bool wifi::esp8266::get(const char * req) {
+  if (!sendCommand("AT+CIPSTART=\"TCP\",\"192.168.2.62\",8000",long_timeout))
+    return false;
+
+  char get[128]={0};
+  snprintf(get, 128, "GET %s HTTP/1.1\r\n\r\n", req);
+  
+  char cipsend[32]={0};
+  snprintf(cipsend, 32, "AT+CIPSEND=%d", strlen(get)+2);
+  if (!sendCommand(cipsend,short_timeout))
+    return false;
+  
+  if (!sendCommand(get,long_timeout))
+    return false;
+
+  if (!waitForResponse())
+    return false;
+  
+  sendCommand("AT+CIPCLOSE",short_timeout);
+  return true;
+}
+
 
 
 int wifi::test() {
