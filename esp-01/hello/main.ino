@@ -13,6 +13,12 @@ void stop() {
   while(1);
 }
 
+void reset() {
+  display::lcd.print("reset.");
+  delay(1000);
+  asm volatile ("jmp 0");
+}
+
 void setup()
 {  
   display::lcd.init();
@@ -22,17 +28,17 @@ void setup()
   
   display::lcd.print("init ESP");
   if (!esp.reset())
-    stop();
+    reset();
   display::lcd.print("join.");
   if(!esp.join())
-    stop();
+    reset();
+  display::lcd.print("good.");
   delay(1000);
 }
 
 int x=0;
 void loop() {
-    char cmd[128]={0};
-    snprintf(cmd, 128, "/set?x=%d", x++);
-    esp.get(cmd);
-    delay(5000);
+  char cmd[128]={0};
+  snprintf(cmd, 128, "x=%d", x++);
+  esp.post("postrequest",cmd);
 }

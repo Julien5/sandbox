@@ -3,7 +3,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-
 /* We want to find if either
    (1) substr is contained in buffer at position 'startbuffer' OR if
    (2) the beginning of substr if contained at the end of buffer.
@@ -11,7 +10,7 @@
    * 0 iff not (1) and not (2)
    * -1 if (1)
    * k iff (2) and k is the first index of substr not contained in buffer.
-*/
+   */
 const int firstdiff(const char * buffer, const char * substr, int startbuffer, int startindex) {
   assert(startbuffer<int(strlen(buffer)));
   assert(startindex<int(strlen(substr)));
@@ -33,7 +32,7 @@ const int firstdiff(const char * buffer, const char * substr, int startbuffer, i
 
 /* This function scans buffer for substr (starting at startindex).
    Return value => see above.
- */
+*/
 int find(const char * buffer, const char * substr, int startindex=0) {
   const int Ls = strlen(substr);
   const int Lb = strlen(buffer);
@@ -164,7 +163,7 @@ int parse_test() {
     assert(find("aabbcc","ccc")==2);
     assert(find("cx","ccc",2)==-1);
     assert(find("cx","ccc")==0);
- }
+  }
   
   {
     assert(find("aabbcc","ab")==-1);
@@ -220,7 +219,37 @@ int parse_test() {
     assert(!a.read("\n"));
     assert(a.read("OK"));
   }
+
+  /*
+  {
+    const char * data = "01234567890123456789";
+    const char * req = "/r";
+    
+    char contentlength[32]={0};
+    snprintf(contentlength, 32, "Content-Length: %d", strlen(data));
+    
+    char request[256]={0};
+    snprintf(request, 256,
+	     "POST %s HTTP/1.1\r\n"
+	     "%s\n"
+	     "%s\n"
+	     "%s\n"
+	     "%s\n"
+	     "\n"
+	     "%s\n"
+	     "\r\n",
+	     req,
+	     "Host: 192.168.2.62",
+	     "Accept: *\/*",
+	     contentlength,
+	     "Content-Type: application/x-www-form-urlencoded",
+	     data
+	     );
   
+    debug(request);
+    debug("******");
+  }
+  */
   return 0;
 }
 

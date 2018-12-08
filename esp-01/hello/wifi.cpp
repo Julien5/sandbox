@@ -22,9 +22,10 @@ bool waitForResponse() {
   char buffer[L+1]={0};
   Serial.println("RX...");
   while(millis()<deadline) {
-    while(Altser.available()) {
-      int n=Altser.readBytes(buffer,min(Altser.available(),L));
+    while(espser.available()) {
+      int n=espser.readBytes(buffer,min(Altser.available(),L));
       buffer[n]='\0';
+      Serial.print(buffer);
       if (a.read(buffer))
 	return true; 
     }
@@ -40,6 +41,7 @@ void sendData(const char * command) {
 boolean sendCommand(const char * command, const int timeout)
 {
   delay(250);
+  Serial.print(command);
   sendData(command);
   display::lcd.print(command);
   if (strstr(command,"UART_CUR")!=NULL)
@@ -65,13 +67,15 @@ boolean sendCommand(const char * command, const int timeout)
       if (strcmp(command,"AT+CWLAP")==0) {
 	app.read(buffer);
       }
-      
+
+      Serial.print(buffer);
       ok=ok_wait.read(buffer);
       error=error_wait.read(buffer);
       received = ok || error;
     }
     buffer[0]='\0';
   }
+  Serial.print("#");
   return ok;  
 }
 
@@ -109,16 +113,18 @@ bool wifi::esp8266::ping() {
 bool wifi::esp8266::get(const char * req) {
   if (!sendCommand("AT+CIPSTART=\"TCP\",\"192.168.2.62\",8000",long_timeout))
     return false;
+  
+  char request[128]={0};
+  snprintf(request, 128, "GET %s HTTP/1.1\r\n\r\n", req);
 
-  char get[128]={0};
-  snprintf(get, 128, "GET %s HTTP/1.1\r\n\r\n", req);
   
   char cipsend[32]={0};
-  snprintf(cipsend, 32, "AT+CIPSEND=%d", strlen(get)+2);
+  snprintf(cipsend, 32, "AT+CIPSEND=%d", strlen(request)+2);
+    
   if (!sendCommand(cipsend,short_timeout))
     return false;
   
-  if (!sendCommand(get,long_timeout))
+  if (!sendCommand(request,long_timeout))
     return false;
 
   if (!waitForResponse())
@@ -128,6 +134,47 @@ bool wifi::esp8266::get(const char * req) {
   return true;
 }
 
+
+bool wifi::esp8266::post(const char * req, const char * data) {
+  sendCommand("AT+CIPCLOSE",short_timeout); // ignore the result.
+  if (!sendCommand("AT+CIPSTART=\"TCP\",\"192.168.2.62\",8000",long_timeout))
+    return false;
+  
+  char contentlength[32]={0};
+  snprintf(contentlength, 32, "Content-Length: %d", strlen(data));
+
+  char request[256]={0};
+  snprintf(request, 256,
+	   "POST %s HTTP/1.1\r\n"
+	   "%s\n"
+	   "%s\n"
+	   "%s\n"
+	   "%s\n"
+	   "\n"
+	   "%s\n"
+	   "\r\n",
+	   req,
+	   "Host: 192.168.2.62",
+	   "Accept: */*",
+	   contentlength,
+	   "Content-Type: application/x-www-form-urlencoded",
+	   data
+	   );
+
+  char cipsend[32]={0};
+  snprintf(cipsend, 32, "AT+CIPSEND=%d", strlen(request)+2);
+  if (!sendCommand(cipsend,short_timeout))
+    return false;
+
+  if (!sendCommand(request,long_timeout))
+    return false;
+  
+  if (!waitForResponse())
+    return false;
+
+  sendCommand("AT+CIPCLOSE",short_timeout);
+  return true;
+}
 
 
 int wifi::test() {

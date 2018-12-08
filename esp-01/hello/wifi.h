@@ -12,6 +12,7 @@ namespace wifi {
     bool join();
     bool ping();
     bool get(const char* req);
+    bool post(const char* req, const char * data);
   };
 
   int test();
