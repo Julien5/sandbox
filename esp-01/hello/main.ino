@@ -1,100 +1,15 @@
-#include "AltSoftSerial.h"
-
-#ifndef HARDWARE_SERIAL
-AltSoftSerial Altser;
-#else
-#define Altser Serial
-#endif
-
 #include <LiquidCrystal.h>
 LiquidCrystal lcd(7, 5, 6, 10, 11, 12);
+
+#ifndef HARDWARE_SERIAL
+#include "AltSoftSerial.h"
+#endif
 
 #include "parse.h"
 #include "wifi.h"
 
 void print(String msg) {
   Serial.println(msg);
-}
-
-void sendData(const char * command) {
-  Altser.write(command);
-  Altser.write("\r\n");
-}
-
-#define L 15
-
-bool waitForResponse() {
-  parse::StringAwaiter a("CLOSED");
-  long int now = millis();
-  long unsigned int deadline = now + 5000;
-  char buffer[L+1]={0};
-  Serial.println("RX...");
-  while(millis()<deadline) {
-    while(Altser.available()) {
-      int n=Altser.readBytes(buffer,min(Altser.available(),L));
-      buffer[n]='\0';
-      if (a.read(buffer))
-	return true; 
-    }
-  }
-  print(String(millis()-now)+" ms");
-  return false;
-}
-
-parse::AccessPointParser app;
- 
-boolean sendCommand(const char * command)
-{
-  lcd.clear();
-  lcd.print(command);
-  sendData(command);
-  delay(250);
-  if (strstr(command,"UART_CUR")!=NULL)
-    return true;
-  long int now = millis();
-  long unsigned int deadline = now + 5000;
-  bool received = false;
-  bool ok=false;
-  bool error=false;
-
-  char buffer[L+1]={0};
-  
-  parse::StringAwaiter ok_wait("OK");
-  parse::StringAwaiter error_wait("ERROR");
-
-  while(millis()<deadline && !received) {
-    while(Altser.available() && !received) {
-      int n=Altser.readBytes(buffer,min(Altser.available(),L));
-      buffer[n]='\0';
-
-      if (strcmp(command,"AT+CWLAP")==0) {
-	app.read(buffer);
-      }
-      
-      ok=ok_wait.read(buffer);
-      error=error_wait.read(buffer);
-      received = ok || error;
-    }
-    
-    if (strlen(buffer)) {
-      Serial.print(buffer);
-    }
-    buffer[0]='\0';
-  }
-  
-  if (received) {
-  } else {
-    Serial.println("timed out");
-    lcd.clear();
-    lcd.print("timed out");
-  }
-  Serial.print("n=");
-  Serial.println(app.size());
-  Serial.println("-------------");
-  delay(250);
-  lcd.clear();
-  
-  return ok;  
 }
 
 void display(char * msg) {
@@ -106,6 +21,8 @@ void display(const char * msg) {
   lcd.clear();
   lcd.print(msg);
 }
+
+wifi::esp8266 esp;
 
 void setup()
 {
@@ -125,10 +42,12 @@ void setup()
   while(!Serial);
 
   display("init soft.serial");
-  Altser.begin(9600);
+ 
 
   display("init ESP");
   delay(250);
+  esp.reset();
+  /*
   while (!sendCommand("AT"));
   while (!sendCommand("AT+RST"));
   while (!sendCommand("AT+UART_CUR=2400,8,1,0,0"));
@@ -141,6 +60,7 @@ void setup()
   while(!sendCommand("AT+PING=\"192.168.2.62\""));
   while(!sendCommand("AT+CIPMUX?"));
   while(!sendCommand("AT+CIPMODE?"));
+  */
   display("init done. good.");
   delay(1000);
 }
@@ -151,6 +71,7 @@ int n=0;
 
 
 void loop() {
+  /*
   if (status==0) {
     if (n==0)
       sendCommand("AT+CWLAP");
@@ -184,4 +105,5 @@ void loop() {
     delay(250);
     status=0;
   }
+  */
 }
