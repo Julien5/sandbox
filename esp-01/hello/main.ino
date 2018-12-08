@@ -41,7 +41,7 @@ bool waitForResponse() {
   return false;
 }
 
-wifi::AccessPointParser app;
+parse::AccessPointParser app;
  
 boolean sendCommand(const char * command)
 {
