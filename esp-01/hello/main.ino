@@ -102,6 +102,11 @@ void display(char * msg) {
   lcd.print(msg);
 }
 
+void display(const char * msg) {
+  lcd.clear();
+  lcd.print(msg);
+}
+
 void setup()
 {
   lcd.begin(16, 2);

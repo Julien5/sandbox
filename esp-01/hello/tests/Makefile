@@ -1,7 +1,7 @@
 CC=gcc
 CXX=g++
 RM=rm -f
-CXXFLAGS=-I..
+CXXFLAGS=-Wall -I..
 LDFLAGS=
 LIBS=
 

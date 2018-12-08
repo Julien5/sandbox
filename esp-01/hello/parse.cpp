@@ -13,8 +13,8 @@
    * k iff (2) and k is the first index of substr not contained in buffer.
 */
 const int firstdiff(const char * buffer, const char * substr, int startbuffer, int startindex) {
-  assert(startbuffer<strlen(buffer));
-  assert(startindex<strlen(substr));
+  assert(startbuffer<int(strlen(buffer)));
+  assert(startindex<int(strlen(substr)));
   if (startindex!=0 && startbuffer!=0) {
     // startindex not null
     // => startbuffer must be zero (otherwise retry from zero);
@@ -54,7 +54,7 @@ bool parse::StringAwaiter::read(const char * buffer) {
 }
 
 void escape(char * buffer, char c) {
-  for(int k=0; k<strlen(buffer); ++k)
+  for(int k=0; k<int(strlen(buffer)); ++k)
     if (buffer[k]==c)
       buffer[k]='_';
 }
@@ -124,7 +124,7 @@ int accesspointparser_test() {
   {
     AccessPointParser p;
     const char * A = "AT+CWLAP\n+CWLAP:(1,\"JBO\",-72,\"00:1a:4f:00:41:92\",2,101,0)";
-    for(int k = 0; k<strlen(A); ++k) {
+    for(int k = 0; k<int(strlen(A)); ++k) {
       char c[2];
       c[0]=A[k];
       c[1]='\0';      
@@ -233,4 +233,5 @@ int parse::test() {
   ret=parse_test();
   if (ret!=0)
     return ret;
+  return ret;
 }
