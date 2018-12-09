@@ -2,12 +2,16 @@
 
 class statistics {
   void clear();
-  int time[60];
-  int count[60];
-  int index;
-  unsigned long first_millis;
+  char time[60];
+  char count[60];
+  char index;
+  long first_millis;
+
+  bool load();
+  
 public:
   statistics();
+  void save();
   void start(const unsigned long m);
   void increment_count(const unsigned long m);
 
