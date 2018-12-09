@@ -36,6 +36,12 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
         data=post_data; #.decode('utf-8');
         sqlite.execute('INSERT INTO requests (req,time) VALUES (?,?)', (data, t));
         conn.commit();
+        k=0;
+        while True:
+            if k>=len(data):
+                break;
+            print(str(data[k])+":"+str(data[k+1]));
+            k = k + 2;
         print(len(data));
         print(binascii.hexlify(data).decode('UTF-8'));
         message = "thanks,bye\n"
