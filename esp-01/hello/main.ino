@@ -5,6 +5,7 @@
 #include "parse.h"
 #include "wifi.h"
 #include "lcd.h"
+#include "statistics.h"
 
 wifi::esp8266 esp;
 
@@ -19,6 +20,9 @@ void reset() {
   asm volatile ("jmp 0");
 }
 
+statistics stats;
+
+
 void setup()
 {  
   display::lcd.init();
@@ -29,19 +33,18 @@ void setup()
   display::lcd.print("init ESP");
   if (!esp.reset())
     reset();
-  display::lcd.print("join.");
   if(!esp.join())
     reset();
   display::lcd.print("good.");
   delay(1000);
+  stats.start(millis());
 }
 
-int x=0;
 void loop() {
-  char cmd[16]={0};
-  //snprintf(cmd, 128, "x=%d", x++);
-  for(int c=0; c<16; c++)
-    cmd[c]='a'+c;
-  cmd[5]=0;
-  esp.post("postrequest",cmd,16);
+  stats.increment_count(millis());
+  statistics::data d;
+  int length = 0;
+  stats.getdata(d,&length);
+  esp.post("postrequest",d,length);
 }
+

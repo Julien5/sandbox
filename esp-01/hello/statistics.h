@@ -5,7 +5,14 @@ class statistics {
   int time[60];
   int count[60];
   int index;
+  unsigned long first_millis;
 public:
   statistics();
-  void increment_count(const int m);
+  void start(const unsigned long m);
+  void increment_count(const unsigned long m);
+
+  using data = char[128];
+  void getdata(data &addr, int * Lout);
+
+  static int test();
 };

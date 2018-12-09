@@ -130,7 +130,6 @@ bool wifi::esp8266::get(const char * req) {
   return true;
 }
 
-
 bool wifi::esp8266::post(const char * req, const char * data, const int Ldata) {
   sendCommand("AT+CIPCLOSE",short_timeout); // ignore the result.
   if (!sendCommand("AT+CIPSTART=\"TCP\",\"192.168.2.62\",8000",long_timeout))

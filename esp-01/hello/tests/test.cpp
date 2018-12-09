@@ -2,6 +2,8 @@
 #include "parse.h"
 //#include "wifi.h"
 #include "nstring.h"
+#include "statistics.h"
+
 
 int display(int exitcode) {
   if (exitcode!=0)
@@ -17,5 +19,6 @@ int main(int argc, char ** argv) {
   std::cout << "test\n";
   display(parse::test());
   display(nstring::test());
+  display(statistics::test());
   return 0;
 }
