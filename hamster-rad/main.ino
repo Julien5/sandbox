@@ -5,8 +5,9 @@ const int reed_pin = 2;
 
 int n=0;
 bool wake_on_rising_reed=false;
+long last_time_rising_reed=0;
+
 void on_rising_reed() {
-	n++;
 	wake_on_rising_reed=true;
 }
 
@@ -22,6 +23,13 @@ void alive_check()
 		for(int i=0; i<10; ++i) 
 			digitalWrite(led_pin+i, LOW);
 		delay(1000);
+	}
+	for(int i=0; i<10; ++i) 
+	{
+		digitalWrite(led_pin+i, HIGH);
+		delay(200);
+		digitalWrite(led_pin+i, LOW);
+		delay(200);
 	}	
 }
 
@@ -55,15 +63,23 @@ void clear_display() {
 
 int np=0;
 
-void loop() {	
-	display(n/2);
-	if (!wake_on_rising_reed)
+void loop() {
+	long current_time=millis();
+	int time_since_last_rising_reed = current_time-last_time_rising_reed;
+	if (wake_on_rising_reed)
+	{
+		if (time_since_last_rising_reed>200)
+			n++;
+		last_time_rising_reed=current_time;
+		wake_on_rising_reed=false;	
+	}
+	
+	display(n);
+	
+	if (!wake_on_rising_reed && time_since_last_rising_reed>5000)
 	{	
 		delay(250);	
 		display(0); // save power.
+		sleepNow();
 	}
-	
-	np=n;
-	wake_on_rising_reed=false;
-	sleepNow();
 }

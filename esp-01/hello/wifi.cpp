@@ -11,10 +11,8 @@ AltSoftSerial Altser;
 #define espser Serial
 #endif
 
-
-
-parse::AccessPointParser app;
 #define L 15
+
 bool waitForResponse() {
   parse::StringAwaiter a("CLOSED");
   long int now = millis();
@@ -33,16 +31,15 @@ bool waitForResponse() {
   return false;
 }
 
-void sendData(const char * command) {
-  espser.write(command);
-  espser.write("\r\n");
-}
-
-boolean sendCommand(const char * command, const int timeout)
+boolean sendCommand(const char * command, const int length, const int timeout)
 {
   delay(250);
-  Serial.print(command);
-  sendData(command);
+
+  Serial.write(command,length);
+  Serial.write("\r\n");
+  espser.write(command,length);
+  espser.write("\r\n");
+  
   display::lcd.print(command);
   if (strstr(command,"UART_CUR")!=NULL)
     return true;
@@ -50,7 +47,7 @@ boolean sendCommand(const char * command, const int timeout)
   long unsigned int now = millis();
   long unsigned int deadline = now + timeout;
 
-  bool received = false;
+  bool received=false;
   bool ok=false;
   bool error=false;
 
@@ -63,11 +60,6 @@ boolean sendCommand(const char * command, const int timeout)
     while(espser.available() && !received) {
       int n=espser.readBytes(buffer,min(espser.available(),L));
       buffer[n]='\0';
-
-      if (strcmp(command,"AT+CWLAP")==0) {
-	app.read(buffer);
-      }
-
       Serial.print(buffer);
       ok=ok_wait.read(buffer);
       error=error_wait.read(buffer);
@@ -77,6 +69,10 @@ boolean sendCommand(const char * command, const int timeout)
   }
   Serial.print("#");
   return ok;  
+}
+
+boolean sendCommand(const char * command, const int timeout) {
+  return sendCommand(command,strlen(command),timeout);
 }
 
 void resetSerial(const int baudrate=9600) {
@@ -135,38 +131,42 @@ bool wifi::esp8266::get(const char * req) {
 }
 
 
-bool wifi::esp8266::post(const char * req, const char * data) {
+bool wifi::esp8266::post(const char * req, const char * data, const int Ldata) {
   sendCommand("AT+CIPCLOSE",short_timeout); // ignore the result.
   if (!sendCommand("AT+CIPSTART=\"TCP\",\"192.168.2.62\",8000",long_timeout))
     return false;
   
   char contentlength[32]={0};
-  snprintf(contentlength, 32, "Content-Length: %d", strlen(data));
+  snprintf(contentlength, 32, "Content-Length: %d", Ldata);
 
   char request[256]={0};
-  snprintf(request, 256,
+  snprintf(request, 128,
 	   "POST %s HTTP/1.1\r\n"
 	   "%s\n"
 	   "%s\n"
 	   "%s\n"
 	   "%s\n"
-	   "\n"
-	   "%s\n"
-	   "\r\n",
+	   "\n",
 	   req,
 	   "Host: 192.168.2.62",
 	   "Accept: */*",
 	   contentlength,
-	   "Content-Type: application/x-www-form-urlencoded",
-	   data
+	   "Content-Type: application/octet-stream"
 	   );
+  int k = strlen(request);
+  for(int c=0; c<Ldata; k++,c++)
+    request[k]=data[c];
+  request[k++]='\r';
+  request[k++]='\n';
 
+  const int Lr = k;
+  
   char cipsend[32]={0};
-  snprintf(cipsend, 32, "AT+CIPSEND=%d", strlen(request)+2);
+  snprintf(cipsend, 32, "AT+CIPSEND=%d", Lr+2);
   if (!sendCommand(cipsend,short_timeout))
     return false;
 
-  if (!sendCommand(request,long_timeout))
+  if (!sendCommand(request,Lr,long_timeout))
     return false;
   
   if (!waitForResponse())

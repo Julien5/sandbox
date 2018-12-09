@@ -38,7 +38,10 @@ void setup()
 
 int x=0;
 void loop() {
-  char cmd[128]={0};
-  snprintf(cmd, 128, "x=%d", x++);
-  esp.post("postrequest",cmd);
+  char cmd[16]={0};
+  //snprintf(cmd, 128, "x=%d", x++);
+  for(int c=0; c<16; c++)
+    cmd[c]='a'+c;
+  cmd[5]=0;
+  esp.post("postrequest",cmd,16);
 }

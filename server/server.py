@@ -5,6 +5,8 @@ import urllib.parse;
 import sqlite3;
 import os;
 import datetime;
+import cgi;
+import binascii;
 
 conn=None;
 sqlite=None;
@@ -21,6 +23,21 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
         self.send_header('Content-type','text/html')
         self.end_headers()
         # Send message back to client
+        message = "thanks,bye\n"
+        # Write content as utf-8 data
+        self.wfile.write(bytes(message, "utf8"))
+        return
+
+    def do_POST(self):
+        content_length = int(self.headers['Content-Length'])
+        post_data = self.rfile.read(content_length) 
+        print("POST request for {}".format(self.path).encode('utf-8'));
+        t=str(datetime.datetime.now());
+        data=post_data; #.decode('utf-8');
+        sqlite.execute('INSERT INTO requests (req,time) VALUES (?,?)', (data, t));
+        conn.commit();
+        print(len(data));
+        print(binascii.hexlify(data).decode('UTF-8'));
         message = "thanks,bye\n"
         # Write content as utf-8 data
         self.wfile.write(bytes(message, "utf8"))

@@ -7,7 +7,7 @@ optiboot_dir="../../optiboot/optiboot/bootloaders/optiboot"
 # 1. compile bootloader
 pushd "$optiboot_dir"
 make clean
-make AVR_FREQ=4000000L BAUD_RATE=38400 LED_START_FLASHES=2 atmega328
+make AVR_FREQ=16000000L BAUD_RATE=38400 LED_START_FLASHES=2 atmega328
 ls *.hex
 popd
 
