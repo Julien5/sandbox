@@ -4,19 +4,25 @@ class statistics {
   void clear();
   char time[60];
   char count[60];
-  char index;
+  int index;
   long first_millis;
-
+  int total_count;
+  
   bool load();
+  void increment_count(const unsigned long m, int incr);
   
 public:
   statistics();
   void save();
-  void start(const unsigned long m);
+  void start(const unsigned long m, bool hard=false);
   void increment_count(const unsigned long m);
+  int get_count() const;
+  int get_total_count() const;
 
   using data = char[128];
-  void getdata(data &addr, int * Lout);
+  void getdata(unsigned long m, data &addr, int * Lout);
 
+  long elapsed(const unsigned long m) const;
+  
   static int test();
 };

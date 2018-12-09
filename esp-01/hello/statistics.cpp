@@ -9,6 +9,7 @@ statistics::statistics()
   , count({0})
   , index(-1)
   , first_millis(-1)
+  , total_count(0)
 {
   debug(first_millis);
   if (!load()) {
@@ -28,26 +29,34 @@ void statistics::clear() {
 }
 
 #define MAGIC 77
+#define BUFFER_LENGTH 130
 
 void statistics::save() {
-  char d[128];
+  char d[BUFFER_LENGTH]={0};
   int k=0;
   d[k++]=MAGIC; // magic number
-  d[k++]=index;
-  char * c = (char *) &first_millis;
+  d[k++]=(char)index;
+  char * c = 0;
+  c=(char *) &first_millis;
   for(int i=0; i<4; i++)
     d[k++]=c[i];
+  
+  c=(char *) &total_count;
+  for(int i=0; i<4; i++)
+    d[k++]=c[i];
+
   for(int i=0; i<N; i++)
     d[k++]=time[i];
   for(int i=0; i<N; i++)
     d[k++]=count[i];
   
-  for(k=0;k<128;++k)
+  
+  for(k=0;k<BUFFER_LENGTH;++k)
     eeprom().write(k,d[k]);
 }
 
 bool statistics::load() {
-  char d[128]={0};
+  char d[BUFFER_LENGTH]={0};
   for(int k=0;k<128;++k)
     d[k]=eeprom().read(k);
  
@@ -57,11 +66,17 @@ bool statistics::load() {
     return false;
   }
   
-  index=d[k++];
+  index=int(d[k++]);
+  
   char c[4]={0};  
   for(int i=0; i<4; i++)
     c[i]=d[k++];
   first_millis = *((unsigned long*)(&c));
+  
+  for(int i=0; i<4; i++)
+    c[i]=d[k++];
+  total_count = *((int*)(&c));
+  
   for(int i=0; i<N; i++)
     time[i]=d[k++];
   for(int i=0; i<N; i++)
@@ -69,8 +84,8 @@ bool statistics::load() {
   return true;
 }
 
-void statistics::start(const unsigned long m) {
-  if (first_millis>0) {
+void statistics::start(const unsigned long m, bool hard) {
+  if (!hard && first_millis>0) {
     unsigned long delta = m - first_millis;
     if ((delta/1000) < 60) {
       // remember during 1 minute.
@@ -78,30 +93,54 @@ void statistics::start(const unsigned long m) {
       return;
     }
   }
+  clear();
   first_millis=m;
   index=0;
   time[index]=0;
   count[index]=0;
 }
 
-void statistics::increment_count(const unsigned long m) {
+long statistics::elapsed(const unsigned long m) const {
+  return m - first_millis;
+}
+
+void statistics::increment_count(const unsigned long m, int incr) {
   assert(first_millis>=0);  
   const unsigned long delta = m - first_millis;
   unsigned long current_second = delta/1000;
-  unsigned long current_minute = current_second/60;
+  unsigned long current_minute = current_second;///60;
 
   unsigned long last_minute=time[index];
   if (current_minute != last_minute) {
     index++;
   }
   time[index] = current_minute;
-  count[index]++;
-  debug((int)index);
-  debug((int)time[index]);
-  debug((int)count[index]);
+  count[index] = count[index] + incr;
+  total_count = total_count + incr;
+}
+void statistics::increment_count(const unsigned long m) {
+  increment_count(m,1);
 }
 
-void statistics::getdata(data &addr, int * Lout) {
+int statistics::get_count() const {
+  int ret=0;
+  for(int t=0; t<N; ++t) {
+    if (time[t]<0)
+      continue;
+    ret+=count[t];
+  }
+  return ret;
+}
+
+int statistics::get_total_count() const {
+  return total_count;
+}
+
+void statistics::getdata(unsigned long m, data &addr, int * Lout) {
+  if (get_count()==0)
+    return;
+  
+  increment_count(m,0);
   int k=0;
   for(int t=0; t<N; ++t) {
     if (time[t]<0)
