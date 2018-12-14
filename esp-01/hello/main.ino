@@ -35,11 +35,7 @@ void reset() {
 void setup()
 {  
   display::lcd.init();
-  display::lcd.print("init serial");
-  delay(250);
-  Serial.begin(9600);
-  while(!Serial);
-  
+  delay(250);  
   display::lcd.print("init ESP");
   if (!esp.reset())
     reset();

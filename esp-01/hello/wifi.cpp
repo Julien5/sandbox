@@ -23,7 +23,6 @@ bool waitForResponse() {
     while(espser.available()) {
       int n=espser.readBytes(buffer,min(Altser.available(),L));
       buffer[n]='\0';
-      Serial.print(buffer);
       if (a.read(buffer))
 	return true; 
     }
@@ -35,8 +34,6 @@ boolean sendCommand(const char * command, const int length, const int timeout)
 {
   delay(250);
 
-  Serial.write(command,length);
-  Serial.write("\r\n");
   espser.write(command,length);
   espser.write("\r\n");
   
@@ -60,7 +57,6 @@ boolean sendCommand(const char * command, const int length, const int timeout)
     while(espser.available() && !received) {
       int n=espser.readBytes(buffer,min(espser.available(),L));
       buffer[n]='\0';
-      Serial.print(buffer);
       ok=ok_wait.read(buffer);
       error=error_wait.read(buffer);
       received = ok || error;
