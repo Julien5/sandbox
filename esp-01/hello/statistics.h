@@ -1,34 +1,34 @@
 #pragma once
 
-struct tick {
-  int time;
+struct Ticks {
+  int delta[4];
+  long long t0;
+  Ticks():
+    delta({-1})
+    ,t0(-1)
+  {}
 };
 
 class statistics {
-  void clear();
-  tick ticks[60];
-  char time[60];
-  char count[60];
-
-  int index;
-  long first_millis;
-  int total_count;
+public:
+  using time = long long;
   
+private:
+  Ticks ticks;
+  int index;
+  int total_count;
+   
   bool load();
-  void increment_count(const unsigned long m, int incr);
+  void increment_count(const time m, int incr);
   
 public:
   statistics();
+  void clear();
   void save();
-  void start(const unsigned long m, bool hard=false);
-  void increment_count(const unsigned long m);
+  void increment_count(const time m);
   int get_count() const;
   int get_total_count() const;
-
-  using data = char[128];
-  void getdata(unsigned long m, data &addr, int * Lout);
-
-  long elapsed(const unsigned long m) const;
-  
+  char *getdata(time m, int * Lout);
+  int elapsed(const time m) const;
   static int test();
 };
