@@ -7,6 +7,7 @@
 #include "wifi.h"
 #include "lcd.h"
 #include "statistics.h"
+#include "freememory.h"
 
 wifi::esp8266 esp;
 
@@ -35,6 +36,7 @@ void setup()
 {  
   display::lcd.init();
   display::lcd.print("init serial");
+  delay(5000);
   Serial.begin(9600);
   while(!Serial);
   
@@ -71,7 +73,7 @@ void upload_statistics() {
 
 void print_count() {
   char msg[16];
-  snprintf(msg, 128,"count: %d",stats.get_total_count());
+  snprintf(msg, 16,"count: %d",stats.get_total_count());
   display::lcd.print(msg);
 }
 

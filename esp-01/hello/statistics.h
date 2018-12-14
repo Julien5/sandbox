@@ -2,8 +2,10 @@
 
 class statistics {
   void clear();
+    //char data[256];
   char time[60];
   char count[60];
+
   int index;
   long first_millis;
   int total_count;
