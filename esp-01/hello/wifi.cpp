@@ -18,7 +18,7 @@ bool waitForResponse() {
   long int now = millis();
   long unsigned int deadline = now + 5000;
   char buffer[L+1]={0};
-  Serial.println("RX...");
+  display::lcd.print("[wifi rx]");
   while(millis()<deadline) {
     while(espser.available()) {
       int n=espser.readBytes(buffer,min(Altser.available(),L));
@@ -40,7 +40,6 @@ boolean sendCommand(const char * command, const int length, const int timeout)
   espser.write(command,length);
   espser.write("\r\n");
   
-  display::lcd.print(command);
   if (strstr(command,"UART_CUR")!=NULL)
     return true;
 
@@ -56,6 +55,7 @@ boolean sendCommand(const char * command, const int length, const int timeout)
   parse::StringAwaiter ok_wait("OK");
   parse::StringAwaiter error_wait("ERROR");
 
+  display::lcd.print("[wifi command]");
   while(millis()<deadline && !received) {
     while(espser.available() && !received) {
       int n=espser.readBytes(buffer,min(espser.available(),L));
@@ -67,7 +67,6 @@ boolean sendCommand(const char * command, const int length, const int timeout)
     }
     buffer[0]='\0';
   }
-  Serial.print("#");
   return ok;  
 }
 

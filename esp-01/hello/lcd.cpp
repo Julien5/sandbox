@@ -15,9 +15,11 @@ void display::LCD::init() {
       char msg[16]={0};
       snprintf(msg, 16, "INIT LCD: %d", d);    
       print(msg);
-      delay(500);
+      delay(250);
     }
 }
+
+int min_free_memory=2048;
 
 void display::LCD::print(char * msg1, char * msg2) {
   d.setCursor(0,0);
@@ -27,8 +29,11 @@ void display::LCD::print(char * msg1, char * msg2) {
   if (msg2) {
     d.print(msg2);
   } else {
+    int m = stack::get_free_memory();
+    if (min_free_memory>m)
+      min_free_memory=m;
     char c[16];
-    snprintf(c, 16,"free ram: %d b",stack::get_free_memory());
+    snprintf(c, 16,"%d (min:%d) bytes",m,min_free_memory);
     d.print(c);
   }
 }

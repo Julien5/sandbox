@@ -36,7 +36,7 @@ void setup()
 {  
   display::lcd.init();
   display::lcd.print("init serial");
-  delay(5000);
+  delay(250);
   Serial.begin(9600);
   while(!Serial);
   
@@ -62,6 +62,7 @@ void upload_statistics() {
   
   int trials = 3;
   while(trials-- >= 0 && length>=0) {
+    display::lcd.print("uploading...");
     if (esp.post("postrequest",d,length)) {
       display::lcd.print("result uploaded");
       const bool hard=true;

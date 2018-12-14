@@ -107,6 +107,7 @@ long statistics::elapsed(const unsigned long m) const {
 void statistics::increment_count(const unsigned long m, int incr) {
   assert(first_millis>=0);  
   const unsigned long delta = m - first_millis;
+  //ticks[index]=delta;
   unsigned long current_second = delta/1000;
   unsigned long current_minute = current_second;///60;
 

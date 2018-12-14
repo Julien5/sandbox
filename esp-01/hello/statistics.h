@@ -1,8 +1,12 @@
 #pragma once
 
+struct tick {
+  int time;
+};
+
 class statistics {
   void clear();
-    //char data[256];
+  tick ticks[60];
   char time[60];
   char count[60];
 
