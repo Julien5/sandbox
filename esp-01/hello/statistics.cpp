@@ -2,8 +2,6 @@
 #include "debug.h"
 #include "eeprom.h"
 
-#define N 4
-
 statistics::statistics()
   : index(0)
   , total_count(0)
@@ -15,10 +13,10 @@ statistics::statistics()
 }
 
 void statistics::clear() {
-  for(int k=0; k<N; ++k) {
-    ticks.delta[k]=-1;
+  for(int k=0; k<NTICKS; ++k) {
+    ticks.delta[k]=0;
   }
-  ticks.t0=-1;
+  ticks.t0=0;
   index=0;
   save();
 }
@@ -38,9 +36,9 @@ void write_int_to_eeprom(int input, int *index) {
   write_to_eeprom(c,sizeof(int),index);
 }
 
-void write_longlong_to_eeprom(long long input, int *index) {
+void write_time_to_eeprom(statistics::time input, int *index) {
   char * c=(char *) &input;
-  write_to_eeprom(c,sizeof(long long),index);
+  write_to_eeprom(c,sizeof(statistics::time),index);
 }
 
 void statistics::save() {
@@ -48,9 +46,9 @@ void statistics::save() {
   eeprom().write(k++,MAGIC);  
   write_int_to_eeprom(index,&k);
   write_int_to_eeprom(total_count,&k);
-  for(int i=0; i<N; i++)
+  for(int i=0; i<NTICKS; i++)
     write_int_to_eeprom(ticks.delta[i],&k);
-  write_longlong_to_eeprom(ticks.t0,&k);
+  write_time_to_eeprom(ticks.t0,&k);
 }
 
 void read_from_eeprom(char *c, unsigned char length, int *index) {
@@ -61,16 +59,27 @@ void read_from_eeprom(char *c, unsigned char length, int *index) {
   *index=k;
 }
 
+#ifdef ARDUINO
+#define CHAR_LENGTH 1
+#define INT_LENGTH 2
+#define TIME_LENGTH 4
+#else
+#define CHAR_LENGTH 1
+#define INT_LENGTH 4
+#define TIME_LENGTH 8
+#endif
+
 void read_int_from_eeprom(int *result, int *index) {
-  char c[4]={0};
-  read_from_eeprom(&c[0],4,index);
+  assert(sizeof(int)==INT_LENGTH);
+  char c[INT_LENGTH]={0};
+  read_from_eeprom(&c[0],INT_LENGTH,index);
   *result=*((int*)(&c));
 }
-
-void read_longlong_from_eeprom(long long *result, int *index) {
-  char c[8]={0};
-  read_from_eeprom(&c[0],8,index);
-  *result=*((long long*)(&c));
+void read_time_from_eeprom(statistics::time *result, int *index) {
+  assert(sizeof(statistics::time)==TIME_LENGTH);
+  char c[TIME_LENGTH]={0};
+  read_from_eeprom(&c[0],TIME_LENGTH,index);
+  *result=*((statistics::time*)(&c));
 }
 
 bool statistics::load() {
@@ -81,10 +90,10 @@ bool statistics::load() {
   }
   read_int_from_eeprom(&index,&k);
   read_int_from_eeprom(&total_count,&k);
-  for(int i=0; i<N; i++) {
+  for(int i=0; i<NTICKS; i++) {
     read_int_from_eeprom(&(ticks.delta[i]),&k);
   }
-  read_longlong_from_eeprom(&(ticks.t0),&k);
+  read_time_from_eeprom(&(ticks.t0),&k);
   return true;
 }
 
@@ -93,11 +102,11 @@ int statistics::elapsed(const time m) const {
 }
 
 void statistics::increment_count(const time m, int incr) {
-  if (ticks.t0<0) {
+  if (ticks.t0==0) {
     ticks.t0=m;
   }
-  assert(ticks.t0!=-1);
-  const unsigned int delta = m - ticks.t0;
+  assert(ticks.t0!=0);
+  const time delta = m - ticks.t0;
   assert(index<sizeof(ticks.delta)/sizeof(ticks.delta[0]));
   ticks.delta[index++]=delta;
   total_count = total_count + incr;
@@ -108,8 +117,8 @@ void statistics::increment_count(const time m) {
 
 int statistics::get_count() const {
   int ret=0;
-  for(int t=0; t<N; ++t) {
-    if (ticks.delta[t]!=-1)
+  for(int t=0; t<NTICKS; ++t) {
+    if (ticks.delta[t]!=0)
       ret++;
   }
   return ret;
@@ -118,10 +127,13 @@ int statistics::get_count() const {
 int statistics::get_total_count() const {
   return total_count;
 }
-
+#include "HardwareSerial.h"
 char * statistics::getdata(time m, int * Lout) {
-  if (get_count()==0)
+  if (get_count()==0) {
+    Serial.print("no data");
     return 0;
+  }
+  Serial.print(get_count()); Serial.println(" data");
   const int t0=ticks.t0;
   assert(t0>0);
   assert(ticks.t0==t0);
@@ -130,15 +142,15 @@ char * statistics::getdata(time m, int * Lout) {
 }
 
 int statistics::test() {
-  const int sec=1000;
-  const int min=60*sec;
+  const time sec=1000;
+  const time min=60*sec;
   time t0=2*min;
   {
     statistics s;
     s.clear();
-    for(int k=0; k<N; ++k)
+    for(int k=0; k<NTICKS; ++k)
       s.increment_count(t0+k);
-    for(int k=0; k<N; ++k) {
+    for(int k=0; k<NTICKS; ++k) {
       assert(s.ticks.delta[k]==k);
     }
     assert(s.ticks.t0==t0);
@@ -147,7 +159,7 @@ int statistics::test() {
   debug("ok");
   {
     statistics s;
-    for(int k=0; k<N; ++k){
+    for(int k=0; k<NTICKS; ++k){
       assert(s.ticks.delta[k]==k);
     }
     assert(s.ticks.t0==t0);

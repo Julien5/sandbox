@@ -1,19 +1,21 @@
 #pragma once
 
-struct Ticks {
-  int delta[4];
-  long long t0;
-  Ticks():
-    delta({-1})
-    ,t0(-1)
-  {}
-};
+#define NTICKS 16
 
 class statistics {
 public:
-  using time = long long;
+  using time = unsigned long;
   
 private:
+  struct Ticks {
+    int delta[NTICKS];
+    time t0;
+    Ticks():
+      delta{0}
+      ,t0(0)
+    {}
+  };
+  
   Ticks ticks;
   int index;
   int total_count;

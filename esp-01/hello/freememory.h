@@ -1,5 +1,13 @@
 #pragma once
 
-namespace stack {
-  int get_free_memory();
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+int freeMemory();
+
+#ifdef  __cplusplus
 }
+#endif
+
+

@@ -33,7 +33,9 @@ void reset() {
 }
 
 void setup()
-{  
+{
+  Serial.begin(9600);
+  Serial.write("hello");
   display::lcd.init();
   delay(250);  
   display::lcd.print("init ESP");
@@ -46,24 +48,28 @@ void setup()
 
   pinMode(reed_pin, INPUT_PULLUP);
   attachInterrupt(0,on_rising_reed,RISING);
-  
-  stats.start(millis());
 }
 
 void upload_statistics() {
   unsigned long m = millis();
-  statistics::data d;
+  char * data = 0;
   int length = 0;
-  stats.getdata(m,d,&length);
-  
+  data = stats.getdata(m,&length);
+  delay(250);
   int trials = 3;
   while(trials-- >= 0 && length>=0) {
     display::lcd.print("uploading...");
-    if (esp.post("postrequest",d,length)) {
+    int ret=1;//esp.post("postrequest",data,length);
+    if (ret==0) {
       display::lcd.print("result uploaded");
-      const bool hard=true;
-      stats.start(m,hard);
+      stats.clear();
+      delay(200);
       break;
+    } else {
+      char msg[16];
+      snprintf(msg, 16,"error: %d %d",ret,trials);
+      display::lcd.print(msg);
+      delay(200);
     }
   }
 }
@@ -80,6 +86,12 @@ void sleep_now() {
 }
 
 void loop() {
+  {
+    stats.increment_count(millis());
+    upload_statistics();
+    return;
+  }
+  
   long current_time=millis();
   int time_since_last_rising_reed = current_time-last_time_rising_reed;
   
@@ -88,7 +100,7 @@ void loop() {
       upload_statistics();
     sleep_now();
   }
-   
+  
   if (wake_on_rising_reed) {
     if (time_since_last_rising_reed>200)
       stats.increment_count(millis());

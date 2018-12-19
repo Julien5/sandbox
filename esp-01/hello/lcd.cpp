@@ -21,15 +21,13 @@ void display::LCD::init() {
 
 int min_free_memory=2048;
 
-void display::LCD::print(char * msg1, char * msg2) {
+void display::LCD::print(char * msg1) {
   d.setCursor(0,0);
   d.clear();
   d.print(msg1);
   d.setCursor(0,1);
-  if (msg2) {
-    d.print(msg2);
-  } else {
-    int m = stack::get_free_memory();
+  {
+    int m = freeMemory();
     if (min_free_memory>m)
       min_free_memory=m;
     char c[16];
@@ -38,18 +36,6 @@ void display::LCD::print(char * msg1, char * msg2) {
   }
 }
 
-/*
-void display::LCD::print(char * msg) {
-  print(msg,0);
-}
-
 void display::LCD::print(const char * msg) {
   print(const_cast<char*>(msg));
 }
-
-void display::LCD::print(const char * msg1, const char *msg2) {
-  print(const_cast<char*>(msg1),const_cast<char*>(msg2));
-}
-*/
-
-//display::LCD display::lcd;

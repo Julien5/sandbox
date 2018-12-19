@@ -33,9 +33,9 @@ bool waitForResponse() {
 boolean sendCommand(const char * command, const int length, const int timeout)
 {
   delay(250);
-
   espser.write(command,length);
   espser.write("\r\n");
+  Serial.println(command);
   
   if (strstr(command,"UART_CUR")!=NULL)
     return true;
@@ -52,17 +52,21 @@ boolean sendCommand(const char * command, const int length, const int timeout)
   parse::StringAwaiter ok_wait("OK");
   parse::StringAwaiter error_wait("ERROR");
 
-  display::lcd.print("[wifi command]");
+  display::lcd.print(command);
+  delay(250);
+  Serial.write("[");
   while(millis()<deadline && !received) {
     while(espser.available() && !received) {
       int n=espser.readBytes(buffer,min(espser.available(),L));
       buffer[n]='\0';
+      Serial.write(buffer);
       ok=ok_wait.read(buffer);
       error=error_wait.read(buffer);
       received = ok || error;
     }
     buffer[0]='\0';
   }
+  Serial.write("]\n");
   return ok;  
 }
 
@@ -70,10 +74,28 @@ boolean sendCommand(const char * command, const int timeout) {
   return sendCommand(command,strlen(command),timeout);
 }
 
+void clearbuffer() {
+  espser.flushInput();
+  espser.flushOutput();
+  /*
+  {
+    if (espser.available())
+    {
+      char buffer[L+1]={0};      
+      int n=espser.readBytes(buffer,min(espser.available(),L));
+      buffer[n]='\0';
+      Serial.write("trash:");
+      Serial.write(buffer);
+    }
+    delay(10);
+  }
+  */
+  Serial.println("--- cleared ---");
+}
+
 void resetSerial(const int baudrate=9600) {
   espser.begin(baudrate);
-  while(espser.available())
-    espser.read();
+  clearbuffer();
 }
 
 const int short_timeout = 1000;
@@ -94,15 +116,21 @@ bool wifi::esp8266::reset() {
 }
 
 bool wifi::esp8266::join() {
-  return sendCommand("AT+CWJAP_CUR=\"JBO\",\"00000000001111111111123456\"",long_timeout);
+  sendCommand("ATE1",short_timeout);
+  sendCommand("AT",short_timeout);
+  while(!sendCommand("AT+CWLAP",long_timeout)) {
+    sendCommand("AT+RST",short_timeout);
+    delay(250);
+  }
+  return sendCommand("AT+CWJAP_CUR=\"JBO\",\"7981409790562366\"",long_timeout);
 }
 
 bool wifi::esp8266::ping() {
-  return sendCommand("AT+PING=\"192.168.2.62\"",long_timeout);
+  return sendCommand("AT+PING=\"192.168.178.24\"",long_timeout);
 }
 
 bool wifi::esp8266::get(const char * req) {
-  if (!sendCommand("AT+CIPSTART=\"TCP\",\"192.168.2.62\",8000",long_timeout))
+  if (!sendCommand("AT+CIPSTART=\"TCP\",\"192.168.178.24\",8000",long_timeout))
     return false;
   
   char request[128]={0};
@@ -125,14 +153,17 @@ bool wifi::esp8266::get(const char * req) {
   return true;
 }
 
-bool wifi::esp8266::post(const char * req, const char * data, const int Ldata) {
+
+
+int wifi::esp8266::post(const char * req, const char * data, const int Ldata) {
+  Serial.print("** upload "); Serial.print(Ldata); Serial.println(" bytes");
   sendCommand("AT+CIPCLOSE",short_timeout); // ignore the result.
-  if (!sendCommand("AT+CIPSTART=\"TCP\",\"192.168.2.62\",8000",long_timeout))
-    return false;
-  
+  if (!sendCommand("AT+CIPSTART=\"TCP\",\"192.168.178.24\",8000",long_timeout))
+    return 1;
+
   char contentlength[32]={0};
   snprintf(contentlength, 32, "Content-Length: %d", Ldata);
-
+ 
   char request[256]={0};
   snprintf(request, 128,
 	   "POST %s HTTP/1.1\r\n"
@@ -142,7 +173,7 @@ bool wifi::esp8266::post(const char * req, const char * data, const int Ldata) {
 	   "%s\n"
 	   "\n",
 	   req,
-	   "Host: 192.168.2.62",
+	   "Host: 192.168.178.24",
 	   "Accept: */*",
 	   contentlength,
 	   "Content-Type: application/octet-stream"
@@ -152,22 +183,22 @@ bool wifi::esp8266::post(const char * req, const char * data, const int Ldata) {
     request[k]=data[c];
   request[k++]='\r';
   request[k++]='\n';
-
   const int Lr = k;
   
   char cipsend[32]={0};
   snprintf(cipsend, 32, "AT+CIPSEND=%d", Lr+2);
+
   if (!sendCommand(cipsend,short_timeout))
-    return false;
+    return 2;
 
   if (!sendCommand(request,Lr,long_timeout))
-    return false;
+    return 3;
   
   if (!waitForResponse())
-    return false;
+    return 4;
 
   sendCommand("AT+CIPCLOSE",short_timeout);
-  return true;
+  return 0;
 }
 
 
