@@ -29,8 +29,8 @@ bool waitForResponse() {
 }
 
 void clearbuffer() {
-  ESPRX.flushInput();
-  ESPRX.flushOutput();
+  //ESPRX.flushInput();
+  //ESPRX.flushOutput();
   ESPTX.flushInput();
   ESPTX.flushOutput();
 }
@@ -42,8 +42,10 @@ boolean sendCommand(const char * command, const int length, const int timeout)
   ESPTX.write("\r\n");
   DBGTX.println(command);
   
-  if (strstr(command,"UART_CUR")!=NULL)
+  if (strstr(command,"UART_CUR")!=NULL) {
+    delay(150);
     return true;
+  }
 
   long unsigned int now = millis();
   long unsigned int deadline = now + timeout;
@@ -92,14 +94,14 @@ boolean sendCommand(const char * command, const int timeout) {
   return sendCommand(command,strlen(command),timeout);
 }
 
-void resetSerial(const int baudrate=9600) {
-  ESPRX.begin(baudrate);
-  ESPTX.begin(baudrate);
-  clearbuffer();
-}
-
 const int short_timeout = 1000;
 const int long_timeout = 20000;
+
+void resetSerial() {
+  ESPRX.begin(9600);
+  ESPTX.begin(9600);
+  clearbuffer();
+}
 
 wifi::esp8266::esp8266(char pin)
   : timeout(3000)
@@ -151,7 +153,22 @@ bool wifi::esp8266::ping() {
   return sendCommand("AT+PING=\"192.168.178.24\"",long_timeout);
 }
 
+class Slower {
+public:
+  Slower() {
+    while(!sendCommand("AT+UART_CUR=2400,8,1,0,0",short_timeout));
+    ESPRX.begin(2400);
+    ESPTX.begin(2400);
+  }
+  ~Slower() {
+    while(!sendCommand("AT+UART_CUR=9600,8,1,0,0",short_timeout));
+    ESPRX.begin(9600);
+    ESPTX.begin(9600);
+  }  
+};
+
 bool wifi::esp8266::get(const char * req) {
+  Slower slower;
   if (!sendCommand("AT+CIPSTART=\"TCP\",\"192.168.178.24\",8000",long_timeout))
     return false;
   
