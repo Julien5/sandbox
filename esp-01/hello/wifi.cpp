@@ -23,6 +23,7 @@ bool waitForResponse() {
     while(espser.available()) {
       int n=espser.readBytes(buffer,min(Altser.available(),L));
       buffer[n]='\0';
+      Serial.write(buffer);
       if (a.read(buffer))
 	return true; 
     }
@@ -30,9 +31,14 @@ bool waitForResponse() {
   return false;
 }
 
+void clearbuffer() {
+  espser.flushInput();
+  espser.flushOutput();
+}
+
+
 boolean sendCommand(const char * command, const int length, const int timeout)
 {
-  delay(250);
   espser.write(command,length);
   espser.write("\r\n");
   Serial.println(command);
@@ -66,31 +72,25 @@ boolean sendCommand(const char * command, const int length, const int timeout)
     }
     buffer[0]='\0';
   }
-  Serial.write("]\n");
+  Serial.write("]...");
+
+  if (timeout<=1000)
+     deadline = now + 250;
+  else
+    deadline = now + 1000;
+  while(millis()<deadline && !received) {
+    while(espser.available() && !received) {
+      int n=espser.readBytes(buffer,min(espser.available(),L));
+      buffer[n]='\0';
+      Serial.write(buffer);
+    }
+  }
+  Serial.write("*\r\n*\r\n*\r\n");
   return ok;  
 }
 
 boolean sendCommand(const char * command, const int timeout) {
   return sendCommand(command,strlen(command),timeout);
-}
-
-void clearbuffer() {
-  espser.flushInput();
-  espser.flushOutput();
-  /*
-  {
-    if (espser.available())
-    {
-      char buffer[L+1]={0};      
-      int n=espser.readBytes(buffer,min(espser.available(),L));
-      buffer[n]='\0';
-      Serial.write("trash:");
-      Serial.write(buffer);
-    }
-    delay(10);
-  }
-  */
-  Serial.println("--- cleared ---");
 }
 
 void resetSerial(const int baudrate=9600) {
@@ -135,7 +135,6 @@ bool wifi::esp8266::get(const char * req) {
   
   char request[128]={0};
   snprintf(request, 128, "GET %s HTTP/1.1\r\n\r\n", req);
-
   
   char cipsend[32]={0};
   snprintf(cipsend, 32, "AT+CIPSEND=%d", strlen(request)+2);
@@ -157,6 +156,10 @@ bool wifi::esp8266::get(const char * req) {
 
 int wifi::esp8266::post(const char * req, const char * data, const int Ldata) {
   Serial.print("** upload "); Serial.print(Ldata); Serial.println(" bytes");
+  while (!ping()) {
+    Serial.println("server unreachable");
+    delay(250);
+  }
   sendCommand("AT+CIPCLOSE",short_timeout); // ignore the result.
   if (!sendCommand("AT+CIPSTART=\"TCP\",\"192.168.178.24\",8000",long_timeout))
     return 1;

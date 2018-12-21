@@ -35,9 +35,9 @@ void reset() {
 void setup()
 {
   Serial.begin(9600);
-  Serial.write("hello");
+  Serial.println("start");
   display::lcd.init();
-  delay(250);  
+  delay(50);  
   display::lcd.print("init ESP");
   if (!esp.reset())
     reset();
@@ -59,7 +59,7 @@ void upload_statistics() {
   int trials = 3;
   while(trials-- >= 0 && length>=0) {
     display::lcd.print("uploading...");
-    int ret=1;//esp.post("postrequest",data,length);
+    int ret=esp.post("postrequest",data,length);
     if (ret==0) {
       display::lcd.print("result uploaded");
       stats.clear();

@@ -15,7 +15,7 @@ void display::LCD::init() {
       char msg[16]={0};
       snprintf(msg, 16, "INIT LCD: %d", d);    
       print(msg);
-      delay(250);
+      delay(50);
     }
 }
 
