@@ -5,10 +5,17 @@
 namespace wifi {
   class esp8266 {
     int timeout;
+    char enable_pin;
   public:
-    esp8266();
-    void setTimeout(int t);
+    esp8266(char pin);
+    ~esp8266();
+    
     bool reset();
+    void enable();
+    void disable();
+    
+    void setTimeout(int t);
+ 
     bool join();
     bool ping();
     bool get(const char* req);

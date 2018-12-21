@@ -1,6 +1,3 @@
-#ifndef HARDWARE_SERIAL
-#include "AltSoftSerial.h"
-#endif
 #include "LowPower.h"
 
 #include "parse.h"
@@ -8,8 +5,6 @@
 #include "lcd.h"
 #include "statistics.h"
 #include "freememory.h"
-
-wifi::esp8266 esp;
 
 void stop() {
   display::lcd.print("stop.");
@@ -19,8 +14,11 @@ void stop() {
 statistics stats;
 
 bool wake_on_rising_reed=false;
+
 const int reed_pin = 2;
+const int wifi_enable_pin = 3;
 long last_time_rising_reed=0;
+
 void on_rising_reed() {
 	wake_on_rising_reed=true;
 }
@@ -38,19 +36,14 @@ void setup()
   Serial.println("start");
   display::lcd.init();
   delay(50);  
-  display::lcd.print("init ESP");
-  if (!esp.reset())
-    reset();
-  if(!esp.join())
-    reset();
   display::lcd.print("good.");
   delay(1000);
-
   pinMode(reed_pin, INPUT_PULLUP);
   attachInterrupt(0,on_rising_reed,RISING);
 }
 
 void upload_statistics() {
+  wifi::esp8266 esp(wifi_enable_pin);
   unsigned long m = millis();
   char * data = 0;
   int length = 0;
@@ -60,6 +53,7 @@ void upload_statistics() {
   while(trials-- >= 0 && length>=0) {
     display::lcd.print("uploading...");
     int ret=esp.post("postrequest",data,length);
+    esp.get("weihnachten");
     if (ret==0) {
       display::lcd.print("result uploaded");
       stats.clear();

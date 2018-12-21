@@ -2,14 +2,11 @@
 #include "parse.h"
 #include "nstring.h"
 #include "lcd.h"
-
-#ifndef HARDWARE_SERIAL
 #include "AltSoftSerial.h"
 AltSoftSerial Altser;
-#define espser Altser
-#else
-#define espser Serial
-#endif
+#define ESPTX Altser
+#define ESPRX Altser
+#define DBGTX Serial
 
 #define L 15
 
@@ -20,10 +17,10 @@ bool waitForResponse() {
   char buffer[L+1]={0};
   display::lcd.print("[wifi rx]");
   while(millis()<deadline) {
-    while(espser.available()) {
-      int n=espser.readBytes(buffer,min(Altser.available(),L));
+    while(ESPRX.available()) {
+      int n=ESPRX.readBytes(buffer,min(ESPRX.available(),L));
       buffer[n]='\0';
-      Serial.write(buffer);
+      DBGTX.write(buffer);
       if (a.read(buffer))
 	return true; 
     }
@@ -32,16 +29,18 @@ bool waitForResponse() {
 }
 
 void clearbuffer() {
-  espser.flushInput();
-  espser.flushOutput();
+  ESPRX.flushInput();
+  ESPRX.flushOutput();
+  ESPTX.flushInput();
+  ESPTX.flushOutput();
 }
 
 
 boolean sendCommand(const char * command, const int length, const int timeout)
 {
-  espser.write(command,length);
-  espser.write("\r\n");
-  Serial.println(command);
+  ESPTX.write(command,length);
+  ESPTX.write("\r\n");
+  DBGTX.println(command);
   
   if (strstr(command,"UART_CUR")!=NULL)
     return true;
@@ -60,32 +59,32 @@ boolean sendCommand(const char * command, const int length, const int timeout)
 
   display::lcd.print(command);
   delay(250);
-  Serial.write("[");
+  DBGTX.write("[");
   while(millis()<deadline && !received) {
-    while(espser.available() && !received) {
-      int n=espser.readBytes(buffer,min(espser.available(),L));
+    while(ESPRX.available() && !received) {
+      int n=ESPRX.readBytes(buffer,min(ESPRX.available(),L));
       buffer[n]='\0';
-      Serial.write(buffer);
+      DBGTX.write(buffer);
       ok=ok_wait.read(buffer);
       error=error_wait.read(buffer);
       received = ok || error;
     }
     buffer[0]='\0';
   }
-  Serial.write("]...");
+  DBGTX.write("]...");
 
   if (timeout<=1000)
      deadline = now + 250;
   else
     deadline = now + 1000;
   while(millis()<deadline && !received) {
-    while(espser.available() && !received) {
-      int n=espser.readBytes(buffer,min(espser.available(),L));
+    while(ESPRX.available() && !received) {
+      int n=ESPRX.readBytes(buffer,min(ESPRX.available(),L));
       buffer[n]='\0';
-      Serial.write(buffer);
+      DBGTX.write(buffer);
     }
   }
-  Serial.write("*\r\n*\r\n*\r\n");
+  DBGTX.write("*\r\n*\r\n*\r\n");
   return ok;  
 }
 
@@ -94,16 +93,35 @@ boolean sendCommand(const char * command, const int timeout) {
 }
 
 void resetSerial(const int baudrate=9600) {
-  espser.begin(baudrate);
+  ESPRX.begin(baudrate);
+  ESPTX.begin(baudrate);
   clearbuffer();
 }
 
 const int short_timeout = 1000;
 const int long_timeout = 20000;
 
-wifi::esp8266::esp8266()
-  :timeout(3000) {
+wifi::esp8266::esp8266(char pin)
+  : timeout(3000)
+  , enable_pin(pin) {
   resetSerial();
+  pinMode(enable_pin, OUTPUT);
+  enable();
+}
+
+wifi::esp8266::~esp8266() {
+  disable();
+}
+
+void wifi::esp8266::enable() {
+  digitalWrite(enable_pin, HIGH);
+  delay(250);
+  reset();
+  join();
+}
+
+void wifi::esp8266::disable() {
+  digitalWrite(enable_pin, LOW);
 }
 
 void wifi::esp8266::setTimeout(int t) {
@@ -112,6 +130,10 @@ void wifi::esp8266::setTimeout(int t) {
 
 bool wifi::esp8266::reset() {
   resetSerial();
+  char trial=16;
+  while(trial>=0 && !sendCommand("AT+RST",short_timeout)) {
+    trial--;
+  }
   return sendCommand("AT+RST",short_timeout);
 }
 
@@ -152,12 +174,10 @@ bool wifi::esp8266::get(const char * req) {
   return true;
 }
 
-
-
 int wifi::esp8266::post(const char * req, const char * data, const int Ldata) {
-  Serial.print("** upload "); Serial.print(Ldata); Serial.println(" bytes");
+  ESPTX.print("** upload "); DBGTX.print(Ldata); DBGTX.println(" bytes");
   while (!ping()) {
-    Serial.println("server unreachable");
+    DBGTX.println("server unreachable");
     delay(250);
   }
   sendCommand("AT+CIPCLOSE",short_timeout); // ignore the result.
