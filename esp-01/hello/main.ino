@@ -43,17 +43,13 @@ void setup()
 }
 
 void upload_statistics() {
-  printMemory(0);
   wifi::esp8266 esp(wifi_enable_pin);
   unsigned long m = millis();
   char * data = 0;
   int length = 0;
-  printMemory(1);
   data = stats.getdata(m,&length);
-  printMemory(2);
   delay(250);
   int trials = 3;
-  printMemory(4);
   while(trials-- >= 0 && length>=0) {
     printMemory(5);
     display::lcd.print("uploading...");
@@ -73,7 +69,6 @@ void upload_statistics() {
       display::lcd.print(msg);
       delay(200);
     }
-    printMemory(8);
   }
 }
 

@@ -62,6 +62,7 @@ void escape(char * buffer, char c) {
 
 
 void parse::AccessPointParser::read(const char * _buffer) {
+  // needs to much memory i think
   if (!retain.empty()) {
     buffer.append(retain.c_str());
   }
@@ -115,45 +116,32 @@ void parse::AccessPointParser::read(const char * _buffer) {
 */
 #include "freememory.h"
 void parse::TimeParser::read(const char * _buffer) {
-  debug(_buffer);
   if (!in_frame && startAwaiter.read(_buffer))
     in_frame=true;
   if (!in_frame)
     return;
+
   if (!retain.empty()) {
     buffer.append(retain.c_str());
   }
   buffer.append(_buffer);
- 
-  debug(buffer);
-
-  //DBGTX.println("XX\n");
-  //DBGTX.println(buffer.c_str());
-  //DBGTX.println("XX\n");
-
+  
   if (!buffer.contains("GMT"))
     return;
 
-  debug(buffer);
   buffer.zeroes(" :\r\n");
   parse_index=0;
   while(char * _p = buffer.tok()) {
-    debug(_p);
     nstring::STR<8> p(_p);
     parse_index++;
-    debug(parse_index);
     if (parse_index==6) {
       time[0] = char(p.toInt());
-      debug("OK");
     }
     if (parse_index==7) {
       time[1] = char(p.toInt());
-      debug("OK");
     }
     if (parse_index==8) {
       time[2] = char(p.toInt());
-      debug("OK");
-      assert(get());
     }
     if (parse_index==9) {
       if (!p.contains("GMT")) {

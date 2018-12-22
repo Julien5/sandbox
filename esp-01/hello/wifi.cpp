@@ -195,16 +195,11 @@ bool wifi::esp8266::get(const char * req) {
     return false;
   unsigned long time=0;
   if (!waitForResponse(&time)) {
-    DBGTX.println("fail");
     return false;
   }
-  delay(100);
-  DBGTX.println("\n\n\n");
-  DBGTX.println("good");
-  DBGTX.print("time: ");
+  DBGTX.println("\n------");
   DBGTX.println(time);
-  DBGTX.println("\n\n\n");
-  
+  DBGTX.println("------");
   sendCommand("AT+CIPCLOSE",short_timeout);
   return true;
 }
