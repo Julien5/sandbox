@@ -11,8 +11,6 @@ char eeprom::read(int addr) {
 #ifdef ARDUINO
   return EEPROM.read(addr);
 #else
-  debug(addr);
-  debug(int(mem[addr]));
   return mem[addr];
 #endif
 }
@@ -21,8 +19,6 @@ void eeprom::write(int addr, char d) {
 #ifdef ARDUINO
   EEPROM.write(addr,d);
 #else
-  debug(addr);
-  debug(int(d));
   mem[addr]=d;
 #endif
 }   

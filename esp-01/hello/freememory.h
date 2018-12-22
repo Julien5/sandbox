@@ -1,11 +1,14 @@
 #pragma once
 
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+  
+  int freeMemory();
+  void printMemory(char marker); 
 
-int freeMemory();
-
+  
 #ifdef  __cplusplus
 }
 #endif

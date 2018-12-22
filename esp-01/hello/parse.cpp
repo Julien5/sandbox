@@ -9,7 +9,7 @@
    * This function returns
    * 0 iff not (1) and not (2)
    * -1 if (1)
-   * k iff (2) and k is the first index of substr not contained in buffer.
+   * k>0 iff (2) and k is the first index of substr not contained in buffer.
    */
 const int firstdiff(const char * buffer, const char * substr, int startbuffer, int startindex) {
   assert(startbuffer<int(strlen(buffer)));
@@ -20,7 +20,9 @@ const int firstdiff(const char * buffer, const char * substr, int startbuffer, i
     return 0;
   }
   int l = 0;
-  while(buffer[startbuffer+l] != 0 && substr[startindex+l] != 0 && buffer[startbuffer+l]==substr[startindex+l]) {
+  while(   buffer[startbuffer+l] != 0
+	&& substr[startindex+l] != 0
+	&& buffer[startbuffer+l]==substr[startindex+l]) {
     l++;
   }
   if (substr[startindex+l]==0) // end of substr => all found
@@ -104,6 +106,65 @@ void parse::AccessPointParser::read(const char * _buffer) {
   buffer.clear();
 }
 
+/*
+ *
+ +IPD,116:HTTP/1.0 200 OK
+ Server: BaseHTTP/0.6 Python/3.4.2
+ Date: Fri, 21 Dec 2018 23:08:34 GMT
+ Content-type: text/html
+*/
+#include "freememory.h"
+void parse::TimeParser::read(const char * _buffer) {
+  debug(_buffer);
+  if (!in_frame && startAwaiter.read(_buffer))
+    in_frame=true;
+  if (!in_frame)
+    return;
+  if (!retain.empty()) {
+    buffer.append(retain.c_str());
+  }
+  buffer.append(_buffer);
+ 
+  debug(buffer);
+
+  //DBGTX.println("XX\n");
+  //DBGTX.println(buffer.c_str());
+  //DBGTX.println("XX\n");
+
+  if (!buffer.contains("GMT"))
+    return;
+
+  debug(buffer);
+  buffer.zeroes(" :\r\n");
+  parse_index=0;
+  while(char * _p = buffer.tok()) {
+    debug(_p);
+    nstring::STR<8> p(_p);
+    parse_index++;
+    debug(parse_index);
+    if (parse_index==6) {
+      time[0] = char(p.toInt());
+      debug("OK");
+    }
+    if (parse_index==7) {
+      time[1] = char(p.toInt());
+      debug("OK");
+    }
+    if (parse_index==8) {
+      time[2] = char(p.toInt());
+      debug("OK");
+      assert(get());
+    }
+    if (parse_index==9) {
+      if (!p.contains("GMT")) {
+	retain.clear();
+	retain.append(p.c_str());
+      }
+    }
+  }
+  buffer.clear();
+}
+
 int accesspointparser_test() {
   using namespace parse;
   {
@@ -149,6 +210,72 @@ int accesspointparser_test() {
     }    
     assert(std::string(p.get(0).name)=="JBO");
   }
+  return 0;
+}
+
+int time_parser_test() {
+  using namespace parse;
+  {
+    TimeParser p;
+    p.read("+IPD,116:HTTP/1.0 200 OK\n");
+    p.read("Server: BaseHTTP/0.6 Python/3.4.2\n");
+    p.read("Date: Fri, 21 Dec 2018 23:08:34 GMT\n");
+    p.read("Content-type: text/html\n\r");
+    char * time = p.get();
+    assert(time);
+    assert(time[0]==23);
+    assert(time[1]==8);
+    assert(time[2]==34);
+  }
+  debug("time OK 1");
+  {
+    TimeParser p;
+    p.read("+IPD,116:HTTP/");
+    p.read("1.0 200 OK\n");
+    p.read("Server: BaseHT");
+    p.read("TP/0.6 Python/3.");
+    p.read("4.2\n");
+    p.read("Date: Fri, 21 De");
+    p.read("c 2018 23:08:34 GMT\n");
+    p.read("Content-type: text/html\n\r");
+    char * time = p.get();
+    assert(time);
+    assert(time[0]==23);
+    assert(time[1]==8);
+    assert(time[2]==34);
+  }
+  debug("time OK 2");
+  {
+    TimeParser p;
+    p.read("+IPD,116:HTTP/");
+    p.read("1.0 200 OK\n");
+    p.read("Server: BaseHT");
+    p.read("TP/0.6 Python/3.");
+    p.read("4.2\n");
+    p.read("Date");
+    p.read(": Fri, 21 De");
+    p.read("c 2018 23:08:34 GMT\n");
+    p.read("Content-type: text/html\n\r");
+    char * time = p.get();
+    assert(time);
+    assert(time[0]==23);
+    assert(time[1]==8);
+    assert(time[2]==34);
+  }
+  {
+    TimeParser p;
+    p.read("D");
+    p.read("ate");
+    p.read(": Fri, 21 De");
+    p.read("c 2018 23:08:34 GMT\n");
+    p.read("Content-type: text/html\n\r");
+    char * time = p.get();
+    assert(time);
+    assert(time[0]==23);
+    assert(time[1]==8);
+    assert(time[2]==34);
+   }
+  debug("time OK 3");
   return 0;
 }
 
@@ -219,47 +346,19 @@ int parse_test() {
     assert(!a.read("\n"));
     assert(a.read("OK"));
   }
-
-  /*
-  {
-    const char * data = "01234567890123456789";
-    const char * req = "/r";
-    
-    char contentlength[32]={0};
-    snprintf(contentlength, 32, "Content-Length: %d", strlen(data));
-    
-    char request[256]={0};
-    snprintf(request, 256,
-	     "POST %s HTTP/1.1\r\n"
-	     "%s\n"
-	     "%s\n"
-	     "%s\n"
-	     "%s\n"
-	     "\n"
-	     "%s\n"
-	     "\r\n",
-	     req,
-	     "Host: 192.168.2.62",
-	     "Accept: *\/*",
-	     contentlength,
-	     "Content-Type: application/x-www-form-urlencoded",
-	     data
-	     );
-  
-    debug(request);
-    debug("******");
-  }
-  */
   return 0;
 }
 
 
 int parse::test() {
   int ret=0;
+  ret=parse_test();
+  if (ret!=0)
+    return ret;
   ret=accesspointparser_test();
   if (ret!=0)
     return ret;
-  ret=parse_test();
+  ret=time_parser_test();
   if (ret!=0)
     return ret;
   return ret;

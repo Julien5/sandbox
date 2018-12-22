@@ -2,16 +2,18 @@
 #include "parse.h"
 #include "nstring.h"
 #include "lcd.h"
+#include "freememory.h"
+
 #include "AltSoftSerial.h"
 AltSoftSerial Altser;
 #define ESPTX Altser
 #define ESPRX Altser
-#define DBGTX Serial
 
 #define L 15
 
-bool waitForResponse() {
-  parse::StringAwaiter a("CLOSED");
+bool waitForResponse(unsigned long *time=NULL) {
+  parse::StringAwaiter closeParser("CLOSED");
+  parse::TimeParser timeParser;
   long int now = millis();
   long unsigned int deadline = now + 5000;
   char buffer[L+1]={0};
@@ -21,16 +23,23 @@ bool waitForResponse() {
       int n=ESPRX.readBytes(buffer,min(ESPRX.available(),L));
       buffer[n]='\0';
       DBGTX.write(buffer);
-      if (a.read(buffer))
-	return true; 
+      DBGTX.write("|");
+      if (time) {
+	timeParser.read(buffer);
+	char * t=timeParser.get();
+	if (t) 
+	  *time = t[2] + 60*t[1] + 3600*t[0];
+      }
+      if (closeParser.read(buffer))
+	return true;
     }
   }
   return false;
 }
 
 void clearbuffer() {
-  //ESPRX.flushInput();
-  //ESPRX.flushOutput();
+  ESPRX.flushInput();
+  ESPRX.flushOutput();
   ESPTX.flushInput();
   ESPTX.flushOutput();
 }
@@ -169,6 +178,7 @@ public:
 
 bool wifi::esp8266::get(const char * req) {
   Slower slower;
+  sendCommand("AT+CIPCLOSE",short_timeout); // ignore the result.  
   if (!sendCommand("AT+CIPSTART=\"TCP\",\"192.168.178.24\",8000",long_timeout))
     return false;
   
@@ -183,15 +193,24 @@ bool wifi::esp8266::get(const char * req) {
   
   if (!sendCommand(request,long_timeout))
     return false;
-
-  if (!waitForResponse())
+  unsigned long time=0;
+  if (!waitForResponse(&time)) {
+    DBGTX.println("fail");
     return false;
+  }
+  delay(100);
+  DBGTX.println("\n\n\n");
+  DBGTX.println("good");
+  DBGTX.print("time: ");
+  DBGTX.println(time);
+  DBGTX.println("\n\n\n");
   
   sendCommand("AT+CIPCLOSE",short_timeout);
   return true;
 }
 
 int wifi::esp8266::post(const char * req, const char * data, const int Ldata) {
+  printMemory(90);
   ESPTX.print("** upload "); DBGTX.print(Ldata); DBGTX.println(" bytes");
   while (!ping()) {
     DBGTX.println("server unreachable");

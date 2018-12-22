@@ -1,7 +1,11 @@
+#include "debug.h"
+
+#ifdef ARDUINO
+
 #if (ARDUINO >= 100)
-#include <Arduino.h>
+ #include <Arduino.h>
 #else
-#include <WProgram.h>
+ #include <WProgram.h>
 #endif
 
 extern unsigned int __heap_start;
@@ -42,3 +46,20 @@ int freeMemory() {
   }
   return free_memory;
 }
+
+void printMemory(char marker) {
+  DBGTX.print("mem-");
+  DBGTX.print(int(marker));
+  DBGTX.print(": ");
+  DBGTX.println(freeMemory());
+}
+
+#else
+
+extern "C" {
+  void printMemory(char marker) {
+    debug("mem");
+  }
+}
+
+#endif

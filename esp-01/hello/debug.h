@@ -9,6 +9,8 @@
       std::cout << __LINE__ << ":" << #X << "=" << (X) << std::endl;	\
     } while(0)
 #else
+#include "HardwareSerial.h"
+#define DBGTX Serial
 #define assert(ignore)
 #define debug(X)((void) 0)
 #endif

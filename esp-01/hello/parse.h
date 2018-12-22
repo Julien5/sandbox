@@ -50,5 +50,32 @@ namespace parse {
     }
   };
 
+  class TimeParser {
+    StringAwaiter startAwaiter;
+    char time[3]; // hour, minute, second
+    nstring::STR<40> buffer;
+    nstring::STR<8> retain;
+    int parse_index;
+    bool in_frame;
+  public:
+    TimeParser()
+      : startAwaiter("Date")
+      ,	time{-1}
+      , buffer{}
+      , retain{}
+      , parse_index(-1)
+      , in_frame(false)
+    {}
+    void read(const char * buffer);
+    char* get() {
+      debug(int(time[0]));
+      debug(int(time[1]));
+      debug(int(time[2]));
+      if (time[0]>=0 && time[1]>=0 && time[2]>=0)
+	return time;
+      return NULL;
+    }
+  };
+
   int test();
 }

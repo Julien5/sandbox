@@ -1,15 +1,18 @@
 #include "statistics.h"
 #include "debug.h"
 #include "eeprom.h"
+#include "freememory.h"
 
 statistics::statistics()
   : index(0)
   , total_count(0)
 {
+  printMemory(40);
   if (!load()) {
     debug("failed to load");
     clear();
   }
+  printMemory(41);
 }
 
 void statistics::clear() {
@@ -66,7 +69,7 @@ void read_from_eeprom(char *c, unsigned char length, int *index) {
 #else
 #define CHAR_LENGTH 1
 #define INT_LENGTH 4
-#define TIME_LENGTH 8
+#define TIME_LENGTH 4
 #endif
 
 void read_int_from_eeprom(int *result, int *index) {
@@ -127,17 +130,18 @@ int statistics::get_count() const {
 int statistics::get_total_count() const {
   return total_count;
 }
-#include "HardwareSerial.h"
+
 char * statistics::getdata(time m, int * Lout) {
   if (get_count()==0) {
-    Serial.print("no data");
+    //DBGTX.print("no data");
     return 0;
   }
-  Serial.print(get_count()); Serial.println(" data");
+  //DBGTX.print(get_count()); DBGTX.println(" data");
   const int t0=ticks.t0;
   assert(t0>0);
   assert(ticks.t0==t0);
   *Lout = sizeof(ticks)/1; // in bytes
+  printMemory(43);
   return (char*)&ticks;
 }
 
