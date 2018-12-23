@@ -71,6 +71,7 @@ boolean sendCommand(const char * command, const int length, const int timeout)
   display::lcd.print(command);
   delay(250);
   DBGTX.write("[");
+  printMemory(150);
   while(millis()<deadline && !received) {
     while(ESPRX.available() && !received) {
       int n=ESPRX.readBytes(buffer,min(ESPRX.available(),L));
@@ -218,7 +219,7 @@ int wifi::esp8266::post(const char * req, const char * data, const int Ldata) {
   char contentlength[32]={0};
   snprintf(contentlength, 32, "Content-Length: %d", Ldata);
  
-  char request[256]={0};
+  char request[128]={0};
   snprintf(request, 128,
 	   "POST %s HTTP/1.1\r\n"
 	   "%s\n"
