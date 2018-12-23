@@ -196,7 +196,7 @@ public:
     opened=open();
   }
   ~IPConnection() {
-    if (opened)
+    // if (opened)
       close();
   }
 };
