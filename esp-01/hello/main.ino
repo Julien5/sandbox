@@ -17,7 +17,7 @@ const int reed_pin = 2;
 const int wifi_enable_pin = 3;
 long last_time_rising_reed=0;
 
-char buffer[4+256]={0};
+char buffer[4+512]={0};
 
 void on_rising_reed() {
 	wake_on_rising_reed=true;
