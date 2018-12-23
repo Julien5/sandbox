@@ -17,7 +17,7 @@ const int reed_pin = 2;
 const int wifi_enable_pin = 3;
 long last_time_rising_reed=0;
 
-char buffer[4+512]={0};
+char buffer[790]={0};
 
 void on_rising_reed() {
 	wake_on_rising_reed=true;
@@ -80,11 +80,11 @@ void sleep_now() {
 
 void loop() {
   {
-    Serial.println("go");
+    DBGTXLN("go");
     printMemory(0);
     upload_statistics();
-    Serial.println("wait");
-    delay(10000);
+    DBGTXLN("wait");
+    delay(100);
   }
   return;
   /*long current_time=millis();

@@ -50,13 +50,13 @@ boolean waitFor(const unsigned char opts, const int timeout) {
    
   delay(250);
   printMemory(127);
-  DBGTX.write("[");
+  DBGTX("[");
   char buffer[BUFFER_LENGTH]={0};
   while(millis()<deadline && !received) {
     while(comm::available() && !received) {
       int n=comm::readBytes(buffer,min(comm::available(),BUFFER_LENGTH-1));
       buffer[n]='\0';
-      DBGTX.write(buffer);
+      DBGTX(buffer);
       ok=ok_wait.read(buffer);
       error=error_wait.read(buffer);
       closed=closed_wait.read(buffer);
@@ -70,8 +70,8 @@ boolean waitFor(const unsigned char opts, const int timeout) {
     }
     buffer[0]='\0';
   }
-  DBGTX.write("]...");
-  DBGTX.write("*\r\n*\r\n*\r\n");
+  DBGTX("]...");
+  DBGTX("\r\n*\r\n*\r\n");
   return ok;  
 }
 
@@ -86,7 +86,7 @@ boolean sendCommandAndWaitForResponse(const char * command, const int length, co
   comm::write(command,length);
   comm::write("\r\n");
   display::lcd.print(command);
-  DBGTX.println(command);
+  Serial.println(command);
   if (strstr(command,"UART_CUR")!=NULL) {
     delay(150);
     return true;
@@ -120,7 +120,7 @@ wifi::esp8266::~esp8266() {
 }
 
 void wifi::esp8266::enable() {
-  DBGTX.print("wifi wake up");
+  DBGTX("wifi wake up");
   digitalWrite(enable_pin, HIGH);
   delay(250);
   reset();
@@ -128,7 +128,7 @@ void wifi::esp8266::enable() {
 }
 
 void wifi::esp8266::disable() {
-  DBGTX.print("wifi sleep");
+  DBGTX("wifi sleep");
   digitalWrite(enable_pin, LOW);
 }
 
@@ -162,7 +162,7 @@ bool wifi::esp8266::join() {
 }
 
 bool wifi::esp8266::ping() {
-  return sendCommandAndWaitForResponse("AT+PING=\"192.168.178.24\"",long_timeout);
+  return sendCommandAndWaitForResponse("AT+PING=\"192.168.178.24\"",short_timeout);
 }
 
 class Slower {
@@ -202,7 +202,7 @@ public:
 };
 
 bool wifi::esp8266::get(const char * req) {
-  DBGTX.println("*** GET");
+  DBGTXLN("*** GET");
   Slower slower;
   IPConnection connection;
   
@@ -225,10 +225,10 @@ bool wifi::esp8266::get(const char * req) {
 }
 
 int wifi::esp8266::post(const char * req, const char * data, const int Ldata) {
-  DBGTX.print("** upload "); DBGTX.print(Ldata); DBGTX.println(" bytes");
+  DBGTX("** upload "); DBGTX(Ldata); DBGTXLN(" bytes");
   while (!ping()) {
-    DBGTX.println("server unreachable");
-    delay(250);
+    DBGTXLN("server unreachable");
+    delay(1000);
   }
   IPConnection connection;
 
@@ -258,13 +258,13 @@ int wifi::esp8266::post(const char * req, const char * data, const int Ldata) {
   char cipsend[32]={0};
   snprintf(cipsend, 32, "AT+CIPSEND=%d", Lr+2);
 
-  if (!sendCommandAndWaitForResponse(cipsend,short_timeout))
-    return 2;
+  while(!sendCommandAndWaitForResponse(cipsend,short_timeout))
+    delay(1000);
 
-  DBGTX.println(request);
-  DBGTX.print("+");
-  DBGTX.print(Ldata);
-  DBGTX.println(" data bytes");
+  DBGTXLN(request);
+  DBGTX("+");
+  DBGTX(Ldata);
+  DBGTXLN(" data bytes");
   comm::write(request,strlen(request));
   comm::write(data,Ldata);
   comm::write("\r\n");

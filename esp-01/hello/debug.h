@@ -10,7 +10,18 @@
     } while(0)
 #else
 #include "HardwareSerial.h"
-#define DBGTX Serial
+#define DDBGTX(X)							\
+  do									\
+    {									\
+      Serial.write((X));						\
+    } while(0)
+#define DDBGTXLN(X)							\
+  do									\
+    {									\
+      Serial.println((X));						\
+    } while(0)
+#define DBGTX(X) ((void) 0)
+#define DBGTXLN(X) ((void) 0)
 #define assert(ignore)
 #define debug(X)((void) 0)
 #endif

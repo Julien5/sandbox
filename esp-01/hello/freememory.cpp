@@ -50,15 +50,15 @@ int freeMemory() {
 int min_free_mem=2048;
 
 void printMemory(char marker) {
-  DBGTX.print("mem(");
-  DBGTX.print(int(marker));
-  DBGTX.print(")=");
+  Serial.print("mem(");
+  Serial.print(int(marker));
+  Serial.print(")=");
   int m=freeMemory();
   if (m<min_free_mem)
     min_free_mem=m;
-  DBGTX.print(m);
-  DBGTX.print(" min=");
-  DBGTX.println(min_free_mem);
+  Serial.print(m);
+  Serial.print(" min=");
+  Serial.println(min_free_mem);
 }
 
 #else
