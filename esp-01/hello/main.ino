@@ -17,7 +17,12 @@ const int reed_pin = 2;
 const int wifi_enable_pin = 3;
 long last_time_rising_reed=0;
 
-char buffer[790]={0};
+/* we seem to have 870 bytes working place.
+char buffer[768]={0};
+char full[75+3+24]={0};
+*/
+
+char buffer[256]={0};
 
 void on_rising_reed() {
 	wake_on_rising_reed=true;
@@ -49,6 +54,8 @@ void upload_statistics() {
   int trials = 3;
   for(int k=0; k<length; ++k)
     buffer[k]=0;
+  // for(int k=0; k<sizeof(full); ++k)
+  // buffer[0] = full[k];
   while(trials-- > 0 && length>0) {
     display::lcd.print("uploading...");
     int ret=esp.post("postrequest",data,length);

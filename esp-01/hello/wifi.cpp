@@ -11,6 +11,10 @@ AltSoftSerial Altser;
 
 #define BUFFER_LENGTH 16
 
+
+const int short_timeout = 1000;
+const int long_timeout = 20000;
+
 namespace comm {
   int available() {
     //return 0;
@@ -35,7 +39,13 @@ namespace options {
   const unsigned char parse_time = 0x8;
 }
 
+void flushRX() {
+  ESPRX.flushInput();
+  ESPTX.flushInput();
+}
+
 boolean waitFor(const unsigned char opts, const int timeout) {
+  flushRX();
   unsigned long now = millis();
   unsigned long deadline = now + timeout;
   
@@ -56,7 +66,8 @@ boolean waitFor(const unsigned char opts, const int timeout) {
     while(comm::available() && !received) {
       int n=comm::readBytes(buffer,min(comm::available(),BUFFER_LENGTH-1));
       buffer[n]='\0';
-      DBGTX(buffer);
+      if (timeout == short_timeout+1)
+	DDBGTX(buffer);
       ok=ok_wait.read(buffer);
       error=error_wait.read(buffer);
       closed=closed_wait.read(buffer);
@@ -75,12 +86,6 @@ boolean waitFor(const unsigned char opts, const int timeout) {
   return ok;  
 }
 
-
-void flushRX() {
-  ESPRX.flushInput();
-  ESPTX.flushInput();
-}
-
 boolean sendCommandAndWaitForResponse(const char * command, const int length, const int timeout)
 {
   comm::write(command,length);
@@ -97,9 +102,6 @@ boolean sendCommandAndWaitForResponse(const char * command, const int length, co
 boolean sendCommandAndWaitForResponse(const char * command, const int timeout) {
   return sendCommandAndWaitForResponse(command,strlen(command),timeout);
 }
-
-const int short_timeout = 1000;
-const int long_timeout = 20000;
 
 void resetSerial() {
   ESPRX.begin(9600);
@@ -226,10 +228,10 @@ bool wifi::esp8266::get(const char * req) {
 
 int wifi::esp8266::post(const char * req, const char * data, const int Ldata) {
   DBGTX("** upload "); DBGTX(Ldata); DBGTXLN(" bytes");
-  while (!ping()) {
-    DBGTXLN("server unreachable");
-    delay(1000);
-  }
+  //while (!ping()) {
+  //  DBGTXLN("server unreachable");
+  //  delay(1000);
+  //}
   IPConnection connection;
 
   char contentlength[32]={0};
@@ -258,8 +260,12 @@ int wifi::esp8266::post(const char * req, const char * data, const int Ldata) {
   char cipsend[32]={0};
   snprintf(cipsend, 32, "AT+CIPSEND=%d", Lr+2);
 
-  while(!sendCommandAndWaitForResponse(cipsend,short_timeout))
+  bool ok=false;
+  char trials=3;
+  while(trials-->0 && !(ok=sendCommandAndWaitForResponse(cipsend,short_timeout+1)))
     delay(1000);
+  if (!ok)
+    return 3;
 
   DBGTXLN(request);
   DBGTX("+");
