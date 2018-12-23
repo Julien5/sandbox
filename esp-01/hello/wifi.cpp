@@ -9,99 +9,93 @@ AltSoftSerial Altser;
 #define ESPTX Altser
 #define ESPRX Altser
 
-#define L 15
+#define BUFFER_LENGTH 16
 
-bool waitForResponse(unsigned long *time=NULL) {
-  parse::StringAwaiter closeParser("CLOSED");
-  parse::TimeParser timeParser;
-  long int now = millis();
-  long unsigned int deadline = now + 5000;
-  char buffer[L+1]={0};
-  display::lcd.print("[wifi rx]");
-  while(millis()<deadline) {
-    while(ESPRX.available()) {
-      int n=ESPRX.readBytes(buffer,min(ESPRX.available(),L));
-      buffer[n]='\0';
-      DBGTX.write(buffer);
-      DBGTX.write("|");
-      if (time) {
-	timeParser.read(buffer);
-	char * t=timeParser.get();
-	if (t) 
-	  *time = t[2] + 60*t[1] + 3600*t[0];
-      }
-      if (closeParser.read(buffer))
-	return true;
-    }
+namespace comm {
+  int available() {
+    //return 0;
+    return ESPRX.available();
   }
-  return false;
-}
-
-void clearbuffer() {
-  ESPRX.flushInput();
-  ESPRX.flushOutput();
-  ESPTX.flushInput();
-  ESPTX.flushOutput();
-}
-
-
-boolean sendCommand(const char * command, const int length, const int timeout)
-{
-  ESPTX.write(command,length);
-  ESPTX.write("\r\n");
-  DBGTX.println(command);
   
-  if (strstr(command,"UART_CUR")!=NULL) {
-    delay(150);
-    return true;
+  int readBytes(char *buffer, const int length) {
+    return ESPRX.readBytes(buffer,length);
   }
+  
+  int write(char *buffer, int length=-1) {
+    if (length>=0)
+      return ESPTX.write(buffer,length);
+    return ESPTX.write(buffer);
+  }
+}
 
-  long unsigned int now = millis();
-  long unsigned int deadline = now + timeout;
+namespace options {
+  const unsigned char wait_for_ok = 0x1; 
+  const unsigned char wait_for_error = 0x2;
+  const unsigned char wait_for_closed = 0x4;
+  const unsigned char parse_time = 0x8;
+}
 
+boolean waitFor(const unsigned char opts, const int timeout) {
+  unsigned long now = millis();
+  unsigned long deadline = now + timeout;
+  
   bool received=false;
   bool ok=false;
   bool error=false;
-
-  char buffer[L+1]={0};
+  bool closed=false;
   
   parse::StringAwaiter ok_wait("OK");
   parse::StringAwaiter error_wait("ERROR");
-
-  display::lcd.print(command);
+  parse::StringAwaiter closed_wait("CLOSED");
+   
   delay(250);
+  printMemory(127);
   DBGTX.write("[");
-  printMemory(150);
+  char buffer[BUFFER_LENGTH]={0};
   while(millis()<deadline && !received) {
-    while(ESPRX.available() && !received) {
-      int n=ESPRX.readBytes(buffer,min(ESPRX.available(),L));
+    while(comm::available() && !received) {
+      int n=comm::readBytes(buffer,min(comm::available(),BUFFER_LENGTH-1));
       buffer[n]='\0';
       DBGTX.write(buffer);
       ok=ok_wait.read(buffer);
       error=error_wait.read(buffer);
-      received = ok || error;
+      closed=closed_wait.read(buffer);
+      received = false;
+      if (options::wait_for_ok & opts)
+	received |= ok;
+      if (options::wait_for_error & opts)
+	received |= error;
+      if (options::wait_for_closed & opts)
+	received |= closed;
     }
     buffer[0]='\0';
   }
   DBGTX.write("]...");
-
-  if (timeout<=1000)
-     deadline = now + 250;
-  else
-    deadline = now + 1000;
-  while(millis()<deadline && !received) {
-    while(ESPRX.available() && !received) {
-      int n=ESPRX.readBytes(buffer,min(ESPRX.available(),L));
-      buffer[n]='\0';
-      DBGTX.write(buffer);
-    }
-  }
   DBGTX.write("*\r\n*\r\n*\r\n");
   return ok;  
 }
 
-boolean sendCommand(const char * command, const int timeout) {
-  return sendCommand(command,strlen(command),timeout);
+
+void flushRX() {
+  ESPRX.flushInput();
+  ESPTX.flushInput();
+}
+
+boolean sendCommandAndWaitForResponse(const char * command, const int length, const int timeout)
+{
+  comm::write(command,length);
+  comm::write("\r\n");
+  display::lcd.print(command);
+  DBGTX.println(command);
+  if (strstr(command,"UART_CUR")!=NULL) {
+    delay(150);
+    return true;
+  }
+  return waitFor(options::wait_for_ok | options::wait_for_error, timeout);
+}
+
+boolean sendCommandAndWaitForResponse(const char * command, const int timeout) {
+  return sendCommandAndWaitForResponse(command,strlen(command),timeout);
 }
 
 const int short_timeout = 1000;
@@ -110,7 +104,7 @@ const int long_timeout = 20000;
 void resetSerial() {
   ESPRX.begin(9600);
   ESPTX.begin(9600);
-  clearbuffer();
+  flushRX();
 }
 
 wifi::esp8266::esp8266(char pin)
@@ -126,6 +120,7 @@ wifi::esp8266::~esp8266() {
 }
 
 void wifi::esp8266::enable() {
+  DBGTX.print("wifi wake up");
   digitalWrite(enable_pin, HIGH);
   delay(250);
   reset();
@@ -133,6 +128,7 @@ void wifi::esp8266::enable() {
 }
 
 void wifi::esp8266::disable() {
+  DBGTX.print("wifi sleep");
   digitalWrite(enable_pin, LOW);
 }
 
@@ -140,48 +136,75 @@ void wifi::esp8266::setTimeout(int t) {
   timeout=t;
 }
 
+namespace AT {
+  bool RST() {
+    return sendCommandAndWaitForResponse("AT+RST",short_timeout);
+  }
+};
+
 bool wifi::esp8266::reset() {
   resetSerial();
   char trial=16;
-  while(trial>=0 && !sendCommand("AT+RST",short_timeout)) {
+  while(trial>=0 && !AT::RST()) {
     trial--;
   }
-  return sendCommand("AT+RST",short_timeout);
+  return AT::RST();
 }
 
 bool wifi::esp8266::join() {
-  sendCommand("ATE1",short_timeout);
-  sendCommand("AT",short_timeout);
-  while(!sendCommand("AT+CWLAP",long_timeout)) {
-    sendCommand("AT+RST",short_timeout);
+  sendCommandAndWaitForResponse("ATE1",short_timeout);
+  sendCommandAndWaitForResponse("AT",short_timeout);
+  while(!sendCommandAndWaitForResponse("AT+CWLAP",long_timeout)) {
+    AT::RST();
     delay(250);
   }
-  return sendCommand("AT+CWJAP_CUR=\"JBO\",\"7981409790562366\"",long_timeout);
+  return sendCommandAndWaitForResponse("AT+CWJAP_CUR=\"JBO\",\"7981409790562366\"",long_timeout);
 }
 
 bool wifi::esp8266::ping() {
-  return sendCommand("AT+PING=\"192.168.178.24\"",long_timeout);
+  return sendCommandAndWaitForResponse("AT+PING=\"192.168.178.24\"",long_timeout);
 }
 
 class Slower {
 public:
   Slower() {
-    while(!sendCommand("AT+UART_CUR=2400,8,1,0,0",short_timeout));
+    while(!sendCommandAndWaitForResponse("AT+UART_CUR=2400,8,1,0,0",short_timeout));
+    delay(150);
     ESPRX.begin(2400);
     ESPTX.begin(2400);
+    flushRX();
+    
   }
   ~Slower() {
-    while(!sendCommand("AT+UART_CUR=9600,8,1,0,0",short_timeout));
+    while(!sendCommandAndWaitForResponse("AT+UART_CUR=9600,8,1,0,0",short_timeout));
     ESPRX.begin(9600);
     ESPTX.begin(9600);
   }  
 };
 
+class IPConnection {
+  bool opened=false;
+  bool open() {
+    return sendCommandAndWaitForResponse("AT+CIPSTART=\"TCP\",\"192.168.178.24\",8000",long_timeout);
+  }
+  bool close() {
+    return sendCommandAndWaitForResponse("AT+CIPCLOSE",short_timeout);
+  }
+public:
+  IPConnection() {
+    close(); // ignore the result.
+    opened=open();
+  }
+  ~IPConnection() {
+    if (opened)
+      close();
+  }
+};
+
 bool wifi::esp8266::get(const char * req) {
+  DBGTX.println("*** GET");
   Slower slower;
-  sendCommand("AT+CIPCLOSE",short_timeout); // ignore the result.  
-  if (!sendCommand("AT+CIPSTART=\"TCP\",\"192.168.178.24\",8000",long_timeout))
-    return false;
+  IPConnection connection;
   
   char request[128]={0};
   snprintf(request, 128, "GET %s HTTP/1.1\r\n\r\n", req);
@@ -189,36 +212,29 @@ bool wifi::esp8266::get(const char * req) {
   char cipsend[32]={0};
   snprintf(cipsend, 32, "AT+CIPSEND=%d", strlen(request)+2);
     
-  if (!sendCommand(cipsend,short_timeout))
+  if (!sendCommandAndWaitForResponse(cipsend,short_timeout))
     return false;
   
-  if (!sendCommand(request,long_timeout))
+  if (!sendCommandAndWaitForResponse(request,short_timeout))
     return false;
-  unsigned long time=0;
-  if (!waitForResponse(&time)) {
+
+  if (!waitFor(options::wait_for_closed,long_timeout)) {
     return false;
   }
-  DBGTX.println("\n------");
-  DBGTX.println(time);
-  DBGTX.println("------");
-  sendCommand("AT+CIPCLOSE",short_timeout);
   return true;
 }
 
 int wifi::esp8266::post(const char * req, const char * data, const int Ldata) {
-  printMemory(90);
-  ESPTX.print("** upload "); DBGTX.print(Ldata); DBGTX.println(" bytes");
+  DBGTX.print("** upload "); DBGTX.print(Ldata); DBGTX.println(" bytes");
   while (!ping()) {
     DBGTX.println("server unreachable");
     delay(250);
   }
-  sendCommand("AT+CIPCLOSE",short_timeout); // ignore the result.
-  if (!sendCommand("AT+CIPSTART=\"TCP\",\"192.168.178.24\",8000",long_timeout))
-    return 1;
+  IPConnection connection;
 
   char contentlength[32]={0};
   snprintf(contentlength, 32, "Content-Length: %d", Ldata);
- 
+
   char request[128]={0};
   snprintf(request, 128,
 	   "POST %s HTTP/1.1\r\n"
@@ -233,26 +249,29 @@ int wifi::esp8266::post(const char * req, const char * data, const int Ldata) {
 	   contentlength,
 	   "Content-Type: application/octet-stream"
 	   );
+  
   int k = strlen(request);
   for(int c=0; c<Ldata; k++,c++)
-    request[k]=data[c];
-  request[k++]='\r';
-  request[k++]='\n';
+    ;
   const int Lr = k;
   
   char cipsend[32]={0};
   snprintf(cipsend, 32, "AT+CIPSEND=%d", Lr+2);
 
-  if (!sendCommand(cipsend,short_timeout))
+  if (!sendCommandAndWaitForResponse(cipsend,short_timeout))
     return 2;
 
-  if (!sendCommand(request,Lr,long_timeout))
-    return 3;
+  DBGTX.println(request);
+  DBGTX.print("+");
+  DBGTX.print(Ldata);
+  DBGTX.println(" data bytes");
+  comm::write(request,strlen(request));
+  comm::write(data,Ldata);
+  comm::write("\r\n");
   
-  if (!waitForResponse())
+  if (!waitFor(options::wait_for_ok | options::wait_for_error, long_timeout))
     return 4;
 
-  sendCommand("AT+CIPCLOSE",short_timeout);
   return 0;
 }
 

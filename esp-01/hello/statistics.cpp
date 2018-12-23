@@ -7,12 +7,10 @@ statistics::statistics()
   : index(0)
   , total_count(0)
 {
-  printMemory(40);
   if (!load()) {
     debug("failed to load");
     clear();
   }
-  printMemory(41);
 }
 
 void statistics::clear() {
@@ -110,7 +108,9 @@ void statistics::increment_count(const time m, int incr) {
   }
   assert(ticks.t0!=0);
   const time delta = m - ticks.t0;
-  assert(index<sizeof(ticks.delta)/sizeof(ticks.delta[0]));
+  const int delta_size = sizeof(ticks.delta)/sizeof(ticks.delta[0]);
+  if (index+1 == delta_size)
+    index==0;
   ticks.delta[index++]=delta;
   total_count = total_count + incr;
 }
@@ -141,7 +141,6 @@ char * statistics::getdata(time m, int * Lout) {
   assert(t0>0);
   assert(ticks.t0==t0);
   *Lout = sizeof(ticks)/1; // in bytes
-  printMemory(43);
   return (char*)&ticks;
 }
 
