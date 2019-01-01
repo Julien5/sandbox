@@ -11,7 +11,6 @@ AltSoftSerial Altser;
 
 #define BUFFER_LENGTH 16
 
-
 const int short_timeout = 1000;
 const int long_timeout = 20000;
 
@@ -66,8 +65,7 @@ boolean waitFor(const unsigned char opts, const int timeout) {
     while(comm::available() && !received) {
       int n=comm::readBytes(buffer,min(comm::available(),BUFFER_LENGTH-1));
       buffer[n]='\0';
-      if (timeout == short_timeout+1)
-	DDBGTX(buffer);
+      DBGTX(buffer);
       ok=ok_wait.read(buffer);
       error=error_wait.read(buffer);
       closed=closed_wait.read(buffer);
@@ -91,7 +89,7 @@ boolean sendCommandAndWaitForResponse(const char * command, const int length, co
   comm::write(command,length);
   comm::write("\r\n");
   display::lcd.print(command);
-  Serial.println(command);
+  DBGTXLN(command);
   if (strstr(command,"UART_CUR")!=NULL) {
     delay(150);
     return true;
@@ -262,7 +260,7 @@ int wifi::esp8266::post(const char * req, const char * data, const int Ldata) {
 
   bool ok=false;
   char trials=3;
-  while(trials-->0 && !(ok=sendCommandAndWaitForResponse(cipsend,short_timeout+1)))
+  while(trials-->0 && !(ok=sendCommandAndWaitForResponse(cipsend,short_timeout)))
     delay(1000);
   if (!ok)
     return 3;

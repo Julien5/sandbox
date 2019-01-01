@@ -11,6 +11,8 @@ void stop() {
   while(1);
 }
 
+char buffer[256] = {0};
+
 bool wake_on_rising_reed=false;
 
 const int reed_pin = 2;
@@ -22,10 +24,8 @@ char buffer[768]={0};
 char full[75+3+24]={0};
 */
 
-char buffer[256]={0};
-
 void on_rising_reed() {
-	wake_on_rising_reed=true;
+  wake_on_rising_reed=true;
 }
 
 void reset() {
@@ -52,10 +52,6 @@ void upload_statistics() {
   char * data = buffer;
   int length = sizeof(buffer);
   int trials = 3;
-  for(int k=0; k<length; ++k)
-    buffer[k]=0;
-  // for(int k=0; k<sizeof(full); ++k)
-  // buffer[0] = full[k];
   while(trials-- > 0 && length>0) {
     display::lcd.print("uploading...");
     int ret=esp.post("postrequest",data,length);
@@ -87,7 +83,6 @@ void sleep_now() {
 
 void loop() {
   {
-    DBGTXLN("go");
     printMemory(0);
     upload_statistics();
     DBGTXLN("wait");
