@@ -1,36 +1,30 @@
 #pragma once
 
-#define NTICKS 16
+#define NMILLIS 16
+#define NMINUTES 200
 
 class statistics {
 public:
-  using time = unsigned long;
-  
+  using minute = unsigned int;
+  using count = unsigned char;
+  using milli = unsigned int;
+
 private:
-  struct Ticks {
-    int delta[NTICKS];
-    time t0;
-    Ticks():
-      delta{0}
-      ,t0(0)
-    {}
+  struct Bin {
+    minute m; 
+    count c;
   };
-  
-  Ticks ticks;
-  int index;
-  int total_count;
-   
-  bool load();
-  void increment_count(const time m, int incr);
-  
+  Bin bins[NMINUTES];
+
+  struct Milli {
+    milli m;
+  };
+  Milli millis[NMILLIS];
+  void clear();
+
 public:
   statistics();
-  void clear();
-  void save();
-  void increment_count(const time m);
-  int get_count() const;
-  int get_total_count() const;
-  char *getdata(time m, int * Lout);
-  int elapsed(const time m) const;
+  void tick();
+  char *getdata(int * Lout);
   static int test();
 };
