@@ -19,8 +19,6 @@ void eeprom::write(int addr, char d) {
 #ifdef ARDUINO
   EEPROM.write(addr,d);
 #else
-  debug(addr);
-  debug(char(d));
   mem[addr]=d;
 #endif
 }   

@@ -1,29 +1,11 @@
 #pragma once
 
-#define NMILLIS 2 // 60
-#define NMINUTES 2 // 200
-
+#define NMILLIS 60
+#define NMINUTES 200
+#define NDATA 1024
 class statistics {
-public:
-  using minute = unsigned int;
-  using count = unsigned char;
-  using milli = unsigned int;
-
 private:
-  struct Data {
-    struct Bin {
-      minute m; 
-      count c;
-    };
-    Bin bins[NMINUTES];
-    
-    struct Milli {
-      milli m[NMILLIS];
-      int index;
-    };
-    Milli millis;
-  };
-  Data data;
+  char data[NDATA];
   void clear();
 
 public:
