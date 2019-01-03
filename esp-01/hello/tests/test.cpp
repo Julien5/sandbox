@@ -4,6 +4,7 @@
 #include "nstring.h"
 #include "statistics.h"
 
+// hi
 
 int display(int exitcode) {
   if (exitcode!=0)

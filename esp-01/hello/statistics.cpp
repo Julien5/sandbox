@@ -45,37 +45,37 @@ namespace {
 }
 
 statistics::statistics()
-  : bins{{0,0}},
-    millis{}
+  : data{{0,0},{{0},0}}
 {
+  clear();
 }
 
 void statistics::clear() {
   for(int k=0; k<NMINUTES; ++k) {
-    bins[k] = {0,0};
+    data.bins[k] = {0,0};
   }
   for(int k=0; k<NMILLIS; ++k) {
-    millis[k] = {0};
+    data.millis.m[k] = 0;
   }
+  data.millis.index = 0;
 }
 
 void statistics::tick() {
   ms t = now();
   minute m = get_minute(t);
   for(int k=0; k<NMINUTES; ++k) {
-    if (bins[k].m == m || bins[k].m == 0) {
-      bins[k].m = m;
-      bins[k].c++;
+    if (data.bins[k].m == m || data.bins[k].m == 0) {
+      data.bins[k].m = m;
+      data.bins[k].c++;
       break;
     }
   }
 
-  const int index = 0;
   milli ml = get_milli(t);
-  millis[index].m = ml;
+  data.millis.m[data.millis.index++] = ml;
+  if (data.millis.index>=NMILLIS)
+    data.millis.index=0;
 }
-
-#define MAGIC 78
 
 void write_to_eeprom(char *c, unsigned char length, int *index) {
   int k=*index;
@@ -84,18 +84,11 @@ void write_to_eeprom(char *c, unsigned char length, int *index) {
   *index=k;
 }
 
-// TODO: template
-void write_int_to_eeprom(int input, int *index) {
+template<typename T>
+void write_to_eeprom(T input, int *index) {
   char * c=(char *) &input;
-  write_to_eeprom(c,sizeof(int),index);
+  write_to_eeprom(c,sizeof(T),index);
 }
-
-/*
-void write_time_to_eeprom(statistics::time input, int *index) {
-  char * c=(char *) &input;
-  write_to_eeprom(c,sizeof(statistics::time),index);
-}
-*/
 
 void read_from_eeprom(char *c, unsigned char length, int *index) {
   assert(length<=8);
@@ -105,66 +98,88 @@ void read_from_eeprom(char *c, unsigned char length, int *index) {
   *index=k;
 }
 
-#ifdef ARDUINO
-#define CHAR_LENGTH 1
-#define INT_LENGTH 2
-#define TIME_LENGTH 4
-#else
-#define CHAR_LENGTH 1
-#define INT_LENGTH 4
-#define TIME_LENGTH 4
-#endif
-
-
-void read_int_from_eeprom(int *result, int *index) {
-  assert(sizeof(int)==INT_LENGTH);
-  char c[INT_LENGTH]={0};
-  read_from_eeprom(&c[0],INT_LENGTH,index);
-  *result=*((int*)(&c));
+template<typename T>
+void read_from_eeprom(T *result, int *index) {
+  char c[sizeof(T)]={0};
+  read_from_eeprom(&c[0],sizeof(T),index);
+  *result=*((T*)(&c));
 }
 
-/*
-void read_time_from_eeprom(statistics::time *result, int *index) {
-  assert(sizeof(statistics::time)==TIME_LENGTH);
-  char c[TIME_LENGTH]={0};
-  read_from_eeprom(&c[0],TIME_LENGTH,index);
-  *result=*((statistics::time*)(&c));
-}
-*/
+#define MAGIC 78
+char magic = MAGIC;
 
-/*
+void statistics::save() {
+  int index=0;
+  write_to_eeprom(magic,&index);
+  for(int k=0; k<NMINUTES; ++k) {
+    write_to_eeprom(data.bins[k].m,&index);
+    write_to_eeprom(data.bins[k].c,&index);
+  }
+  write_to_eeprom(data.millis.index,&index);
+  for(int k=0; k<NMILLIS; ++k) {
+    write_to_eeprom(data.millis.m[k],&index);
+  }
+}
+
 bool statistics::load() {
-  int k=0;
-  char magic_number=eeprom().read(k++);
-  if (magic_number != MAGIC) {
+  int index=0;
+  char should_be_magic;
+  read_from_eeprom(&should_be_magic,&index);
+  if (should_be_magic!=magic)
     return false;
+  for(int k=0; k<NMINUTES; ++k) {
+    read_from_eeprom(&data.bins[k].m,&index);
+    read_from_eeprom(&data.bins[k].c,&index);
   }
-  read_int_from_eeprom(&index,&k);
-  read_int_from_eeprom(&total_count,&k);
-  for(int i=0; i<NTICKS; i++) {
-    read_int_from_eeprom(&(ticks.delta[i]),&k);
+  read_from_eeprom(&data.millis.index,&index);
+  for(int k=0; k<NMILLIS; ++k) {
+    read_from_eeprom(&data.millis.m[k],&index);
   }
-  read_time_from_eeprom(&(ticks.t0),&k);
+}
+
+bool statistics::operator==(const statistics& other) {
+  for(int k=0; k<NMINUTES; ++k) {
+    if (data.bins[k].m != other.data.bins[k].m)
+      return false;
+    if (data.bins[k].c != other.data.bins[k].c)
+      return false;
+  }
+  if (data.millis.index != other.data.millis.index)
+    return false;
+  for(int k=0; k<NMILLIS; ++k) {
+    if (data.millis.m[k] != other.data.millis.m[k])
+      return false;
+  }
   return true;
 }
-*/
 
 
 char * statistics::getdata(int * Lout) {
-  return 0;
-  /*
-  if (get_count()==0) {
-    return 0;
-  }
-  const int t0=ticks.t0;
-  assert(t0>0);
-  assert(ticks.t0==t0);
-  *Lout = sizeof(ticks)/1; // in bytes
-  return (char*)&ticks;
-  */
+  *Lout = sizeof(data)/1; // in bytes
+  return (char*)&data;
 }
 
 int statistics::test() {
-  debug("good");
+  statistics S;
+  {
+    artificial = true;
+    S.tick();
+    sleep(20);
+    S.tick();
+    sleep(20);
+    S.save();
+  }
+
+  int L=0;
+  char * data = S.getdata(&L);
+  for(int k=0; k<L; ++k) {
+    debug(k);
+    debug(char(data[k]));
+  }
+
+  statistics T;
+  T.load();
+  assert(S == T);
+  debug("statistics::test is good");
   return 0;
 }
