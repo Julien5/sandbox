@@ -15,6 +15,8 @@ void delay(long long d) {
 }
 #endif
 
+using namespace types;
+
 namespace {
   bool artificial = false;
   using ms = unsigned long long;
@@ -35,9 +37,6 @@ namespace {
     t0=m;
   }
  
-  using minute = unsigned int;
-  using count = unsigned char;
-  using milli = unsigned int;
   
   minute get_minute(const ms &m) {
     ms t = m - t0;
@@ -53,6 +52,11 @@ namespace {
 statistics::statistics()
   : data{0}
 {
+  constexpr int sizeof_bin = NMINUTES*(sizeof(minute) + sizeof(count));
+  constexpr int sizeof_milli = 1+NMILLIS*sizeof(milli);
+  debug(NDATA);
+  debug(sizeof_bin+sizeof_milli);
+  assert(NDATA>=(sizeof_bin+sizeof_milli));
   clear();
 }
 
@@ -95,15 +99,17 @@ struct Bin {
   count c;
 };
 
+constexpr int sizeof_bin = sizeof(minute) + sizeof(count);
+
 void write_bin(const Bin &b, const int bin_index, char *data) {
-  int index=3*bin_index;
+  int index=sizeof_bin*bin_index;
   write_data(b.m,&index,data);
   write_data(b.c,&index,data);
 }
 
 Bin read_bin(const int bin_index, char *data) {
   Bin b={0};
-  int index=3*bin_index;
+  int index=sizeof_bin*bin_index;
   read_data(&b.m,&index,data);
   read_data(&b.c,&index,data);
   return b;
@@ -112,13 +118,13 @@ Bin read_bin(const int bin_index, char *data) {
 using Indx = unsigned char;
 Indx read_milli_index(char * data) {
   Indx i;
-  int index = 3*NMINUTES;
+  int index = sizeof_bin*NMINUTES;
   read_data(&i,&index,data);
   return i;
 }
 
 void write_milli_indx(Indx indx, char * data) {
-  int index=3*NMINUTES;
+  int index=sizeof_bin*NMINUTES;
   write_data(indx,&index,data);
 }
 
@@ -131,8 +137,10 @@ milli read_milli_at_index(Indx indx, char * data) {
 }
 */
 
+constexpr int sizeof_milli = sizeof(milli);
+
 void write_milli_at_index(milli m, Indx indx, char * data) {
-  int index=3*NMINUTES+2*indx+1;
+  int index=sizeof_bin*NMINUTES+sizeof_milli*indx+1;
   write_data(m,&index,data);
 }
 
@@ -157,6 +165,34 @@ void statistics::tick() {
     indx=0;
   write_milli_indx(indx,data);
 }
+
+int statistics::total() {
+  int ret=0;
+  for(int k=0; k<NMINUTES; ++k) {
+    Bin b=read_bin(k,data);
+    ret += b.c;
+  }
+  return ret;
+}
+
+int statistics::minute_count()
+{
+  int ret=0;
+  for(int k=0; k<NMINUTES; ++k) {
+    Bin b=read_bin(k,data);
+    if (b.c!=0)
+      ret++;
+  }
+  return ret;
+}
+
+int statistics::count_at_minute(const int m)
+{
+  int k=m;
+  Bin b=read_bin(k,data);
+  return b.c;
+}
+
 
 #define MAGIC 78
 char magic = MAGIC;
@@ -200,6 +236,12 @@ int statistics::test() {
     sleep(20);
     S.tick();
     sleep(20);
+    assert(S.total()==2);
+    S.tick();
+    assert(S.total()==3);
+    assert(S.minute_count()==1);
+    assert(S.count_at_minute(0)==3);
+    assert(S.count_at_minute(1)==0);
     S.save();
   }
 
