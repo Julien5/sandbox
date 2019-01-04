@@ -2,7 +2,7 @@
 #include "debug.h"
 #include "eeprom.h"
 #include "freememory.h"
-#include <cstring>
+#include <string.h>
 
 // hi
 
@@ -62,7 +62,8 @@ statistics::statistics()
 }
 
 statistics::statistics(uint8_t * src) {
-  std::memcpy(data,src,NDATA);
+  using namespace std;
+  memcpy(data,src,NDATA);
 }
 
 void statistics::clear() {
