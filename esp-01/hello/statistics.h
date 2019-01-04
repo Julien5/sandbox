@@ -7,7 +7,7 @@ namespace types
   using milli = unsigned int;
 }
 constexpr int NMILLIS=2;
-constexpr int NMINUTES=2;
+constexpr int NMINUTES=3;
 constexpr int NDATA=(sizeof(types::minute)+sizeof(types::count))*NMINUTES
   + sizeof(types::milli)*NMILLIS + 1;
 
