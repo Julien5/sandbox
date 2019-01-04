@@ -22,7 +22,7 @@ using namespace types;
 
 namespace {
   bool artificial = false;
-  using ms = unsigned long long;
+  using ms = types::milli;
   ms t=0;
   ms now() {
     if (!artificial)
@@ -39,15 +39,14 @@ namespace {
   void set_start_time(const ms &m) {
     t0=m;
   }
- 
-  minute get_minute(const ms &m) {
-    ms t = m - t0;
-    return (t/1000)/60;
-  }
 
   milli get_milli(const ms &m) {
-    ms t = m - t0;
-    return t - 60*1000*get_minute(m);
+    return m - t0;
+  }
+  
+  minute get_minute(const ms &m) {
+    ms t = get_milli(m);
+    return (t/1000)/60;
   }
 }
 
@@ -135,14 +134,12 @@ void write_milli_indx(Indx indx, uint8_t * data) {
   write_data(indx,&index,data);
 }
 
-/*
-  milli read_milli_at_index(Indx indx, uint8_t * data) {
+milli read_milli_at_index(Indx indx, uint8_t * data) {
   milli m;
-  int index = 3*NMINUTES+2*indx+1;
+  int index = sizeof_bin*NMINUTES+sizeof(types::milli)*indx+1;
   read_data(&m,&index,data);
   return m;
-  }
-*/
+}
 
 constexpr int sizeof_milli = sizeof(milli);
 
@@ -166,8 +163,9 @@ void statistics::tick() {
   }
 
   milli ml = ::get_milli(t);
+  debug(ml);
   Indx indx = read_milli_index(data);
-  write_milli_at_index(m,indx,data);
+  write_milli_at_index(ml,indx,data);
   indx++;
   if (indx>=NMILLIS)
     indx=0;
@@ -202,6 +200,15 @@ void statistics::get_minute(const int indx, minute *m, count *c)
   *c=b.c;
 }
 
+types::milli statistics::get_milli(const int k) {
+  Indx i0=read_milli_index(data);
+  int k2 = i0-k-1;
+  if(k2<0)
+    k2+=NMILLIS;
+  assert(0<=k2&&k2<NMILLIS);
+  Indx indx=k2;
+  return read_milli_at_index(indx,data);
+}
 
 #define MAGIC 78
 uint8_t magic = MAGIC;
@@ -251,8 +258,12 @@ int statistics::test() {
     sleep(1000*60*10);
     
     S.tick();
+    assert(S.get_milli(0)==1000*60*10);
+    assert(S.get_milli(1)==0);
     sleep(20);
     S.tick();
+    assert(S.get_milli(0)==1000*60*10+20);
+    assert(S.get_milli(1)==1000*60*10);
     sleep(20);
     assert(S.total()==2);
     S.tick();
@@ -264,8 +275,7 @@ int statistics::test() {
     assert(m==10);
     S.get_minute(1,&m,&c);
     assert(c==0);
-
-    
+   
     sleep(1000*65);
     S.tick();
     assert(S.minute_count()==2);
@@ -283,6 +293,18 @@ int statistics::test() {
     S.get_minute(2,&m,&c);
     assert(c==1);
     assert(m==12);
+
+    for(int k=0; S.get_milli(k)!=0; ++k)
+      debug(S.get_milli(k));
+
+    debug(S.get_milli(1));
+    
+    assert(S.get_milli(0)!=0);
+    assert(S.get_milli(1)!=0);
+    assert(S.get_milli(2)!=0);
+    assert(S.get_milli(3)!=0);
+    assert(S.get_milli(4)!=0);
+    assert(S.get_milli(5)==0);
 
     
     S.save_eeprom();
