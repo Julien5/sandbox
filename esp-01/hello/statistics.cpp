@@ -9,9 +9,11 @@
 #include "Arduino.h"
 #else
 long long millis() {
+  assert(0);
   return 0;
 }
 void delay(long long d) {
+  assert(0);
 }
 #endif
 
@@ -37,7 +39,6 @@ namespace {
     t0=m;
   }
  
-  
   minute get_minute(const ms &m) {
     ms t = m - t0;
     return (t/1000)/60;
@@ -103,6 +104,7 @@ constexpr int sizeof_bin = sizeof(minute) + sizeof(count);
 
 void write_bin(const Bin &b, const int bin_index, char *data) {
   int index=sizeof_bin*bin_index;
+  debug(bin_index);
   write_data(b.m,&index,data);
   write_data(b.c,&index,data);
 }
@@ -129,12 +131,12 @@ void write_milli_indx(Indx indx, char * data) {
 }
 
 /*
-milli read_milli_at_index(Indx indx, char * data) {
+  milli read_milli_at_index(Indx indx, char * data) {
   milli m;
   int index = 3*NMINUTES+2*indx+1;
   read_data(&m,&index,data);
   return m;
-}
+  }
 */
 
 constexpr int sizeof_milli = sizeof(milli);
@@ -146,7 +148,8 @@ void write_milli_at_index(milli m, Indx indx, char * data) {
 
 void statistics::tick() {
   ms t = now();
-  minute m = get_minute(t);
+  minute m = ::get_minute(t);
+  debug(m);
   for(int k=0; k<NMINUTES; ++k) {
     Bin b=read_bin(k,data);
     if (b.m == m || b.m == 0) {
@@ -157,7 +160,7 @@ void statistics::tick() {
     }
   }
 
-  milli ml = get_milli(t);
+  milli ml = ::get_milli(t);
   Indx indx = read_milli_index(data);
   write_milli_at_index(m,indx,data);
   indx++;
@@ -186,11 +189,12 @@ int statistics::minute_count()
   return ret;
 }
 
-int statistics::count_at_minute(const int m)
+void statistics::get_minute(const int indx, minute *m, count *c)
 {
-  int k=m;
+  int k=indx;
   Bin b=read_bin(k,data);
-  return b.c;
+  *m=b.m;
+  *c=b.c;
 }
 
 
@@ -232,6 +236,7 @@ int statistics::test() {
   statistics S;
   {
     artificial = true;
+    sleep(1000*60*10);
     S.tick();
     sleep(20);
     S.tick();
@@ -240,8 +245,21 @@ int statistics::test() {
     S.tick();
     assert(S.total()==3);
     assert(S.minute_count()==1);
-    assert(S.count_at_minute(0)==3);
-    assert(S.count_at_minute(1)==0);
+    count c=0; minute m=0;
+    S.get_minute(0,&m,&c);
+    assert(c==3);
+    assert(m==10);
+    S.get_minute(1,&m,&c);
+    assert(c==0);
+    sleep(1000*65);
+    S.tick();
+    assert(S.minute_count()==2);
+    
+    S.get_minute(0,&m,&c);
+    assert(c==3);
+    S.get_minute(1,&m,&c);
+    assert(c==1);
+    assert(m==11);
     S.save();
   }
 

@@ -23,7 +23,7 @@ public:
   bool load();
   int total();
   int minute_count();
-  int count_at_minute(const int m);
+  void get_minute(const int m, types::minute *, types::count *);
   char *getdata(int * Lout);
   bool operator==(const statistics& other);
   static int test();
