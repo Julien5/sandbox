@@ -251,15 +251,27 @@ int statistics::test() {
     assert(m==10);
     S.get_minute(1,&m,&c);
     assert(c==0);
+
+    
     sleep(1000*65);
     S.tick();
     assert(S.minute_count()==2);
-    
     S.get_minute(0,&m,&c);
     assert(c==3);
     S.get_minute(1,&m,&c);
     assert(c==1);
     assert(m==11);
+
+    sleep(1000*61);
+    S.tick();
+    assert(S.minute_count()==3);
+    S.get_minute(0,&m,&c);
+    assert(c==3);
+    S.get_minute(2,&m,&c);
+    assert(c==1);
+    assert(m==12);
+
+    
     S.save();
   }
 
