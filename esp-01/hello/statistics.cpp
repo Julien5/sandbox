@@ -2,6 +2,7 @@
 #include "debug.h"
 #include "eeprom.h"
 #include "freememory.h"
+#include <cstring>
 
 // hi
 
@@ -61,13 +62,17 @@ statistics::statistics()
   clear();
 }
 
+statistics::statistics(uint8_t * src) {
+  std::memcpy(data,src,NDATA);
+}
+
 void statistics::clear() {
   for(int k=0; k<NDATA; ++k) {
     data[k] = 0;
   }
 }
 
-void write_data(char *c, unsigned char length, int *index, char *data) {
+void write_data(uint8_t *c, unsigned char length, int *index, uint8_t *data) {
   int k=*index;
   for(int i=0; i<length; i++)
     data[k++]=c[i];
@@ -75,12 +80,12 @@ void write_data(char *c, unsigned char length, int *index, char *data) {
 }
 
 template<typename T>
-void write_data(T input, int *index, char * data) {
-  char * c=(char *) &input;
+void write_data(T input, int *index, uint8_t * data) {
+  uint8_t * c=(uint8_t *) &input;
   write_data(c,sizeof(T),index,data);
 }
 
-void read_data(char *c, unsigned char length, int *index, char *data) {
+void read_data(uint8_t *c, unsigned char length, int *index, uint8_t *data) {
   assert(length<=8);
   int k=*index;
   for(int i=0; i<length; i++)
@@ -89,8 +94,8 @@ void read_data(char *c, unsigned char length, int *index, char *data) {
 }
 
 template<typename T>
-void read_data(T *result, int *index, char * data) {
-  char c[sizeof(T)]={0};
+void read_data(T *result, int *index,  uint8_t * data) {
+  uint8_t c[sizeof(T)]={0};
   read_data(&c[0],sizeof(T),index,data);
   *result=*((T*)(&c));
 }
@@ -102,14 +107,14 @@ struct Bin {
 
 constexpr int sizeof_bin = sizeof(minute) + sizeof(count);
 
-void write_bin(const Bin &b, const int bin_index, char *data) {
+void write_bin(const Bin &b, const int bin_index, uint8_t *data) {
   int index=sizeof_bin*bin_index;
   debug(bin_index);
   write_data(b.m,&index,data);
   write_data(b.c,&index,data);
 }
 
-Bin read_bin(const int bin_index, char *data) {
+Bin read_bin(const int bin_index,  uint8_t *data) {
   Bin b={0};
   int index=sizeof_bin*bin_index;
   read_data(&b.m,&index,data);
@@ -117,21 +122,21 @@ Bin read_bin(const int bin_index, char *data) {
   return b;
 }
 
-using Indx = unsigned char;
-Indx read_milli_index(char * data) {
+using Indx = uint8_t;
+Indx read_milli_index(uint8_t * data) {
   Indx i;
   int index = sizeof_bin*NMINUTES;
   read_data(&i,&index,data);
   return i;
 }
 
-void write_milli_indx(Indx indx, char * data) {
+void write_milli_indx(Indx indx, uint8_t * data) {
   int index=sizeof_bin*NMINUTES;
   write_data(indx,&index,data);
 }
 
 /*
-  milli read_milli_at_index(Indx indx, char * data) {
+  milli read_milli_at_index(Indx indx, uint8_t * data) {
   milli m;
   int index = 3*NMINUTES+2*indx+1;
   read_data(&m,&index,data);
@@ -141,7 +146,7 @@ void write_milli_indx(Indx indx, char * data) {
 
 constexpr int sizeof_milli = sizeof(milli);
 
-void write_milli_at_index(milli m, Indx indx, char * data) {
+void write_milli_at_index(milli m, Indx indx, uint8_t * data) {
   int index=sizeof_bin*NMINUTES+sizeof_milli*indx+1;
   write_data(m,&index,data);
 }
@@ -199,9 +204,9 @@ void statistics::get_minute(const int indx, minute *m, count *c)
 
 
 #define MAGIC 78
-char magic = MAGIC;
+uint8_t magic = MAGIC;
 
-void statistics::save() {
+void statistics::save_eeprom() {
   eeprom e;
   int index=0;
   e.write(index++,magic);
@@ -209,10 +214,10 @@ void statistics::save() {
     e.write(index++,data[k]);
 }
 
-bool statistics::load() {
+bool statistics::load_eeprom() {
   eeprom e;
   int index=0;
-  char should_be_magic=e.read(index++);
+  uint8_t should_be_magic=e.read(index++);
   if (should_be_magic!=magic)
     return false;
   for(int k=0; k<NDATA; ++k)
@@ -221,22 +226,30 @@ bool statistics::load() {
 
 bool statistics::operator==(const statistics& other) {
   for(int k=0; k<NDATA; ++k) {
-    if (data[k] != other.data[k])
+    if (data[k] != other.data[k]) {
+      debug(data[k]);
+      debug(other.data[k]);
+      debug(k);
       return false;
+    }
   }
   return true;
 }
 
-char * statistics::getdata(int * Lout) {
+uint8_t * statistics::getdata(int * Lout) {
   *Lout = sizeof(data)/1; // in bytes
-  return (char*)&data;
+  assert(*Lout == NDATA);
+  return (uint8_t*)&data;
 }
 
 int statistics::test() {
+  artificial = true;
+  count c=0; minute m=0;
+  
   statistics S;
-  {
-    artificial = true;
+  {    
     sleep(1000*60*10);
+    
     S.tick();
     sleep(20);
     S.tick();
@@ -245,7 +258,7 @@ int statistics::test() {
     S.tick();
     assert(S.total()==3);
     assert(S.minute_count()==1);
-    count c=0; minute m=0;
+    
     S.get_minute(0,&m,&c);
     assert(c==3);
     assert(m==10);
@@ -272,16 +285,27 @@ int statistics::test() {
     assert(m==12);
 
     
-    S.save();
+    S.save_eeprom();
   }
 
   int L=0;
-  char * data = S.getdata(&L);
+  uint8_t * data = S.getdata(&L);
   debug(L);
+  debug(NDATA);
 
   statistics T;
-  T.load();
+  T.load_eeprom();
   assert(S == T);
+  T.get_minute(2,&m,&c);
+  assert(c==1);
+  assert(m==12);
+  
+  statistics U(data);
+  assert(S == U);
+  U.get_minute(2,&m,&c);
+  assert(c==1);
+  assert(m==12);
+  
   debug("statistics::test is good");
   return 0;
 }
