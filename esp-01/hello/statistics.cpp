@@ -103,8 +103,35 @@ Bin read_bin(const int bin_index, char *data) {
   Bin b={0};
   int index=3*bin_index;
   read_data(&b.m,&index,data);
-  write_data(&b.c,&index,data);
+  read_data(&b.c,&index,data);
   return b;
+}
+
+using Indx = unsigned char;
+Indx read_milli_index(char * data) {
+  Indx i;
+  int index = 3*NMINUTES;
+  read_data(&i,&index,data);
+  return i;
+}
+
+void write_milli_indx(Indx indx, char * data) {
+  int index=3*NMINUTES;
+  write_data(indx,&index,data);
+}
+
+/*
+milli read_milli_at_index(Indx indx, char * data) {
+  milli m;
+  int index = 3*NMINUTES+2*indx+1;
+  read_data(&m,&index,data);
+  return m;
+}
+*/
+
+void write_milli_at_index(milli m, Indx indx, char * data) {
+  int index=3*NMINUTES+2*indx+1;
+  write_data(m,&index,data);
 }
 
 void statistics::tick() {
@@ -121,6 +148,12 @@ void statistics::tick() {
   }
 
   milli ml = get_milli(t);
+  Indx indx = read_milli_index(data);
+  write_milli_at_index(m,indx,data);
+  indx++;
+  if (indx>=NMILLIS)
+    indx=0;
+  write_milli_indx(indx,data);
 }
 
 #define MAGIC 78
