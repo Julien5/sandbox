@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-namespace clock {
+namespace Clock {
   using ms = uint32_t;
   void wake_up_after(ms m);
   ms since_start();

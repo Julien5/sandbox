@@ -71,7 +71,8 @@ bool try_upload_statistics(wifi::esp8266 &esp) {
   if (!ok)
     return false;
   
-  clock::set_time(h,m,s);  
+  Clock::set_time(h,m,s);
+  return true;
 }
 
 void upload_statistics() {
@@ -91,27 +92,27 @@ void print_count() {
   display::lcd.print(msg);
 }
 
-clock::ms sleep_duration = 0;
+Clock::ms sleep_duration = 0;
 void sleep_now() {
   display::lcd.print("sleep");
   sleep_duration = 8000;
   LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF); 
 }
 
-clock::ms last_time_rising_reed=0;
+Clock::ms last_time_rising_reed=0;
 
 void loop() {
-  clock::ms current_time=clock::since_start();
-  clock::ms time_since_last_rising_reed = current_time-last_time_rising_reed;
+  Clock::ms current_time=Clock::since_start();
+  Clock::ms time_since_last_rising_reed = current_time-last_time_rising_reed;
 
   if (!wake_on_rising_reed) {
     // wake after sleep;
-    clock::wake_up_after(sleep_duration);
+    Clock::wake_up_after(sleep_duration);
   }
   
   if (!wake_on_rising_reed) {
     // 10 minutes without sensor activity => seems we can upload.
-    if (time_since_last_rising_reed>10*60*1000)
+    if (time_since_last_rising_reed>10*60*1000L)
       upload_statistics();
     sleep_now();
   }

@@ -1,7 +1,7 @@
 #include "clock.h"
 #include "debug.h"
 
-namespace clock {
+namespace Clock {
   ms sleep_millis = 0;
   void wake_up_after(ms m) {
     sleep_millis += m;

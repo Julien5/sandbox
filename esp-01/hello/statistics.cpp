@@ -9,7 +9,7 @@ using namespace types;
 
 namespace {  
   milli get_today_millis() {
-    return clock::millis_today();
+    return Clock::millis_today();
   }
   
   minute get_today_minute() {
@@ -197,6 +197,7 @@ bool statistics::load_eeprom() {
     return false;
   for(int k=0; k<NDATA; ++k)
     data[k]=e.read(index++);
+  return true;
 }
 
 bool statistics::operator==(const statistics& other) const{

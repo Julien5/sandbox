@@ -8,7 +8,17 @@ LIBS=
 debug: CXXFLAGS += -DDEBUG -g
 debug: test
 
-SRCS := test.cpp ../parse.cpp ../nstring.cpp ../statistics.cpp ../eeprom.cpp  ../freememory.cpp # ../wifi.cpp 
+SRCS := \
+test.cpp \
+../parse.cpp \
+../nstring.cpp \
+../statistics.cpp \
+../eeprom.cpp  \
+../freememory.cpp \
+../debug.cpp \
+../clock.cpp
+
+# ../wifi.cpp 
 # Objs are all the sources, with .cpp replaced by .o
 OBJS := $(SRCS:.cpp=.o)
 
