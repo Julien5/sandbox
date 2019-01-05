@@ -3,49 +3,17 @@
 #include "eeprom.h"
 #include "freememory.h"
 #include <string.h>
-
-// hi
-
-#ifdef ARDUINO
-#include "Arduino.h"
-#else
-long long millis() {
-  assert(0);
-  return 0;
-}
-void delay(long long d) {
-  assert(0);
-}
-#endif
+#include "clock.h"
 
 using namespace types;
 
-namespace {
-  bool artificial = false;
-  using ms = types::milli;
-  ms t=0;
-  ms now() {
-    if (!artificial)
-      return millis();
-    return t;
-  }
-  void sleep(ms _delay) {
-    if (!artificial)
-      return delay(_delay);
-    t+=_delay;
-  }
-
-  ms t0=0;
-  void set_start_time(const ms &m) {
-    t0=m;
-  }
-
-  milli get_milli(const ms &m) {
-    return m - t0;
+namespace {  
+  milli get_today_millis() {
+    return clock::millis_today();
   }
   
-  minute get_minute(const ms &m) {
-    ms t = get_milli(m);
+  minute get_today_minute() {
+    milli t = get_today_millis();
     return (t/1000)/60;
   }
 }
@@ -150,8 +118,7 @@ void write_milli_at_index(milli m, Indx indx, uint8_t * data) {
 }
 
 void statistics::tick() {
-  ms t = now();
-  minute m = ::get_minute(t);
+  minute m = get_today_minute();
   debug(m);
   for(int k=0; k<NMINUTES; ++k) {
     Bin b=read_bin(k,data);
@@ -163,7 +130,7 @@ void statistics::tick() {
     }
   }
 
-  milli ml = ::get_milli(t);
+  milli ml = get_today_millis();
   debug(ml);
   Indx indx = read_milli_index(data);
   write_milli_at_index(ml,indx,data);
@@ -251,21 +218,20 @@ uint8_t * statistics::getdata(int * Lout) const {
 }
 
 int statistics::test() {
-  artificial = true;
   count c=0; minute m=0;
   
   statistics S;
   {    
-    sleep(1000*60*10);
+    delay(1000L*60*10);
     
     S.tick();
-    assert(S.get_milli(0)==1000*60*10);
+    assert(S.get_milli(0)==1000L*60*10);
     assert(S.get_milli(1)==0);
-    sleep(20);
+    delay(20);
     S.tick();
-    assert(S.get_milli(0)==1000*60*10+20);
-    assert(S.get_milli(1)==1000*60*10);
-    sleep(20);
+    assert(S.get_milli(0)==1000L*60*10+20);
+    assert(S.get_milli(1)==1000L*60*10);
+    delay(20);
     assert(S.total()==2);
     S.tick();
     assert(S.total()==3);
@@ -277,7 +243,7 @@ int statistics::test() {
     S.get_minute(1,&m,&c);
     assert(c==0);
    
-    sleep(1000*65);
+    delay(1000L*65);
     S.tick();
     assert(S.minute_count()==2);
     S.get_minute(0,&m,&c);
@@ -286,7 +252,7 @@ int statistics::test() {
     assert(c==1);
     assert(m==11);
 
-    sleep(1000*61);
+    delay(1000L*61);
     S.tick();
     assert(S.minute_count()==3);
     S.get_minute(0,&m,&c);

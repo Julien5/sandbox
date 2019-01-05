@@ -43,7 +43,7 @@ void flushRX() {
   ESPTX.flushInput();
 }
 
-boolean waitFor(const unsigned char opts, const int timeout) {
+boolean waitFor(const unsigned char opts, const int timeout, parse::TimeParser *time_parser=nullptr) {
   flushRX();
   unsigned long now = millis();
   unsigned long deadline = now + timeout;
@@ -66,16 +66,21 @@ boolean waitFor(const unsigned char opts, const int timeout) {
       int n=comm::readBytes(buffer,min(comm::available(),BUFFER_LENGTH-1));
       buffer[n]='\0';
       DBGTX(buffer);
-      ok=ok_wait.read(buffer);
-      error=error_wait.read(buffer);
-      closed=closed_wait.read(buffer);
       received = false;
-      if (options::wait_for_ok & opts)
+      if (options::wait_for_ok & opts) {
+	ok=ok_wait.read(buffer);
 	received |= ok;
-      if (options::wait_for_error & opts)
+      }
+      if (options::wait_for_error & opts) {
+	error=error_wait.read(buffer);
 	received |= error;
-      if (options::wait_for_closed & opts)
+      }
+      if (options::wait_for_closed & opts) {
+	closed=closed_wait.read(buffer);
 	received |= closed;
+      }
+      if (time_parser)
+	time_parser->read(buffer);
     }
     buffer[0]='\0';
   }
@@ -218,13 +223,23 @@ bool wifi::esp8266::get(const char * req) {
   if (!sendCommandAndWaitForResponse(request,short_timeout))
     return false;
 
-  if (!waitFor(options::wait_for_closed,long_timeout)) {
+  if (!waitFor(options::wait_for_closed,long_timeout,&time_parser)) {
     return false;
   }
   return true;
 }
 
-int wifi::esp8266::post(const char * req, const char * data, const int Ldata) {
+bool wifi::esp8266::get_time(char *h, char *m, char *s) {
+  char * T = time_parser.get();
+  if (!T)
+    return false;
+  *h = T[0];
+  *m = T[1];
+  *s = T[2];
+  return true;
+}
+
+int wifi::esp8266::post(const char * req, const uint8_t * data, const int Ldata) {
   DBGTX("** upload "); DBGTX(Ldata); DBGTXLN(" bytes");
   //while (!ping()) {
   //  DBGTXLN("server unreachable");
