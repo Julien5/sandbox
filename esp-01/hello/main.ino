@@ -81,6 +81,8 @@ void sleep_now() {
   LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF); 
 }
 
+using time = long long;
+
 void loop() {
   {
     printMemory(0);
@@ -88,9 +90,8 @@ void loop() {
     DBGTXLN("wait");
     delay(100);
   }
-  return;
-  /*long current_time=millis();
-  int time_since_last_rising_reed = current_time-last_time_rising_reed;
+  time current_time=millis();
+  time time_since_last_rising_reed = current_time-last_time_rising_reed;
   
   if (!wake_on_rising_reed && time_since_last_rising_reed>5000) {
     if (stats.elapsed(current_time) > 10000) // (1000*60*10) 10 minutes
@@ -100,11 +101,10 @@ void loop() {
   
   if (wake_on_rising_reed) {
     if (time_since_last_rising_reed>200)
-      stats.increment_count(millis());
+      stats.tick();
     last_time_rising_reed=current_time;
     wake_on_rising_reed=false;
     print_count();
   } 
-  */ 
 }
 

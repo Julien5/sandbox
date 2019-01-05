@@ -27,19 +27,21 @@ constexpr int NDATA=(sizeof(types::minute)+sizeof(types::count))*NMINUTES
 class statistics {
 private:
   uint8_t data[NDATA];
-  void clear();
 
 public:
   statistics();
   statistics(uint8_t * data); // of length NDATA
+  //! put all counters to zero
+  void reset();
   void tick();
-  void save_eeprom();
+  void save_eeprom() const;
   bool load_eeprom();
-  int total();
-  int minute_count();
-  void get_minute(const int indx, types::minute *, types::count *);
-  types::milli get_milli(const int indx);
-  uint8_t *getdata(int * Lout);
-  bool operator==(const statistics& other);
+
+  int total() const;
+  int minute_count() const;
+  void get_minute(const int indx, types::minute *, types::count *) const;
+  types::milli get_milli(const int indx) const;
+  uint8_t *getdata(int * Lout) const;
+  bool operator==(const statistics& other) const;
   static int test();
 };

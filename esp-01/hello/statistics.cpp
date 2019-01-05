@@ -58,7 +58,7 @@ statistics::statistics()
   debug(NDATA);
   debug(sizeof_bin+sizeof_milli);
   assert(NDATA>=(sizeof_bin+sizeof_milli));
-  clear();
+  reset();
 }
 
 statistics::statistics(uint8_t * src) {
@@ -66,7 +66,7 @@ statistics::statistics(uint8_t * src) {
   memcpy(data,src,NDATA);
 }
 
-void statistics::clear() {
+void statistics::reset() {
   for(int k=0; k<NDATA; ++k) {
     data[k] = 0;
   }
@@ -85,7 +85,7 @@ void write_data(T input, int *index, uint8_t * data) {
   write_data(c,sizeof(T),index,data);
 }
 
-void read_data(uint8_t *c, unsigned char length, int *index, uint8_t *data) {
+void read_data(uint8_t *c, unsigned char length, int *index, const uint8_t *data) {
   assert(length<=8);
   int k=*index;
   for(int i=0; i<length; i++)
@@ -94,7 +94,7 @@ void read_data(uint8_t *c, unsigned char length, int *index, uint8_t *data) {
 }
 
 template<typename T>
-void read_data(T *result, int *index,  uint8_t * data) {
+void read_data(T *result, int *index,  const uint8_t * data) {
   uint8_t c[sizeof(T)]={0};
   read_data(&c[0],sizeof(T),index,data);
   *result=*((T*)(&c));
@@ -114,7 +114,7 @@ void write_bin(const Bin &b, const int bin_index, uint8_t *data) {
   write_data(b.c,&index,data);
 }
 
-Bin read_bin(const int bin_index,  uint8_t *data) {
+Bin read_bin(const int bin_index,  const uint8_t *data) {
   Bin b={0};
   int index=sizeof_bin*bin_index;
   read_data(&b.m,&index,data);
@@ -123,7 +123,7 @@ Bin read_bin(const int bin_index,  uint8_t *data) {
 }
 
 using Indx = uint8_t;
-Indx read_milli_index(uint8_t * data) {
+Indx read_milli_index(const uint8_t * data) {
   Indx i;
   int index = sizeof_bin*NMINUTES;
   read_data(&i,&index,data);
@@ -135,7 +135,7 @@ void write_milli_indx(Indx indx, uint8_t * data) {
   write_data(indx,&index,data);
 }
 
-milli read_milli_at_index(Indx indx, uint8_t * data) {
+milli read_milli_at_index(Indx indx, const uint8_t * data) {
   milli m;
   int index = sizeof_bin*NMINUTES+sizeof(types::milli)*indx+1;
   read_data(&m,&index,data);
@@ -173,7 +173,7 @@ void statistics::tick() {
   write_milli_indx(indx,data);
 }
 
-int statistics::total() {
+int statistics::total() const {
   int ret=0;
   for(int k=0; k<NMINUTES; ++k) {
     Bin b=read_bin(k,data);
@@ -182,7 +182,7 @@ int statistics::total() {
   return ret;
 }
 
-int statistics::minute_count()
+int statistics::minute_count() const
 {
   int ret=0;
   for(int k=0; k<NMINUTES; ++k) {
@@ -193,7 +193,7 @@ int statistics::minute_count()
   return ret;
 }
 
-void statistics::get_minute(const int indx, minute *m, count *c)
+void statistics::get_minute(const int indx, minute *m, count *c) const
 {
   int k=indx;
   Bin b=read_bin(k,data);
@@ -201,7 +201,7 @@ void statistics::get_minute(const int indx, minute *m, count *c)
   *c=b.c;
 }
 
-types::milli statistics::get_milli(const int k) {
+types::milli statistics::get_milli(const int k) const {
   Indx i0=read_milli_index(data);
   int k2 = i0-k-1;
   if(k2<0)
@@ -214,7 +214,7 @@ types::milli statistics::get_milli(const int k) {
 #define MAGIC 78
 uint8_t magic = MAGIC;
 
-void statistics::save_eeprom() {
+void statistics::save_eeprom() const {
   eeprom e;
   int index=0;
   e.write(index++,magic);
@@ -232,7 +232,7 @@ bool statistics::load_eeprom() {
     data[k]=e.read(index++);
 }
 
-bool statistics::operator==(const statistics& other) {
+bool statistics::operator==(const statistics& other) const{
   for(int k=0; k<NDATA; ++k) {
     if (data[k] != other.data[k]) {
       debug(data[k]);
@@ -244,7 +244,7 @@ bool statistics::operator==(const statistics& other) {
   return true;
 }
 
-uint8_t * statistics::getdata(int * Lout) {
+uint8_t * statistics::getdata(int * Lout) const {
   *Lout = sizeof(data)/1; // in bytes
   assert(*Lout == NDATA);
   return (uint8_t*)&data;
@@ -306,7 +306,7 @@ int statistics::test() {
     assert(S.get_milli(3)!=0);
     assert(S.get_milli(4)!=0);
     assert(S.get_milli(5)==0);
-
+    assert(S.total() == 5); 
     
     S.save_eeprom();
   }
