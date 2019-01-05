@@ -41,7 +41,7 @@ namespace options {
   const unsigned char wait_for_ok = 0x1; 
   const unsigned char wait_for_error = 0x2;
   const unsigned char wait_for_closed = 0x4;
-  const unsigned char parse_time = 0x8;
+  const unsigned char wait_for_gt = 0x8;
 }
 
 void flushRX() {
@@ -49,53 +49,54 @@ void flushRX() {
   ESPTX.flushInput();
 }
 
-boolean waitFor(const unsigned char opts, const int timeout, parse::TimeParser *time_parser=nullptr) {
+unsigned char waitFor(const unsigned char opts, const int timeout, parse::TimeParser *time_parser=nullptr) {
   flushRX();
   unsigned long now = millis();
   unsigned long deadline = now + timeout;
-  
-  bool received=false;
-  bool ok=false;
-  bool error=false;
-  bool closed=false;
-  
+   
   parse::StringAwaiter ok_wait("OK");
   parse::StringAwaiter error_wait("ERROR");
   parse::StringAwaiter closed_wait("CLOSED");
-   
+  parse::StringAwaiter gt_wait(">");
+
+  unsigned char found = 0;
+  
   delay(250);
   printMemory(127);
   DBGTX("[");
   char buffer[BUFFER_LENGTH]={0};
-  while(millis()<deadline && !received) {
-    while(comm::available() && !received) {
+  while(millis()<deadline && !found) {
+    while(comm::available() && !found) {
       int n=comm::readBytes(buffer,min(comm::available(),BUFFER_LENGTH-1));
       buffer[n]='\0';
       DBGTX(buffer);
-      received = false;
       if (options::wait_for_ok & opts) {
-	ok=ok_wait.read(buffer);
-	received |= ok;
+	if (ok_wait.read(buffer))
+	  found |= options::wait_for_ok;
       }
       if (options::wait_for_error & opts) {
-	error=error_wait.read(buffer);
-	received |= error;
+	if (error_wait.read(buffer))
+	  found |= options::wait_for_error;
       }
       if (options::wait_for_closed & opts) {
-	closed=closed_wait.read(buffer);
-	received |= closed;
+	if (closed_wait.read(buffer))
+	  found |= options::wait_for_closed;
       }
-      if (time_parser)
-	time_parser->read(buffer);
+      if (options::wait_for_gt & opts) {
+	if (gt_wait.read(buffer))
+	  found |= options::wait_for_gt;
+      }
+      //if (time_parser)
+      //time_parser->read(buffer);
     }
     buffer[0]='\0';
   }
   DBGTX("]...");
   DBGTX("\r\n*\r\n*\r\n");
-  return ok;  
+  return found;  
 }
 
-boolean sendCommandAndWaitForResponse(const char * command, const int length, const int timeout)
+unsigned char sendCommandAndWaitForResponse(const char * command, const int length, const int timeout)
 {
   comm::write(command,length);
   comm::write("\r\n");
@@ -105,10 +106,13 @@ boolean sendCommandAndWaitForResponse(const char * command, const int length, co
     delay(150);
     return true;
   }
-  return waitFor(options::wait_for_ok | options::wait_for_error, timeout);
+  unsigned char opts=options::wait_for_ok | options::wait_for_error;
+  if (strstr(command,"CIPSEND")!=NULL)
+    opts |= options::wait_for_gt;
+  return waitFor(opts, timeout);
 }
 
-boolean sendCommandAndWaitForResponse(const char * command, const int timeout) {
+unsigned char sendCommandAndWaitForResponse(const char * command, const int timeout) {
   return sendCommandAndWaitForResponse(command,strlen(command),timeout);
 }
 
@@ -157,6 +161,9 @@ bool wifi::esp8266::reset() {
   resetSerial();
   char trial=16;
   while(trial>=0 && !AT::RST()) {
+    disable();
+    delay(50);
+    enable();
     trial--;
   }
   return AT::RST();
@@ -213,7 +220,6 @@ public:
 };
 
 bool wifi::esp8266::get(const char * req) {
-  DBGTXLN("*** GET");
   Slower slower;
   IPConnection connection;
   
@@ -246,7 +252,6 @@ bool wifi::esp8266::get_time(char *h, char *m, char *s) {
 }
 
 int wifi::esp8266::post(const char * req, const uint8_t * data, const int Ldata) {
-  DBGTX("** upload "); DBGTX(Ldata); DBGTXLN(" bytes");
   //while (!ping()) {
   //  DBGTXLN("server unreachable");
   //  delay(1000);
@@ -279,11 +284,11 @@ int wifi::esp8266::post(const char * req, const uint8_t * data, const int Ldata)
   char cipsend[32]={0};
   snprintf(cipsend, 32, "AT+CIPSEND=%d", Lr+2);
 
-  bool ok=false;
+  unsigned char ok=0;
   char trials=3;
   while(trials-->0 && !(ok=sendCommandAndWaitForResponse(cipsend,short_timeout)))
     delay(1000);
-  if (!ok)
+  if (ok==0)
     return 3;
 
   DBGTXLN(request);

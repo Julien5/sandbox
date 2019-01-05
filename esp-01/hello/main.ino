@@ -46,44 +46,56 @@ void setup()
   attachInterrupt(0,on_rising_reed,RISING);
 }
 
-bool try_upload_statistics(wifi::esp8266 &esp) {
+unsigned char try_upload_statistics(wifi::esp8266 &esp) {
   display::lcd.print("uploading...");
   int length=0;
   uint8_t * data = stats.getdata(&length);
   int ret=esp.post("postrequest",data,length);
   if (ret != 0) {
     char msg[16];
-    snprintf(msg, 16,"error: %d",ret);
+    snprintf(msg, 16,"post error: %d",ret);
     display::lcd.print(msg);
     delay(200);
-    return false;
+    return 1;
   }
   
   stats.reset();
 
   // any get request returns a time stamp
   bool ok=esp.get("X");
-  if (!ok)
-    return false;
+  if (!ok) {
+    display::lcd.print("GET error");
+    return 2;
+  }
 
   char h=0,m=0,s=0;
   ok=esp.get_time(&h,&m,&s);
-  if (!ok)
-    return false;
+  if (!ok) {
+    display::lcd.print("TIME error");
+    return 3;
+  }
   
   Clock::set_time(h,m,s);
-  return true;
+  display::lcd.print("result uploaded and time set");
+  return 0;
 }
 
-void upload_statistics() {
+bool upload_statistics() {
+  if (stats.total() == 0) {
+    display::lcd.print("nothing to upload");
+    return false;
+  }
   wifi::esp8266 esp(wifi_enable_pin);
   int trials = 3;
+  char ret=1;
   while(trials-- > 0) {
-    if (try_upload_statistics(esp))
-      break;
+    ret=try_upload_statistics(esp);
+    if (ret == 0)
+      return true;
   }
-  display::lcd.print("result uploaded");
   delay(200);
+  display::lcd.print("upload failed");
+  return false;
 }
 
 void print_count() {
@@ -111,8 +123,9 @@ void loop() {
   }
   
   if (!wake_on_rising_reed) {
+    constexpr Clock::ms no_activity_time_for_upload = 1000; //10*60*1000L;
     // 10 minutes without sensor activity => seems we can upload.
-    if (time_since_last_rising_reed>10*60*1000L)
+    if (time_since_last_rising_reed>no_activity_time_for_upload)
       upload_statistics();
     sleep_now();
   }

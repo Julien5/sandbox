@@ -5,7 +5,6 @@ namespace display {
   public:
     LCD();
     void init();
-    void print(char * msg);
     void print(const char * msg);
   };
   
