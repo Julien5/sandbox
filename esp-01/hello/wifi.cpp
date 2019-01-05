@@ -63,7 +63,7 @@ unsigned char waitFor(const unsigned char opts, const int timeout, parse::TimePa
   
   delay(250);
   printMemory(127);
-  DBGTX("[");
+  DBGTX("waitfor[");
   char buffer[BUFFER_LENGTH]={0};
   while(millis()<deadline && !found) {
     while(comm::available() && !found) {
@@ -86,8 +86,15 @@ unsigned char waitFor(const unsigned char opts, const int timeout, parse::TimePa
 	if (gt_wait.read(buffer))
 	  found |= options::wait_for_gt;
       }
-      //if (time_parser)
-      //time_parser->read(buffer);
+      DBGTX("|");
+      if (time_parser) {
+	DBGTXLN("--");
+	delay(5);
+	time_parser->read(buffer);
+	delay(5);
+	DBGTXLN("--");
+      }
+      
     }
     buffer[0]='\0';
   }

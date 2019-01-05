@@ -125,15 +125,20 @@ void parse::TimeParser::read(const char * _buffer) {
     buffer.append(retain.c_str());
   }
   buffer.append(_buffer);
-  
+  debug(buffer);
   if (!buffer.contains("GMT"))
     return;
-
+  
   buffer.zeroes(" :\r\n");
   parse_index=0;
   while(char * _p = buffer.tok()) {
     nstring::STR<8> p(_p);
+    if (p.contains("Date"))
+      parse_index=0;
     parse_index++;
+    debug(parse_index);
+    debug(_p);
+    debug("--");
     if (parse_index==6) {
       time[0] = char(p.toInt());
     }
@@ -250,6 +255,7 @@ int time_parser_test() {
     assert(time[1]==8);
     assert(time[2]==34);
   }
+  debug("time OK 3");
   {
     TimeParser p;
     p.read("D");
@@ -262,8 +268,35 @@ int time_parser_test() {
     assert(time[0]==23);
     assert(time[1]==8);
     assert(time[2]==34);
-   }
-  debug("time OK 3");
+  }
+  debug("time OK 4");
+  {
+    TimeParser p;
+    p.read("erver: BaseHTTP/0.6 Python/3.4.2\n");
+    p.read("Date: Sat, 05 Jan 2019 18:44:09 GMT\n");
+    p.read("Content-type: text/html\n");
+    char * time = p.get();
+    assert(time);
+    assert(time[0]==18);
+    assert(time[1]==44);
+    assert(time[2]==9);
+  }
+  debug("time OK 5");
+  {
+    TimeParser p;
+    p.read("erver: BaseHTTP");
+    p.read("/0.6 Python/3.4");
+    p.read(".2\nDate: Sat, ");
+    p.read("05 Jan 2019 19:");
+    p.read("08:46 GMT\nCont");
+    p.read("ent-type: text/");
+    char * time = p.get();
+    assert(time);
+    assert(time[0]==19);
+    assert(time[1]==8);
+    assert(time[2]==46);
+  }
+  debug("time OK 6");
   return 0;
 }
 

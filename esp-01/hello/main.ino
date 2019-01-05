@@ -83,7 +83,7 @@ unsigned char try_upload_statistics(wifi::esp8266 &esp) {
 bool upload_statistics() {
   if (stats.total() == 0) {
     display::lcd.print("nothing to upload");
-    return false;
+    // return false;
   }
   wifi::esp8266 esp(wifi_enable_pin);
   int trials = 3;
