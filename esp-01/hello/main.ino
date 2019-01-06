@@ -133,11 +133,11 @@ void print_time() {
 Clock::ms sleep_duration = 0;
 bool slept=false;
 void sleep_now() {
-  display::lcd.print("sleep");
   slept=true;
 #if 0
   // disabled, because the watchdog timer is too inacurate:
   // so sleep_duration is actually unknow :-(
+  display::lcd.print("sleep");
   sleep_duration = 8000;
   LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF);
 #endif
