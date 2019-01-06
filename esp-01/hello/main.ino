@@ -44,9 +44,23 @@ void setup()
   delay(1000);
   pinMode(reed_pin, INPUT_PULLUP);
   attachInterrupt(0,on_rising_reed,RISING);
+  
 }
 
-unsigned char try_upload_statistics(wifi::esp8266 &esp) {
+char try_update_time(wifi::esp8266 &esp) {
+  DBGTXLN("-- time update --");
+  // any get request returns a time stamp
+  
+  bool ok=esp.get("time");
+  if (!ok) {
+    display::lcd.print("GET error");
+    return 2;
+  }
+ 
+  return 0;
+}
+
+char try_upload_statistics(wifi::esp8266 &esp) {
   display::lcd.print("uploading...");
   int length=0;
   uint8_t * data = stats.getdata(&length);
@@ -58,34 +72,29 @@ unsigned char try_upload_statistics(wifi::esp8266 &esp) {
     delay(200);
     return 1;
   }
-  
+  display::lcd.print("result uploaded");
   stats.reset();
-
-  // any get request returns a time stamp
-  bool ok=esp.get("X");
-  if (!ok) {
-    display::lcd.print("GET error");
-    return 2;
-  }
-
-  char h=0,m=0,s=0;
-  ok=esp.get_time(&h,&m,&s);
-  if (!ok) {
-    display::lcd.print("TIME error");
-    return 3;
-  }
-  
-  Clock::set_time(h,m,s);
-  display::lcd.print("result uploaded and time set");
+  ret=try_update_time(esp);
+  if (ret!=0)
+    return ret;
   return 0;
+}
+
+bool update_time() {
+  wifi::esp8266 esp(wifi_enable_pin);
+  if (!esp.enabled())
+    return false;
+  return try_update_time(esp) == 0;
 }
 
 bool upload_statistics() {
   if (stats.total() == 0) {
     display::lcd.print("nothing to upload");
-    // return false;
+    return true;
   }
   wifi::esp8266 esp(wifi_enable_pin);
+  if (!esp.enabled())
+    return false;
   int trials = 3;
   char ret=1;
   while(trials-- > 0) {
@@ -93,8 +102,6 @@ bool upload_statistics() {
     if (ret == 0)
       return true;
   }
-  delay(200);
-  display::lcd.print("upload failed");
   return false;
 }
 
@@ -104,11 +111,36 @@ void print_count() {
   display::lcd.print(msg);
 }
 
+Clock::ms last_print_time=0;
+void print_time() {
+  Clock::ms t=Clock::millis_today();
+  if ((t-last_print_time)<1000)
+    return;
+  last_print_time=t;
+  
+  t=t/1000L; // secs
+  char h=t/3600L;
+  t-=3600L*h; 
+  char m=t/60;
+  t-=60*m;
+  char s=t;
+  char msg[19]={0};
+  snprintf(msg,sizeof(msg),"time: %d:%d:%d",h,m,s);
+  display::lcd.print(msg);
+ 
+}
+
 Clock::ms sleep_duration = 0;
+bool slept=false;
 void sleep_now() {
   display::lcd.print("sleep");
+  slept=true;
+#if 0
+  // disabled, because the watchdog timer is too inacurate:
+  // so sleep_duration is actually unknow :-(
   sleep_duration = 8000;
-  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF); 
+  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF);
+#endif
 }
 
 Clock::ms last_time_rising_reed=0;
@@ -117,16 +149,31 @@ void loop() {
   Clock::ms current_time=Clock::since_start();
   Clock::ms time_since_last_rising_reed = current_time-last_time_rising_reed;
 
-  if (!wake_on_rising_reed) {
+  if (!wake_on_rising_reed && slept) {
     // wake after sleep;
     Clock::wake_up_after(sleep_duration);
+    slept=false;
   }
-  
+
+
+  if (!Clock::good()) {
+    while(!update_time())
+      display::lcd.print("updating time...");
+  }
+  print_time();
+ 
   if (!wake_on_rising_reed) {
-    constexpr Clock::ms no_activity_time_for_upload = 1000; //10*60*1000L;
+    constexpr Clock::ms no_activity_time_for_upload = 10*1000; //10*60*1000L;
     // 10 minutes without sensor activity => seems we can upload.
-    if (time_since_last_rising_reed>no_activity_time_for_upload)
-      upload_statistics();
+    if (time_since_last_rising_reed>no_activity_time_for_upload) {
+      if (stats.total()==0)
+	return;
+      if (!upload_statistics()) {
+	display::lcd.print("upload failed");
+      } else {
+	display::lcd.print("upload good");
+      }
+    }
     sleep_now();
   }
   

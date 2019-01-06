@@ -10,21 +10,23 @@ namespace wifi {
     int timeout;
     char enable_pin;
     parse::TimeParser time_parser;
+    bool m_enabled=false;
   public:
     esp8266(char pin);
     ~esp8266();
     
     bool reset();
-    void enable();
+    bool enable();
     void disable();
     
     void setTimeout(int t);
  
     bool join();
     bool ping();
-    bool get_time(char *h, char *m, char *s);
     bool get(const char* req);
     int post(const char* req, const uint8_t * data, const int Ldata);
+
+    bool enabled() const;
   };
 
   int test();

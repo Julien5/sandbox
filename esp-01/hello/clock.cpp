@@ -11,10 +11,18 @@ namespace Clock {
     return millis() + sleep_millis;
   }
   
-  ms millis_at_midnight=0;
+  int64_t millis_at_midnight=0;
   void set_time(char h, char m, char s) {
-    ms millis_since_midnight = 1000*(3600*h + 60*m + s);
-    millis_at_midnight = since_start() - millis_since_midnight;
+    sleep_millis=0;
+    ms millis_since_midnight = 1000L*(3600L*h + 60L*m + s);
+    int64_t ss = since_start();
+    millis_at_midnight = ss  - millis_since_midnight;
+  }
+
+  bool good() {
+    if (millis_at_midnight==0)
+      return false;
+    return true;
   }
   
   constexpr ms millis_24h = 24L*3600*1000;
@@ -24,5 +32,18 @@ namespace Clock {
     if (ret>millis_24h)
       ret-=millis_24h;
     return ret;
+  }
+  
+  int test() {
+    set_time(0,0,1);
+    assert(millis_today()==1000);
+    delay(1000);
+    assert(millis_today()==2000);
+    set_time(0,1,0);
+    assert(millis_today()==60*1000L);
+    set_time(1,0,0);
+    assert(millis_today()==3600*1000L);
+    debug("clock is good");
+    return 0;
   }
 }

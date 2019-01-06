@@ -3,6 +3,7 @@
 #include "nstring.h"
 #include "lcd.h"
 #include "freememory.h"
+#include "clock.h"
 
 #include "AltSoftSerial.h"
 AltSoftSerial Altser;
@@ -86,15 +87,8 @@ unsigned char waitFor(const unsigned char opts, const int timeout, parse::TimePa
 	if (gt_wait.read(buffer))
 	  found |= options::wait_for_gt;
       }
-      DBGTX("|");
-      if (time_parser) {
-	DBGTXLN("--");
-	delay(5);
+      if (time_parser) 
 	time_parser->read(buffer);
-	delay(5);
-	DBGTXLN("--");
-      }
-      
     }
     buffer[0]='\0';
   }
@@ -134,23 +128,31 @@ wifi::esp8266::esp8266(char pin)
   , enable_pin(pin) {
   resetSerial();
   pinMode(enable_pin, OUTPUT);
-  enable();
+  delay(250);
+  m_enabled=enable();
+}
+
+bool wifi::esp8266::enabled() const {
+  return m_enabled;
 }
 
 wifi::esp8266::~esp8266() {
   disable();
 }
 
-void wifi::esp8266::enable() {
-  DBGTX("wifi wake up");
+bool wifi::esp8266::enable() {
+  DBGTX("wifi up");
   digitalWrite(enable_pin, HIGH);
   delay(250);
-  reset();
-  join();
+  if (!reset())
+    return false;
+  if (!join())
+    return false;
+  return true;
 }
 
 void wifi::esp8266::disable() {
-  DBGTX("wifi sleep");
+  DBGTX("wifi down");
   digitalWrite(enable_pin, LOW);
 }
 
@@ -160,30 +162,31 @@ void wifi::esp8266::setTimeout(int t) {
 
 namespace AT {
   bool RST() {
-    return sendCommandAndWaitForResponse("AT+RST",short_timeout);
+    return sendCommandAndWaitForResponse("AT+RST",short_timeout)==options::wait_for_ok;
   }
 };
 
 bool wifi::esp8266::reset() {
   resetSerial();
   char trial=16;
-  while(trial>=0 && !AT::RST()) {
-    disable();
-    delay(50);
-    enable();
+  while(!AT::RST()) {
+    delay(150);
     trial--;
+    if (trial<=0)
+      return false;
   }
-  return AT::RST();
+  return true;
 }
 
 bool wifi::esp8266::join() {
   sendCommandAndWaitForResponse("ATE1",short_timeout);
   sendCommandAndWaitForResponse("AT",short_timeout);
-  while(!sendCommandAndWaitForResponse("AT+CWLAP",long_timeout)) {
-    AT::RST();
-    delay(250);
-  }
-  return sendCommandAndWaitForResponse("AT+CWJAP_CUR=\"JBO\",\"7981409790562366\"",long_timeout);
+  //while(!sendCommandAndWaitForResponse("AT+CWLAP",long_timeout)) {
+  //  AT::RST();
+  //  delay(250);
+  //}
+  return sendCommandAndWaitForResponse("AT+CWJAP_CUR=\"JBO\",\"7981409790562366\"",long_timeout)
+    ==options::wait_for_ok;
 }
 
 bool wifi::esp8266::ping() {
@@ -227,11 +230,12 @@ public:
 };
 
 bool wifi::esp8266::get(const char * req) {
+  DBGTXLN("-- GET --");
   Slower slower;
   IPConnection connection;
   
   char request[128]={0};
-  snprintf(request, 128, "GET %s HTTP/1.1\r\n\r\n", req);
+  snprintf(request, 128, "GET /%s HTTP/1.1\r\n\r\n", req);
   
   char cipsend[32]={0};
   snprintf(cipsend, 32, "AT+CIPSEND=%d", strlen(request)+2);
@@ -242,19 +246,22 @@ bool wifi::esp8266::get(const char * req) {
   if (!sendCommandAndWaitForResponse(request,short_timeout))
     return false;
 
-  if (!waitFor(options::wait_for_closed,long_timeout,&time_parser)) {
+  parse::TimeParser * parser = nullptr;
+  if (strstr(req,"time")!=NULL) 
+    parser = &time_parser;
+  
+  if (!waitFor(options::wait_for_closed,long_timeout,parser)) {
     return false;
   }
-  return true;
-}
-
-bool wifi::esp8266::get_time(char *h, char *m, char *s) {
-  char * T = time_parser.get();
-  if (!T)
-    return false;
-  *h = T[0];
-  *m = T[1];
-  *s = T[2];
+  
+  if (parser && parser->get()) {
+    char * T = parser->get();
+    Clock::set_time(T[0],T[1],T[2]);
+    char msg[19]={0};
+    snprintf(msg,sizeof(msg),"set time: %d:%d:%d",T[0],T[1],T[2]);
+    display::lcd.print(msg);
+    delay(250);  
+  }
   return true;
 }
 

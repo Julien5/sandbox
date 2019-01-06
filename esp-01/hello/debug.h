@@ -25,6 +25,7 @@ void delay(test_ms d);
 #else
 #include "Arduino.h"
 #include "HardwareSerial.h"
+#if 1
 #define DBGTX(X)				\
   do						\
     {						\
@@ -35,8 +36,11 @@ void delay(test_ms d);
     {						\
       Serial.println((X));			\
     } while(0)
-//#define DBGTX(X) ((void) 0)
-//#define DBGTXLN(X) ((void) 0)
+
+#else
+#define DBGTX(X) ((void) 0)
+#define DBGTXLN(X) ((void) 0)
+#endif
 #define assert(ignore)
 #define debug(X)((void) 0)
 #endif
