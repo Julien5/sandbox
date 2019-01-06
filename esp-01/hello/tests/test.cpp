@@ -3,8 +3,7 @@
 //#include "wifi.h"
 #include "nstring.h"
 #include "statistics.h"
-
-// hi
+#include "clock.h"
 
 int display(int exitcode) {
   if (exitcode!=0)
@@ -21,5 +20,6 @@ int main(int argc, char ** argv) {
   display(parse::test());
   display(nstring::test());
   display(statistics::test());
+  display(Clock::test());
   return 0;
 }
