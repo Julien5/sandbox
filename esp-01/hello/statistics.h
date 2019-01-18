@@ -7,12 +7,16 @@ namespace types
   using minute = uint16_t;
   using count = uint8_t;
   using milli = uint32_t;
+  using total = uint16_t;
 }
 
-constexpr int NMILLIS=30;
-constexpr int NMINUTES=10;
-constexpr int NDATA=(sizeof(types::minute)+sizeof(types::count))*NMINUTES
-  + sizeof(types::milli)*NMILLIS + 1;
+constexpr int NMILLIS=25;
+constexpr int NMINUTES=30;
+constexpr int NDATA=
+  (sizeof(types::minute)+sizeof(types::count))*NMINUTES
+  +sizeof(types::milli)*NMILLIS
+  +1
+  +sizeof(types::total);
 
 /* 
    as i understand now, packing the data in a char* was not really needed.
@@ -36,8 +40,11 @@ public:
   void tick();
   void save_eeprom() const;
   bool load_eeprom();
-
-  int total() const;
+  
+  uint16_t day_total() const;
+  uint16_t full_total() const;
+   
+  types::minute last_minute() const;
   int minute_count() const;
   void get_minute(const int indx, types::minute *, types::count *) const;
   types::milli get_milli(const int indx) const;

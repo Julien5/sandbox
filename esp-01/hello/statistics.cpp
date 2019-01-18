@@ -21,11 +21,12 @@ namespace {
 statistics::statistics()
   : data{0}
 {
+  for(int k=0; k<NDATA; ++k)
+    assert(data[k]==0);
   constexpr int sizeof_bin = NMINUTES*(sizeof(minute) + sizeof(count));
   constexpr int sizeof_milli = 1+NMILLIS*sizeof(milli);
-  debug(NDATA);
-  debug(sizeof_bin+sizeof_milli);
   assert(NDATA>=(sizeof_bin+sizeof_milli));
+  assert(full_total()==0);
   reset();
 }
 
@@ -35,7 +36,8 @@ statistics::statistics(uint8_t * src) {
 }
 
 void statistics::reset() {
-  for(int k=0; k<NDATA; ++k) {
+  // do not reset the big total.
+  for(int k=0; k<NDATA-sizeof(types::total); ++k) {
     data[k] = 0;
   }
 }
@@ -56,8 +58,14 @@ void write_data(T input, int *index, uint8_t * data) {
 void read_data(uint8_t *c, unsigned char length, int *index, const uint8_t *data) {
   assert(length<=8);
   int k=*index;
-  for(int i=0; i<length; i++)
+  for(int i=0; i<length; i++) {
+    if (k>=NDATA) {
+      DBGTXLN("BAAAAD");
+      delay(1000);
+      return;
+    }
     c[i]=data[k++];
+  }
   *index=k;
 }
 
@@ -77,7 +85,6 @@ constexpr int sizeof_bin = sizeof(minute) + sizeof(count);
 
 void write_bin(const Bin &b, const int bin_index, uint8_t *data) {
   int index=sizeof_bin*bin_index;
-  debug(bin_index);
   write_data(b.m,&index,data);
   write_data(b.c,&index,data);
 }
@@ -117,9 +124,20 @@ void write_milli_at_index(milli m, Indx indx, uint8_t * data) {
   write_data(m,&index,data);
 }
 
+void write_full_total(total t, uint8_t * data) {
+  int index=sizeof_bin*NMINUTES+sizeof_milli*NMILLIS+1;
+  write_data(t,&index,data);
+}
+
+total read_full_total(const uint8_t * data) {
+  int index=sizeof_bin*NMINUTES+sizeof_milli*NMILLIS+1;
+  total ret=0;
+  read_data(&ret,&index,data);
+  return ret;
+}
+
 void statistics::tick() {
   minute m = get_today_minute();
-  debug(m);
   for(int k=0; k<NMINUTES; ++k) {
     Bin b=read_bin(k,data);
     if (b.m == m || b.m == 0) {
@@ -130,8 +148,9 @@ void statistics::tick() {
     }
   }
 
+  write_full_total(read_full_total(data)+1,data);
+
   milli ml = get_today_millis();
-  debug(ml);
   Indx indx = read_milli_index(data);
   write_milli_at_index(ml,indx,data);
   indx++;
@@ -140,7 +159,7 @@ void statistics::tick() {
   write_milli_indx(indx,data);
 }
 
-int statistics::total() const {
+uint16_t statistics::day_total() const {
   int ret=0;
   for(int k=0; k<NMINUTES; ++k) {
     Bin b=read_bin(k,data);
@@ -149,21 +168,35 @@ int statistics::total() const {
   return ret;
 }
 
+types::total statistics::full_total() const {
+  return read_full_total(data);
+}
+
 int statistics::minute_count() const
 {
   int ret=0;
   for(int k=0; k<NMINUTES; ++k) {
     Bin b=read_bin(k,data);
-    if (b.c!=0)
+    if (b.c!=0) {
+      assert(ret==k);
       ret++;
+    }
   }
   return ret;
 }
 
+types::minute statistics::last_minute() const {
+  minute m;
+  count c;
+  if (minute_count()==0)
+    return 0;
+  get_minute(minute_count()-1,&m,&c);
+  return m;
+}
+
 void statistics::get_minute(const int indx, minute *m, count *c) const
 {
-  int k=indx;
-  Bin b=read_bin(k,data);
+  Bin b=read_bin(indx,data);
   *m=b.m;
   *c=b.c;
 }
@@ -233,10 +266,11 @@ int statistics::test() {
     assert(S.get_milli(0)==1000L*60*10+20);
     assert(S.get_milli(1)==1000L*60*10);
     delay(20);
-    assert(S.total()==2);
+    assert(S.day_total()==2);
     S.tick();
-    assert(S.total()==3);
+    assert(S.day_total()==3);
     assert(S.minute_count()==1);
+    assert(S.last_minute()==10);
     
     S.get_minute(0,&m,&c);
     assert(c==3);
@@ -273,8 +307,9 @@ int statistics::test() {
     assert(S.get_milli(3)!=0);
     assert(S.get_milli(4)!=0);
     assert(S.get_milli(5)==0);
-    assert(S.total() == 5); 
-    
+    assert(S.day_total() == 5);
+    debug(int(S.full_total()));
+    assert(S.full_total() == 5);
     S.save_eeprom();
   }
 
@@ -295,6 +330,11 @@ int statistics::test() {
   U.get_minute(2,&m,&c);
   assert(c==1);
   assert(m==12);
+
+  
+  U.reset();
+  assert(U.day_total() == 0);
+  assert(U.full_total() > 0);
   
   debug("statistics::test is good");
   return 0;

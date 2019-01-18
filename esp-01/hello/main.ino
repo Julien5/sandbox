@@ -88,7 +88,7 @@ bool update_time() {
 }
 
 bool upload_statistics() {
-  if (stats.total() == 0) {
+  if (stats.day_total() == 0) {
     display::lcd.print("nothing to upload");
     return true;
   }
@@ -105,29 +105,24 @@ bool upload_statistics() {
   return false;
 }
 
-void print_count() {
-  char msg[16];
-  snprintf(msg, 16,"count: %d",stats.total());
-  display::lcd.print(msg);
-}
 
-Clock::ms last_print_time=0;
-void print_time() {
+Clock::ms last_update_display=0;
+void update_display() {
   Clock::ms t=Clock::millis_today();
-  if ((t-last_print_time)<1000)
+  if ((t-last_update_display)<1000)
     return;
-  last_print_time=t;
+  last_update_display=t;
   
-  t=t/1000L; // secs
-  char h=t/3600L;
-  t-=3600L*h; 
-  char m=t/60;
-  t-=60*m;
-  char s=t;
-  char msg[19]={0};
-  snprintf(msg,sizeof(msg),"time: %d:%d:%d",h,m,s);
-  display::lcd.print(msg);
+  types::minute m=stats.last_minute();
+  char h=m/60;
+  m-=60*h;
+  
+  char line1[16]={0};
+  snprintf(line1,16,"%u at %02d:%02d",stats.day_total(),h,m);
  
+  char line2[16]={0}; 
+  snprintf(line2,16,"TOTAL=%u",stats.full_total());
+  display::lcd.print(line1,line2);
 }
 
 Clock::ms sleep_duration = 0;
@@ -160,13 +155,14 @@ void loop() {
     while(!update_time())
       display::lcd.print("updating time...");
   }
-  print_time();
+  
+  update_display();
  
   if (!wake_on_rising_reed) {
-    constexpr Clock::ms no_activity_time_for_upload = 10*1000; //10*60*1000L;
+    constexpr Clock::ms no_activity_time_for_upload = 10*1000L; //10*60*1000L;
     // 10 minutes without sensor activity => seems we can upload.
     if (time_since_last_rising_reed>no_activity_time_for_upload) {
-      if (stats.total()==0)
+      if (stats.day_total()==0)
 	return;
       if (!upload_statistics()) {
 	display::lcd.print("upload failed");
@@ -178,13 +174,11 @@ void loop() {
   }
   
   if (wake_on_rising_reed) {
+    DBGTXLN("tick.");
     if (time_since_last_rising_reed>200) // avoid interrupt bouncing
       stats.tick();
-    
     last_time_rising_reed=current_time;
-    
     wake_on_rising_reed=false;
-    print_count();
   } 
 }
 
