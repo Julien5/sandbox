@@ -40,11 +40,10 @@ void setup()
   Serial.println("@START");
   display::lcd.init();
   delay(50);  
-  display::lcd.print("good.");
+  display::lcd.print("good");
   delay(1000);
   pinMode(reed_pin, INPUT_PULLUP);
   attachInterrupt(0,on_rising_reed,RISING);
-  TRACE();
 }
 
 char try_update_time(wifi::esp8266 &esp) {
@@ -97,6 +96,8 @@ bool upload_statistics() {
     ret=try_upload_statistics(esp);
     if (ret == 0)
       return true;
+    esp.reset();
+    esp.join();
   }
   return false;
 }

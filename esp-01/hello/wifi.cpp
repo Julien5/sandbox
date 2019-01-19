@@ -102,7 +102,6 @@ unsigned char sendCommandAndWaitForResponse(const char * command, const int leng
 {
   comm::write(command,length);
   comm::write("\r\n");
-  display::lcd.print(command);
   DBGTXLN(command);
   if (strstr(command,"UART_CUR")!=NULL) {
     delay(150);
@@ -142,6 +141,7 @@ bool wifi::esp8266::enabled() const {
 }
 
 wifi::esp8266::~esp8266() {
+  sendCommandAndWaitForResponse("AT+CWQAP",short_timeout);
   disable();
 }
 
@@ -151,6 +151,7 @@ bool wifi::esp8266::enable() {
   delay(250);
   if (!reset())
     return false;
+  delay(5000);
   if (!join())
     return false;
   return true;
@@ -190,14 +191,20 @@ bool wifi::esp8266::reset() {
 }
 
 bool wifi::esp8266::join() {
-  sendCommandAndWaitForResponse("ATE1",short_timeout);
-  sendCommandAndWaitForResponse("AT",short_timeout);
-  //while(!sendCommandAndWaitForResponse("AT+CWLAP",long_timeout)) {
-  //  AT::RST();
-  //  delay(250);
-  //}
-  return sendCommandAndWaitForResponse("AT+CWJAP_CUR=\"JBO\",\"7981409790562366\"",long_timeout)
-    ==options::wait_for_ok;
+  if (sendCommandAndWaitForResponse("AT+CWJAP?",short_timeout)==options::wait_for_ok)
+    m_joined=true;
+  
+  if (!m_joined) {
+    sendCommandAndWaitForResponse("ATE1",short_timeout);
+    sendCommandAndWaitForResponse("AT",short_timeout);
+    //while(!sendCommandAndWaitForResponse("AT+CWLAP",long_timeout)) {
+    //  AT::RST();
+    //  delay(250);
+    //}
+    m_joined=sendCommandAndWaitForResponse("AT+CWJAP_CUR=\"JBO\",\"7981409790562366\"",long_timeout)
+      ==options::wait_for_ok;
+  }
+  return m_joined;
 }
 
 bool wifi::esp8266::ping() {
@@ -233,7 +240,7 @@ class IPConnection {
   }
 public:
   IPConnection() {
-    // close(); // ignore the result.
+    //  close(); // ignore the result.
     m_opened=open();
   }
   bool opened() {

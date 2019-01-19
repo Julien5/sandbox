@@ -11,6 +11,7 @@ namespace wifi {
     char enable_pin;
     parse::TimeParser time_parser;
     bool m_enabled=false;
+    bool m_joined=false;
   public:
     esp8266(char pin);
     ~esp8266();
