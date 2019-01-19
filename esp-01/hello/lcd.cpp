@@ -22,7 +22,7 @@ void display::LCD::init() {
 int min_free_memory=2048;
 int last_memory=4096;
 void display::LCD::print(const char * msg1, const char *msg2) {
-  DBGTXLN(msg1);
+  DBGTX(msg1); DBGTX("#"); DBGTXLN(msg2);
   char m1[17]={0};
   snprintf(m1,17,"%-16s",msg1);
   d.setCursor(0,0);
@@ -32,21 +32,6 @@ void display::LCD::print(const char * msg1, const char *msg2) {
     char m2[17]={0};
     snprintf(m2,17,"%-16s",msg2);
     d.print(m2);
-  }
-
-  {
-    int m = freeMemory();
-    if (min_free_memory>m)
-      min_free_memory=m;
-    char c[17]={0};
-    snprintf(c, 17,"%d (min:%d) bytes",m,min_free_memory);
-    // print only when memory is getting lower.
-    if (!msg2 && last_memory>m) {
-      d.print(c);
-    }
-    
-    last_memory=m;
-    DBGTXLN(c);
   }
 }
 

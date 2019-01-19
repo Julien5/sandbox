@@ -12,7 +12,7 @@ AltSoftSerial Altser;
 
 #define BUFFER_LENGTH 16
 
-const int short_timeout = 1000;
+const int short_timeout = 3000;
 const int long_timeout = 20000;
 
 namespace comm {
@@ -63,7 +63,7 @@ unsigned char waitFor(const unsigned char opts, const int timeout, parse::TimePa
   unsigned char found = 0;
   
   delay(250);
-  printMemory(127);
+  TRACE();
   DBGTX("waitfor[");
   char buffer[BUFFER_LENGTH]={0};
   while(millis()<deadline && !found) {
@@ -92,6 +92,7 @@ unsigned char waitFor(const unsigned char opts, const int timeout, parse::TimePa
     }
     buffer[0]='\0';
   }
+  TRACE();
   DBGTX("]...");
   DBGTX("\r\n*\r\n*\r\n");
   return found;  
@@ -105,12 +106,16 @@ unsigned char sendCommandAndWaitForResponse(const char * command, const int leng
   DBGTXLN(command);
   if (strstr(command,"UART_CUR")!=NULL) {
     delay(150);
-    return true;
+    return options::wait_for_ok;
   }
   unsigned char opts=options::wait_for_ok | options::wait_for_error;
   if (strstr(command,"CIPSEND")!=NULL)
     opts |= options::wait_for_gt;
-  return waitFor(opts, timeout);
+  TRACE();
+  unsigned char ret=waitFor(opts, timeout);
+  DBGTX("sendCommandAndWaitForResponse: ");
+  DBGTXLN(int(ret));
+  return ret;
 }
 
 unsigned char sendCommandAndWaitForResponse(const char * command, const int timeout) {
@@ -168,6 +173,12 @@ namespace AT {
 
 bool wifi::esp8266::reset() {
   resetSerial();
+
+  digitalWrite(enable_pin,LOW);
+  delay(250);
+  digitalWrite(enable_pin, HIGH);
+  delay(250);
+  
   char trial=16;
   while(!AT::RST()) {
     delay(150);
@@ -211,20 +222,25 @@ public:
 };
 
 class IPConnection {
-  bool opened=false;
+  bool m_opened=false;
   bool open() {
-    return sendCommandAndWaitForResponse("AT+CIPSTART=\"TCP\",\"192.168.178.24\",8000",long_timeout);
+    return sendCommandAndWaitForResponse("AT+CIPSTART=\"TCP\",\"192.168.178.24\",8000",long_timeout)
+      &options::wait_for_ok != 0;
   }
   bool close() {
-    return sendCommandAndWaitForResponse("AT+CIPCLOSE",short_timeout);
+    return sendCommandAndWaitForResponse("AT+CIPCLOSE",short_timeout)
+      &options::wait_for_ok != 0;
   }
 public:
   IPConnection() {
-    close(); // ignore the result.
-    opened=open();
+    // close(); // ignore the result.
+    m_opened=open();
+  }
+  bool opened() {
+    return m_opened;
   }
   ~IPConnection() {
-    // if (opened)
+    // if (m_opened)
       close();
   }
 };
@@ -233,6 +249,8 @@ bool wifi::esp8266::get(const char * req) {
   DBGTXLN("-- GET --");
   Slower slower;
   IPConnection connection;
+  if (!connection.opened())
+    return false;
   
   char request[128]={0};
   snprintf(request, 128, "GET /%s HTTP/1.1\r\n\r\n", req);
@@ -240,11 +258,10 @@ bool wifi::esp8266::get(const char * req) {
   char cipsend[32]={0};
   snprintf(cipsend, 32, "AT+CIPSEND=%d", strlen(request)+2);
     
-  if (!sendCommandAndWaitForResponse(cipsend,short_timeout))
+  if (sendCommandAndWaitForResponse(cipsend,short_timeout)&options::wait_for_ok == 0)
     return false;
   
-  if (!sendCommandAndWaitForResponse(request,short_timeout))
-    return false;
+  sendCommandAndWaitForResponse(request,0);
 
   parse::TimeParser * parser = nullptr;
   if (strstr(req,"time")!=NULL) 
@@ -271,7 +288,9 @@ int wifi::esp8266::post(const char * req, const uint8_t * data, const int Ldata)
   //  delay(1000);
   //}
   IPConnection connection;
-
+  if (!connection.opened())
+    return 1;
+  
   char contentlength[32]={0};
   snprintf(contentlength, 32, "Content-Length: %d", Ldata);
 
@@ -299,10 +318,12 @@ int wifi::esp8266::post(const char * req, const uint8_t * data, const int Ldata)
   snprintf(cipsend, 32, "AT+CIPSEND=%d", Lr+2);
 
   unsigned char ok=0;
-  char trials=3;
-  while(trials-->0 && !(ok=sendCommandAndWaitForResponse(cipsend,short_timeout)))
+  char trials=1;
+  while(trials>0 && !(ok=sendCommandAndWaitForResponse(cipsend,short_timeout))) {
+    trials--;
     delay(1000);
-  if (ok==0)
+  }
+  if (ok&options::wait_for_ok == 0)
     return 3;
 
   DBGTXLN(request);

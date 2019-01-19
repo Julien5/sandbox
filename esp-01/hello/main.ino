@@ -44,19 +44,15 @@ void setup()
   delay(1000);
   pinMode(reed_pin, INPUT_PULLUP);
   attachInterrupt(0,on_rising_reed,RISING);
-  
+  TRACE();
 }
 
 char try_update_time(wifi::esp8266 &esp) {
-  DBGTXLN("-- time update --");
-  // any get request returns a time stamp
-  
   bool ok=esp.get("time");
   if (!ok) {
     display::lcd.print("GET error");
     return 2;
   }
- 
   return 0;
 }
 
@@ -118,7 +114,8 @@ void update_display() {
   m-=60*h;
   
   char line1[16]={0};
-  snprintf(line1,16,"%u at %02d:%02d",stats.day_total(),h,m);
+  if (stats.day_total()>0)
+    snprintf(line1,16,"%u at %02d:%02d",stats.day_total(),h,m);
  
   char line2[16]={0}; 
   snprintf(line2,16,"TOTAL=%u",stats.full_total());

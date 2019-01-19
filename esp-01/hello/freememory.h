@@ -6,8 +6,8 @@ extern "C" {
 #endif
   
   int freeMemory();
-  void printMemory(char marker); 
-
+  void printMemory(int marker); 
+  
   
 #ifdef  __cplusplus
 }
