@@ -33,9 +33,14 @@ void delay(test_ms d);
 
 #else
 
+/*
+ * note: in debug mode, DBGTX takes memory.
+ * reduce NDATA
+ */
+
 #include "Arduino.h"
 #include "HardwareSerial.h"
-#if 1
+#if 0
 #define DBGTX(X)				\
   do {						\
     Serial.write((X));				\

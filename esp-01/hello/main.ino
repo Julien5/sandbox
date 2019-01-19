@@ -47,6 +47,7 @@ void setup()
 }
 
 char try_update_time(wifi::esp8266 &esp) {
+  display::lcd.print("getting time...");
   bool ok=esp.get("time");
   if (!ok) {
     display::lcd.print("GET error");

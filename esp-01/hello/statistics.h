@@ -10,8 +10,13 @@ namespace types
   using total = uint16_t;
 }
 
-constexpr int NMILLIS=25;
-constexpr int NMINUTES=30;
+/*
+ * note: in debug mode, DBGTX takes memory.
+ * reduce NDATA
+ */
+
+constexpr int NMILLIS=30;
+constexpr int NMINUTES=40;
 constexpr int NDATA=
   (sizeof(types::minute)+sizeof(types::count))*NMINUTES
   +sizeof(types::milli)*NMILLIS

@@ -282,7 +282,7 @@ bool wifi::esp8266::get(const char * req) {
     char * T = parser->get();
     Clock::set_time(T[0],T[1],T[2]);
     char msg[19]={0};
-    snprintf(msg,sizeof(msg),"set time: %d:%d:%d",T[0],T[1],T[2]);
+    snprintf(msg,sizeof(msg),"%02d:%02d:%02d",T[0],T[1],T[2]);
     display::lcd.print(msg);
     delay(250);  
   }

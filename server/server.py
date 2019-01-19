@@ -13,6 +13,10 @@ sqlite=None;
 
 # HTTPRequestHandler class
 class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
+    def setup(self):
+        BaseHTTPRequestHandler.setup(self)
+        self.request.settimeout(30)
+    
     def do_GET(self):
         global sqlite;
         global conn;
@@ -46,7 +50,7 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
         # Write content as utf-8 data
         self.wfile.write(bytes(message, "utf8"));
         print("good.");
-        return
+    
     
 def run():
     print('starting server...')
@@ -54,7 +58,11 @@ def run():
     server_address = ('0.0.0.0', 8000)
     httpd = HTTPServer(server_address, testHTTPServer_RequestHandler)
     print('running server...')
-    httpd.serve_forever()
+    while True:
+        try:
+            httpd.serve_forever()
+        except Exception as e:
+            print("exception:",str(e));            
 
 def getdb(filename):
     global sqlite;
