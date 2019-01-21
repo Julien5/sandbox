@@ -12,7 +12,7 @@ namespace nstring {
     using ref = char [N];
     ref s;
     char z[N+1];
-    char * tok_addr;
+    char * tok_addr = 0;
   public:
     STR(const char* x)
       : s{0},z{0}

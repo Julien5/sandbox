@@ -113,6 +113,9 @@ void parse::AccessPointParser::read(const char * _buffer) {
  Server: BaseHTTP/0.6 Python/3.4.2
  Date: Fri, 21 Dec 2018 23:08:34 GMT
  Content-type: text/html
+
+ clock: 2019-01-05 23:52:44.735943 [end]
+
 */
 #include "freememory.h"
 void parse::TimeParser::read(const char * _buffer) {
@@ -125,26 +128,31 @@ void parse::TimeParser::read(const char * _buffer) {
     buffer.append(retain.c_str());
   }
   buffer.append(_buffer);
-  
-  if (!buffer.contains("GMT"))
+  debug(buffer);
+  if (!buffer.contains("[end]"))
     return;
-
-  buffer.zeroes(" :\r\n");
+  
+  buffer.zeroes(" .:\r\n");
   parse_index=0;
   while(char * _p = buffer.tok()) {
     nstring::STR<8> p(_p);
+    if (p.contains("clock"))
+      parse_index=0;
     parse_index++;
-    if (parse_index==6) {
+    debug(parse_index);
+    debug(_p);
+    debug("--");
+    if (parse_index==3) {
       time[0] = char(p.toInt());
     }
-    if (parse_index==7) {
+    if (parse_index==4) {
       time[1] = char(p.toInt());
     }
-    if (parse_index==8) {
+    if (parse_index==5) {
       time[2] = char(p.toInt());
     }
-    if (parse_index==9) {
-      if (!p.contains("GMT")) {
+    if (parse_index==7) {
+      if (!p.contains("[end]")) {
 	retain.clear();
 	retain.append(p.c_str());
       }
@@ -209,61 +217,32 @@ int time_parser_test() {
     p.read("Server: BaseHTTP/0.6 Python/3.4.2\n");
     p.read("Date: Fri, 21 Dec 2018 23:08:34 GMT\n");
     p.read("Content-type: text/html\n\r");
+    p.read("clock: 2019-01-05 23:52:44.735943 [end]");
     char * time = p.get();
     assert(time);
     assert(time[0]==23);
-    assert(time[1]==8);
-    assert(time[2]==34);
+    assert(time[1]==52);
+    assert(time[2]==44);
   }
   debug("time OK 1");
   {
     TimeParser p;
-    p.read("+IPD,116:HTTP/");
-    p.read("1.0 200 OK\n");
-    p.read("Server: BaseHT");
-    p.read("TP/0.6 Python/3.");
-    p.read("4.2\n");
-    p.read("Date: Fri, 21 De");
-    p.read("c 2018 23:08:34 GMT\n");
-    p.read("Content-type: text/html\n\r");
+    p.read("erver: BaseHTTP");
+    p.read("/0.6 Python/3.4");
+    p.read(".2\nDate: Sat, ");
+    p.read("05 Jan 2019 19:");
+    p.read("08:46 GMT\nCont");
+    p.read("ent-type: text/html\n");
+    p.read("clock: 2019-01-0");
+    p.read("5 23:52:44.73594");
+    p.read("3 [end]\n");
     char * time = p.get();
     assert(time);
     assert(time[0]==23);
-    assert(time[1]==8);
-    assert(time[2]==34);
+    assert(time[1]==52);
+    assert(time[2]==44);
   }
-  debug("time OK 2");
-  {
-    TimeParser p;
-    p.read("+IPD,116:HTTP/");
-    p.read("1.0 200 OK\n");
-    p.read("Server: BaseHT");
-    p.read("TP/0.6 Python/3.");
-    p.read("4.2\n");
-    p.read("Date");
-    p.read(": Fri, 21 De");
-    p.read("c 2018 23:08:34 GMT\n");
-    p.read("Content-type: text/html\n\r");
-    char * time = p.get();
-    assert(time);
-    assert(time[0]==23);
-    assert(time[1]==8);
-    assert(time[2]==34);
-  }
-  {
-    TimeParser p;
-    p.read("D");
-    p.read("ate");
-    p.read(": Fri, 21 De");
-    p.read("c 2018 23:08:34 GMT\n");
-    p.read("Content-type: text/html\n\r");
-    char * time = p.get();
-    assert(time);
-    assert(time[0]==23);
-    assert(time[1]==8);
-    assert(time[2]==34);
-   }
-  debug("time OK 3");
+  debug("time OK 6");
   return 0;
 }
 

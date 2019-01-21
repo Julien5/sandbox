@@ -1,7 +1,7 @@
 #include "Arduino.h"
 #include "lcd.h"
 #include "freememory.h"
-
+#include "debug.h"
 #include <LiquidCrystal.h>
 LiquidCrystal d(7, 5, 6, 10, 11, 12);
 
@@ -20,22 +20,21 @@ void display::LCD::init() {
 }
 
 int min_free_memory=2048;
-
-void display::LCD::print(char * msg1) {
+int last_memory=4096;
+void display::LCD::print(const char * msg1, const char *msg2) {
+  DBGTX(msg1); DBGTX("#"); DBGTXLN(msg2);
+  char m1[17]={0};
+  snprintf(m1,17,"%-16s",msg1);
   d.setCursor(0,0);
-  d.clear();
-  d.print(msg1);
+  d.print(m1);
   d.setCursor(0,1);
-  {
-    int m = freeMemory();
-    if (min_free_memory>m)
-      min_free_memory=m;
-    char c[16];
-    snprintf(c, 16,"%d (min:%d) bytes",m,min_free_memory);
-    d.print(c);
+  if (msg2) {
+    char m2[17]={0};
+    snprintf(m2,17,"%-16s",msg2);
+    d.print(m2);
   }
 }
 
-void display::LCD::print(const char * msg) {
-  print(const_cast<char*>(msg));
+void display::LCD::print(const char * msg1) {
+  return print(msg1,0);
 }

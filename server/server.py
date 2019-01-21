@@ -13,6 +13,10 @@ sqlite=None;
 
 # HTTPRequestHandler class
 class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
+    def setup(self):
+        BaseHTTPRequestHandler.setup(self)
+        self.request.settimeout(30)
+    
     def do_GET(self):
         global sqlite;
         global conn;
@@ -23,7 +27,11 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
         self.send_header('Content-type','text/html')
         self.end_headers()
         # Send message back to client
-        message = "thanks,bye\n"
+        if "time" in self.path:
+            message = "clock: "+t+" [end]"; 
+        else:
+            message = "thanks,bye"
+        message += "\n";
         # Write content as utf-8 data
         self.wfile.write(bytes(message, "utf8"))
         return
@@ -36,18 +44,13 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
         data=post_data; #.decode('utf-8');
         sqlite.execute('INSERT INTO requests (req,time) VALUES (?,?)', (data, t));
         conn.commit();
-        k=0;
-        while True:
-            if k>=len(data):
-                break;
-            print(str(data[k])+":"+str(data[k+1]));
-            k = k + 2;
-        print(len(data));
-        print(binascii.hexlify(data).decode('UTF-8'));
+        print("received {} bytes".format(len(data)));
+        # print(binascii.hexlify(data).decode('UTF-8'));
         message = "thanks,bye\n"
         # Write content as utf-8 data
-        self.wfile.write(bytes(message, "utf8"))
-        return
+        self.wfile.write(bytes(message, "utf8"));
+        print("good.");
+    
     
 def run():
     print('starting server...')
@@ -55,7 +58,11 @@ def run():
     server_address = ('0.0.0.0', 8000)
     httpd = HTTPServer(server_address, testHTTPServer_RequestHandler)
     print('running server...')
-    httpd.serve_forever()
+    while True:
+        try:
+            httpd.serve_forever()
+        except Exception as e:
+            print("exception:",str(e));            
 
 def getdb(filename):
     global sqlite;

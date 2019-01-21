@@ -2,13 +2,9 @@
 
 #ifdef ARDUINO
 
-#if (ARDUINO >= 100)
- #include <Arduino.h>
-#else
- #include <WProgram.h>
-#endif
+#include <Arduino.h>
 
-extern unsigned int __heap_start;
+extern char __heap_start;
 extern void *__brkval;
 
 /*
@@ -49,7 +45,7 @@ int freeMemory() {
 
 int min_free_mem=2048;
 
-void printMemory(char marker) {
+void printMemory(int marker) {
   Serial.print("mem(");
   Serial.print(int(marker));
   Serial.print(")=");
