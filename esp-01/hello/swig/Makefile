@@ -33,5 +33,5 @@ all: _x.so
 %_wrap.cpp: %.i
 	$(SWIG) $(SWIGFLAGS) -o $@ $< 
 
-#clean:
-#	rm -Rvf *.pyc *.so *_wrap.* *~ *.o ../*.o
+clean:
+	rm -Rvf *.pyc *.so *_wrap.* *~ *.o ../*.o 
