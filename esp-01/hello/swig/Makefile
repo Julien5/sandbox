@@ -19,7 +19,7 @@ CXXFLAGS = -c -fpic -Wall -I/usr/include/python3.6m/
 LDFLAGS = -shared
 
 SRCS := ../statistics.cpp ../eeprom.cpp ../debug.cpp ../clock.cpp statistics_wrap.cpp
-# SRCS := x.cpp 
+# SRCS := x.cpp x_wrap.cpp
 
 OBJS := $(SRCS:.cpp=.o)
 
@@ -31,3 +31,6 @@ _statistics.so: $(OBJS)
 
 statistics_wrap.cpp: statistics.i
 	$(SWIG) $(SWIGFLAGS) -o statistics_wrap.cpp $< 
+
+clean:
+	rm -Rvf *.pyc *.so *_wrap.* *~ *.o ../*.o
