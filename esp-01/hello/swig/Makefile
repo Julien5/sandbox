@@ -18,13 +18,14 @@ SWIGFLAGS = -c++ -python
 CXXFLAGS = -c -fpic -Wall -I/usr/include/python3.6m/ 
 LDFLAGS = -shared
 
-SRCS := ../statistics.cpp ../eeprom.cpp ../debug.cpp ../clock.cpp statistics_wrap.cpp
-# SRCS := x.cpp x_wrap.cpp
-
+#SRCS := ../statistics.cpp ../eeprom.cpp ../debug.cpp ../clock.cpp statistics_wrap.cpp
+SRCS := x.cpp x_wrap.cpp
 OBJS := $(SRCS:.cpp=.o)
 
-_statistics.so: $(OBJS)
-	$(CXX)  -o _statistics.so $(LDFLAGS) $^
+all: _x.so 
+
+%.so: $(OBJS)
+	$(CXX)  -o $@ $(LDFLAGS) $^
 
 %.o: ../%.cpp
 	$(CXX) $(CXXFLAGS) $? -o $@
@@ -32,5 +33,5 @@ _statistics.so: $(OBJS)
 %_wrap.cpp: %.i
 	$(SWIG) $(SWIGFLAGS) -o $@ $< 
 
-clean:
-	rm -Rvf *.pyc *.so *_wrap.* *~ *.o ../*.o
+#clean:
+#	rm -Rvf *.pyc *.so *_wrap.* *~ *.o ../*.o
