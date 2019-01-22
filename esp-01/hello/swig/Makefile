@@ -29,8 +29,8 @@ _statistics.so: $(OBJS)
 %.o: ../%.cpp
 	$(CXX) $(CXXFLAGS) $? -o $@
 
-statistics_wrap.cpp: statistics.i
-	$(SWIG) $(SWIGFLAGS) -o statistics_wrap.cpp $< 
+%_wrap.cpp: %.i
+	$(SWIG) $(SWIGFLAGS) -o $@ $< 
 
 clean:
 	rm -Rvf *.pyc *.so *_wrap.* *~ *.o ../*.o
