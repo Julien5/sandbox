@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 
-# import statistics
-import x;
+import statistics
+#import x;
 
 def main():
     #print(str(statistics))
-    #S = statistics.statistics.test();
-    x.X();
+    S = statistics.statistics.test();
+    #print("hi:",x.fact(5));
+
 
 if __name__ == "__main__":
-    main()
+    print("__main__");
+    main();

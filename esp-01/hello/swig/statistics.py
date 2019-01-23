@@ -95,6 +95,72 @@ except __builtin__.Exception:
         pass
     _newclass = 0
 
+class statistics(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, statistics, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, statistics, name)
+    __repr__ = _swig_repr
+
+    def __init__(self, *args):
+        this = _statistics.new_statistics(*args)
+        try:
+            self.this.append(this)
+        except __builtin__.Exception:
+            self.this = this
+
+    def reset(self):
+        return _statistics.statistics_reset(self)
+
+    def tick(self):
+        return _statistics.statistics_tick(self)
+
+    def save_eeprom(self):
+        return _statistics.statistics_save_eeprom(self)
+
+    def load_eeprom(self):
+        return _statistics.statistics_load_eeprom(self)
+
+    def day_total(self):
+        return _statistics.statistics_day_total(self)
+
+    def full_total(self):
+        return _statistics.statistics_full_total(self)
+
+    def last_minute(self):
+        return _statistics.statistics_last_minute(self)
+
+    def minute_count(self):
+        return _statistics.statistics_minute_count(self)
+
+    def get_minute(self, indx, arg3, arg4):
+        return _statistics.statistics_get_minute(self, indx, arg3, arg4)
+
+    def get_milli(self, indx):
+        return _statistics.statistics_get_milli(self, indx)
+
+    def getdata(self, Lout):
+        return _statistics.statistics_getdata(self, Lout)
+
+    def __eq__(self, other):
+        return _statistics.statistics___eq__(self, other)
+    if _newclass:
+        test = staticmethod(_statistics.statistics_test)
+    else:
+        test = _statistics.statistics_test
+    __swig_destroy__ = _statistics.delete_statistics
+    __del__ = lambda self: None
+statistics_swigregister = _statistics.statistics_swigregister
+statistics_swigregister(statistics)
+cvar = _statistics.cvar
+NMILLIS = cvar.NMILLIS
+NMINUTES = cvar.NMINUTES
+NDATA = cvar.NDATA
+
+def statistics_test():
+    return _statistics.statistics_test()
+statistics_test = _statistics.statistics_test
+
 # This file is compatible with both classic and new-style classes.
 
 

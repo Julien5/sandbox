@@ -1,5 +1,6 @@
 %module x 
-%include "std_string.i"
 %{
+#define SWIG_FILE_WITH_INIT
 #include "x.h"
 %}
+%include "x.h"

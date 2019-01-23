@@ -1,4 +1,1 @@
-#pragma once
-
-class X {
-};
+extern int fact(int n);
