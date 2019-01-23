@@ -1,6 +1,9 @@
 #pragma once
 
 #include <stdint.h>
+#ifndef ARDUINO
+#include <string>
+#endif
 
 namespace types
 {
@@ -22,7 +25,6 @@ constexpr int NDATA=
   +sizeof(types::milli)*NMILLIS
   +1
   +sizeof(types::total);
-
 /* 
    as i understand now, packing the data in a char* was not really needed.
    struct alignement on 8-bit arduino yields the same memory layout 
@@ -40,6 +42,11 @@ private:
 public:
   statistics();
   statistics(uint8_t * data); // of length NDATA
+#ifndef ARDUINO
+  static statistics fromHex(const std::string &hex);
+  std::string json() const;
+  static std::string asJson(const std::string &hex);
+#endif
   //! put all counters to zero
   void reset();
   void tick();

@@ -108,6 +108,17 @@ class statistics(_object):
             self.this.append(this)
         except __builtin__.Exception:
             self.this = this
+    if _newclass:
+        fromHex = staticmethod(_statistics.statistics_fromHex)
+    else:
+        fromHex = _statistics.statistics_fromHex
+
+    def json(self):
+        return _statistics.statistics_json(self)
+    if _newclass:
+        asJson = staticmethod(_statistics.statistics_asJson)
+    else:
+        asJson = _statistics.statistics_asJson
 
     def reset(self):
         return _statistics.statistics_reset(self)
@@ -156,6 +167,14 @@ cvar = _statistics.cvar
 NMILLIS = cvar.NMILLIS
 NMINUTES = cvar.NMINUTES
 NDATA = cvar.NDATA
+
+def statistics_fromHex(hex):
+    return _statistics.statistics_fromHex(hex)
+statistics_fromHex = _statistics.statistics_fromHex
+
+def statistics_asJson(hex):
+    return _statistics.statistics_asJson(hex)
+statistics_asJson = _statistics.statistics_asJson
 
 def statistics_test():
     return _statistics.statistics_test()

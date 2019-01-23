@@ -5,6 +5,11 @@
 #include <string.h>
 #include "clock.h"
 
+#ifndef ARDUINO
+#include <vector>
+#endif
+
+
 using namespace types;
 
 namespace {  
@@ -34,6 +39,49 @@ statistics::statistics(uint8_t * src) {
   using namespace std;
   memcpy(data,src,NDATA);
 }
+
+#ifndef ARDUINO
+statistics statistics::fromHex(const std::string &hex) {
+  std::vector<uint8_t> bytes;
+  for (unsigned int i = 0; i < hex.length(); i += 2) {
+    std::string byteString = hex.substr(i, 2);
+    uint8_t byte = (uint8_t) strtol(byteString.c_str(), NULL, 16);
+    bytes.push_back(byte);
+  }
+  bytes.push_back(0);
+  return statistics(reinterpret_cast<uint8_t*>(&bytes[0]));
+}
+
+std::string statistics::json() const {
+    std::string ret;
+    ret+="{\n";
+    ret+="\"day_total\":"+std::to_string(day_total())+",\n";
+    ret+="\"full_total\":"+std::to_string(full_total())+",\n";
+    std::string minutes;
+    for(int indx=0; indx<minute_count();++indx) {
+      types::minute m=0;
+      types::count c=0;
+      get_minute(indx,&m,&c);
+      minutes+="{\"minute\":"+std::to_string(m)+", \"count\":"+std::to_string(c)+"}";
+      if (indx<minute_count()-1)
+	minutes+=",";
+    }
+    ret+="\"minutes\":["+minutes+"],\n";
+    std::string millis; 
+    for(int indx=0; indx<NMILLIS;++indx) {
+      types::milli m=get_milli(indx);
+      millis+=std::to_string(m);
+      if (indx<NMILLIS-1)
+	millis+=",";
+    }
+    ret+="\"millis\":["+millis+"]\n}";
+    return ret;
+}
+
+std::string statistics::asJson(const std::string &hex) {
+  return fromHex(hex).json();
+}
+#endif
 
 void statistics::reset() {
   // do not reset the big total.

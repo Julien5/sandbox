@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 
 import statistics
-#import x;
+#import bytearray
 
 def main():
-    #print(str(statistics))
-    S = statistics.statistics.test();
-    #print("hi:",x.fact(5));
-
-
+    hx = str(open("testdata.txt").read().strip());
+    print(statistics.statistics.asJson(hx));
+    
 if __name__ == "__main__":
     print("__main__");
     main();

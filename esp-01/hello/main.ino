@@ -158,7 +158,7 @@ void loop() {
   update_display();
  
   if (!wake_on_rising_reed) {
-    constexpr Clock::ms no_activity_time_for_upload = 10*1000L; //10*60*1000L;
+    constexpr Clock::ms no_activity_time_for_upload = 10*60*1000L; //10*60*1000L;
     // 10 minutes without sensor activity => seems we can upload.
     if (time_since_last_rising_reed>no_activity_time_for_upload) {
       if (stats.day_total()==0)
@@ -173,8 +173,8 @@ void loop() {
   }
   
   if (wake_on_rising_reed) {
-    DBGTXLN("tick.");
-    if (time_since_last_rising_reed>200) // avoid interrupt bouncing
+    Serial.print("tick:");Serial.println(time_since_last_rising_reed);
+    if (time_since_last_rising_reed>350) // avoid interrupt bouncing
       stats.tick();
     last_time_rising_reed=current_time;
     wake_on_rising_reed=false;
