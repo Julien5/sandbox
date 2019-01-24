@@ -84,8 +84,7 @@ def main():
         (req,t)=row;
         if isinstance(req,bytes):
             data.process(req.hex(),t);
-
-   
+    data.dump();
     
 
 if __name__ == "__main__":
