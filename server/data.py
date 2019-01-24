@@ -10,7 +10,7 @@ import statistics;
 import datetime;
 import json;
 import subprocess;
-import time;
+import binascii;
 
 def output_name(filename):
     return filename.replace(".csv",".png");
@@ -27,7 +27,7 @@ def update_plot(filename):
     script = script.replace("{in}",filename);
     script = script.replace("{out}",output_name(filename));
     open("plot.gnuplot",'w').write(script);
-    subprocess.run(["gnuplot", "plot.gnuplot"]);
+    return subprocess.call(["gnuplot", "plot.gnuplot"]);
     
 class Data:
     def __init__(self):
@@ -126,7 +126,10 @@ def update_all():
     for row in sql.select("SELECT req,time FROM requests"):
         (req,t)=row;
         if isinstance(req,bytes):
-            data.process(req.hex(),t);
+            hx=binascii.hexlify(req).decode('ascii');
+            print(t,hx);
+            data.process(hx,t);
+            print("OK");
     data.dump();
 
 if __name__ == "__main__":
