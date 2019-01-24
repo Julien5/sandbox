@@ -1,11 +1,13 @@
-set terminal pngcairo size 600,400 enhanced font 'Verdana,9'
+set terminal pngcairo size 800,400 enhanced font 'Verdana,9'
 set output 'out.png'
 set datafile separator comma
 
-set boxwidth 0.5
+set boxwidth 0.05
 set style fill solid
-set xrange [0:24*60]
-
+set xrange [0:24]
+set yrange [0:100]
+set grid
+set title "{date}"
 unset key
 
-plot "in.csv" with boxes
+plot "in.csv" using ($1/60):($2) with boxes
