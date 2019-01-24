@@ -112,25 +112,30 @@ class Data:
             update_plot(filename);
             
 class Sql:
-    def __init__(self,filename):
-        self.conn = sqlite3.connect(filename);
+    def __init__(self):
+        self.conn = sqlite3.connect("sqlite.db");
         self.sqlite = self.conn.cursor();
     def select(self,statement):
         self.sqlite.execute(statement)
         return self.sqlite.fetchall();
-    
+    def insert(self,request):
+        t=str(datetime.datetime.now());
+        self.sqlite.execute('INSERT INTO requests (req,time) VALUES (?,?)', (request, t));
+        self.conn.commit();
+
 def update_all():    
-    filename="sqlite.db";
-    sql=Sql(filename);
+    sql=Sql();
     data=Data();
     for row in sql.select("SELECT req,time FROM requests"):
         (req,t)=row;
         if isinstance(req,bytes):
             hx=binascii.hexlify(req).decode('ascii');
-            print(t,hx);
             data.process(hx,t);
-            print("OK");
     data.dump();
+
+def insert(request,time):
+    sql=Sql();
+    
 
 if __name__ == "__main__":
     #update_plot("minutes/2019-01-22.csv");

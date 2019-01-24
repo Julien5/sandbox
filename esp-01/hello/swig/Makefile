@@ -15,7 +15,7 @@
 CXX = g++
 SWIG = swig3.0
 SWIGFLAGS = -c++ -python 
-CXXFLAGS = -c -fpic -Wall -I/usr/include/python3.6m/ 
+CXXFLAGS = -std=c++14 -c -fpic -Wall -I/usr/include/python3.6m/ 
 LDFLAGS = -shared
 
 SRCS := ../statistics.cpp ../eeprom.cpp ../debug.cpp ../clock.cpp statistics_wrap.cpp
