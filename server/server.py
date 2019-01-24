@@ -11,6 +11,12 @@ import binascii;
 conn=None;
 sqlite=None;
 
+def log(msg):
+    f=open("server.log",'a');
+    f.write(msg);
+    f.write("\n");
+    f.close();
+
 # HTTPRequestHandler class
 class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
     def setup(self):
@@ -20,6 +26,7 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         global sqlite;
         global conn;
+        log("GET request for {}".format(self.path));
         t=str(datetime.datetime.now());
         sqlite.execute('INSERT INTO requests (req,time) VALUES (?,?)', (self.path, t));
         conn.commit();
@@ -34,35 +41,37 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
         message += "\n";
         # Write content as utf-8 data
         self.wfile.write(bytes(message, "utf8"))
-        return
+        log("good.");
 
     def do_POST(self):
+        global sqlite;
+        global conn;
         content_length = int(self.headers['Content-Length'])
         post_data = self.rfile.read(content_length) 
-        print("POST request for {}".format(self.path).encode('utf-8'));
+        log("POST request for {}".format(self.path));
         t=str(datetime.datetime.now());
         data=post_data; #.decode('utf-8');
         sqlite.execute('INSERT INTO requests (req,time) VALUES (?,?)', (data, t));
         conn.commit();
-        print("received {} bytes".format(len(data)));
+        log("received {} bytes".format(len(data)));
         # print(binascii.hexlify(data).decode('UTF-8'));
         message = "thanks,bye\n"
         # Write content as utf-8 data
         self.wfile.write(bytes(message, "utf8"));
-        print("good.");
+        log("good.");
     
     
 def run():
-    print('starting server...')
+    log('starting server...')
     # Server settings
     server_address = ('0.0.0.0', 8000)
     httpd = HTTPServer(server_address, testHTTPServer_RequestHandler)
-    print('running server...')
+    log('running server...')
     while True:
         try:
             httpd.serve_forever()
         except Exception as e:
-            print("exception:",str(e));            
+            log("exception:",str(e));            
 
 def getdb(filename):
     global sqlite;

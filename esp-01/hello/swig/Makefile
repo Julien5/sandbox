@@ -22,7 +22,7 @@ SRCS := ../statistics.cpp ../eeprom.cpp ../debug.cpp ../clock.cpp statistics_wra
 #SRCS := x.cpp x_wrap.cpp
 OBJS := $(SRCS:.cpp=.o)
 
-all: _statistics.so 
+all: _hamster.so 
 
 %.so: $(OBJS)
 	$(CXX)  -o $@ $(LDFLAGS) $^
