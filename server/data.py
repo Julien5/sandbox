@@ -47,6 +47,25 @@ class Data:
             return;
         self.merge(t1,hamster.statistics.asJson(hex));
 
+    def dump(self):
+        for date in self.csv:
+            filename=date+".csv";
+            f=open(filename,'w');
+            d = "";
+            for m in sorted(self.csv[date]):
+                d += str(m)+","+str(self.csv[date][m])+"\n";
+            f.write(d);
+            
+        for k in self.millis:
+            filename="millis/"+str(k)+".csv";
+            f=open(filename,'w');
+            d = "";
+            i=1;
+            for m in self.millis[k]:
+                d += str(i)+","+str(m)+"\n";
+                i = i+1;
+            f.write(d);
+
 class Sql:
     def __init__(self,filename):
         self.conn = sqlite3.connect(filename);
@@ -66,22 +85,7 @@ def main():
         if isinstance(req,bytes):
             data.process(req.hex(),t);
 
-    for date in data.csv:
-        filename=date+".csv";
-        f=open(filename,'w');
-        d = "";
-        for m in sorted(data.csv[date]):
-            d += str(m)+","+str(data.csv[date][m])+"\n";
-        f.write(d);
-    for k in data.millis:
-        filename="millis/"+str(k)+".csv";
-        f=open(filename,'w');
-        d = "";
-        i=1;
-        for m in data.millis[k]:
-            d += str(i)+","+str(m)+"\n";
-            i = i+1;
-        f.write(d);
+   
     
 
 if __name__ == "__main__":
