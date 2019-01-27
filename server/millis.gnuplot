@@ -1,4 +1,4 @@
-set terminal pngcairo size 800,400 enhanced font 'Verdana,9'
+set terminal pngcairo size 800,400 enhanced font 'Verdana,12'
 set output '{out}'
 set datafile separator comma
 

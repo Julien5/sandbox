@@ -74,6 +74,7 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
         # Send message back to client
         message=None;
         if "time" in self.path:
+            t=str(datetime.datetime.now());
             message = "clock: "+t+" [end]";
         elif "millis/list.html" in self.path:
             message = dir_list("millis");
@@ -90,6 +91,9 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
             img_size = statinfo.st_size
             self.send_header("Content-length", img_size);
             message = read_image(filename);
+        elif "update" in self.path:
+            data.update_all();
+            message = "updated";
         else:
             message = "thanks,bye"
         if isinstance(message,str):
@@ -107,18 +111,14 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
         content_length = int(self.headers['Content-Length'])
         post_data = self.rfile.read(content_length) 
         log("POST request for {}".format(self.path));
-
         sql=data.Sql();
         sql.insert(post_data);
-
-        log("received {} bytes".format(len(data)));
+        data.update_all();
+        log("received {} bytes".format(len(post_data)));
         # print(binascii.hexlify(data).decode('UTF-8'));
         message = "thanks,bye\n"
         # Write content as utf-8 data
-        self.wfile.write(bytes(message, "utf8"));
-
-        data.update_all();
-        
+        self.wfile.write(bytes(message, "utf8"));        
         log("good.");
     
     

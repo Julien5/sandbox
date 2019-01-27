@@ -15,50 +15,150 @@ import binascii;
 def output_name(filename):
     return filename.replace(".csv",".png");
 
-def update_plot(filename):
+def update_plot(filename,D=None):
     print("updating:",filename);
     script=None;
     if "millis" in filename:
         script=open("millis.gnuplot").read();
     if "minutes" in filename:
         script=open("minutes.gnuplot").read();
-    assert(script);
+    if not script:
+        return None;
     script = script.replace("{date}",os.path.basename(filename).split(".")[0]);
     script = script.replace("{in}",filename);
     script = script.replace("{out}",output_name(filename));
+    if D:
+        for d in D:
+            script = script.replace("{"+d+"}",str(D[d]));    
     open("plot.gnuplot",'w').write(script);
     return subprocess.call(["gnuplot", "plot.gnuplot"]);
+
+def update_file(filename,content,D=None):
+    if os.path.exists(filename) and os.path.exists(output_name(filename)):
+        oldcontent=str(open(filename,'r').read());
+        if oldcontent == content:
+            print("skip:",filename);
+            return False;
+    f=open(filename,'w');
+    f.write(content);
+    f.flush();
+    update_plot(filename,D);
+    return True;
+
+class Packet:
+    def __init__(self,httpdate,jstring):
+        self.minutes = dict();
+        self.millis = list();
+        self.date = httpdate;
+        
+        data=json.loads(jstring);
+        m_http=httpdate.hour*60+httpdate.minute;
+        D = data["minutes"];
+        
+        for m in D:
+            m_stat = m["minute"];
+            hr = int(m_stat/60);
+            mn = int(m_stat-hr*60);
+            date = httpdate.replace(hour=hr,minute=mn);
+            if m_stat>m_http:
+                date = date.replace(day=httpdate.date().day-1);
+            self.minutes[date]=m["count"];
+            
+        for m in data["millis"]:
+            self.millis.append(m);
+
+
+def minutes_csv(minutes):
+    d = str();
+    for m in sorted(minutes):
+        minute = 60*m.hour + m.minute;
+        d += str(minute)+","+str(minutes[m])+"\n";
+    return d;
+
+def millis_delta(millis):
+    if len(millis)<5:
+        return None;
     
+    ret=list();
+    m0=None;
+    for m in millis:
+        if not m:
+            continue;
+        if m0:
+            ret.append(m-m0);
+        m0 = m;
+    return ret;
+
+def millis_csv(millis):
+    D=millis_delta(millis);
+    i=0;
+    d="";
+    for delta in D:
+        d += str(i)+","+str(delta);
+        i = i + 1;
+    return d;
+
+class Packets:
+    def __init__(self):
+        self.minutes=dict();
+        self.millis=dict();
+        self.httpdates=dict()
+
+    def merge(self,packet):
+        if not packet.minutes:
+            return;
+        for m in packet.minutes:
+            assert(not m in self.minutes);
+            c=packet.minutes[m];
+            if c>2:
+                self.minutes[m] = c; 
+        self.millis[sorted(packet.minutes)[-1]] = packet.millis;
+        self.httpdates[packet.date]=packet;
+        
+    def dates(self):
+        ret=set();
+        for m in self.minutes:
+            ret.add(m.date());
+        return ret;
+
+    def packets(self):
+        return self.httpdates.copy();
+        
+    def get_millis(self):
+        return self.millis.copy();
+    
+    def trunc(self,start,end):
+        ret=Packets();
+        for m in self.minutes:
+            if start <= m and m <= end:
+                ret.minutes[m] = self.minutes[m];
+        for m in self.millis:
+            if start <= m and m <= end:
+                ret.millis[m] = self.millis[m];
+        return ret;
+
+    def number_of_tours(self):
+        ret=0;
+        for m in self.minutes:
+            ret += self.minutes[m];
+        return ret;
+
+    def number_of_minutes(self):
+        return len(self.minutes);
+
+    def csv(self,key):
+        d = str();
+        if "minutes" in key:
+            return minutes_csv(self.minutes);
+        return d;
+
 class Data:
     def __init__(self):
-        self.csv=dict();
-        self.millis=dict();
+        self.packets=Packets();
         
     def merge(self,httpdate,jstring):
-        data=json.loads(jstring);
-        sent_time=httpdate.hour*60+httpdate.minute;
-        back_minute=-1;
-        for m in data["minutes"]:
-            generated_time = m["minute"];
-            back_minute = generated_time;
-            generated_date = httpdate;
-            if generated_time>sent_time:
-                generated_date = httpdate.replace(day=httpdate.date().day-1);
-            key="minutes/"+generated_date.strftime("%Y-%m-%d");
-            if not key in self.csv:
-                self.csv[key]=dict();
-            self.csv[key][m["minute"]]=m["count"];
-            
-        h=int(back_minute/60);
-        m=int(back_minute-h*60);
-        key=httpdate.strftime("%Y-%m-%d")+"-"+str(h)+":"+str(m)+"-"+str(len(self.millis));
-        self.millis[key]=list();
-        m0=None;
-        for m in data["millis"]:
-            if m0 and m:
-                self.millis[key].append(m0-m);
-            m0=m;
-            
+        self.packets.merge(Packet(httpdate,jstring));
+           
     def process(self,hex,t):
         t1=datetime.datetime.strptime(t,"%Y-%m-%d %H:%M:%S.%f");
         t0=datetime.datetime.strptime("2019-01-19 18:00","%Y-%m-%d %H:%M");
@@ -67,49 +167,32 @@ class Data:
         self.merge(t1,hamster.statistics.asJson(hex));
 
     def dump(self):
-        for date in self.csv:
-            d = "";
-            for m in sorted(self.csv[date]):
-                d += str(m)+","+str(self.csv[date][m])+"\n";
-            filename=date+".csv";
-
+        P = self.packets.packets();
+        for date in P:
+            filename = "dump/"+date.strftime("%Y-%m-%d--%H-%M-%S")+".csv";
+            update_file(filename,minutes_csv(P[date].minutes));
+        
+        for date in self.packets.dates():
+            start = datetime.datetime.combine(date,datetime.time(0,0,0));
+            end   = datetime.datetime.combine(date,datetime.time(23,59,59));
+            packets_d = self.packets.trunc(start,end);
+            d = packets_d.csv("minutes");
             if not d:
                 continue;
-
-            if os.path.exists(filename) and os.path.exists(output_name(filename)):
-                oldcontent=str(open(filename,'r').read());
-                if oldcontent == d:
-                    print("skip:",filename);
-                    continue;
-
-            f=open(filename,'w');
-            f.write(d);
-            f.flush();
-            update_plot(filename);
-
-        for k in self.millis:
-            d = "";
-            i=1;
-            L=len(self.millis[k]);
-            if L<5:
+            filename = "minutes/"+date.strftime("%Y-%m-%d")+".csv";
+            D=dict();
+            D["nminutes"]=packets_d.number_of_minutes();
+            D["ntours"]=packets_d.number_of_tours();
+            update_file(filename,d,D);
+            
+        millis = self.packets.get_millis();
+        for date in millis:
+            m = millis[date];
+            csv = millis_csv(m);
+            if not csv:
                 continue;
-            for m in self.millis[k]:
-                d += str(i)+","+str(m)+"\n";
-                i = i+1;
-
-            if not d:
-                continue;
-
-            filename="millis/"+str(k)+".csv";
-            if os.path.exists(filename) and os.path.exists(output_name(filename)):
-                oldcontent=str(open(filename,'r').read());
-                if oldcontent == d:
-                    print("skip:",filename);
-                    continue;
-            f=open(filename,'w');
-            f.write(d);
-            f.flush();
-            update_plot(filename);
+            filename = "millis/"+date.strftime("%Y-%m-%d--%H-%M-%S")+".csv";
+            update_file(filename,csv);
             
 class Sql:
     def __init__(self):
