@@ -44,10 +44,12 @@ void delay(test_ms d);
 #define DBGTX(X)				\
   do {						\
     Serial.write((X));				\
+    Serial.flush();				\
   } while(0)
 #define DBGTXLN(X)				\
   do {						\
     Serial.println((X));			\
+    Serial.flush();				\
   } while(0)
 #define TRACE()					\
   do {						\
@@ -56,6 +58,7 @@ void delay(test_ms d);
     Serial.print(__LINE__);			\
     Serial.print(":");				\
     printMemory(0);				\
+    Serial.flush();				\
   } while(0)
 #else
 #define DBGTX(X) ((void) 0)
