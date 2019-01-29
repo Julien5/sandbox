@@ -12,17 +12,6 @@
 
 using namespace types;
 
-namespace {  
-  milli get_today_millis() {
-    return Clock::millis_today();
-  }
-  
-  minute get_today_minute() {
-    milli t = get_today_millis();
-    return (t/1000)/60;
-  }
-}
-
 statistics::statistics()
   : data{0}
 {
@@ -185,7 +174,7 @@ total read_full_total(const uint8_t * data) {
 }
 
 void statistics::tick() {
-  minute m = get_today_minute();
+  minute m = Clock::minutes_since_start();
   for(int k=0; k<NMINUTES; ++k) {
     Bin b=read_bin(k,data);
     if (b.m == m || b.m == 0) {
@@ -198,7 +187,7 @@ void statistics::tick() {
 
   write_full_total(read_full_total(data)+1,data);
 
-  milli ml = get_today_millis();
+  milli ml = Clock::millis_since_start();
   Indx indx = read_milli_index(data);
   write_milli_at_index(ml,indx,data);
   indx++;
@@ -307,12 +296,14 @@ int statistics::test() {
     delay(1000L*60*10);
     
     S.tick();
-    assert(S.get_milli(0)==1000L*60*10);
+    const milli m0=S.get_milli(0);
+    assert(m0!=0);
+    assert(m0>1000L*60*10);
     assert(S.get_milli(1)==0);
     delay(20);
     S.tick();
-    assert(S.get_milli(0)==1000L*60*10+20);
-    assert(S.get_milli(1)==1000L*60*10);
+    assert(S.get_milli(0)==m0+20);
+    assert(S.get_milli(1)==m0);
     delay(20);
     assert(S.day_total()==2);
     S.tick();

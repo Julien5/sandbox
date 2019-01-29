@@ -7,6 +7,10 @@
   do {									\
     std::cout << __LINE__ << ":" << #X << "=" << (X) << std::endl;	\
   } while(0)
+#define debug2(X,Y)							\
+  do {									\
+    std::cout << __LINE__ << ":" << (X) << (Y) << std::endl;		\
+  } while(0)
 #define DBGTX(X)					\
   do {							\
     std::cout << __LINE__ << ":" << #X << "=" << (X);	\
@@ -71,4 +75,5 @@ void delay(test_ms d);
 #endif
 #define assert(ignore)
 #define debug(X)((void) 0)
+#define debug2(X,Y)((void) 0)
 #endif

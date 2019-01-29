@@ -16,7 +16,8 @@ test.cpp \
 ../eeprom.cpp  \
 ../freememory.cpp \
 ../debug.cpp \
-../clock.cpp
+../clock.cpp \
+../tickscounter.cpp
 
 # ../wifi.cpp 
 # Objs are all the sources, with .cpp replaced by .o

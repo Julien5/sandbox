@@ -27,9 +27,10 @@ class tickscounter {
   void compress();
   int m_compress_index=-1;
   bin::duration m_dmin=0;
-  void update_compress_index(int startindex=1);
+  void update_compress_index();
 public:
   tickscounter();
   void tick();
+  bin::count total();
   static int test();
 };

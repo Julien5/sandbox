@@ -7,50 +7,18 @@ namespace Clock {
     sleep_millis += m;
   }
   
-  ms since_start() {
+  ms millis_since_start() {
     return millis() + sleep_millis;
   }
   
-  int64_t millis_at_midnight=0;
-  void set_time(char h, char m, char s) {
-    sleep_millis=0;
-    ms millis_since_midnight = 1000L*(3600L*h + 60L*m + s);
-    int64_t ss = since_start();
-    millis_at_midnight = ss  - millis_since_midnight;
-  }
-
-  char day = 0;
-  void set_day(char d) {
-  }
-  mn minutes_this_month() {
-    return (day-1)*24L*60 + millis_today()/(1000L*60);
-  }
-  bool good() {
-    if (millis_at_midnight==0)
-      return false;
-    if (day==0)
-      return false;
-    return true;
-  }
-  
-  constexpr ms millis_24h = 24L*3600*1000;
-  
-  ms millis_today() {
-    ms ret=since_start() - millis_at_midnight;
-    if (ret>millis_24h)
-      ret-=millis_24h;
-    return ret;
+  mn minutes_since_start() {
+    return millis_since_start()/(1000L*60);
   }
   
   int test() {
-    set_time(0,0,1);
-    assert(millis_today()==1000);
+    assert(millis_since_start()==0);
     delay(1000);
-    assert(millis_today()==2000);
-    set_time(0,1,0);
-    assert(millis_today()==60*1000L);
-    set_time(1,0,0);
-    assert(millis_today()==3600*1000L);
+    assert(millis_since_start()==1000);
     debug("clock is good");
     return 0;
   }

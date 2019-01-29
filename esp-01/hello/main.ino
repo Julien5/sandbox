@@ -46,16 +46,6 @@ void setup()
   attachInterrupt(0,on_rising_reed,RISING);
 }
 
-char try_update_time(wifi::esp8266 &esp) {
-  display::lcd.print("getting time...");
-  bool ok=esp.get("time");
-  if (!ok) {
-    display::lcd.print("GET error");
-    return 2;
-  }
-  return 0;
-}
-
 char try_upload_statistics(wifi::esp8266 &esp) {
   display::lcd.print("uploading...");
   int length=0;
@@ -70,18 +60,9 @@ char try_upload_statistics(wifi::esp8266 &esp) {
   }
   display::lcd.print("result uploaded");
   stats.reset();
-  ret=try_update_time(esp);
-  if (ret!=0)
-    return ret;
   return 0;
 }
 
-bool update_time() {
-  wifi::esp8266 esp(wifi_enable_pin);
-  if (!esp.enabled())
-    return false;
-  return try_update_time(esp) == 0;
-}
 
 bool upload_statistics() {
   if (stats.day_total() == 0) {
@@ -106,7 +87,7 @@ bool upload_statistics() {
 
 Clock::ms last_update_display=0;
 void update_display() {
-  Clock::ms t=Clock::millis_today();
+  Clock::ms t=Clock::millis_since_start();
   if ((t-last_update_display)<1000)
     return;
   last_update_display=t;
@@ -140,7 +121,7 @@ void sleep_now() {
 Clock::ms last_time_rising_reed=0;
 
 void loop() {
-  Clock::ms current_time=Clock::since_start();
+  Clock::ms current_time=Clock::millis_since_start();
   Clock::ms time_since_last_rising_reed = current_time-last_time_rising_reed;
 
   if (!wake_on_rising_reed && slept) {
@@ -149,12 +130,6 @@ void loop() {
     slept=false;
   }
 
-
-  if (!Clock::good()) {
-    while(!update_time())
-      display::lcd.print("updating time...");
-  }
-  
   update_display();
  
   if (!wake_on_rising_reed) {

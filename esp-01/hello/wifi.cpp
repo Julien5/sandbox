@@ -63,7 +63,7 @@ void flushRX() {
   ESPTX.flushInput();
 }
 
-unsigned char waitFor(const unsigned char opts, const int timeout, parse::TimeParser *time_parser=nullptr) {
+unsigned char waitFor(const unsigned char opts, const int timeout) {
   flushRX();
   unsigned long now = millis();
   unsigned long deadline = now + timeout;
@@ -100,8 +100,6 @@ unsigned char waitFor(const unsigned char opts, const int timeout, parse::TimePa
 	if (gt_wait.read(buffer))
 	  found |= options::wait_for_gt;
       }
-      if (time_parser) 
-	time_parser->read(buffer);
     }
     buffer[0]='\0';
   }
@@ -283,22 +281,10 @@ bool wifi::esp8266::get(const char * req) {
   
   sendCommandAndWaitForResponse(request,0);
 
-  parse::TimeParser * parser = nullptr;
-  if (strstr(req,"time")!=NULL) 
-    parser = &time_parser;
-  
-  if (!waitFor(options::wait_for_closed,long_timeout,parser)) {
+  if (!waitFor(options::wait_for_closed,long_timeout)) {
     return false;
   }
   
-  if (parser && parser->get()) {
-    char * T = parser->get();
-    Clock::set_time(T[0],T[1],T[2]);
-    char msg[19]={0};
-    snprintf(msg,sizeof(msg),"%02d:%02d:%02d",T[0],T[1],T[2]);
-    display::lcd.print(msg);
-    delay(250);  
-  }
   return true;
 }
 
