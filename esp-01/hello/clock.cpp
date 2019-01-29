@@ -19,8 +19,16 @@ namespace Clock {
     millis_at_midnight = ss  - millis_since_midnight;
   }
 
+  char day = 0;
+  void set_day(char d) {
+  }
+  mn minutes_this_month() {
+    return (day-1)*24L*60 + millis_today()/(1000L*60);
+  }
   bool good() {
     if (millis_at_midnight==0)
+      return false;
+    if (day==0)
       return false;
     return true;
   }

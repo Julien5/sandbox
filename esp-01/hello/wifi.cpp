@@ -4,6 +4,7 @@
 #include "lcd.h"
 #include "freememory.h"
 #include "clock.h"
+#include "debug.h"
 
 #include "AltSoftSerial.h"
 AltSoftSerial Altser;
@@ -11,6 +12,18 @@ AltSoftSerial Altser;
 #define ESPRX Altser
 
 #define BUFFER_LENGTH 16
+
+// see https://www.nongnu.org/avr-libc/user-manual/pgmspace.html
+const char ATCWQAP[] PROGMEM = "AT+CWQAP";
+const char ATRST[] PROGMEM = "AT+RST";
+const char ATCWJAP[] PROGMEM = "AT+CWJAP?";
+const char ATE1[] PROGMEM = "ATE1";
+const char AT[] PROGMEM = "AT";
+const char ATCWLAP[] PROGMEM = "AT+CWLAP";
+const char ATCIPSTART[] PROGMEM = "AT+CIPSTART";
+const char ATCIPSEND[] PROGMEM = "AT+CIPSEND";
+const char ATCIPCLOSE[] PROGMEM = "AT+CIPCLOSE";
+const char UARTCUR[] PROGMEM = "UART_CUR";
 
 const int short_timeout = 3000;
 const int long_timeout = 20000;
@@ -103,16 +116,16 @@ unsigned char sendCommandAndWaitForResponse(const char * command, const int leng
   comm::write(command,length);
   comm::write("\r\n");
   DBGTXLN(command);
-  if (strstr(command,"UART_CUR")!=NULL) {
+  if (strstr(command,UARTCUR)!=NULL) {
     delay(150);
     return options::wait_for_ok;
   }
   unsigned char opts=options::wait_for_ok | options::wait_for_error;
-  if (strstr(command,"CIPSEND")!=NULL)
+  if (strstr(command,ATCIPSEND)!=NULL)
     opts |= options::wait_for_gt;
   TRACE();
   unsigned char ret=waitFor(opts, timeout);
-  DBGTX("sendCommandAndWaitForResponse: ");
+  DBGTX(F("sendCommandAndWaitForResponse: "));
   DBGTXLN(int(ret));
   return ret;
 }
@@ -141,7 +154,7 @@ bool wifi::esp8266::enabled() const {
 }
 
 wifi::esp8266::~esp8266() {
-  sendCommandAndWaitForResponse("AT+CWQAP",short_timeout);
+  sendCommandAndWaitForResponse(ATCWQAP,short_timeout);
   disable();
 }
 
@@ -166,9 +179,9 @@ void wifi::esp8266::setTimeout(int t) {
   timeout=t;
 }
 
-namespace AT {
+namespace command {
   bool RST() {
-    return sendCommandAndWaitForResponse("AT+RST",short_timeout)==options::wait_for_ok;
+    return sendCommandAndWaitForResponse(ATRST,short_timeout)==options::wait_for_ok;
   }
 };
 
@@ -181,7 +194,7 @@ bool wifi::esp8266::reset() {
   delay(250);
   
   char trial=16;
-  while(!AT::RST()) {
+  while(!command::RST()) {
     delay(150);
     trial--;
     if (trial<=0)
@@ -191,12 +204,12 @@ bool wifi::esp8266::reset() {
 }
 
 bool wifi::esp8266::join() {
-  if (sendCommandAndWaitForResponse("AT+CWJAP?",short_timeout)==options::wait_for_ok)
+  if (sendCommandAndWaitForResponse(ATCWJAP,short_timeout)==options::wait_for_ok)
     m_joined=true;
   
   if (!m_joined) {
-    sendCommandAndWaitForResponse("ATE1",short_timeout);
-    sendCommandAndWaitForResponse("AT",short_timeout);
+    sendCommandAndWaitForResponse(ATE1,short_timeout);
+    sendCommandAndWaitForResponse(AT,short_timeout);
     //while(!sendCommandAndWaitForResponse("AT+CWLAP",long_timeout)) {
     //  AT::RST();
     //  delay(250);
@@ -235,7 +248,7 @@ class IPConnection {
       &options::wait_for_ok != 0;
   }
   bool close() {
-    return sendCommandAndWaitForResponse("AT+CIPCLOSE",short_timeout)
+    return sendCommandAndWaitForResponse(ATCIPCLOSE,short_timeout)
       &options::wait_for_ok != 0;
   }
 public:

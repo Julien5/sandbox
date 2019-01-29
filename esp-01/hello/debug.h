@@ -30,6 +30,9 @@ using test_ms = uint32_t;
 test_ms millis();
 void delay(test_ms d);
 
+#define F(X) (X)
+
+#define PROGMEM 
 
 #else
 
@@ -40,6 +43,7 @@ void delay(test_ms d);
 
 #include "Arduino.h"
 #include "HardwareSerial.h"
+#include <avr/pgmspace.h>
 #if 0
 #define DBGTX(X)				\
   do {						\
