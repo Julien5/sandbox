@@ -15,6 +15,7 @@ struct bin {
   bool accepts() const;
   bool tick();
   void take(bin &other);
+  void move(bin &other);
   duration distance(const bin &other);
   
 };
@@ -31,6 +32,7 @@ class tickscounter {
 public:
   tickscounter();
   void tick();
+  void print();
   bin::count total();
   static int test();
 };

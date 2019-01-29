@@ -49,6 +49,11 @@ void bin::take(bin &other) {
   other.reset();
 }
 
+void bin::move(bin &other) {
+  *this = other;
+  other.reset();
+}
+
 bin::duration bin::distance(const bin &other) {
   if (empty() || other.empty())
     return INT_MAX;
@@ -77,9 +82,14 @@ void tickscounter::compress() {
   assert(0<=m_compress_index && m_compress_index<(NTICKS-1));
   bin::count T=total();
   debug(m_compress_index);
-  assert(!m_bins[m_compress_index].empty());
-  assert(!m_bins[m_compress_index+1].empty());
-  m_bins[m_compress_index].take(m_bins[m_compress_index+1]);
+  int k=m_compress_index;
+  m_bins[k].take(m_bins[k+1]);
+  assert(m_bins[k+1].empty());
+  k++;
+  while((k+1)<NTICKS) {
+    m_bins[k].move(m_bins[k+1]);
+    k++;
+  }
   update_compress_index();
   assert(total()==T);
 }
@@ -108,16 +118,32 @@ void tickscounter::tick() {
   assert(total()==T+1);
 }
 
+void tickscounter::print() {
+#ifndef ARDUINO
+  for(int k = 0; k<NTICKS; ++k) {
+    if (!m_bins[k].empty()) {
+      printf("%02d: %3d %3d %d\n",k,m_bins[k].m_start,m_bins[k].end(),m_bins[k].m_count);
+    }
+  }
+#endif
+}
+
 int tickscounter::test() {
   tickscounter C;
   assert(C.total()==0);
-  C.tick();
-  assert(C.total()==1);
-  for(int k = 0; k<2*NTICKS; ++k) {
-    delay(1000L*60*2);
+  const int K1=NTICKS-2;
+  for(int k = 0; k<K1; ++k) {
+    delay(1000L*60*(K1-k+1));
     C.tick();
-    debug(C.total());
+    assert(C.total()==k+1);
   }
-  assert(C.total()==(2*NTICKS+1));
+  const int K2=5;
+  for(int k = 0; k<K2; ++k) {
+    delay(1000L*60*(K2-k));
+    C.tick();
+    C.print();
+    debug("--");
+  }
+  assert(C.total()==(K1+K2));
   return 0;
 }
