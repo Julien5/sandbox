@@ -56,9 +56,9 @@ void bin::move(bin &other) {
 
 bin::duration bin::distance(const bin &other) {
   if (empty() || other.empty())
-    return INT_MAX;
+    return USHRT_MAX;
   if (other.m_start < end())
-    return INT_MAX;
+    return USHRT_MAX;
   return other.m_start - end();
 }
 
@@ -80,21 +80,88 @@ void tickscounter::update_compress_index() {
 void tickscounter::compress() {
   debug("compress");
   assert(0<=m_compress_index && m_compress_index<(NTICKS-1));
-  bin::count T=total();
   debug(m_compress_index);
   int k=m_compress_index;
   m_bins[k].take(m_bins[k+1]);
-  assert(m_bins[k+1].empty());
-  k++;
-  while((k+1)<NTICKS) {
-    m_bins[k].move(m_bins[k+1]);
-    k++;
+  clean();
+}
+
+constexpr uint8_t clean_threshold = 1;
+
+void move_to_first_empty(const bin bins[], int *k) {
+  for(; *k<NTICKS && !bins[*k].empty(); ++*k);
+}
+
+void move_to_first_non_empty(const bin bins[], int *k) {
+  for(; *k<NTICKS && bins[*k].empty(); ++*k);
+}
+
+bool tickscounter::is_clean() const {
+  const Clock::mn now = Clock::minutes_since_start();
+  for(int k=0; k<NTICKS; ++k) {
+    const bin &b=m_bins[k];
+    if (b.empty())
+      continue;
+    assert(now>b.end());
+    const Clock::mn age = now - b.end();
+    if (age>5 && b.m_count<=clean_threshold) {
+      return false;
+    }
   }
+  
+  int k=0;
+  move_to_first_empty(m_bins,&k);
+  if (k<NTICKS) { 
+    for(int l=k; l<NTICKS; ++l)
+      if (!m_bins[l].empty()) {
+	return false;
+      }
+  }
+  return true;
+}
+
+void tickscounter::clean() {
+  bin::count T=total();
+  // (1) remove bins with count less than ...
+  const Clock::mn now = Clock::minutes_since_start();
+  for(int k=0; k<NTICKS; ++k) {
+    bin &b=m_bins[k];
+    if (b.empty())
+      continue;
+    assert(now>b.end());
+    const Clock::mn age = now - b.end();
+    if (age>5 && b.m_count<=clean_threshold) {
+      T--;
+      b.reset();
+    }
+  }
+
+  // (2)
+  int k1=0,k2=0;
+  print();
+  while(true) {
+    move_to_first_empty(m_bins,&k1);
+    if (k1==NTICKS) // bins are full
+      break;
+    assert(m_bins[k1].empty());
+    k2=k1+1;
+    move_to_first_non_empty(m_bins,&k2);
+    if (k2==NTICKS) // we're done
+      break;
+    assert(!m_bins[k2].empty());
+    m_bins[k1].move(m_bins[k2]);
+    k2=0;
+  }
+  print();
+  
   update_compress_index();
+  
+  // (3) check
+  assert(is_clean());
   assert(total()==T);
 }
 
-bin::count tickscounter::total() {
+bin::count tickscounter::total() const {
   bin::count ret=0;
   for(int k=0; k<NTICKS; ++k)
     ret+=m_bins[k].m_count;
@@ -112,38 +179,61 @@ bool tickscounter::tick_if_possible() {
 }
 
 void tickscounter::tick() {
-  bin::count T=total();
   while (!tick_if_possible())
     compress();
-  assert(total()==T+1);
 }
 
-void tickscounter::print() {
+void tickscounter::print() const {
 #ifndef ARDUINO
   for(int k = 0; k<NTICKS; ++k) {
-    if (!m_bins[k].empty()) {
+    if (true || !m_bins[k].empty()) {
       printf("%02d: %3d %3d %d\n",k,m_bins[k].m_start,m_bins[k].end(),m_bins[k].m_count);
     }
   }
 #endif
 }
 
+int some_real_ticks(tickscounter &C) {
+  int k=0;
+  for(; k<=clean_threshold; ++k)
+    C.tick();
+  return k;
+}
+
+int some_spurious_ticks(tickscounter &C) {
+  int k = 0;
+  for(; k<clean_threshold; ++k)
+    C.tick();
+  return k;
+}
+
 int tickscounter::test() {
   tickscounter C;
   assert(C.total()==0);
+  int T=0;
   const int K1=NTICKS-2;
   for(int k = 0; k<K1; ++k) {
     delay(1000L*60*(K1-k+1));
-    C.tick();
-    assert(C.total()==k+1);
+    T+=some_real_ticks(C);
+    assert(C.total()==T);
   }
+  
+  for(int k = 0; k<10; ++k) {
+    delay(1000L*60*(2+k));
+    some_spurious_ticks(C);
+    assert(C.total()!=T);
+  }
+
+  C.print();
+  
   const int K2=5;
   for(int k = 0; k<K2; ++k) {
     delay(1000L*60*(K2-k));
-    C.tick();
+    T+=some_real_ticks(C);
     C.print();
     debug("--");
   }
-  assert(C.total()==(K1+K2));
+  assert(T>(K1+K2));
+  assert(C.total()==T);
   return 0;
 }

@@ -32,7 +32,9 @@ class tickscounter {
 public:
   tickscounter();
   void tick();
-  void print();
-  bin::count total();
+  void clean();
+  void print() const;
+  bool is_clean() const;
+  bin::count total() const;
   static int test();
 };
