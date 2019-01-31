@@ -39,7 +39,9 @@ public:
   void clean();
   void print() const;
   bool is_clean() const;
-  bin::count total() const;
+  bin::count total();
+  bool empty() const;  
+  bin::time last_tick_time();
   uint8_t *getdata(int * Lout) const;
   bool operator==(const tickscounter &other) const;
   static int test();

@@ -150,7 +150,7 @@ void tickscounter::denoise() {
     bin &b=m_bins[k];
     if (b.empty())
       continue;
-    assert(now>b.end());
+    assert(now>=b.end());
     const Clock::mn age = now - b.end();
     if (age>5 && b.m_count<=clean_threshold) {
       b.reset();
@@ -175,6 +175,16 @@ void tickscounter::remove_holes() {
   }
 }
 
+bin::time tickscounter::last_tick_time() {
+  denoise();
+  int k=0;
+  move_to_first_empty(m_bins,&k);
+  k--;
+  if (k>=0)
+    return m_bins[k].end();
+  return 0;
+}
+
 void tickscounter::clean() {
   bin::count T0=total();
   denoise();
@@ -186,7 +196,12 @@ void tickscounter::clean() {
   assert(total()==T);
 }
 
-bin::count tickscounter::total() const {
+bool tickscounter::empty() const {
+  return m_bins[0].empty();
+}
+
+bin::count tickscounter::total() {
+  denoise();
   bin::count ret=0;
   for(int k=0; k<NTICKS; ++k)
     ret+=m_bins[k].m_count;

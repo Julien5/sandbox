@@ -3,7 +3,7 @@
 #include "parse.h"
 #include "wifi.h"
 #include "lcd.h"
-#include "statistics.h"
+#include "tickscounter.h"
 #include "freememory.h"
 #include "clock.h"
 
@@ -12,7 +12,7 @@ void stop() {
   while(1);
 }
 
-statistics stats;
+tickscounter counter;
 
 bool wake_on_rising_reed=false;
 
@@ -49,7 +49,7 @@ void setup()
 char try_upload_statistics(wifi::esp8266 &esp) {
   display::lcd.print("uploading...");
   int length=0;
-  uint8_t * data = stats.getdata(&length);
+  uint8_t * data = counter.getdata(&length);
   int ret=esp.post("postrequest",data,length);
   if (ret != 0) {
     char msg[16];
@@ -59,13 +59,13 @@ char try_upload_statistics(wifi::esp8266 &esp) {
     return 1;
   }
   display::lcd.print("result uploaded");
-  stats.reset();
+  reset();
   return 0;
 }
 
 
 bool upload_statistics() {
-  if (stats.day_total() == 0) {
+  if (counter.empty()) {
     display::lcd.print("nothing to upload");
     return true;
   }
@@ -92,16 +92,18 @@ void update_display() {
     return;
   last_update_display=t;
   
-  types::minute m=stats.last_minute();
+  bin::time m0=counter.last_tick_time();
+  bin::time m1=Clock::minutes_since_start();
+  bin::time m=m1-m0;
   char h=m/60;
   m-=60*h;
   
   char line1[16]={0};
-  if (stats.day_total()>0)
-    snprintf(line1,16,"%u at %02d:%02d",stats.day_total(),h,m);
+  if (counter.total()>0)
+    snprintf(line1,16,"%u for %02d:%02d",counter.total(),h,m);
  
   char line2[16]={0}; 
-  snprintf(line2,16,"TOTAL=%u",stats.full_total());
+  snprintf(line2,16,"TOTAL=%u",counter.total());
   display::lcd.print(line1,line2);
 }
 
@@ -136,7 +138,7 @@ void loop() {
     constexpr Clock::ms no_activity_time_for_upload = 10*60*1000L; //10*60*1000L;
     // 10 minutes without sensor activity => seems we can upload.
     if (time_since_last_rising_reed>no_activity_time_for_upload) {
-      if (stats.day_total()==0)
+      if (counter.empty())
 	return;
       if (!upload_statistics()) {
 	display::lcd.print("upload failed");
@@ -150,7 +152,7 @@ void loop() {
   if (wake_on_rising_reed) {
     Serial.print("tick:");Serial.println(time_since_last_rising_reed);
     if (time_since_last_rising_reed>350) // avoid interrupt bouncing
-      stats.tick();
+      counter.tick();
     last_time_rising_reed=current_time;
     wake_on_rising_reed=false;
   } 
