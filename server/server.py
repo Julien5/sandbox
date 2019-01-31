@@ -12,6 +12,7 @@ import html;
 import sys;
 
 def log(msg):
+    print("log:",msg);
     f=open("server.log",'a');
     f.write(msg);
     f.write("\n");
@@ -94,6 +95,10 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
         elif "update" in self.path:
             data.update_all();
             message = "updated";
+        elif "message" in self.path:
+            sms="T:100K L24=12345XXXXXXXXXx";
+            #    1234567890123456
+            message = "{"+sms+"}";
         else:
             message = "thanks,bye"
         if isinstance(message,str):

@@ -1,5 +1,5 @@
 #include "LowPower.h"
-
+#include "debug.h"
 #include "parse.h"
 #include "wifi.h"
 #include "lcd.h"
@@ -44,7 +44,6 @@ void setup()
   delay(1000);
   pinMode(reed_pin, INPUT_PULLUP);
   attachInterrupt(0,on_rising_reed,RISING);
-  Serial.println("setup.");
 }
 
 char try_upload_statistics(wifi::esp8266 &esp) {
@@ -84,6 +83,18 @@ bool upload_statistics() {
   return false;
 }
 
+char * message() {
+  static char * m=0;
+  if (!m) {
+    wifi::esp8266 esp(wifi_enable_pin);
+    if (!esp.enabled())
+      return 0;
+    if (!esp.get("message",m))
+      return 0;
+    DBGTX("m={");DBGTX(m);DBGTXLN("}");
+  }
+  return m;
+}
 
 Clock::ms last_update_display=0;
 void update_display() {
@@ -98,12 +109,15 @@ void update_display() {
   char h=m/60;
   m-=60*h;
   
-  char line1[16]={0};
+  char line1[17]={0};
   if (counter.total()>0)
-    snprintf(line1,16,"%u for %02d:%02d",counter.total(),h,m);
+    snprintf(line1,17,"%u for %02d:%02d",counter.total(),h,m);
  
-  char line2[16]={0}; 
-  snprintf(line2,16,"TOTAL=%u",counter.total());
+  char line2[17]={0};
+  if (message()) 
+    snprintf(line2,17,"%s",message());    
+  else
+    snprintf(line2,17,"%s","(no message)");
   display::lcd.print(line1,line2);
 }
 

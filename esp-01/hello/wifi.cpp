@@ -1,6 +1,6 @@
 #include "wifi.h"
 #include "parse.h"
-#include "nstring.h"
+#include <stdlib.h>
 #include "lcd.h"
 #include "freememory.h"
 #include "clock.h"
@@ -64,6 +64,8 @@ void flushRX() {
   ESPTX.flushInput();
 }
 
+parse::MessageParser message_parser;
+
 unsigned char waitFor(const unsigned char opts, const int timeout) {
   flushRX();
   unsigned long now = millis();
@@ -74,7 +76,7 @@ unsigned char waitFor(const unsigned char opts, const int timeout) {
   parse::StringAwaiter closed_wait("CLOSED");
   parse::StringAwaiter gt_wait(">");
   parse::StringAwaiter connected_wait("CONNECTED");
-
+  
   unsigned char found = 0;
   
   delay(250);
@@ -106,9 +108,12 @@ unsigned char waitFor(const unsigned char opts, const int timeout) {
 	if (connected_wait.read(buffer))
 	  found |= options::wait_for_connected;
       }
+      message_parser.read(buffer);
     }
     buffer[0]='\0';
   }
+  DBGTX("message={");DBGTX(message_parser.get());DBGTX("}");
+  
   TRACE();
   DBGTX("]...");
   DBGTX("\r\n*\r\n*\r\n");
@@ -273,26 +278,32 @@ public:
   }
 };
 
-bool wifi::esp8266::get(const char * req) {
+bool wifi::esp8266::get(const char * req, char * &response) {
   DBGTXLN("-- GET --");
   Slower slower;
   IPConnection connection;
   if (!connection.opened())
     return false;
   
-  char request[128]={0};
+  const char request[128]={0};
   snprintf(request, 128, "GET /%s HTTP/1.1\r\n\r\n", req);
   
-  char cipsend[32]={0};
+  const char cipsend[32]={0};
   snprintf(cipsend, 32, "AT+CIPSEND=%d", strlen(request)+2);
-    
-  if (sendCommandAndWaitForResponse(cipsend,short_timeout)&options::wait_for_ok == 0)
+  
+  const char ok=sendCommandAndWaitForResponse(cipsend,short_timeout);
+  if (ok&options::wait_for_ok == 0)
     return false;
   
   sendCommandAndWaitForResponse(request,0);
 
   if (!waitFor(options::wait_for_closed,long_timeout)) {
     return false;
+  }
+
+  if (message_parser.get()) {
+    response = message_parser.get();
+    DBGTX("response={");DBGTX(response);DBGTXLN("}");
   }
   
   return true;
