@@ -79,11 +79,12 @@ void tickscounter::update_compress_index() {
 
 void tickscounter::compress() {
   debug("compress");
+  clean();
   assert(0<=m_compress_index && m_compress_index<(NTICKS-1));
-  debug(m_compress_index);
   int k=m_compress_index;
   m_bins[k].take(m_bins[k+1]);
-  clean();
+  remove_holes();
+  assert(is_clean());
 }
 
 constexpr uint8_t clean_threshold = 1;
@@ -105,6 +106,7 @@ bool tickscounter::is_clean() const {
     assert(now>b.end());
     const Clock::mn age = now - b.end();
     if (age>5 && b.m_count<=clean_threshold) {
+      debug("dirt");
       return false;
     }
   }
@@ -114,15 +116,15 @@ bool tickscounter::is_clean() const {
   if (k<NTICKS) { 
     for(int l=k; l<NTICKS; ++l)
       if (!m_bins[l].empty()) {
+	debug("holes");
+	print();
 	return false;
       }
   }
   return true;
 }
 
-void tickscounter::clean() {
-  bin::count T=total();
-  // (1) remove bins with count less than ...
+void tickscounter::denoise() {
   const Clock::mn now = Clock::minutes_since_start();
   for(int k=0; k<NTICKS; ++k) {
     bin &b=m_bins[k];
@@ -131,14 +133,13 @@ void tickscounter::clean() {
     assert(now>b.end());
     const Clock::mn age = now - b.end();
     if (age>5 && b.m_count<=clean_threshold) {
-      T--;
       b.reset();
     }
   }
+}
 
-  // (2)
+void tickscounter::remove_holes() {
   int k1=0,k2=0;
-  print();
   while(true) {
     move_to_first_empty(m_bins,&k1);
     if (k1==NTICKS) // bins are full
@@ -152,10 +153,15 @@ void tickscounter::clean() {
     m_bins[k1].move(m_bins[k2]);
     k2=0;
   }
-  print();
-  
+}
+
+void tickscounter::clean() {
+  bin::count T0=total();
+  denoise();
+  bin::count T=total();
+  assert(T<=T0);
+  remove_holes(); 
   update_compress_index();
-  
   // (3) check
   assert(is_clean());
   assert(total()==T);

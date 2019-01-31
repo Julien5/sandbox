@@ -29,6 +29,8 @@ class tickscounter {
   int m_compress_index=-1;
   bin::duration m_dmin=0;
   void update_compress_index();
+  void denoise();
+  void remove_holes();
 public:
   tickscounter();
   void tick();
