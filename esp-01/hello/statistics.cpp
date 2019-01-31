@@ -30,15 +30,10 @@ statistics::statistics(uint8_t * src) {
 }
 
 #ifndef ARDUINO
+#include "utils.h"
 statistics statistics::fromHex(const std::string &hex) {
-  std::vector<uint8_t> bytes;
-  for (unsigned int i = 0; i < hex.length(); i += 2) {
-    std::string byteString = hex.substr(i, 2);
-    uint8_t byte = (uint8_t) strtol(byteString.c_str(), NULL, 16);
-    bytes.push_back(byte);
-  }
-  bytes.push_back(0);
-  return statistics(reinterpret_cast<uint8_t*>(&bytes[0]));
+  std::vector<uint8_t> bytes=utils::hex_to_bytes(hex);
+  return statistics(utils::as_cbytes(bytes));
 }
 
 std::string statistics::json() const {

@@ -1,5 +1,8 @@
 #pragma once
 #include <stdint.h>
+#ifndef ARDUINO
+#include <string>
+#endif
 
 struct bin {
   using time = uint16_t;
@@ -34,7 +37,12 @@ class tickscounter {
   void remove_holes();
 public:
   tickscounter();
-  tickscounter(const uint8_t *addr, const int L);
+  tickscounter(const uint8_t *addr);
+#ifndef ARDUINO
+  static tickscounter fromHex(const std::string &hex);
+  std::string json() const;
+  static std::string asJson(const std::string &hex);
+#endif
   void tick();
   void clean();
   void print() const;

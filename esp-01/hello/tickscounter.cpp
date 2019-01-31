@@ -76,9 +76,8 @@ tickscounter::tickscounter()
   : m_bins{}
 {}
 
-tickscounter::tickscounter(const uint8_t *addr, const int L) {
+tickscounter::tickscounter(const uint8_t *addr) {
   const int this_version = this->version;
-  assert(sizeof(*this)==L);
   *this = *(tickscounter*)addr;
   if (this->version != this_version)
     debug("versioning problem!");
@@ -260,6 +259,21 @@ int some_spurious_ticks(tickscounter &C) {
   return k;
 }
 
+#ifndef ARDUINO
+#include "utils.h"
+tickscounter tickscounter::fromHex(const std::string &hex) {
+  std::vector<uint8_t> bytes=utils::hex_to_bytes(hex);
+  return tickscounter(utils::as_cbytes(bytes));
+}
+std::string tickscounter::json() const {
+  return std::string();
+}
+std::string tickscounter::asJson(const std::string &hex) {
+  return fromHex(hex).json();
+}
+
+#include <fstream>
+
 int tickscounter::test() {
   tickscounter C;
   assert(C.total()==0);
@@ -293,8 +307,15 @@ int tickscounter::test() {
   const uint8_t * data = C.getdata(&L);
   debug(L);
 
-  tickscounter C2(data,L);
+  tickscounter C2(data);
   assert(C==C2);
+
+  using namespace std;
+  std::ofstream file;
+  file.open("tickscounter.bin", ios::out | ios::binary);
+  file.write((char*)data,L);
   
   return 0;
 }
+
+#endif
