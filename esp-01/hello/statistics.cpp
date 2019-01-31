@@ -69,7 +69,7 @@ std::string statistics::asJson(const std::string &hex) {
 
 void statistics::reset() {
   // do not reset the big total.
-  for(int k=0; k<NDATA-sizeof(types::total); ++k) {
+  for(int k=0; k+sizeof(types::total)<NDATA; ++k) {
     data[k] = 0;
   }
 }

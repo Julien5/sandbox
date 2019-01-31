@@ -3,6 +3,10 @@
 #include "debug.h"
 #include <limits.h>
 
+#ifndef ARDUINO
+#include <fstream>
+#endif
+
 #ifndef abs
 #define abs(x) ((x)>0?(x):-(x))
 #endif
@@ -27,7 +31,7 @@ bool bin::accepts() const {
 bool bin::tick() {
   if (!accepts())
     return false;
-  Clock::mn min = Clock::minutes_since_start();
+  const Clock::mn min = Clock::minutes_since_start();
   if (empty())
     m_start = min;
   m_duration = min  - m_start;
@@ -144,6 +148,7 @@ bool tickscounter::is_clean() const {
 }
 
 void tickscounter::denoise() {
+  print();
   const Clock::mn now = Clock::minutes_since_start();
   for(int k=0; k<NTICKS; ++k) {
     bin &b=m_bins[k];
@@ -227,6 +232,36 @@ uint8_t* tickscounter::getdata(int * Lout) const {
   return (uint8_t*)this; 
 }
 
+#ifndef ARDUINO
+#include "utils.h"
+tickscounter tickscounter::fromHex(const std::string &hex) {
+  std::vector<uint8_t> bytes=utils::hex_to_bytes(hex);
+  return tickscounter(utils::as_cbytes(bytes));
+}
+std::string tickscounter::json() const {
+  std::string ret;
+  ret+="{\n";
+  std::string bins;
+  for(int k=0; k<NTICKS;++k) {
+    bins+=std::string("{")
+      + "\"start\":"+std::to_string(m_bins[k].m_start)
+      +",\"count\":"+std::to_string(m_bins[k].m_count)
+      +",\"duration\":"+std::to_string(m_bins[k].m_duration)
+      +"}";
+    if ((k+1)<NTICKS || !m_bins[k+1].empty())
+      bins+=",";
+    if (m_bins[k+1].empty())
+      break;
+  }
+  ret+="\"bins\":["+bins+"]\n}";
+  return ret;
+}
+
+std::string tickscounter::asJson(const std::string &hex) {
+  return fromHex(hex).json();
+}
+#endif
+
 bool tickscounter::operator==(const tickscounter &other) const {
   for(int k=0;k<NTICKS;++k) {
     if (!(m_bins[k]==other.m_bins[k]))
@@ -245,34 +280,27 @@ void tickscounter::print() const {
 #endif
 }
 
+uint32_t one_minute() {
+  return 1000L*60;
+}
+
 int some_real_ticks(tickscounter &C) {
   int k=0;
-  for(; k<=clean_threshold; ++k)
+  for(; k<=60; ++k) {
     C.tick();
+    delay(1200L);
+  }
   return k;
 }
 
 int some_spurious_ticks(tickscounter &C) {
   int k = 0;
-  for(; k<clean_threshold; ++k)
+  for(; k<clean_threshold; ++k) {
+    delay(one_minute()*2);
     C.tick();
+  }
   return k;
 }
-
-#ifndef ARDUINO
-#include "utils.h"
-tickscounter tickscounter::fromHex(const std::string &hex) {
-  std::vector<uint8_t> bytes=utils::hex_to_bytes(hex);
-  return tickscounter(utils::as_cbytes(bytes));
-}
-std::string tickscounter::json() const {
-  return std::string();
-}
-std::string tickscounter::asJson(const std::string &hex) {
-  return fromHex(hex).json();
-}
-
-#include <fstream>
 
 int tickscounter::test() {
   tickscounter C;
@@ -280,13 +308,13 @@ int tickscounter::test() {
   int T=0;
   const int K1=NTICKS-2;
   for(int k = 0; k<K1; ++k) {
-    delay(1000L*60*(K1-k+1));
+    delay(one_minute()*2*(K1-k+1));
     T+=some_real_ticks(C);
     assert(C.total()==T);
   }
   
   for(int k = 0; k<10; ++k) {
-    delay(1000L*60*(2+k));
+    delay(one_minute()*2*(2+k));
     some_spurious_ticks(C);
     assert(C.total()!=T);
   }
@@ -295,7 +323,7 @@ int tickscounter::test() {
   
   const int K2=5;
   for(int k = 0; k<K2; ++k) {
-    delay(1000L*60*(K2-k));
+    delay(one_minute()*(K2-k));
     T+=some_real_ticks(C);
     C.print();
     debug("--");
@@ -309,13 +337,12 @@ int tickscounter::test() {
 
   tickscounter C2(data);
   assert(C==C2);
-
+#ifndef ARDUINO
   using namespace std;
   std::ofstream file;
   file.open("tickscounter.bin", ios::out | ios::binary);
   file.write((char*)data,L);
-  
+#endif
   return 0;
 }
 
-#endif
