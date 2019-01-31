@@ -111,7 +111,7 @@ void update_display() {
   
   char line1[17]={0};
   if (counter.total()>0)
-    snprintf(line1,17,"%u for %02d:%02d",counter.total(),h,m);
+    snprintf(line1,17,"%u for %02d:%02d  %2d",counter.total(),h,m,counter.bin_count());
  
   char line2[17]={0};
   if (message()) 
@@ -135,6 +135,10 @@ void sleep_now() {
 }
 
 Clock::ms last_time_rising_reed=0;
+Clock::ms time_last_upload_failed=0;
+
+constexpr Clock::ms one_minute=60*1000L;
+constexpr Clock::ms one_hour=60*one_minute;
 
 void loop() {
   Clock::ms current_time=Clock::millis_since_start();
@@ -149,18 +153,23 @@ void loop() {
   update_display();
  
   if (!wake_on_rising_reed) {
-    constexpr Clock::ms no_activity_time_for_upload = 0;//10*60*1000L; //10*60*1000L;
-    // 10 minutes without sensor activity => seems we can upload.
-    if (time_since_last_rising_reed>no_activity_time_for_upload) {
-      if (counter.empty())
+    if (counter.empty() || counter.recently_active())
+      return;
+
+    if (time_last_upload_failed>0) {
+      const bool wifi_down = current_time - time_last_upload_failed < 5*one_minute;
+      if (wifi_down)
 	return;
-      if (!upload_statistics()) {
-	display::lcd.print("upload failed");
-      } else {
-	display::lcd.print("upload good");
-	reset();
-      }
     }
+    
+    if (!upload_statistics()) {
+      time_last_upload_failed=current_time;
+      display::lcd.print("upload failed");
+    } else {
+      time_last_upload_failed=0;
+      display::lcd.print("upload good");
+      reset();
+    }    
     sleep_now();
   }
   

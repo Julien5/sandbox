@@ -148,7 +148,6 @@ bool tickscounter::is_clean() const {
 }
 
 void tickscounter::denoise() {
-  print();
   const Clock::mn now = Clock::minutes_since_start();
   for(int k=0; k<NTICKS; ++k) {
     bin &b=m_bins[k];
@@ -187,6 +186,18 @@ bin::time tickscounter::last_tick_time() {
   if (k>=0)
     return m_bins[k].end();
   return 0;
+}
+
+bool tickscounter::recently_active() const {
+  return Clock::minutes_since_start() - last_tick_time() < 60;
+}
+
+uint8_t tickscounter::bin_count() const {
+  bin::count ret=0;
+  for(int k=0; k<NTICKS; ++k)
+    if (!m_bins[k].empty())
+      ret++;
+  return ret;
 }
 
 void tickscounter::clean() {

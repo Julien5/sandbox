@@ -50,6 +50,8 @@ public:
   bin::count total();
   bool empty() const;  
   bin::time last_tick_time();
+  bool recently_active() const;
+  uint8_t bin_count() const;
   uint8_t *getdata(int * Lout) const;
   bool operator==(const tickscounter &other) const;
   static int test();

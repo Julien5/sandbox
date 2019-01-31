@@ -217,7 +217,7 @@ def update_all():
         (path,data,t)=row;
         if "tickscounter" in path:
             assert(isinstance(data,bytes));
-            hx=binascii.hexlify(req).decode('ascii');
+            hx=binascii.hexlify(data).decode('ascii');
             d.process(hx,t);
     d.dump();
 

@@ -97,6 +97,7 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
             message = "updated";
         elif "message" in self.path:
             sms="T:100K L24=12345XXXXXXXXXx";
+            sms=str(datetime.datetime.now().time());
             #    1234567890123456
             message = "{"+sms+"}";
         else:
