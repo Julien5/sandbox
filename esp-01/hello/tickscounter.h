@@ -16,19 +16,19 @@ struct bin {
   bool tick();
   void take(bin &other);
   void move(bin &other);
-  duration distance(const bin &other);
-  
-};
+  duration distance(const bin &other) const;
+  bool operator==(const bin &other) const;
+} __attribute__((packed));
 
 constexpr int NTICKS = 20;
 
 class tickscounter {
   bin m_bins[NTICKS];
+  mutable bin::time m_tranmission_time=0;
+ 
   bool tick_if_possible();
-  void compress();
-  int m_compress_index=-1;
-  bin::duration m_dmin=0;
-  void update_compress_index();
+  void compress(); 
+  int compress_index();
   void denoise();
   void remove_holes();
 public:
@@ -38,5 +38,7 @@ public:
   void print() const;
   bool is_clean() const;
   bin::count total() const;
+  uint8_t *getdata(int * Lout) const;
+  bool operator==(const tickscounter &other) const;
   static int test();
-};
+} __attribute__((packed));

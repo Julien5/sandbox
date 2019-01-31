@@ -54,7 +54,17 @@ void bin::move(bin &other) {
   other.reset();
 }
 
-bin::duration bin::distance(const bin &other) {
+bool bin::operator==(const bin &other) const  {
+  if (m_start != other.m_start)
+    return false;
+  if (m_count != other.m_count)
+    return false;
+  if (m_duration != other.m_duration)
+    return false;
+  return true;
+}
+
+bin::duration bin::distance(const bin &other) const {
   if (empty() || other.empty())
     return USHRT_MAX;
   if (other.m_start < end())
@@ -66,22 +76,24 @@ tickscounter::tickscounter()
   : m_bins{}
 {}
 
-void tickscounter::update_compress_index() {
-  m_dmin=0;
-  for(int k = 0; k<(NTICKS-1) && !m_bins[k+1].empty(); ++k) {
-    bin::duration d = m_bins[k-1].distance(m_bins[k]);
-    if (d<m_dmin || m_dmin==0 || m_compress_index < 0) {
-      m_dmin=d;
-      m_compress_index = k-1;
+int tickscounter::compress_index() {
+  int dmin=0;
+  int indx=-1;
+  for(int k = 0; (k+1)<NTICKS && !m_bins[k+1].empty(); ++k) {
+    bin::duration d = m_bins[k].distance(m_bins[k+1]);
+    if (d<dmin || k==0) {
+      dmin=d;
+      indx = k;
     }
   }
+  assert(0<=indx && indx<(NTICKS-1));
+  return indx;
 }
 
 void tickscounter::compress() {
   debug("compress");
   clean();
-  assert(0<=m_compress_index && m_compress_index<(NTICKS-1));
-  int k=m_compress_index;
+  const int k=compress_index();
   m_bins[k].take(m_bins[k+1]);
   remove_holes();
   assert(is_clean());
@@ -161,7 +173,6 @@ void tickscounter::clean() {
   bin::count T=total();
   assert(T<=T0);
   remove_holes(); 
-  update_compress_index();
   // (3) check
   assert(is_clean());
   assert(total()==T);
@@ -177,7 +188,6 @@ bin::count tickscounter::total() const {
 bool tickscounter::tick_if_possible() {
   for(int k=0; k<NTICKS; ++k) {
     if (m_bins[k].tick()) {
-      update_compress_index();
       return true;
     }
   }
@@ -188,6 +198,20 @@ void tickscounter::tick() {
   while (!tick_if_possible())
     compress();
 }
+
+uint8_t* tickscounter::getdata(int * Lout) const {
+  m_tranmission_time = Clock::minutes_since_start();
+  *Lout = sizeof(*this);
+  return (uint8_t*)this; 
+}
+
+bool tickscounter::operator==(const tickscounter &other) const {
+  for(int k=0;k<NTICKS;++k) {
+    if (!(m_bins[k]==other.m_bins[k]))
+      return false;
+  }
+  return true;
+}  
 
 void tickscounter::print() const {
 #ifndef ARDUINO
@@ -241,5 +265,10 @@ int tickscounter::test() {
   }
   assert(T>(K1+K2));
   assert(C.total()==T);
+
+  int L=0;
+  uint8_t * data = C.getdata(&L);
+  debug(L);
+  
   return 0;
 }
