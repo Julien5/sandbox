@@ -25,6 +25,7 @@ constexpr int NTICKS = 20;
 class tickscounter {
   bin m_bins[NTICKS];
   mutable bin::time m_tranmission_time=0;
+  char version=1;
  
   bool tick_if_possible();
   void compress(); 
@@ -33,6 +34,7 @@ class tickscounter {
   void remove_holes();
 public:
   tickscounter();
+  tickscounter(const uint8_t *addr, const int L);
   void tick();
   void clean();
   void print() const;

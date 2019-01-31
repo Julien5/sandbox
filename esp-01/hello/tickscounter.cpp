@@ -76,6 +76,14 @@ tickscounter::tickscounter()
   : m_bins{}
 {}
 
+tickscounter::tickscounter(const uint8_t *addr, const int L) {
+  const int this_version = this->version;
+  assert(sizeof(*this)==L);
+  *this = *(tickscounter*)addr;
+  if (this->version != this_version)
+    debug("versioning problem!");
+}
+
 int tickscounter::compress_index() {
   int dmin=0;
   int indx=-1;
@@ -267,8 +275,11 @@ int tickscounter::test() {
   assert(C.total()==T);
 
   int L=0;
-  uint8_t * data = C.getdata(&L);
+  const uint8_t * data = C.getdata(&L);
   debug(L);
+
+  tickscounter C2(data,L);
+  assert(C==C2);
   
   return 0;
 }
