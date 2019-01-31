@@ -14,16 +14,16 @@ AltSoftSerial Altser;
 #define BUFFER_LENGTH 16
 
 // see https://www.nongnu.org/avr-libc/user-manual/pgmspace.html
-const char ATCWQAP[] PROGMEM = "AT+CWQAP";
-const char ATRST[] PROGMEM = "AT+RST";
-const char ATCWJAP[] PROGMEM = "AT+CWJAP?";
-const char ATE1[] PROGMEM = "ATE1";
-const char AT[] PROGMEM = "AT";
-const char ATCWLAP[] PROGMEM = "AT+CWLAP";
-const char ATCIPSTART[] PROGMEM = "AT+CIPSTART";
-const char ATCIPSEND[] PROGMEM = "AT+CIPSEND";
-const char ATCIPCLOSE[] PROGMEM = "AT+CIPCLOSE";
-const char UARTCUR[] PROGMEM = "UART_CUR";
+const char ATCWQAP[] = "AT+CWQAP";
+const char ATRST[] = "AT+RST";
+const char ATCWJAP[] = "AT+CWJAP?";
+const char ATE1[] = "ATE1";
+const char AT[] = "AT";
+const char ATCWLAP[] = "AT+CWLAP";
+const char ATCIPSTART[] = "AT+CIPSTART";
+const char ATCIPSEND[] = "AT+CIPSEND";
+const char ATCIPCLOSE[] = "AT+CIPCLOSE";
+const char UARTCUR[] = "UART_CUR";
 
 const int short_timeout = 3000;
 const int long_timeout = 20000;
@@ -56,6 +56,7 @@ namespace options {
   const unsigned char wait_for_error = 0x2;
   const unsigned char wait_for_closed = 0x4;
   const unsigned char wait_for_gt = 0x8;
+  const unsigned char wait_for_connected = 0x10;
 }
 
 void flushRX() {
@@ -72,6 +73,7 @@ unsigned char waitFor(const unsigned char opts, const int timeout) {
   parse::StringAwaiter error_wait("ERROR");
   parse::StringAwaiter closed_wait("CLOSED");
   parse::StringAwaiter gt_wait(">");
+  parse::StringAwaiter connected_wait("CONNECTED");
 
   unsigned char found = 0;
   
@@ -100,6 +102,10 @@ unsigned char waitFor(const unsigned char opts, const int timeout) {
 	if (gt_wait.read(buffer))
 	  found |= options::wait_for_gt;
       }
+      if (options::wait_for_connected & opts) {
+	if (connected_wait.read(buffer))
+	  found |= options::wait_for_connected;
+      }
     }
     buffer[0]='\0';
   }
@@ -113,6 +119,7 @@ unsigned char sendCommandAndWaitForResponse(const char * command, const int leng
 {
   comm::write(command,length);
   comm::write("\r\n");
+  DBGTX("command: ");
   DBGTXLN(command);
   if (strstr(command,UARTCUR)!=NULL) {
     delay(150);
@@ -121,9 +128,11 @@ unsigned char sendCommandAndWaitForResponse(const char * command, const int leng
   unsigned char opts=options::wait_for_ok | options::wait_for_error;
   if (strstr(command,ATCIPSEND)!=NULL)
     opts |= options::wait_for_gt;
+  if (strstr(command,ATRST)!=NULL)
+    opts |= options::wait_for_connected;
   TRACE();
   unsigned char ret=waitFor(opts, timeout);
-  DBGTX(F("sendCommandAndWaitForResponse: "));
+  DBGTX("sendCommandAndWaitForResponse: ");
   DBGTXLN(int(ret));
   return ret;
 }
@@ -179,7 +188,8 @@ void wifi::esp8266::setTimeout(int t) {
 
 namespace command {
   bool RST() {
-    return sendCommandAndWaitForResponse(ATRST,short_timeout)==options::wait_for_ok;
+    uint8_t ret = sendCommandAndWaitForResponse(ATRST,short_timeout);
+    return ret==options::wait_for_ok || ret==options::wait_for_connected;
   }
 };
 

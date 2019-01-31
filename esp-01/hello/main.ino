@@ -44,13 +44,14 @@ void setup()
   delay(1000);
   pinMode(reed_pin, INPUT_PULLUP);
   attachInterrupt(0,on_rising_reed,RISING);
+  Serial.println("setup.");
 }
 
 char try_upload_statistics(wifi::esp8266 &esp) {
   display::lcd.print("uploading...");
   int length=0;
   uint8_t * data = counter.getdata(&length);
-  int ret=esp.post("postrequest",data,length);
+  int ret=esp.post("tickscounter",data,length);
   if (ret != 0) {
     char msg[16];
     snprintf(msg, 16,"post error: %d",ret);
@@ -59,7 +60,6 @@ char try_upload_statistics(wifi::esp8266 &esp) {
     return 1;
   }
   display::lcd.print("result uploaded");
-  reset();
   return 0;
 }
 
@@ -135,7 +135,7 @@ void loop() {
   update_display();
  
   if (!wake_on_rising_reed) {
-    constexpr Clock::ms no_activity_time_for_upload = 10*60*1000L; //10*60*1000L;
+    constexpr Clock::ms no_activity_time_for_upload = 0;//10*60*1000L; //10*60*1000L;
     // 10 minutes without sensor activity => seems we can upload.
     if (time_since_last_rising_reed>no_activity_time_for_upload) {
       if (counter.empty())
@@ -144,6 +144,7 @@ void loop() {
 	display::lcd.print("upload failed");
       } else {
 	display::lcd.print("upload good");
+	reset();
       }
     }
     sleep_now();

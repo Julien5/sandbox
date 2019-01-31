@@ -48,7 +48,7 @@ void delay(test_ms d);
 #include "Arduino.h"
 #include "HardwareSerial.h"
 #include <avr/pgmspace.h>
-#if 0
+#if 1
 #define DBGTX(X)				\
   do {						\
     Serial.write((X));				\
