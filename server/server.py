@@ -68,7 +68,7 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
         log("GET request for {}".format(self.path));
 
         sql=data.Sql();
-        sql.insert(self.path);
+        sql.insert(self.path,bytes());
         
         self.send_response(200)
         # Send message back to client
@@ -112,7 +112,7 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
         post_data = self.rfile.read(content_length) 
         log("POST request for {}".format(self.path));
         sql=data.Sql();
-        sql.insert(post_data);
+        sql.insert(self.path,post_data);
         data.update_all();
         log("received {} bytes".format(len(post_data)));
         # print(binascii.hexlify(data).decode('UTF-8'));
@@ -134,18 +134,7 @@ def run():
         except Exception as e:
             log("exception:",str(e));            
 
-def getdb(filename):
-    global sqlite;
-    global conn;
-    create=not os.path.exists(filename);
-    conn = sqlite3.connect(filename);
-    sqlite = conn.cursor();
-    if create:
-        sqlite.execute("CREATE TABLE requests (ID INT PRIMARY KEY, req TEXT, time REAL)");
-                   
 def main():
-    filename="sqlite.db";
-    getdb(filename);
     run();
     
 if __name__ == "__main__":

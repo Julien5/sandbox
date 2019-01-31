@@ -196,29 +196,30 @@ class Data:
             
 class Sql:
     def __init__(self):
+        create = not os.path.exists("sqlite.db");
         self.conn = sqlite3.connect("sqlite.db");
         self.sqlite = self.conn.cursor();
+        if create:
+            self.sqlite.execute("CREATE TABLE requests (ID INTEGER PRIMARY KEY AUTOINCREMENT, path TEXT, data BLOB, time TEXT)");
+            self.conn.commit();
     def select(self,statement):
         self.sqlite.execute(statement)
         return self.sqlite.fetchall();
-    def insert(self,request):
+    def insert(self,path,data):
         t=str(datetime.datetime.now());
-        self.sqlite.execute('INSERT INTO requests (req,time) VALUES (?,?)', (request, t));
+        self.sqlite.execute('INSERT INTO requests (path,data,time) VALUES (?,?,?)', (path, data, t));
         self.conn.commit();
 
 def update_all():    
     sql=Sql();
-    data=Data();
-    for row in sql.select("SELECT req,time FROM requests"):
-        (req,t)=row;
-        if isinstance(req,bytes):
+    d=Data();
+    for row in sql.select("SELECT path,data,time FROM requests"):
+        (path,data,t)=row;
+        if "tickscounter" in path:
+            assert(isinstance(data,bytes));
             hx=binascii.hexlify(req).decode('ascii');
-            data.process(hx,t);
-    data.dump();
-
-def insert(request,time):
-    sql=Sql();
-    
+            d.process(hx,t);
+    d.dump();
 
 if __name__ == "__main__":
     #update_plot("minutes/2019-01-22.csv");

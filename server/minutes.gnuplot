@@ -1,8 +1,8 @@
-set terminal pngcairo size 800,400 enhanced font 'Verdana,12'
+set terminal pngcairo size 1900,800 enhanced font 'Verdana,12'
 set output '{out}'
 set datafile separator comma
 
-set boxwidth 0.05
+set boxwidth 0.01
 set style fill solid
 set xrange [0:24]
 set yrange [0:100]
