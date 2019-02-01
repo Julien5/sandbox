@@ -60,16 +60,18 @@ def dir_list(path):
         r.append('</ul>\n<hr>\n</body>\n</html>\n')
     return '\n'.join(r);
 
+dataprocessor = data.Data();
+database = data.Sql();
+
 class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
     def setup(self):
         BaseHTTPRequestHandler.setup(self)
         self.request.settimeout(30)
-    
+              
     def do_GET(self):
         log("GET request for {}".format(self.path));
-
-        sql=data.Sql();
-        sql.insert(self.path,bytes());
+        global dataprocessor,database;
+        database.insert(self.path,bytes());
         
         self.send_response(200)
         # Send message back to client
@@ -93,11 +95,11 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
             self.send_header("Content-length", img_size);
             message = read_image(filename);
         elif "update" in self.path:
-            data.update_all();
+            data.dump(database,dataprocessor);
             message = "updated";
         elif "message" in self.path:
             sms="T:100K L24=12345XXXXXXXXXx";
-            sms=str(datetime.datetime.now().time());
+            sms=dataprocessor.sms();
             #    1234567890123456
             message = "{"+sms+"}";
         else:
@@ -117,11 +119,10 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
         content_length = int(self.headers['Content-Length'])
         post_data = self.rfile.read(content_length) 
         log("POST request for {}".format(self.path));
-        sql=data.Sql();
-        sql.insert(self.path,post_data);
-        data.update_all();
         log("received {} bytes".format(len(post_data)));
-        # print(binascii.hexlify(data).decode('UTF-8'));
+        database.insert(self.path,post_data);
+        data.update(database,dataprocessor);
+        log("sms:"+dataprocessor.sms());
         message = "thanks,bye\n"
         # Write content as utf-8 data
         self.wfile.write(bytes(message, "utf8"));        

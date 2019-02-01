@@ -45,29 +45,6 @@ def update_file(filename,content,D=None):
     update_plot(filename,D);
     return True;
 
-class Packet:
-    def __init__(self,httpdate,jstring):
-        self.minutes = dict();
-        self.millis = list();
-        self.date = httpdate;
-        
-        data=json.loads(jstring);
-        m_http=httpdate.hour*60+httpdate.minute;
-        D = data["minutes"];
-        
-        for m in D:
-            m_stat = m["minute"];
-            hr = int(m_stat/60);
-            mn = int(m_stat-hr*60);
-            date = httpdate.replace(hour=hr,minute=mn);
-            if m_stat>m_http:
-                date = date.replace(day=httpdate.date().day-1);
-            self.minutes[date]=m["count"];
-            
-        for m in data["millis"]:
-            self.millis.append(m);
-
-
 def minutes_csv(minutes):
     d = str();
     for m in sorted(minutes):
@@ -98,78 +75,60 @@ def millis_csv(millis):
         i = i + 1;
     return d;
 
-class Packets:
-    def __init__(self):
-        self.minutes=dict();
-        self.millis=dict();
-        self.httpdates=dict()
+# {
+#  "bins":[{"start":0,"count":1,"duration":0}]
+# }
 
-    def merge(self,packet):
-        if not packet.minutes:
-            return;
-        for m in packet.minutes:
-            assert(not m in self.minutes);
-            c=packet.minutes[m];
-            if c>2:
-                self.minutes[m] = c; 
-        self.millis[sorted(packet.minutes)[-1]] = packet.millis;
-        self.httpdates[packet.date]=packet;
+class Tick:
+    def __init__(self,start,duration,count):
+        self.start = start;
+        self.duration = duration;
+        self.count = count;
+
+    def end(self):
+        return self.start + self.duration;
+
+class Ticks:
+    def __init__(self,jstring,t_transmit):
+        D=json.loads(jstring);
+        print("process:",D);
+        transmit0=int(D["transmit_time"]);
         
-    def dates(self):
-        ret=set();
-        for m in self.minutes:
-            ret.add(m.date());
-        return ret;
-
-    def packets(self):
-        return self.httpdates.copy();
-        
-    def get_millis(self):
-        return self.millis.copy();
-    
-    def trunc(self,start,end):
-        ret=Packets();
-        for m in self.minutes:
-            if start <= m and m <= end:
-                ret.minutes[m] = self.minutes[m];
-        for m in self.millis:
-            if start <= m and m <= end:
-                ret.millis[m] = self.millis[m];
-        return ret;
-
-    def number_of_tours(self):
+        self.bins = list();
+        for b in D["bins"]:
+            start=t_transmit-datetime.timedelta(minutes=(transmit0-int(b["start"])));
+            duration=datetime.timedelta(minutes=int(b["duration"]));
+            count=int(b["count"]);
+            self.bins.append(Tick(start,duration,count));
+            
+    def total(self):
         ret=0;
-        for m in self.minutes:
-            ret += self.minutes[m];
+        for b in self.bins:
+            ret+=b.count;
         return ret;
-
-    def number_of_minutes(self):
-        return len(self.minutes);
-
-    def csv(self,key):
-        d = str();
-        if "minutes" in key:
-            return minutes_csv(self.minutes);
-        return d;
 
 class Data:
     def __init__(self):
-        self.packets=Packets();
-        
-    def merge(self,httpdate,jstring):
-        self.packets.merge(Packet(httpdate,jstring));
+        self.ticks = list();
+
+    def merge(self,t,json):
+        self.ticks.append(Ticks(json,t));
            
     def process(self,hex,t):
-        t1=datetime.datetime.strptime(t,"%Y-%m-%d %H:%M:%S.%f");
-        t0=datetime.datetime.strptime("2019-01-19 18:00","%Y-%m-%d %H:%M");
-        if not t1>t0:
-            return;
-        self.merge(t1,hamster.statistics.asJson(hex));
+        t=datetime.datetime.strptime(t,"%Y-%m-%d %H:%M:%S.%f");
+        self.merge(t,hamster.tickscounter.asJson(hex));
 
-    def process_tickscounter(self,hex,t):
-        pass;
+    def total(self):
+        T=0;
+        for tick in self.ticks:
+            T+=tick.total();
+        return T;
 
+    def sms(self):
+        return "{0} ticks".format(self.total());
+  
     def dump(self):
+        return;
         P = self.packets.packets();
         for date in P:
             filename = "dump/"+date.strftime("%Y-%m-%d--%H-%M-%S")+".csv";
@@ -213,18 +172,22 @@ class Sql:
         self.sqlite.execute('INSERT INTO requests (path,data,time) VALUES (?,?,?)', (path, data, t));
         self.conn.commit();
 
-def update_all():    
-    sql=Sql();
-    d=Data();
+def update(sql,d):    
     for row in sql.select("SELECT path,data,time FROM requests"):
         (path,data,t)=row;
         if "tickscounter" in path:
             assert(isinstance(data,bytes));
             hx=binascii.hexlify(data).decode('ascii');
-            d.process_tickscounter(hx,t);
+            d.process(hx,t);
+        
+def dump(sql,d):
+    update(sql,d);
     d.dump();
-
+            
 if __name__ == "__main__":
     #update_plot("minutes/2019-01-22.csv");
     #update_plot("millis/2019-01-19-18:7-0.csv");
-    update_all();
+    sql=Sql();
+    d=Data();
+    dump(sql,d);
+    print("sms:",d.sms());
