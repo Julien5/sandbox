@@ -188,7 +188,7 @@ bin::time tickscounter::last_tick_time() {
   return 0;
 }
 
-bool tickscounter::recently_active() const {
+bool tickscounter::recently_active() {
   return Clock::minutes_since_start() - last_tick_time() < 60;
 }
 

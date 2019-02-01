@@ -5,9 +5,9 @@
 #endif
 
 struct bin {
-  using time = uint16_t;
-  using count = uint16_t;
-  using duration = uint16_t;
+  typedef uint16_t time;
+  typedef uint16_t count;
+  typedef uint16_t duration;
   bin();
   time m_start=0;
   count m_count=0;
@@ -50,7 +50,7 @@ public:
   bin::count total();
   bool empty() const;  
   bin::time last_tick_time();
-  bool recently_active() const;
+  bool recently_active();
   uint8_t bin_count() const;
   uint8_t *getdata(int * Lout) const;
   bool operator==(const tickscounter &other) const;

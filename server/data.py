@@ -166,6 +166,9 @@ class Data:
             return;
         self.merge(t1,hamster.statistics.asJson(hex));
 
+    def process_tickscounter(self,hex,t):
+        pass;
+
     def dump(self):
         P = self.packets.packets();
         for date in P:
@@ -218,7 +221,7 @@ def update_all():
         if "tickscounter" in path:
             assert(isinstance(data,bytes));
             hx=binascii.hexlify(data).decode('ascii');
-            d.process(hx,t);
+            d.process_tickscounter(hx,t);
     d.dump();
 
 if __name__ == "__main__":

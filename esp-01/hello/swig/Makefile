@@ -14,8 +14,9 @@
 
 CXX = g++
 SWIG = swig3.0
-SWIGFLAGS = -c++ -python 
-CXXFLAGS = -std=c++14 -c -fpic -Wall -I/usr/include/python3.6m/ 
+SWIGFLAGS = -c++ -python
+PYTHON_VERSION := $(shell python3 -c "import sys;t='{v[0]}.{v[1]}'.format(v=list(sys.version_info[:2]));sys.stdout.write(t)")
+CXXFLAGS = -std=c++14 -c -fpic -Wall -I/usr/include/python$(PYTHON_VERSION)m/ 
 LDFLAGS = -shared
 
 SRCS := \
@@ -29,7 +30,12 @@ statistics_wrap.cpp
 #SRCS := x.cpp x_wrap.cpp
 OBJS := $(SRCS:.cpp=.o)
 
-all: _hamster.so 
+all: build deploy
+
+deploy:
+	cp hamster.py _hamster.so $(shell python3 -m site --user-site)
+
+build: _hamster.so
 
 %.so: $(OBJS)
 	$(CXX)  -o $@ $(LDFLAGS) $^
