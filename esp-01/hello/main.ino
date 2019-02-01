@@ -40,7 +40,7 @@ void setup()
   Serial.println("@START");
   display::lcd.init();
   delay(50);  
-  display::lcd.print("good");
+  display::lcd.print("setup...");
   delay(1000);
   pinMode(reed_pin, INPUT_PULLUP);
   attachInterrupt(0,on_rising_reed,RISING);
@@ -157,7 +157,7 @@ void loop() {
       return;
 
     if (time_last_upload_failed>0) {
-      const bool wifi_down = current_time - time_last_upload_failed < 5*one_minute;
+      const bool wifi_down = current_time - time_last_upload_failed < 0*5*one_minute;
       if (wifi_down)
 	return;
     }

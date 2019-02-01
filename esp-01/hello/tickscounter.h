@@ -29,7 +29,9 @@ class tickscounter {
   bin m_bins[NTICKS];
   mutable bin::time m_tranmission_time=0;
   char version=1;
- 
+
+  bool m_is_clean = true;
+  
   bool tick_if_possible();
   void compress(); 
   int compress_index();

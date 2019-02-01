@@ -106,7 +106,8 @@ void tickscounter::compress() {
   clean();
   const int k=compress_index();
   m_bins[k].take(m_bins[k+1]);
-  remove_holes();
+  m_is_clean = false;
+  clean();
   assert(is_clean());
 }
 
@@ -126,7 +127,7 @@ bool tickscounter::is_clean() const {
     const bin &b=m_bins[k];
     if (b.empty())
       continue;
-    assert(now>b.end());
+    assert(now>=b.end());
     const Clock::mn age = now - b.end();
     if (age>5 && b.m_count<=clean_threshold) {
       debug("dirt");
@@ -148,6 +149,8 @@ bool tickscounter::is_clean() const {
 }
 
 void tickscounter::denoise() {
+  if (m_is_clean)
+    return;
   const Clock::mn now = Clock::minutes_since_start();
   for(int k=0; k<NTICKS; ++k) {
     bin &b=m_bins[k];
@@ -162,6 +165,8 @@ void tickscounter::denoise() {
 }
 
 void tickscounter::remove_holes() {
+  if (m_is_clean)
+    return;
   int k1=0,k2=0;
   while(true) {
     move_to_first_empty(m_bins,&k1);
@@ -179,7 +184,7 @@ void tickscounter::remove_holes() {
 }
 
 bin::time tickscounter::last_tick_time() {
-  denoise();
+  clean();
   int k=0;
   move_to_first_empty(m_bins,&k);
   k--;
@@ -189,6 +194,7 @@ bin::time tickscounter::last_tick_time() {
 }
 
 bool tickscounter::recently_active() {
+  return false;
   return Clock::minutes_since_start() - last_tick_time() < 60;
 }
 
@@ -201,14 +207,12 @@ uint8_t tickscounter::bin_count() const {
 }
 
 void tickscounter::clean() {
-  bin::count T0=total();
+  if (m_is_clean)
+    return;
   denoise();
-  bin::count T=total();
-  assert(T<=T0);
   remove_holes(); 
-  // (3) check
-  assert(is_clean());
-  assert(total()==T);
+  m_is_clean=is_clean();
+  assert(m_is_clean);
 }
 
 bool tickscounter::empty() const {
@@ -216,7 +220,7 @@ bool tickscounter::empty() const {
 }
 
 bin::count tickscounter::total() {
-  denoise();
+  clean();
   bin::count ret=0;
   for(int k=0; k<NTICKS; ++k)
     ret+=m_bins[k].m_count;
@@ -226,6 +230,7 @@ bin::count tickscounter::total() {
 bool tickscounter::tick_if_possible() {
   for(int k=0; k<NTICKS; ++k) {
     if (m_bins[k].tick()) {
+      m_is_clean = false;
       return true;
     }
   }
@@ -259,12 +264,14 @@ std::string tickscounter::json() const {
       +",\"count\":"+std::to_string(m_bins[k].m_count)
       +",\"duration\":"+std::to_string(m_bins[k].m_duration)
       +"}";
-    if ((k+1)<NTICKS || !m_bins[k+1].empty())
+    if ((k+1)<NTICKS && !m_bins[k+1].empty())
       bins+=",";
     if (m_bins[k+1].empty())
       break;
   }
-  ret+="\"bins\":["+bins+"]\n}";
+  ret+="\"bins\":["+bins+"],";
+  ret+="\"transmit_time\":"+std::to_string(m_tranmission_time);
+  ret+="\n}";
   return ret;
 }
 

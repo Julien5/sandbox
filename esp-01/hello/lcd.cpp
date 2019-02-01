@@ -12,8 +12,8 @@ void display::LCD::init() {
   d.begin(16,2);
   for(int d=0; d<3; ++d)
     {
-      char msg[16]={0};
-      snprintf(msg, 16, "INIT LCD: %d", d);    
+      char msg[17]={0};
+      snprintf(msg, 17, "INIT LCD: %d", d);    
       print(msg);
       delay(50);
     }
