@@ -18,8 +18,6 @@ def log(msg):
     f.write("\n");
     f.close();
 
-# HTTPRequestHandler class
-
 def read_image(path):
     return open(path, 'rb').read();
 
@@ -131,6 +129,7 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
     
 def run():
     log('starting server...')
+    data.update(database,dataprocessor);
     # Server settings
     server_address = ('0.0.0.0', 8000)
     httpd = HTTPServer(server_address, testHTTPServer_RequestHandler)

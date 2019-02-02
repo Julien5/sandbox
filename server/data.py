@@ -88,15 +88,21 @@ class Tick:
     def end(self):
         return self.start + self.duration;
 
+    def string(self):
+        return "start:{} end:{} count:{}".format(self.start.strftime("%Y-%m-%d-%H:%M"),
+                                                 self.end().strftime("%Y-%m-%d-%H:%M"),
+                                                 self.count);
+
 class Ticks:
-    def __init__(self,jstring,t_transmit):
+    def __init__(self,jstring,tT):
         D=json.loads(jstring);
-        print("process:",D);
-        transmit0=int(D["transmit_time"]);
-        
+        print("process:",D);        
+        mT=int(D["transmit_time"]);
         self.bins = list();
         for b in D["bins"]:
-            start=t_transmit-datetime.timedelta(minutes=(transmit0-int(b["start"])));
+            m=int(b["start"]);
+            delta=datetime.timedelta(minutes=(mT-m));
+            start=tT-delta;
             duration=datetime.timedelta(minutes=int(b["duration"]));
             count=int(b["count"]);
             self.bins.append(Tick(start,duration,count));
@@ -107,8 +113,15 @@ class Ticks:
             ret+=b.count;
         return ret;
 
+    def display(self):
+        for b in self.bins:
+            print(b.string());
+            
 class Data:
     def __init__(self):
+        self.ticks = list();
+
+    def reset(self):
         self.ticks = list();
 
     def merge(self,t,json):
@@ -125,6 +138,9 @@ class Data:
         return T;
 
     def sms(self):
+        for tick in self.ticks:
+            tick.display();
+            
         return "{0} ticks".format(self.total());
   
     def dump(self):
@@ -172,7 +188,9 @@ class Sql:
         self.sqlite.execute('INSERT INTO requests (path,data,time) VALUES (?,?,?)', (path, data, t));
         self.conn.commit();
 
-def update(sql,d):    
+# update = reset + rebuild all => really not efficient
+def update(sql,d):
+    d.reset();
     for row in sql.select("SELECT path,data,time FROM requests"):
         (path,data,t)=row;
         if "tickscounter" in path:

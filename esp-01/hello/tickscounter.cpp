@@ -201,8 +201,8 @@ bin::time tickscounter::last_tick_time() {
 }
 
 bool tickscounter::recently_active() {
-  return false;
-  return Clock::minutes_since_start() - last_tick_time() < 60;
+  const Clock::mn T=2; // release:60
+  return Clock::minutes_since_start() - last_tick_time() < T;
 }
 
 uint8_t tickscounter::bin_count() const {
