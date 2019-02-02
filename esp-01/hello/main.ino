@@ -43,7 +43,16 @@ void setup()
   delay(50);  
   display::lcd.print("setup...");
   delay(1000);
+
   pinMode(reed_pin, INPUT_PULLUP);
+  
+  pinMode(LED_BUILTIN, OUTPUT);
+  for(int k=0;k<5;k++) {
+    digitalWrite(LED_BUILTIN, HIGH);
+    delay(50);
+    digitalWrite(LED_BUILTIN, LOW);
+    delay(100);
+  }
   attachInterrupt(0,on_rising_reed,RISING);
 }
 
@@ -52,8 +61,11 @@ namespace message {
   char * addr = 0;
   bool update() {
     wifi::esp8266 esp(wifi_enable_pin);
-    if (!esp.enabled())
+    digitalWrite(LED_BUILTIN, LOW);
+    if (!esp.enabled()) {
+      digitalWrite(LED_BUILTIN, HIGH);
       return false;
+    }
     if (!esp.get("message",&addr))
       return false;
     DBGTX("addr={");DBGTX(addr);DBGTXLN("}");
@@ -62,7 +74,6 @@ namespace message {
 }
 
 char try_upload_statistics(wifi::esp8266 &esp) {
-  display::lcd.print("uploading...");
   int length=0;
   uint8_t * data = counter.getdata(&length);
   int ret=esp.post("tickscounter",data,length,&message::addr);
@@ -78,15 +89,19 @@ char try_upload_statistics(wifi::esp8266 &esp) {
   return 0;
 }
 
-
 bool upload_statistics() {
   if (counter.empty()) {
-    display::lcd.print("nothing to upload");
     return true;
   }
+  display::lcd.print("uploading...");
   wifi::esp8266 esp(wifi_enable_pin);
-  if (!esp.enabled())
+  digitalWrite(LED_BUILTIN, LOW);
+  if (!esp.enabled()) {
+    digitalWrite(LED_BUILTIN, HIGH);
+    display::lcd.print("esp broken");
+    delay(200);
     return false;
+  }
   int trials = 3;
   char ret=1;
   while(trials-- > 0) {
@@ -111,11 +126,11 @@ void update_display() {
   bin::time m=m1-m0;
   char h=m/60;
   m-=60*h;
-  
+
   char line1[17]={0};
   if (counter.total()>0)
-    snprintf(line1,17,"%u for %02d:%02d  %2d",counter.total(),h,m,counter.bin_count());
-
+    snprintf(line1,17,"%u for %02d:%02d",counter.total(),h,m);
+  
   if (!message::addr) {
     message::update();
   }
@@ -176,7 +191,7 @@ void loop() {
       return;
 
     if (time_last_upload_failed>0) {
-      const bool wifi_down = current_time - time_last_upload_failed < 0*5*one_minute;
+      const bool wifi_down = (current_time - time_last_upload_failed) < 60*one_minute;
       if (wifi_down)
 	return;
     }

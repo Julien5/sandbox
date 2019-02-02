@@ -206,7 +206,7 @@ bool wifi::esp8266::reset() {
   digitalWrite(enable_pin, HIGH);
   delay(250);
   
-  char trial=16;
+  char trial=3;
   while(!command::RST()) {
     delay(150);
     trial--;

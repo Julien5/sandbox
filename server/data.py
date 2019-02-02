@@ -82,12 +82,15 @@ def millis_csv(millis):
 class Tick:
     def __init__(self,start,duration,count):
         self.start = start;
-        self.duration = duration;
+        self.minduration = duration;
         self.count = count;
+        
+    def maxduration(self):
+        return self.minduration + datetime.timedelta(minutes=1);
 
     def end(self):
-        return self.start + self.duration;
-
+        return self.start + self.maxduration();
+    
     def string(self):
         return "start:{} end:{} count:{}".format(self.start.strftime("%Y-%m-%d-%H:%M"),
                                                  self.end().strftime("%Y-%m-%d-%H:%M"),
@@ -111,6 +114,15 @@ class Ticks:
         ret=0;
         for b in self.bins:
             ret+=b.count;
+        return ret;
+
+    def duration(self):
+        ret=None;
+        for b in self.bins:
+            if not ret:
+                ret=b.maxduration();
+            else:
+                ret+=b.maxduration();
         return ret;
 
     def display(self):
@@ -137,11 +149,22 @@ class Data:
             T+=tick.total();
         return T;
 
+    def duration(self):
+        T=None;
+        for tick in self.ticks:
+            if not T:
+                T=tick.duration();
+            else:
+                T+=tick.duration();
+        return T;
+
     def sms(self):
         for tick in self.ticks:
             tick.display();
-            
-        return "{0} ticks".format(self.total());
+        seconds=0;
+        if self.duration():
+            seconds=self.duration().total_seconds();
+        return "{0} ticks {1} min".format(self.total(),int(seconds/60));
   
     def dump(self):
         return;

@@ -184,7 +184,8 @@ bool pget(char ** m) {
   assert(*m);
   return true;
 }
-
+#include <string.h>
+#include <stdlib.h>
 int smoke() {
   char * m=0;
   if (!pget(&m))
@@ -192,7 +193,9 @@ int smoke() {
   debug(m);
   assert(m);
   assert(strlen(m));
-  printf("%-.16s","A23456789B123456XXXXXXXX");
+  printf("XX[%-.16s]\n","A23456789B123456XXXXXXXX");
+  printf("XX[%-16.16s]\n","A234567");
+  printf("XX%-.2d\n",456);
   return 0;
 }
 

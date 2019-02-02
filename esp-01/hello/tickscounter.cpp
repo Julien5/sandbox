@@ -91,7 +91,6 @@ void tickscounter::reset() {
   for(int k = 0; k<NTICKS; ++k)
     m_bins[k].reset();
   m_tranmission_time=0;
-  m_is_clean=true;
 } 
 
 int tickscounter::compress_index() {
@@ -113,7 +112,6 @@ void tickscounter::compress() {
   clean();
   const int k=compress_index();
   m_bins[k].take(m_bins[k+1]);
-  m_is_clean = false;
   clean();
   assert(is_clean());
 }
@@ -128,6 +126,8 @@ void move_to_first_non_empty(const bin bins[], int *k) {
   for(; *k<NTICKS && bins[*k].empty(); ++*k);
 }
 
+constexpr int age_for_cleaning_dirt = 5;
+
 bool tickscounter::is_clean() const {
   const Clock::mn now = Clock::minutes_since_start();
   for(int k=0; k<NTICKS; ++k) {
@@ -136,7 +136,7 @@ bool tickscounter::is_clean() const {
       continue;
     assert(now>=b.end());
     const Clock::mn age = now - b.end();
-    if (age>5 && b.m_count<=clean_threshold) {
+    if (age>age_for_cleaning_dirt && b.m_count<=clean_threshold) {
       debug("dirt");
       return false;
     }
@@ -155,9 +155,8 @@ bool tickscounter::is_clean() const {
   return true;
 }
 
+
 void tickscounter::denoise() {
-  if (m_is_clean)
-    return;
   const Clock::mn now = Clock::minutes_since_start();
   for(int k=0; k<NTICKS; ++k) {
     bin &b=m_bins[k];
@@ -165,16 +164,14 @@ void tickscounter::denoise() {
       continue;
     assert(now>=b.end());
     const Clock::mn age = now - b.end();
-    if (age>5 && b.m_count<=clean_threshold) {
+    if (age>age_for_cleaning_dirt && b.m_count<=clean_threshold) {
       b.reset();
     }
   }
 }
 
 void tickscounter::remove_holes() {
-  if (m_is_clean)
-    return;
-  int k1=0,k2=0;
+   int k1=0,k2=0;
   while(true) {
     move_to_first_empty(m_bins,&k1);
     if (k1==NTICKS) // bins are full
@@ -200,9 +197,16 @@ bin::time tickscounter::last_tick_time() {
   return 0;
 }
 
+bin::time tickscounter::age() {
+  const Clock::mn now = Clock::minutes_since_start();
+  assert(now>=last_tick_time());
+  return now - last_tick_time();
+}
+
+
 bool tickscounter::recently_active() {
-  const Clock::mn T=2; // release:60
-  return Clock::minutes_since_start() - last_tick_time() < T;
+  constexpr Clock::mn T=60;
+  return age() < T;
 }
 
 uint8_t tickscounter::bin_count() const {
@@ -214,12 +218,8 @@ uint8_t tickscounter::bin_count() const {
 }
 
 void tickscounter::clean() {
-  if (m_is_clean)
-    return;
   denoise();
   remove_holes(); 
-  m_is_clean=is_clean();
-  assert(m_is_clean);
 }
 
 bool tickscounter::empty() const {
@@ -237,7 +237,6 @@ bin::count tickscounter::total() {
 bool tickscounter::tick_if_possible() {
   for(int k=0; k<NTICKS; ++k) {
     if (m_bins[k].tick()) {
-      m_is_clean = false;
       return true;
     }
   }

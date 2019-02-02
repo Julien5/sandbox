@@ -30,8 +30,6 @@ class tickscounter {
   mutable bin::time m_tranmission_time=0;
   char version=1;
 
-  bool m_is_clean = true;
-  
   bool tick_if_possible();
   void compress(); 
   int compress_index();
@@ -53,6 +51,7 @@ public:
   bin::count total();
   bool empty() const;  
   bin::time last_tick_time();
+  bin::time age();
   bool recently_active();
   uint8_t bin_count() const;
   uint8_t *getdata(int * Lout) const;

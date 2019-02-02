@@ -23,14 +23,16 @@ int min_free_memory=2048;
 int last_memory=4096;
 void display::LCD::print(const char * msg1, const char *msg2) {
   DBGTX(msg1); DBGTX("#"); DBGTXLN(msg2);
-  char m1[17]={0};
-  snprintf(m1,17,"%-.16s",msg1);
-  d.setCursor(0,0);
-  d.print(m1);
-  d.setCursor(0,1);
+  if (msg1) {
+    char m1[17]={0};
+    snprintf(m1,17,"%-16.16s",msg1);
+    d.setCursor(0,0);
+    d.print(m1);
+  }  
   if (msg2) {
     char m2[17]={0};
-    snprintf(m2,17,"%-.16s",msg2);
+    snprintf(m2,17,"%-16.16s",msg2);
+    d.setCursor(0,1);
     d.print(m2);
   }
 }
