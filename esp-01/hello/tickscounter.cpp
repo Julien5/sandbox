@@ -87,6 +87,13 @@ tickscounter::tickscounter(const uint8_t *addr) {
     debug("versioning problem!");
 }
 
+void tickscounter::reset() {
+  for(int k = 0; k<NTICKS; ++k)
+    m_bins[k].reset();
+  m_tranmission_time=0;
+  m_is_clean=true;
+} 
+
 int tickscounter::compress_index() {
   int dmin=0;
   int indx=-1;

@@ -176,21 +176,20 @@ int parse_test() {
 }
 
 char pmessage[16];
-bool pget(char * &m) {
+bool pget(char ** m) {
   snprintf(pmessage,16,"%u for %02d:%02d",1,2,3);
   debug(pmessage);
-  m=pmessage;
-  debug(m);
-  assert(m);
+  *m=pmessage;
+  debug(*m);
+  assert(*m);
   return true;
 }
 
 int smoke() {
-  static char * m=0;
-  if (!m) {
-    if (!pget(m))
+  char * m=0;
+  if (!pget(&m))
       return 0;
-  }
+  debug(m);
   assert(m);
   assert(strlen(m));
   return 0;

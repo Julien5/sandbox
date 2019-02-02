@@ -76,7 +76,7 @@ unsigned char waitFor(const unsigned char opts, const int timeout) {
   parse::StringAwaiter closed_wait("CLOSED");
   parse::StringAwaiter gt_wait(">");
   parse::StringAwaiter connected_wait("CONNECTED");
-  
+
   unsigned char found = 0;
   
   delay(250);
@@ -278,7 +278,7 @@ public:
   }
 };
 
-bool wifi::esp8266::get(const char * req, char * &response) {
+bool wifi::esp8266::get(const char * req, char** response) {
   DBGTXLN("-- GET --");
   Slower slower;
   IPConnection connection;
@@ -297,19 +297,17 @@ bool wifi::esp8266::get(const char * req, char * &response) {
   
   sendCommandAndWaitForResponse(request,0);
 
+  message_parser.reset();
   if (!waitFor(options::wait_for_closed,long_timeout)) {
     return false;
   }
-
-  if (message_parser.get()) {
-    response = message_parser.get();
-    DBGTX("response={");DBGTX(response);DBGTXLN("}");
-  }
   
+  *response = message_parser.get();
+  DBGTX("*response={");DBGTX(*response);DBGTXLN("}");
   return true;
 }
 
-int wifi::esp8266::post(const char * req, const uint8_t * data, const int Ldata) {
+int wifi::esp8266::post(const char * req, const uint8_t * data, const int Ldata, char** response) {
   //while (!ping()) {
   //  DBGTXLN("server unreachable");
   //  delay(1000);
@@ -360,10 +358,12 @@ int wifi::esp8266::post(const char * req, const uint8_t * data, const int Ldata)
   comm::write(request,strlen(request));
   comm::write((char*)data,Ldata);
   comm::write("\r\n");
-  
+
+  message_parser.reset();
   if (!waitFor(options::wait_for_ok | options::wait_for_error, long_timeout))
     return 4;
 
+  *response = message_parser.get();
   return 0;
 }
 

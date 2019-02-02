@@ -40,6 +40,7 @@ class tickscounter {
 public:
   tickscounter();
   tickscounter(const uint8_t *addr);
+  void reset();
 #ifndef ARDUINO
   static tickscounter fromHex(const std::string &hex);
   std::string json() const;

@@ -46,11 +46,25 @@ void setup()
   attachInterrupt(0,on_rising_reed,RISING);
 }
 
+
+namespace message {
+  char * addr = 0;
+  bool update() {
+    wifi::esp8266 esp(wifi_enable_pin);
+    if (!esp.enabled())
+      return false;
+    if (!esp.get("message",&addr))
+      return false;
+    DBGTX("addr={");DBGTX(addr);DBGTXLN("}");
+    return true;
+  }
+}
+
 char try_upload_statistics(wifi::esp8266 &esp) {
   display::lcd.print("uploading...");
   int length=0;
   uint8_t * data = counter.getdata(&length);
-  int ret=esp.post("tickscounter",data,length);
+  int ret=esp.post("tickscounter",data,length,&message::addr);
   if (ret != 0) {
     char msg[16];
     snprintf(msg, 16,"post error: %d",ret);
@@ -59,6 +73,7 @@ char try_upload_statistics(wifi::esp8266 &esp) {
     return 1;
   }
   display::lcd.print("result uploaded");
+  counter.reset();
   return 0;
 }
 
@@ -83,19 +98,6 @@ bool upload_statistics() {
   return false;
 }
 
-char * message() {
-  static char * m=0;
-  if (!m) {
-    wifi::esp8266 esp(wifi_enable_pin);
-    if (!esp.enabled())
-      return 0;
-    if (!esp.get("message",m))
-      return 0;
-    DBGTX("m={");DBGTX(m);DBGTXLN("}");
-  }
-  return m;
-}
-
 Clock::ms last_update_display=0;
 void update_display() {
   Clock::ms t=Clock::millis_since_start();
@@ -112,10 +114,14 @@ void update_display() {
   char line1[17]={0};
   if (counter.total()>0)
     snprintf(line1,17,"%u for %02d:%02d  %2d",counter.total(),h,m,counter.bin_count());
- 
+
+  if (!message::addr) {
+    message::update();
+  }
+  
   char line2[17]={0};
-  if (message()) 
-    snprintf(line2,17,"%s",message());    
+  if (message::addr) 
+    snprintf(line2,17,"%s",message::addr);    
   else
     snprintf(line2,17,"%s","(no message)");
   display::lcd.print(line1,line2);
@@ -168,7 +174,6 @@ void loop() {
     } else {
       time_last_upload_failed=0;
       display::lcd.print("upload good");
-      reset();
     }    
     sleep_now();
   }

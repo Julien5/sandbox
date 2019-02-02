@@ -22,8 +22,8 @@ namespace wifi {
  
     bool join();
     bool ping();
-    bool get(const char* req, char * &response);
-    int post(const char* req, const uint8_t * data, const int Ldata);
+    bool get(const char* req, char** response);
+    int post(const char* req, const uint8_t * data, const int Ldata, char** response);
 
     bool enabled() const;
   };
