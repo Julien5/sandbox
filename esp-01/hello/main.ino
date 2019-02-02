@@ -6,6 +6,7 @@
 #include "tickscounter.h"
 #include "freememory.h"
 #include "clock.h"
+#include <limits.h>
 
 void stop() {
   display::lcd.print("stop.");
@@ -140,6 +141,10 @@ void sleep_now() {
 #endif
 }
 
+bool time_approaches_overflow() {
+  return millis()>ULONG_MAX/2;
+}
+
 Clock::ms last_time_rising_reed=0;
 Clock::ms time_last_upload_failed=0;
 
@@ -159,6 +164,14 @@ void loop() {
   update_display();
  
   if (!wake_on_rising_reed) {
+
+    if (time_approaches_overflow()) {
+      if (upload_statistics()) {
+	reset();
+	return;
+      }
+    }
+    
     if (counter.empty() || counter.recently_active())
       return;
 

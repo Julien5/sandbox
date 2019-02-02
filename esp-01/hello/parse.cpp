@@ -192,6 +192,7 @@ int smoke() {
   debug(m);
   assert(m);
   assert(strlen(m));
+  printf("%-.16s","A23456789B123456XXXXXXXX");
   return 0;
 }
 

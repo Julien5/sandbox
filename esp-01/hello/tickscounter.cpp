@@ -22,8 +22,8 @@ bin::time bin::end() const {
 bool bin::accepts() const {
   if (empty())
     return true;
-  Clock::mn min = Clock::minutes_since_start();
-  if (abs(min - end()) > 1)
+  Clock::mn now = Clock::minutes_since_start();
+  if (abs(now - end()) > 1)
     return false;
   return true;
 }
