@@ -5,9 +5,9 @@
 #endif
 
 struct bin {
-  typedef uint16_t time;
+  typedef uint32_t time;
   typedef uint16_t count;
-  typedef uint16_t duration;
+  typedef uint32_t duration;
   bin();
   time m_start=0;
   count m_count=0;
@@ -28,7 +28,6 @@ constexpr int NTICKS = 20;
 class tickscounter {
   bin m_bins[NTICKS];
   mutable bin::time m_tranmission_time=0;
-  char version=1;
 
   bool tick_if_possible();
   void compress(); 
