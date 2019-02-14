@@ -14,16 +14,15 @@ AltSoftSerial Altser;
 #define BUFFER_LENGTH 16
 
 // see https://www.nongnu.org/avr-libc/user-manual/pgmspace.html
+
+const char ATCIPSEND[] = "AT+CIPSEND";
 const char ATCWQAP[] = "AT+CWQAP";
-const char ATRST[] = "AT+RST";
+const char ATCIPCLOSE[] = "AT+CIPCLOSE";
+const char UARTCUR[] = "UART_CUR";
 const char ATCWJAP[] = "AT+CWJAP?";
 const char ATE1[] = "ATE1";
 const char AT[] = "AT";
-const char ATCWLAP[] = "AT+CWLAP";
-const char ATCIPSTART[] = "AT+CIPSTART";
-const char ATCIPSEND[] = "AT+CIPSEND";
-const char ATCIPCLOSE[] = "AT+CIPCLOSE";
-const char UARTCUR[] = "UART_CUR";
+const char ATRST[] = "AT+RST";
 
 const int short_timeout = 3000;
 const int long_timeout = 20000;
@@ -266,20 +265,19 @@ class IPConnection {
   }
 public:
   IPConnection() {
-    //  close(); // ignore the result.
     m_opened=open();
   }
   bool opened() {
     return m_opened;
   }
   ~IPConnection() {
-    // if (m_opened)
-      close();
+    close();
   }
 };
 
 bool wifi::esp8266::get(const char * req, char** response) {
-  DBGTXLN("-- GET --");
+  // i dont know why, but this delay is necessary for multiple, close GET requests.
+  delay(2000);
   Slower slower;
   IPConnection connection;
   if (!connection.opened())
@@ -301,9 +299,10 @@ bool wifi::esp8266::get(const char * req, char** response) {
   if (!waitFor(options::wait_for_closed,long_timeout)) {
     return false;
   }
-  
+  assert(response);  
   *response = message_parser.get();
   DBGTX("*response={");DBGTX(*response);DBGTXLN("}");
+  
   return true;
 }
 
@@ -363,7 +362,8 @@ int wifi::esp8266::post(const char * req, const uint8_t * data, const int Ldata,
   if (!waitFor(options::wait_for_ok | options::wait_for_error, long_timeout))
     return 4;
 
-  *response = message_parser.get();
+  if (response)
+    *response = message_parser.get();
   return 0;
 }
 

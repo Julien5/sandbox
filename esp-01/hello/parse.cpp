@@ -106,7 +106,7 @@ int message_test() {
   return 0;
  }
 
-int parse_test() {
+int parse_test() {  
   using namespace parse;
   {
     assert(firstdiff("aabbcc","ab",0,0)==0);

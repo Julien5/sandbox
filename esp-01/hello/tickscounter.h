@@ -27,7 +27,7 @@ constexpr int NTICKS = 20;
 
 class tickscounter {
   bin m_bins[NTICKS];
-  mutable bin::time m_tranmission_time=0;
+  mutable bin::time m_transmission_time=0;
 
   bool tick_if_possible();
   void compress(); 
@@ -51,6 +51,7 @@ public:
   bool empty() const;  
   bin::time last_tick_time();
   bin::time age();
+  bin getbin(const int &k) const;
   bool recently_active();
   uint8_t bin_count() const;
   uint8_t *getdata(int * Lout) const;

@@ -82,19 +82,16 @@ def millis_csv(millis):
 class Tick:
     def __init__(self,start,duration,count):
         self.start = start;
-        self.minduration = duration;
+        self.duration = duration;
         self.count = count;
         
-    def maxduration(self):
-        return self.minduration + datetime.timedelta(minutes=1);
-
     def end(self):
-        return self.start + self.maxduration();
+        return self.start + self.duration;
     
     def string(self):
-        return "start:{} end:{} count:{}".format(self.start.strftime("%Y-%m-%d-%H:%M"),
-                                                 self.end().strftime("%Y-%m-%d-%H:%M"),
-                                                 self.count);
+        return "start:{} duration:{:3d} count:{}".format(self.start.strftime("%Y-%m-%d-%H:%M"),
+                                                      int(self.minduration.total_seconds()),
+                                                      self.count);
 
 class Ticks:
     def __init__(self,jstring,tT):
@@ -104,9 +101,9 @@ class Ticks:
         self.bins = list();
         for b in D["bins"]:
             m=int(b["start"]);
-            delta=datetime.timedelta(minutes=(mT-m));
+            delta=datetime.timedelta(milliseconds=(mT-m));
             start=tT-delta;
-            duration=datetime.timedelta(minutes=int(b["duration"]));
+            duration=datetime.timedelta(milliseconds=int(b["duration"]));
             count=int(b["count"]);
             self.bins.append(Tick(start,duration,count));
             
@@ -120,9 +117,9 @@ class Ticks:
         ret=None;
         for b in self.bins:
             if not ret:
-                ret=b.maxduration();
+                ret=b.duration;
             else:
-                ret+=b.maxduration();
+                ret+=b.duration;
         return ret;
 
     def display(self):
@@ -159,41 +156,14 @@ class Data:
         return T;
 
     def sms(self):
-        for tick in self.ticks:
-            tick.display();
         seconds=0;
         if self.duration():
             seconds=self.duration().total_seconds();
-        return "{0} ticks {1} min".format(self.total(),int(seconds/60));
-  
-    def dump(self):
-        return;
-        P = self.packets.packets();
-        for date in P:
-            filename = "dump/"+date.strftime("%Y-%m-%d--%H-%M-%S")+".csv";
-            update_file(filename,minutes_csv(P[date].minutes));
+        return "T={0} | {1}s".format(self.total(),int(seconds));
         
-        for date in self.packets.dates():
-            start = datetime.datetime.combine(date,datetime.time(0,0,0));
-            end   = datetime.datetime.combine(date,datetime.time(23,59,59));
-            packets_d = self.packets.trunc(start,end);
-            d = packets_d.csv("minutes");
-            if not d:
-                continue;
-            filename = "minutes/"+date.strftime("%Y-%m-%d")+".csv";
-            D=dict();
-            D["nminutes"]=packets_d.number_of_minutes();
-            D["ntours"]=packets_d.number_of_tours();
-            update_file(filename,d,D);
-            
-        millis = self.packets.get_millis();
-        for date in millis:
-            m = millis[date];
-            csv = millis_csv(m);
-            if not csv:
-                continue;
-            filename = "millis/"+date.strftime("%Y-%m-%d--%H-%M-%S")+".csv";
-            update_file(filename,csv);
+    def dump(self):
+        for tick in self.ticks:
+            tick.display();
             
 class Sql:
     def __init__(self):

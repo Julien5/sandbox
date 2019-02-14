@@ -90,12 +90,11 @@ tickscounter::tickscounter(const uint8_t *addr) {
 void tickscounter::reset() {
   for(int k = 0; k<NTICKS; ++k)
     m_bins[k].reset();
-  m_tranmission_time=0;
+  m_transmission_time=0;
 } 
 
 int tickscounter::compress_index() {
-  int dmin=0;
-  int dmax=0;
+  bin::duration dmin=0;
   int indx=-1;
   for(int k = 0; (k+1)<NTICKS && !m_bins[k+1].empty(); ++k) {
     bin::duration d = m_bins[k].distance(m_bins[k+1]);
@@ -109,10 +108,8 @@ int tickscounter::compress_index() {
 }
 
 void tickscounter::compress() {
-  debug("compress");
   clean();
   const int k=compress_index();
-  debug(k);
   m_bins[k].take(m_bins[k+1]);
   clean();
   assert(is_clean());
@@ -120,17 +117,17 @@ void tickscounter::compress() {
 
 constexpr uint8_t clean_threshold = 1;
 
-void move_to_first_empty(const bin bins[], int *k) {
+void move_to_first_empty(const bin (&bins)[NTICKS], int *k) {
   for(; *k<NTICKS && !bins[*k].empty(); ++*k);
 }
 
-void move_to_first_non_empty(const bin bins[], int *k) {
+void move_to_first_non_empty(const bin (&bins)[NTICKS], int *k) {
   for(; *k<NTICKS && bins[*k].empty(); ++*k);
 }
 
-constexpr int age_for_cleaning_dirt = 5000*60;
+constexpr Clock::ms age_for_cleaning_dirt = 5000L*60;
 
-bool noise_at_index(const bin bins[], int k) {
+bool noise_at_index(const bin (&bins)[NTICKS], int k) {
   const Clock::ms now = Clock::millis_since_start();
   const bin &b=bins[k];
   if (b.empty())
@@ -154,7 +151,6 @@ bool noise_at_index(const bin bins[], int k) {
 }
 
 bool tickscounter::is_clean() const {
-  const Clock::ms now = Clock::millis_since_start();
   for(int k=0; k<NTICKS; ++k) {
     if (noise_at_index(m_bins,k)) {
       return false;
@@ -174,7 +170,6 @@ bool tickscounter::is_clean() const {
 
 
 void tickscounter::denoise() {
-  const Clock::ms now = Clock::millis_since_start();
   for(int k=0; k<NTICKS; ++k) {
     if (noise_at_index(m_bins,k))
       m_bins[k].reset();
@@ -216,7 +211,7 @@ bin::time tickscounter::age() {
 
 
 bool tickscounter::recently_active() {
-  constexpr Clock::ms T=60*60*1000;
+  constexpr Clock::ms T=1*60*1000L; // 1 min
   return age() < T;
 }
 
@@ -260,8 +255,13 @@ void tickscounter::tick() {
     compress();
 }
 
+bin tickscounter::getbin(const int &k) const {
+  assert(0<=k && k<NTICKS);
+  return m_bins[k];
+}
+
 uint8_t* tickscounter::getdata(int * Lout) const {
-  m_tranmission_time = Clock::minutes_since_start();
+  m_transmission_time = Clock::millis_since_start();
   *Lout = sizeof(*this);
   return (uint8_t*)this; 
 }
@@ -288,7 +288,7 @@ std::string tickscounter::json() const {
       break;
   }
   ret+="\"bins\":["+bins+"],";
-  ret+="\"transmit_time\":"+std::to_string(m_tranmission_time);
+  ret+="\"transmit_time\":"+std::to_string(m_transmission_time);
   ret+="\n}";
   return ret;
 }
@@ -367,16 +367,13 @@ int tickscounter::test() {
     some_spurious_ticks(C);
     assert(C.total()!=T);
   }
-
-  
+ 
   const int K2=5;
   for(int k = 0; k<K2; ++k) {
     delay(one_minute()*2);
     T+=some_real_ticks(C);
   }
   assert(T>(K1+K2));
-  debug(C.total());
-  debug(T);
   C.print();
   assert(C.total()==T);
 

@@ -56,27 +56,39 @@ void setup()
   attachInterrupt(0,on_rising_reed,RISING);
 }
 
-
-namespace message {
-  char * addr = 0;
-  bool update() {
-    wifi::esp8266 esp(wifi_enable_pin);
-    digitalWrite(LED_BUILTIN, LOW);
-    if (!esp.enabled()) {
-      digitalWrite(LED_BUILTIN, HIGH);
+namespace get {
+  bool message(wifi::esp8266 &esp, char * buffer) {
+    char *internal=0;
+    if (!esp.get("message",&internal)) {
+      // retry ?
+      /*esp.disable();if (!esp.enable()) return false; if (!esp.get("message",&internal)) return false;*/
       return false;
     }
-    if (!esp.get("message",&addr))
-      return false;
-    DBGTX("addr={");DBGTX(addr);DBGTXLN("}");
+    strncpy(buffer,internal,16);
     return true;
   }
+  bool seconds_until_next_wifi(wifi::esp8266 &esp, uint32_t *buffer) {
+    char *internal=0;
+    if (!esp.get("sunw",&internal)) {
+      return false;
+    }
+    if (sscanf(internal,"%d",buffer)!=1)
+      return false;
+    return true;
+  }
+}
+
+void update_display_wifi(wifi::esp8266 &esp) {
+  char line2[17]={0};
+  if (!get::message(esp,line2))
+    snprintf(line2,17,"%s","(no message)");
+  display::lcd.print(0,line2);
 }
 
 char try_upload_statistics(wifi::esp8266 &esp) {
   int length=0;
   uint8_t * data = counter.getdata(&length);
-  int ret=esp.post("tickscounter",data,length,&message::addr);
+  int ret=esp.post("tickscounter",data,length,0);
   if (ret != 0) {
     char msg[16];
     snprintf(msg, 16,"post error: %d",ret);
@@ -89,11 +101,34 @@ char try_upload_statistics(wifi::esp8266 &esp) {
   return 0;
 }
 
-bool upload_statistics() {
-  if (counter.empty()) {
-    return true;
-  }
+bool upload_statistics(wifi::esp8266 &esp) {
+  if (counter.empty())
+      return true;
   display::lcd.print("uploading...");
+  int trials = 3;
+  char ret=1;
+  while(trials-- > 0) {
+    ret=try_upload_statistics(esp);
+    if (ret == 0) {
+      return true;
+    }
+    esp.reset();
+    esp.join();
+  }
+  return false;
+}
+
+bool time_approaches_overflow() {
+  return millis()>ULONG_MAX/2;
+}
+
+uint32_t millis_next_upload = 0;
+bool wifi_work() {
+  if (millis()<=millis_next_upload || counter.recently_active())
+    return true;
+
+  display::lcd.print(0,"wifi...");
+  
   wifi::esp8266 esp(wifi_enable_pin);
   digitalWrite(LED_BUILTIN, LOW);
   if (!esp.enabled()) {
@@ -102,45 +137,54 @@ bool upload_statistics() {
     delay(200);
     return false;
   }
-  int trials = 3;
-  char ret=1;
-  while(trials-- > 0) {
-    ret=try_upload_statistics(esp);
-    if (ret == 0)
-      return true;
-    esp.reset();
-    esp.join();
-  }
-  return false;
+  
+  upload_statistics(esp);
+
+  if (time_approaches_overflow()) 
+    reset();
+
+  uint32_t secs_until_next_wifi=0;
+  if (get::seconds_until_next_wifi(esp,&secs_until_next_wifi))
+    millis_next_upload = millis() + 1000L*secs_until_next_wifi;
+  else
+    millis_next_upload = millis() + 1000L*3600L; // one-hour
+
+  update_display_wifi(esp);
+
+  return true;
 }
 
 Clock::ms last_update_display=0;
-void update_display() {
+int bin_indx=0;
+void update_display_local() {
   Clock::ms t=Clock::millis_since_start();
   if ((t-last_update_display)<1000)
     return;
   last_update_display=t;
-  
-  bin::time m0=counter.last_tick_time();
-  bin::time m1=Clock::minutes_since_start();
-  bin::time m=m1-m0;
-  char h=m/60;
-  m-=60*h;
+
+  if(bin_indx>=NTICKS || counter.getbin(bin_indx).empty())
+    bin_indx=0;
+  bin b=counter.getbin(bin_indx);
+
+  int T=counter.total();
+  int E=0;
+  while(T>=100) {
+    T=T/10;
+    E++;
+  }
 
   char line1[17]={0};
-  if (counter.total()>0)
-    snprintf(line1,17,"%u for %02d:%02d",counter.total(),h,m);
-  
-  if (!message::addr) {
-    message::update();
-  }
-  
-  char line2[17]={0};
-  if (message::addr) 
-    snprintf(line2,17,"%s",message::addr);    
+  if (counter.total()>0) 
+    snprintf(line1,17,"%2de%1d %2dm %3d I%2d",
+	     T,E,
+	     int(1+b.m_duration/(1000L*60)),
+	     int(b.m_count),
+	     int(bin_indx+1));
   else
-    snprintf(line2,17,"%s","(no message)");
-  display::lcd.print(line1,line2);
+    snprintf(line1,17,"no ticks");
+  display::lcd.print(line1,0);
+  
+  bin_indx++;
 }
 
 Clock::ms sleep_duration = 0;
@@ -154,10 +198,6 @@ void sleep_now() {
   sleep_duration = 8000;
   LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF);
 #endif
-}
-
-bool time_approaches_overflow() {
-  return millis()>ULONG_MAX/2;
 }
 
 Clock::ms last_time_rising_reed=0;
@@ -176,33 +216,10 @@ void loop() {
     slept=false;
   }
 
-  update_display();
+  update_display_local();
  
   if (!wake_on_rising_reed) {
-
-    if (time_approaches_overflow()) {
-      if (upload_statistics()) {
-	reset();
-	return;
-      }
-    }
-    
-    if (counter.empty() || counter.recently_active())
-      return;
-
-    if (time_last_upload_failed>0) {
-      const bool wifi_down = (current_time - time_last_upload_failed) < 60*one_minute;
-      if (wifi_down)
-	return;
-    }
-    
-    if (!upload_statistics()) {
-      time_last_upload_failed=current_time;
-      display::lcd.print("upload failed");
-    } else {
-      time_last_upload_failed=0;
-      display::lcd.print("upload good");
-    }    
+    wifi_work();
     sleep_now();
   }
   
