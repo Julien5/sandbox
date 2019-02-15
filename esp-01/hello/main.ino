@@ -159,23 +159,19 @@ Clock::ms last_update_display=0;
 int bin_indx=0;
 void update_display_local() {
   Clock::ms t=Clock::millis_since_start();
-  if ((t-last_update_display)<1000)
+  
+  if ((t-last_update_display)<1000) 
     return;
   last_update_display=t;
-
-  if(bin_indx>=NTICKS || counter.getbin(bin_indx).empty())
-    bin_indx=0;
-  bin b=counter.getbin(bin_indx);
-
-  int T=counter.total();
-  int E=0;
-  while(T>=100) {
-    T=T/10;
-    E++;
-  }
-
+  
   char line1[17]={0};
   if (counter.total()>0) {
+    if(bin_indx>=counter.bin_count())
+      bin_indx=0;
+    if(counter.recently_active())
+      bin_indx=counter.bin_count()-1;
+    bin b=counter.getbin(bin_indx);
+    
     char f1[5]={0};
     ui::format(counter.total(),f1,sizeof(f1));
 
