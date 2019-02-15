@@ -59,13 +59,20 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
         elif self.path == "/message":
             sms=dataprocessor.sms();
             message = "{"+sms+"}";
+        elif self.path == "/string":
+            message = dataprocessor.string().replace("\n","</p>");
         elif self.path == "/sunw": # seconds_until_next_wifi
             T1=datetime.datetime.now();
-            T2=T1+datetime.timedelta(minutes=5);
-            # T2=T1.replace(day=T1.day+1,hour=10,minute=0,second=0)
+            # T2=T1+datetime.timedelta(minutes=5);
+            H=7;
+            T2=T1.replace(hour=H,minute=0,second=0)
+            d=T1.day;
+            if T1>T2:
+                T2=T2.replace(day=T2.day+1);
+            assert(T2>T1);
             message = "{%d}" % int((T2-T1).total_seconds());
         else:
-            message = "unknown command."
+            message = read_file("html/index.html").decode("ascii");
             
         if isinstance(message,str):
             message += '\n';

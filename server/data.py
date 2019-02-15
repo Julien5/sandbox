@@ -52,60 +52,37 @@ def minutes_csv(minutes):
         d += str(minute)+","+str(minutes[m])+"\n";
     return d;
 
-def millis_delta(millis):
-    if len(millis)<5:
-        return None;
-    
-    ret=list();
-    m0=None;
-    for m in millis:
-        if not m:
-            continue;
-        if m0:
-            ret.append(m-m0);
-        m0 = m;
-    return ret;
-
-def millis_csv(millis):
-    D=millis_delta(millis);
-    i=0;
-    d="";
-    for delta in D:
-        d += str(i)+","+str(delta);
-        i = i + 1;
-    return d;
-
-# {
-#  "bins":[{"start":0,"count":1,"duration":0}]
-# }
-
 class Tick:
-    def __init__(self,start,duration,count):
+    def __init__(self,start,duration,count,transmit_time):
         self.start = start;
         self.duration = duration;
         self.count = count;
+        self.transmit_time = transmit_time;
         
     def end(self):
         return self.start + self.duration;
     
     def string(self):
-        return "start:{} duration:{:3d} count:{}".format(self.start.strftime("%Y-%m-%d-%H:%M"),
-                                                      int(self.minduration.total_seconds()),
-                                                      self.count);
-
+        return "start:{} duration:{:3d} count:{:4d} transmit:{}".format(self.start.strftime("%Y-%m-%d-%H:%M"),
+                                                         int(self.duration.total_seconds()),
+                                                         self.count,
+                                                         str(self.transmit_time.strftime("%Y-%m-%d-%H:%M")));
+        
 class Ticks:
-    def __init__(self,jstring,tT):
+    def __init__(self):
+        self.bins = list();
+     
+    def append(self,jstring,tT):
         D=json.loads(jstring);
         print("process:",D);        
         mT=int(D["transmit_time"]);
-        self.bins = list();
         for b in D["bins"]:
             m=int(b["start"]);
             delta=datetime.timedelta(milliseconds=(mT-m));
             start=tT-delta;
             duration=datetime.timedelta(milliseconds=int(b["duration"]));
             count=int(b["count"]);
-            self.bins.append(Tick(start,duration,count));
+            self.bins.append(Tick(start,duration,count,tT));
             
     def total(self):
         ret=0;
@@ -122,38 +99,31 @@ class Ticks:
                 ret+=b.duration;
         return ret;
 
-    def display(self):
+    def string(self):
+        lines=[];
         for b in self.bins:
-            print(b.string());
+            lines.append(b.string());
+        return "\n".join(lines);
             
 class Data:
     def __init__(self):
-        self.ticks = list();
+        self.ticks = Ticks();
 
     def reset(self):
-        self.ticks = list();
+        self.ticks = Ticks();
 
     def merge(self,t,json):
-        self.ticks.append(Ticks(json,t));
+        self.ticks.append(json,t);
            
     def process(self,hex,t):
         t=datetime.datetime.strptime(t,"%Y-%m-%d %H:%M:%S.%f");
         self.merge(t,hamster.tickscounter.asJson(hex));
 
     def total(self):
-        T=0;
-        for tick in self.ticks:
-            T+=tick.total();
-        return T;
+        return self.ticks.total();
 
     def duration(self):
-        T=None;
-        for tick in self.ticks:
-            if not T:
-                T=tick.duration();
-            else:
-                T+=tick.duration();
-        return T;
+        return self.ticks.duration();
 
     def sms(self):
         seconds=0;
@@ -161,9 +131,8 @@ class Data:
             seconds=self.duration().total_seconds();
         return "T={0} | {1}s".format(self.total(),int(seconds));
         
-    def dump(self):
-        for tick in self.ticks:
-            tick.display();
+    def string(self):
+        return self.ticks.string();
             
 class Sql:
     def __init__(self):
@@ -193,7 +162,7 @@ def update(sql,d):
         
 def dump(sql,d):
     update(sql,d);
-    d.dump();
+    print(d.string());
             
 if __name__ == "__main__":
     #update_plot("minutes/2019-01-22.csv");
