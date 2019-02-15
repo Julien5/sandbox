@@ -50,7 +50,7 @@ void delay(test_ms d);
 #if 0
 #define DBGTX(X)				\
   do {						\
-    Serial.write((X));				\
+    Serial.print((X));				\
     Serial.flush();				\
   } while(0)
 #define DBGTXLN(X)				\

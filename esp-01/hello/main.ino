@@ -8,6 +8,7 @@
 #include "clock.h"
 #include <limits.h>
 #include "ui.h"
+#include "defines.h"
 
 void stop() {
   display::lcd.print("stop.");
@@ -134,7 +135,7 @@ bool wifi_work() {
   digitalWrite(LED_BUILTIN, LOW);
   if (!esp.enabled()) {
     digitalWrite(LED_BUILTIN, HIGH);
-    display::lcd.print("esp broken");
+    display::lcd.print(0,"wifi failed");
     delay(200);
     return false;
   }
@@ -148,7 +149,7 @@ bool wifi_work() {
   if (get::seconds_until_next_wifi(esp,&secs_until_next_wifi))
     millis_next_upload = millis() + 1000L*secs_until_next_wifi;
   else
-    millis_next_upload = millis() + 1000L*3600L; // one-hour
+    millis_next_upload = millis() + 1000L*kDefaultSecondsBetweenWifi; 
 
   update_display_wifi(esp);
 
@@ -229,7 +230,7 @@ void loop() {
   
   if (wake_on_rising_reed) {
     Serial.print("tick:");Serial.println(time_since_last_rising_reed);
-    if (time_since_last_rising_reed>350) // avoid interrupt bouncing
+    if (time_since_last_rising_reed>kAntiBoucingMillis) // avoid interrupt bouncing
       counter.tick();
     last_time_rising_reed=current_time;
     wake_on_rising_reed=false;

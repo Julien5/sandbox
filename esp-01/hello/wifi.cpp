@@ -350,10 +350,6 @@ int wifi::esp8266::post(const char * req, const uint8_t * data, const int Ldata,
   if ((ok&options::wait_for_ok) == 0)
     return 3;
 
-  DBGTXLN(request);
-  DBGTX("+");
-  DBGTX(Ldata);
-  DBGTXLN(" data bytes");
   comm::write(request,strlen(request));
   comm::write((char*)data,Ldata);
   comm::write("\r\n");

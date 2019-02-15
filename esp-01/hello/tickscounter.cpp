@@ -2,6 +2,7 @@
 #include "clock.h"
 #include "debug.h"
 #include <limits.h>
+#include "defines.h"
 
 #ifndef ARDUINO
 #include <fstream>
@@ -115,8 +116,6 @@ void tickscounter::compress() {
   assert(is_clean());
 }
 
-constexpr uint8_t clean_threshold = 1;
-
 void move_to_first_empty(const bin (&bins)[NTICKS], int *k) {
   for(; *k<NTICKS && !bins[*k].empty(); ++*k);
 }
@@ -125,8 +124,6 @@ void move_to_first_non_empty(const bin (&bins)[NTICKS], int *k) {
   for(; *k<NTICKS && bins[*k].empty(); ++*k);
 }
 
-constexpr Clock::ms age_for_cleaning_dirt = 5000L*60;
-
 bool noise_at_index(const bin (&bins)[NTICKS], int k) {
   const Clock::ms now = Clock::millis_since_start();
   const bin &b=bins[k];
@@ -134,16 +131,17 @@ bool noise_at_index(const bin (&bins)[NTICKS], int k) {
     return false;
   assert(now>=b.end());
   const Clock::ms age = now - b.end();
-  if (age>age_for_cleaning_dirt && b.m_count<=clean_threshold) {
+  const Clock::ms max_age = kSecondsUntilAloneTick*1000L;
+  if (age>max_age && b.m_count<=kMinAloneTicks) {
     // situation where count is too low.
     // is it really dirt ?
     // distance to previous and next
-    int dprev=USHRT_MAX,dnext=USHRT_MAX;
+    Clock::ms dprev=max_age,dnext=max_age;
     if (k>1)
       dprev = bins[k-1].distance(b);
     if ((k+1)<NTICKS && !bins[k+1].empty())
       dnext = b.distance(bins[k+1]);
-    if (dprev < 2000 || dnext < 2000)
+    if (dprev < 2000 || dnext < 2000) 
       return false;
     return true;
   }
@@ -211,7 +209,7 @@ bin::time tickscounter::age() {
 
 
 bool tickscounter::recently_active() {
-  constexpr Clock::ms T=1*60*1000L; // 1 min
+  constexpr Clock::ms T=kRecentlyActiveSeconds*1000L; // 1 min
   return age() < T;
 }
 
@@ -342,7 +340,7 @@ int some_real_ticks(tickscounter &C) {
 
 int some_spurious_ticks(tickscounter &C) {
   int k = 0;
-  for(; k<clean_threshold; ++k) {
+  for(; k<kMinAloneTicks; ++k) {
     delay(2*one_minute());
     C.tick();
     delay(one_minute());
