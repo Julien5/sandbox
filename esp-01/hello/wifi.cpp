@@ -45,7 +45,7 @@ namespace comm {
   
   int write(const char *buffer, int length=-1) {
     if (length>=0)
-      return ESPTX.write((const char*)buffer,length);
+      return ESPTX.write((const uint8_t *)buffer,length);
     return ESPTX.write(buffer);
   }
 }
@@ -256,12 +256,12 @@ public:
 class IPConnection {
   bool m_opened=false;
   bool open() {
-    return sendCommandAndWaitForResponse("AT+CIPSTART=\"TCP\",\"192.168.178.24\",8000",long_timeout)
-      &options::wait_for_ok != 0;
+    return (sendCommandAndWaitForResponse("AT+CIPSTART=\"TCP\",\"192.168.178.24\",8000",long_timeout)
+	    &options::wait_for_ok) != 0;
   }
   bool close() {
-    return sendCommandAndWaitForResponse(ATCIPCLOSE,short_timeout)
-      &options::wait_for_ok != 0;
+    return (sendCommandAndWaitForResponse(ATCIPCLOSE,short_timeout)
+	    &options::wait_for_ok) != 0;
   }
 public:
   IPConnection() {
@@ -283,14 +283,14 @@ bool wifi::esp8266::get(const char * req, char** response) {
   if (!connection.opened())
     return false;
   
-  const char request[128]={0};
+  char request[128]={0};
   snprintf(request, 128, "GET /%s HTTP/1.1\r\n\r\n", req);
   
-  const char cipsend[32]={0};
+  char cipsend[32]={0};
   snprintf(cipsend, 32, "AT+CIPSEND=%d", strlen(request)+2);
   
   const char ok=sendCommandAndWaitForResponse(cipsend,short_timeout);
-  if (ok&options::wait_for_ok == 0)
+  if ((ok&options::wait_for_ok) == 0)
     return false;
   
   sendCommandAndWaitForResponse(request,0);
@@ -347,7 +347,7 @@ int wifi::esp8266::post(const char * req, const uint8_t * data, const int Ldata,
     trials--;
     delay(1000);
   }
-  if (ok&options::wait_for_ok == 0)
+  if ((ok&options::wait_for_ok) == 0)
     return 3;
 
   DBGTXLN(request);

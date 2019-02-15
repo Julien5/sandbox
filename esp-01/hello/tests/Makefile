@@ -18,7 +18,8 @@ test.cpp \
 ../debug.cpp \
 ../clock.cpp \
 ../tickscounter.cpp \
-../utils.cpp
+../utils.cpp \
+../ui.cpp
 
 # ../wifi.cpp 
 # Objs are all the sources, with .cpp replaced by .o

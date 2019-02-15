@@ -7,6 +7,7 @@
 #include "freememory.h"
 #include "clock.h"
 #include <limits.h>
+#include "ui.h"
 
 void stop() {
   display::lcd.print("stop.");
@@ -72,7 +73,7 @@ namespace get {
     if (!esp.get("sunw",&internal)) {
       return false;
     }
-    if (sscanf(internal,"%d",buffer)!=1)
+    if (sscanf(internal,"%lu",buffer)!=1)
       return false;
     return true;
   }
@@ -174,12 +175,19 @@ void update_display_local() {
   }
 
   char line1[17]={0};
-  if (counter.total()>0) 
-    snprintf(line1,17,"%2de%1d %2dm %3d I%2d",
-	     T,E,
-	     int(1+b.m_duration/(1000L*60)),
-	     int(b.m_count),
-	     int(bin_indx+1));
+  if (counter.total()>0) {
+    char f1[5]={0};
+    ui::format(counter.total(),f1,sizeof(f1));
+
+    char f2[4]={0};
+    ui::format_seconds(int(b.m_duration/1000L),f2,sizeof(f2));
+
+    char f3[5]={0};
+    ui::format(int(b.m_count),f3,sizeof(f3));
+        
+    snprintf(line1,17,"%s.%s.%s.%2d",
+	     f1,f2,f3,int(bin_indx+1));
+  }
   else
     snprintf(line1,17,"no ticks");
   display::lcd.print(line1,0);

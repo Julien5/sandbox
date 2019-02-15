@@ -5,6 +5,7 @@
 #include "statistics.h"
 #include "clock.h"
 #include "tickscounter.h"
+#include "ui.h"
 
 int display(int exitcode) {
   if (exitcode!=0)
@@ -23,5 +24,6 @@ int main(int argc, char ** argv) {
   display(Clock::test());
   display(statistics::test());
   display(tickscounter::test());
+  display(ui::test());
   return 0;
 }
