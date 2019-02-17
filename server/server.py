@@ -22,7 +22,6 @@ def log(msg):
 def read_file(path):
     return open(path, 'rb').read();
 
-dataprocessor = data.Data();
 database = data.Sql();
 
 class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
@@ -32,9 +31,9 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
               
     def do_GET(self):
         log("GET request for {}".format(self.path));
-        global dataprocessor,database;
-        database.insert(self.path,bytes());
-        
+        global database;
+        database.insert_request(self.path,bytes());
+        ticksHandler=data.TicksHandler(database.select_ticks());
         self.send_response(200)
         # Send message back to client
         message=None;
@@ -52,15 +51,17 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
             self.send_header("Content-length", img_size);
             message = read_file(filename);
         elif "update" in self.path:
-            data.dump(database,dataprocessor);
+            data.dump(database,ticksHandler);
             message = "updated";
         elif self.path == "/time":
             message = "{%s}" % (datetime.datetime.now());
         elif self.path == "/message":
-            sms=dataprocessor.sms();
+            sms=ticksHandler.sms();
             message = "{"+sms+"}";
         elif self.path == "/string":
-            message = dataprocessor.string().replace("\n","</p>");
+            message = ticksHandler.string().replace("\n","</p>");
+        elif self.path == "/stats":
+            message = ticksHandler.stats().replace("\n","</p>");
         elif self.path == "/sunw": # seconds_until_next_wifi
             T1=datetime.datetime.now();
             # T2=T1+datetime.timedelta(minutes=5);
@@ -87,15 +88,15 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
         log("good.");
 
     def do_POST(self):
+        global database;
         content_length = int(self.headers['Content-Length'])
         post_data = self.rfile.read(content_length) 
         log("POST request for {} at {}".format(self.path,datetime.datetime.now()));
         log("received {} bytes".format(len(post_data)));
-        database.insert(self.path,post_data);
-        data.update(database,dataprocessor);
-        sms=dataprocessor.sms();
+        database.insert_request(self.path,post_data);
+        sms=data.TicksHandler(database.select_ticks()).sms();
         log("sms:"+sms);
-        message = sms;
+        message = "{"+sms+"}";
         # Write content as utf-8 data
         self.wfile.write(bytes(message, "utf8"));        
         log("good.");
@@ -103,10 +104,10 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
     
 def run():
     log('starting server...')
-    data.update(database,dataprocessor);
     # Server settings
     server_address = ('0.0.0.0', 8000)
     httpd = HTTPServer(server_address, testHTTPServer_RequestHandler)
+    data.rebuild();
     log('running server...')
     while True:
         try:
