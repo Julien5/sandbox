@@ -107,7 +107,7 @@ def run():
     # Server settings
     server_address = ('0.0.0.0', 8000)
     httpd = HTTPServer(server_address, testHTTPServer_RequestHandler)
-    data.rebuild();
+    # data.rebuild();
     log('running server...')
     while True:
         try:

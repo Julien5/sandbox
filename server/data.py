@@ -233,9 +233,9 @@ def rebuild():
             sql.insert_ticks(ticks_from_post_data(data,t));
         
 if __name__ == "__main__":
-    #update_plot("minutes/2019-01-22.csv");
-    #update_plot("millis/2019-01-19-18:7-0.csv");
-    rebuild();
+    # update_plot("minutes/2019-01-22.csv");
+    # update_plot("millis/2019-01-19-18:7-0.csv");
+    # rebuild();
     ticks=TicksHandler(Sql().select_ticks());
     print("stats:",ticks.stats());
     print("sms:",ticks.sms());
