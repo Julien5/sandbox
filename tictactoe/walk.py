@@ -35,7 +35,23 @@ class Board:
             if w:
                 return w;
         return None;
-            
+
+    def xturn(self):
+        return self.board.count('x') == self.board.count('o');
+    
+    def score(self):
+        w=self.winner();
+        if w == 'x':
+            return 1;
+        if w == 'o':
+            return 0;
+        scores = [b.score() for b in self.children()];
+        if not scores: # draw
+            return 0.5;
+        if self.xturn():
+            return max(scores);
+        return min(scores);
+           
     def stop(self):
         w=self.winner();
         return self.winner() != None;
@@ -48,9 +64,8 @@ class Board:
     def child(self,position):
         assert(position in self.free());
         assert(self.board[position] == ' ');
-        xturn=self.board.count('x') == self.board.count('o');
         sign='o';
-        if xturn:
+        if self.xturn():
             sign='x';
         L=list(self.board);
         L[position]=sign;
@@ -62,7 +77,7 @@ class Board:
             yield self.child(p);
             
     def string(self):
-        return self.board;
+        return self.board + " score:" + str(self.score());
 
 
 def walk(b):
