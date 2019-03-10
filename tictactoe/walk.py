@@ -1,14 +1,47 @@
 #!/usr/bin/env python3
 
 N=9;
+Nodes=set();
 
 class Board:
     # 0,1,2
     # 7,8,3
     # 6,5,4
-    def __init__(self, B=' '*N):
-        self.board = B;
 
+    def transform(b,I):
+        L = list(b);
+        R = [];
+        for i in I:
+            r.append(L[i]);
+        return ''.join(R);
+        
+    def rotations():
+        T=[];
+        T.append([0,1,2,3,4,5,6,7,8]);
+        T.append([2,3,4,5,6,7,0,1,8]);
+        T.append([4,5,6,7,0,1,2,3,8]);
+        T.append([6,7,0,1,2,3,4,5,8]);
+        return T;
+
+    def flips():
+        T=[];
+        T.append([0,1,2,3,4,5,6,7,8]);
+        T.append([2,1,0,7,6,5,4,3,8]);
+        T.append([6,5,4,3,2,1,0,7,8]);
+        return T;
+    
+    def __init__(self, B=' '*N):
+        global Nodes;
+        for r in Board.rotations():
+            rB=Board.transform(B,r);
+            for f in Board.flips():
+                frB=Board.transform(rB,f);
+                if frB in Nodes:
+                    self.board = frB;
+                    return;
+        self.board = B;
+        Nodes.add(B);
+    
     def _winner(self,I):
         L=[self.board[i] for i in I];
         l0 = L[0]
@@ -45,9 +78,10 @@ class Board:
             return 1;
         if w == 'o':
             return 0;
-        scores = [b.score() for b in self.children()];
-        if not scores: # draw
+        if not self.children(): # draw
             return 0.5;
+        return None;
+        scores = [b.score() for b in self.children()];
         if self.xturn():
             return max(scores);
         return min(scores);
@@ -77,11 +111,11 @@ class Board:
             yield self.child(p);
             
     def string(self):
-        return self.board + " score:" + str(self.score());
-
+        return self.board;
 
 def walk(b):
-    print(b.string());
+    global Nodes;
+    print("length:",len(Nodes));
     for c in b.children():
         walk(c);
         
