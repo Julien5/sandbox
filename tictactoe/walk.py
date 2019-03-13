@@ -88,13 +88,6 @@ class Board:
             return 0;
         if not self.free(): # draw
             return 0.5;
-        #if self.score:
-        #    return self.score;
-        #scores = [b.getscore() for b in self.children()];
-        #if self.xturn():
-        #    self.score=max(scores);
-        #else:
-        #    self.score=min(scores);
         return None;
            
     def stop(self):
@@ -121,34 +114,37 @@ class Board:
         for p in self.free():
             yield self.child(p);
     
-Tree=dict();
-def walk(b):
-    global Tree;
-    C=[];
+def walk_children(b,tree=None):
+    if tree is None:
+        tree=dict();
+    if not b in tree:
+        tree[b]=set(); 
     for c in b.children():
-        walk(c);
-        C.append(c);
-    Tree[b]=C;
-    
-Scores=dict();
-def scores(b):
-    global Tree,Scores;
-    if b in Scores:
-        return Scores[b];
-        
+        tree[b].add(c);
+        walk_children(c,tree);
+    return tree;
+
+def walk_score(b,tree,score=None):
+    if score is None:
+        score=dict();
+
+    if b in score:
+        return score;
+     
     s=b.getscore();
     if not s is None:
-        Scores[b]=s;
-        return Scores[b];
+        score[b]=s;
+        return score;
  
-    C=Tree[b];
+    C=tree[b];
     assert(C);
-    S = [scores(c) for c in C];
+    S = [walk_score(c,tree,score)[c] for c in C];
     if b.xturn():
-        Scores[b]=max(S);
+        score[b]=max(S);
     else:
-        Scores[b]=min(S);
-    return Scores[b];
+        score[b]=min(S);
+    return score;
+   
     
 def play(b):
     assert(b.xturn());
@@ -156,28 +152,52 @@ def play(b):
     if not C:
         print("cannot play");
         return;
-        
-def main():
-    global Tree,Scores;
-    treetxt = "tree.txt";
+
+treetxt = "tree.txt";
+scoretxt = "score.txt";
+
+def build():
     if not os.path.exists(treetxt):
         print("compute tree");
-        walk(Board());
-        pickle.dump(Tree,open(treetxt,'wb'));
+        tree=walk_children(Board());
+        pickle.dump(tree,open(treetxt,'wb'));
         return;
-
-    Tree = pickle.load(open(treetxt,'rb'));
-    scorestxt = "scores.txt";
-    if not os.path.exists(scorestxt):
+    print("load tree");
+    tree = pickle.load(open(treetxt,'rb'));
+    print("loaded tree");
+    print("number of nodes:",len(tree));
+   
+    if not os.path.exists(scoretxt):
         print("compute scores");
-        scores(Board());
-        pickle.dump(Scores,open(scorestxt,'wb'));
-        return;
+        score=walk_score(Board(),tree);
+        pickle.dump(score,open(scoretxt,'wb'));
+             
+    score = pickle.load(open(scoretxt,'rb'));
+    print("loaded score");
+    print("number of scores:",len(score));
+
+def play():
+    tree = pickle.load(open(treetxt,'rb'));
+    score = pickle.load(open(scoretxt,'rb'));
+    b=Board();
+    while True:
+        m = max([score[c] for c in tree[b]]);
+        for c in tree[b]:
+            if score[c] == m:
+                b=c;
+                break;
+        print("me:",b);
+        pos=-1;
+        F=b.free();
+        if not F:
+            print("winner:",b.winner());
+            return;
+        print("choices:",F);
+        while not pos in F:
+            pos=int(input('Enter your input:'));
+        b=b.child(pos);
+        print("you:",b);
         
-    Scores = pickle.load(open(scorestxt,'rb'));
-    for b in Scores:
-        print(b,Scores[b]);
-
-
 if __name__ == '__main__':
-    main()
+    build();
+    play();
