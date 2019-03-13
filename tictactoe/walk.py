@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-N=3;
-Nodes=set();
+import os;
 
+N=9;
 class Board:
     # 0,1,2
     # 7,8,3
@@ -38,7 +38,13 @@ class Board:
         return ret;
     
     def __init__(self, B=' '*N):
-        self.board = B;#min(Board.siblings(B));
+        self.board = min(Board.siblings(B));
+
+    def __hash__(self):
+        return hash(self.board);
+
+    def __eq__(self,other):
+        return self.board == other.board;
     
     def _winner(self,I):
         L=[self.board[i] for i in I];
@@ -111,18 +117,26 @@ class Board:
     def string(self):
         return self.board;
 
+    
+Tree=dict();
 def walk(b):
-    global Nodes;
-    Nodes.add(b.board);
+    global Tree;
+    C=[];
     for c in b.children():
+        C.append(c);
         walk(c);
+    Tree[b]=C;
         
 def main():
-    global Nodes;
-    walk(Board());
-    f=open("nodes.txt",'w');
-    for n in Nodes:
-        f.write(str(n)+"\n"); 
+    global Tree;
+    filename = "tree.txt";
+    if not os.path.exists(filename):
+        print("compute tree");
+        walk(Board());
+        f=open(filename,'w');
+        f.write(str(Tree)+"\n");
+    else:
+        Tree = eval(open(filename,'r').read());
 
 if __name__ == '__main__':
     main()
