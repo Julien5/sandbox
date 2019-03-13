@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os;
+import pickle;
 
 N=9;
 class Board:
@@ -45,7 +46,10 @@ class Board:
 
     def __eq__(self,other):
         return self.board == other.board;
-    
+        
+    def __str__(self):
+        return "["+self.board+"]";
+     
     def _winner(self,I):
         L=[self.board[i] for i in I];
         l0 = L[0]
@@ -76,19 +80,22 @@ class Board:
     def xturn(self):
         return self.board.count('x') == self.board.count('o');
     
-    def score(self):
+    def getscore(self):
         w=self.winner();
         if w == 'x':
             return 1;
         if w == 'o':
             return 0;
-        if not self.children(): # draw
+        if not self.free(): # draw
             return 0.5;
+        #if self.score:
+        #    return self.score;
+        #scores = [b.getscore() for b in self.children()];
+        #if self.xturn():
+        #    self.score=max(scores);
+        #else:
+        #    self.score=min(scores);
         return None;
-        scores = [b.score() for b in self.children()];
-        if self.xturn():
-            return max(scores);
-        return min(scores);
            
     def stop(self):
         w=self.winner();
@@ -113,30 +120,64 @@ class Board:
     def children(self):
         for p in self.free():
             yield self.child(p);
-            
-    def string(self):
-        return self.board;
-
     
 Tree=dict();
 def walk(b):
     global Tree;
     C=[];
     for c in b.children():
-        C.append(c);
         walk(c);
+        C.append(c);
     Tree[b]=C;
+    
+Scores=dict();
+def scores(b):
+    global Tree,Scores;
+    if b in Scores:
+        return Scores[b];
+        
+    s=b.getscore();
+    if not s is None:
+        Scores[b]=s;
+        return Scores[b];
+ 
+    C=Tree[b];
+    assert(C);
+    S = [scores(c) for c in C];
+    if b.xturn():
+        Scores[b]=max(S);
+    else:
+        Scores[b]=min(S);
+    return Scores[b];
+    
+def play(b):
+    assert(b.xturn());
+    C=Tree[b];
+    if not C:
+        print("cannot play");
+        return;
         
 def main():
-    global Tree;
-    filename = "tree.txt";
-    if not os.path.exists(filename):
+    global Tree,Scores;
+    treetxt = "tree.txt";
+    if not os.path.exists(treetxt):
         print("compute tree");
         walk(Board());
-        f=open(filename,'w');
-        f.write(str(Tree)+"\n");
-    else:
-        Tree = eval(open(filename,'r').read());
+        pickle.dump(Tree,open(treetxt,'wb'));
+        return;
+
+    Tree = pickle.load(open(treetxt,'rb'));
+    scorestxt = "scores.txt";
+    if not os.path.exists(scorestxt):
+        print("compute scores");
+        scores(Board());
+        pickle.dump(Scores,open(scorestxt,'wb'));
+        return;
+        
+    Scores = pickle.load(open(scorestxt,'rb'));
+    for b in Scores:
+        print(b,Scores[b]);
+
 
 if __name__ == '__main__':
     main()
