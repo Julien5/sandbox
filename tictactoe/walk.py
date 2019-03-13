@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-N=9;
+N=3;
 Nodes=set();
 
 class Board:
@@ -8,11 +8,11 @@ class Board:
     # 7,8,3
     # 6,5,4
 
-    def transform(b,I):
+    def transform(I,b):
         L = list(b);
         R = [];
         for i in I:
-            r.append(L[i]);
+            R.append(L[i]);
         return ''.join(R);
         
     def rotations():
@@ -29,18 +29,16 @@ class Board:
         T.append([2,1,0,7,6,5,4,3,8]);
         T.append([6,5,4,3,2,1,0,7,8]);
         return T;
+
+    def siblings(B):
+        ret=set();
+        for r in Board.rotations():
+            for f in Board.flips():
+                ret.add(Board.transform(f,Board.transform(r,B)));
+        return ret;
     
     def __init__(self, B=' '*N):
-        global Nodes;
-        for r in Board.rotations():
-            rB=Board.transform(B,r);
-            for f in Board.flips():
-                frB=Board.transform(rB,f);
-                if frB in Nodes:
-                    self.board = frB;
-                    return;
-        self.board = B;
-        Nodes.add(B);
+        self.board = B;#min(Board.siblings(B));
     
     def _winner(self,I):
         L=[self.board[i] for i in I];
@@ -115,13 +113,16 @@ class Board:
 
 def walk(b):
     global Nodes;
-    print("length:",len(Nodes));
+    Nodes.add(b.board);
     for c in b.children():
         walk(c);
         
 def main():
-    b=Board();
-    walk(b);
+    global Nodes;
+    walk(Board());
+    f=open("nodes.txt",'w');
+    for n in Nodes:
+        f.write(str(n)+"\n"); 
 
 if __name__ == '__main__':
     main()
