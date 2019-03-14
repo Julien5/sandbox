@@ -154,14 +154,6 @@ def walk_score(b,tree,score=None):
     else:
         score[b]=min(S);
     return score;
-   
-    
-def play(b):
-    assert(b.xturn());
-    C=Tree[b];
-    if not C:
-        print("cannot play");
-        return;
 
 treetxt = "tree.txt";
 scoretxt = "score.txt";
@@ -193,30 +185,43 @@ def getpos(b,cn):
             return position;
     return None;    
 
+def computerplay(b,tree,score):
+    bn = b.normalize();
+    C = tree[bn];
+    m = max([score[c] for c in C]);
+    position=None;
+    for cn in C:
+        if score[cn] == m:
+            position=getpos(b,cn);
+            break;
+    return b.child(position);
+
+def humanplay(b):
+    F=b.free();
+    print("choices:",F);
+    pos=-1;
+    while not pos in F:
+        pos=int(input('you:'));
+    return b.child(pos);
+
+def finished(b):
+    F=b.free();
+    if not F:
+        print("winner:",b.winner());
+        return True;
+    return False;
+        
 def play():
     tree = pickle.load(open(treetxt,'rb'));
     score = pickle.load(open(scoretxt,'rb'));
     b=Board();
-    while True:
-        bn = b.normalize();
-        C = tree[bn];
-        m = max([score[c] for c in C]);
-        position=None;
-        for cn in C:
-            if score[cn] == m:
-                position=getpos(b,cn);
-                break;
-        b=b.child(position);
-        print("me:");print(b.prettyprint());
-        pos=-1;
-        F=b.free();
-        if not F:
-            print("winner:",b.winner());
+    while not finished(b):
+        b=computerplay(b,tree,score);
+        print("me:");
+        print(b.prettyprint());
+        if finished(b):
             return;
-        print("choices:",F);
-        while not pos in F:
-            pos=int(input('you:'));
-        b=b.child(pos);
+        b=humanplay(b)
         print(b.prettyprint());
         
 if __name__ == '__main__':
