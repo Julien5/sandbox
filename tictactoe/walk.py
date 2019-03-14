@@ -2,6 +2,7 @@
 
 import os;
 import pickle;
+import random;
 
 N=9;
 class Board:
@@ -178,7 +179,7 @@ def build():
     print("loaded score");
     print("number of scores:",len(score));
 
-def getpos(b,cn):
+def getposition(b,cn):
     assert(cn.normalize() == cn);
     for position in b.free():
         if b.child(position).normalize() == cn:
@@ -188,13 +189,15 @@ def getpos(b,cn):
 def computerplay(b,tree,score):
     bn = b.normalize();
     C = tree[bn];
-    m = min([score[c] for c in C]);
+    S = [score[c] for c in C];
+    m = min(S);
+    if b.xturn():
+        m = max(S);
     position=None;
     for cn in C:
         if score[cn] == m:
-            position=getpos(b,cn);
-            break;
-    return b.child(position);
+            return b.child(getposition(b,cn));
+    return None;
 
 def humanplay(b):
     F=b.free();
@@ -210,22 +213,26 @@ def finished(b):
         print("winner:",b.winner());
         return True;
     return False;
+
+def nextplay(b,tree,score,computerplayx):
+    if computerplayx == b.xturn():
+        b=computerplay(b,tree,score);
+        print("computer:");
+        print(b.prettyprint());
+    else:
+        b=humanplay(b);
+        print(b.prettyprint());
+    return b;    
         
 def play():
     tree = pickle.load(open(treetxt,'rb'));
     score = pickle.load(open(scoretxt,'rb'));
     b=Board();
-    
+    # 'x' always starts
+    computerplayx=random.randint(0,1) == 0;
     while not finished(b):
-        b=humanplay(b);
-        print(b.prettyprint());
-
-        b=computerplay(b,tree,score);
-        print("computer:");
-        print(b.prettyprint());
-        
-        
-        
+        b=nextplay(b,tree,score,computerplayx);
+      
 if __name__ == '__main__':
     build();
     play();
