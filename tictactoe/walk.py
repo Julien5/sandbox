@@ -124,10 +124,17 @@ class Board:
     def children(self):
         for p in self.free():
             yield self.child(p);
-    
+
+visits=0;
 def walk_children(b,tree=None):
     if tree is None:
         tree=dict();
+        
+    global visits;
+    visits = visits + 1;
+    if visits % 1000 == 0:
+        percent=100*len(tree)/765;
+        print('progress:{percent:{width}.1f}% visits:{visits:{widthv}}'.format(percent=percent, width=3, visits=visits, widthv=6),end="\r");
     if not b in tree:
         tree[b.normalize()]=set(); 
     for c in b.children():
@@ -164,7 +171,7 @@ def build():
         print("compute tree");
         tree=walk_children(Board());
         pickle.dump(tree,open(treetxt,'wb'));
-        return;
+
     print("load tree");
     tree = pickle.load(open(treetxt,'rb'));
     print("loaded tree");
