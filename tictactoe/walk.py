@@ -8,7 +8,6 @@ class Board:
     # 0,1,2
     # 7,8,3
     # 6,5,4
-
     def transform(I,b):
         L = list(b);
         R = [];
@@ -37,9 +36,20 @@ class Board:
             for f in Board.flips():
                 ret.add(Board.transform(f,Board.transform(r,B)));
         return ret;
+
+    def prettyprint(self):
+        b=self.board;
+        s=[];
+        s.append("{}|{}|{}".format(b[0],b[1],b[2]));
+        s.append("{}|{}|{}".format(b[7],b[8],b[3]));
+        s.append("{}|{}|{}".format(b[6],b[5],b[4]));
+        return "\n".join(s);
     
     def __init__(self, B=' '*N):
-        self.board = min(Board.siblings(B));
+        self.board = B;
+
+    def normalize(self):
+        return Board(min(Board.siblings(self.board)));
 
     def __hash__(self):
         return hash(self.board);
@@ -118,16 +128,16 @@ def walk_children(b,tree=None):
     if tree is None:
         tree=dict();
     if not b in tree:
-        tree[b]=set(); 
+        tree[b.normalize()]=set(); 
     for c in b.children():
-        tree[b].add(c);
+        tree[b.normalize()].add(c.normalize());
         walk_children(c,tree);
     return tree;
 
 def walk_score(b,tree,score=None):
     if score is None:
         score=dict();
-
+    assert(b.normalize()==b);
     if b in score:
         return score;
      
@@ -176,17 +186,28 @@ def build():
     print("loaded score");
     print("number of scores:",len(score));
 
+def getpos(b,cn):
+    assert(cn.normalize() == cn);
+    for position in b.free():
+        if b.child(position).normalize() == cn:
+            return position;
+    return None;    
+
 def play():
     tree = pickle.load(open(treetxt,'rb'));
     score = pickle.load(open(scoretxt,'rb'));
     b=Board();
     while True:
-        m = max([score[c] for c in tree[b]]);
-        for c in tree[b]:
-            if score[c] == m:
-                b=c;
+        bn = b.normalize();
+        C = tree[bn];
+        m = max([score[c] for c in C]);
+        position=None;
+        for cn in C:
+            if score[cn] == m:
+                position=getpos(b,cn);
                 break;
-        print("me:",b);
+        b=b.child(position);
+        print("me:");print(b.prettyprint());
         pos=-1;
         F=b.free();
         if not F:
@@ -194,9 +215,9 @@ def play():
             return;
         print("choices:",F);
         while not pos in F:
-            pos=int(input('Enter your input:'));
+            pos=int(input('you:'));
         b=b.child(pos);
-        print("you:",b);
+        print(b.prettyprint());
         
 if __name__ == '__main__':
     build();
