@@ -188,7 +188,7 @@ def getpos(b,cn):
 def computerplay(b,tree,score):
     bn = b.normalize();
     C = tree[bn];
-    m = max([score[c] for c in C]);
+    m = min([score[c] for c in C]);
     position=None;
     for cn in C:
         if score[cn] == m:
@@ -215,14 +215,16 @@ def play():
     tree = pickle.load(open(treetxt,'rb'));
     score = pickle.load(open(scoretxt,'rb'));
     b=Board();
+    
     while not finished(b):
+        b=humanplay(b);
+        print(b.prettyprint());
+
         b=computerplay(b,tree,score);
-        print("me:");
+        print("computer:");
         print(b.prettyprint());
-        if finished(b):
-            return;
-        b=humanplay(b)
-        print(b.prettyprint());
+        
+        
         
 if __name__ == '__main__':
     build();
