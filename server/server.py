@@ -84,7 +84,9 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
             
         assert(isinstance(message,bytes));
         self.end_headers()
-        self.wfile.write(message)
+        while message:
+            n=self.wfile.write(message);
+            message=message[n:];
         log("good.");
 
     def do_POST(self):

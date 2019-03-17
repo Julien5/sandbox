@@ -237,5 +237,6 @@ if __name__ == "__main__":
     # update_plot("millis/2019-01-19-18:7-0.csv");
     # rebuild();
     ticks=TicksHandler(Sql().select_ticks());
-    print("stats:",ticks.stats());
+    print("string:",ticks.string());
+    print("stats:",ticks.stats());    
     print("sms:",ticks.sms());
