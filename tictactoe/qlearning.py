@@ -4,6 +4,7 @@ import os;
 import pickle;
 import random;
 import math;
+import time;
 
 N=9;
 class Board:
@@ -131,6 +132,11 @@ class Board:
             
 scoretxt = "score.pickle";
 true_score = pickle.load(open(scoretxt,'rb'));
+def Tscore(_b):
+    global true_score;
+    b=_b.normalize();
+    return true_score[b];
+
 score_table=dict();
 def Qscore(_b):
     # 1 iff 'x' wins
@@ -147,12 +153,13 @@ def Qscore(_b):
 
     return score_table[b];
 
+
 def Qlearn(_b,target):
     global score_table;
     b=_b.normalize();
     assert(b in score_table);
     assert(0<=target and target<=1);
-    alpha=0.6;
+    alpha=0.7;
     score_table[b] = alpha*score_table[b] + (1-alpha)*target;
 
 def argmax(S,m):
@@ -163,12 +170,20 @@ def argmax(S,m):
     assert(0);
     return None;
 
-def computerplay(b):
+def computerplay(b,strategy=None):
+    # strategy = None => random
+    # strategy = 1 => Q-learning
+    # strategy = 2 => minimax
     S=dict();        
     for c in b.children():
-        S[c]=Qscore(c);
-        if random.randint(0,20) == 0:
+        if strategy is None:
             return c;
+        if strategy == 1:
+            S[c]=Qscore(c);
+            if random.randint(0,20) == 0:
+                return c;
+        if strategy == 2:
+            S[c]=Tscore(c);
     m = min(S.values());
     if b.xturn():
         m = max(S.values());
@@ -181,8 +196,23 @@ def finished(b):
         return True;
     return False;
 
-def nextplay(b):
-    return computerplay(b);
+def play_against_minimax():
+    b=Board();
+    while not finished(b):
+        strategy = 1;
+        if not b.xturn():
+            strategy = 2;
+        b=computerplay(b, strategy);
+    return b.winner();
+
+def play_against_random():
+    b=Board();
+    while not finished(b):
+        strategy = 1;
+        if not b.xturn():
+            strategy = None;
+        b=computerplay(b, strategy);
+    return b.winner();
 
 nplay=0;
 def play():
@@ -192,7 +222,7 @@ def play():
     # 'x' always starts
     path=list();
     while not finished(b):
-        b=nextplay(b);
+        b=computerplay(b,strategy=1);
         path.append(b);
         #print(b.prettyprint());
         
@@ -216,7 +246,9 @@ def play():
         e+=abs(score_table[b.normalize()]-true_score[b]);
 
     nplay = nplay + 1;
-    print(nplay,len(score_table),e/len(score_table),end="\r");
+    if nplay % 4 == 0:
+        print(nplay,len(score_table),str(e/len(score_table))[0:6],str(play_against_minimax()),str(play_against_random()),end=" "*10+"\r");
+
 
       
 if __name__ == '__main__':
