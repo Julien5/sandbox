@@ -160,9 +160,7 @@ def nextplay(b,computerplayx):
         
 def play():
     b=Board();
-    assert(computerplay(Board('o      xx')).board == 'o  o   xx');
-    computerplay(Board());
-    return;
+    #assert(computerplay(Board('o      xx')).board == 'o  o   xx');
     # 'x' always starts
     computerplayx=random.randint(0,1) == 0;
     while not finished(b):
