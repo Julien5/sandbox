@@ -93,36 +93,45 @@ class Board:
         return Board(b);
     
     def children(self):
-        for p in self.free():
+        F=self.free();
+        random.shuffle(F);
+        for p in F:
             yield self.child(p);
 
+def minimax(b):
+    if b.xturn():
+        return max;
+    return min;
+            
+def argminmax(S,minmax):
+    assert(S);
+    m=minmax(S.values());
+    for c in S:
+        if S[c] == m:
+            return c;
+    assert(0);
+    return None;
+            
 def score(b):
     s=b.getscore();
     if not s is None:
         return s;
-    S = [score(c) for c in b.children()];
-    if b.xturn():
-        return max(S);
-    else:
-        return min(S);
-    return score;
+    S = dict();
+    for c in b.children():
+        S[c] = score(c);
+        # alpha,beta-pruning
+        if S[c] == int(b.xturn()): 
+            return S[c];
+    return minimax(b)(S.values());
 
 def computerplay(b):
-    S=dict();
+    S = dict();
     for c in b.children():
-        print(c.board,score(c));
         S[c] = score(c);
+        # alpha,beta-pruning
         if S[c] == int(b.xturn()):
-            print(">", c.board);
             return c;
-    for c in S:
-        if b.xturn():
-            if S[c] == max(S.values()):
-                return c;
-        else:
-            if S[c] == min(S.values()):
-                return c;
-    return S.keys[0];
+    return argminmax(S,minimax(b));
 
 def humanplay(b):
     F=b.free();
@@ -151,11 +160,11 @@ def nextplay(b,computerplayx):
         
 def play():
     b=Board();
-    print(computerplay(Board('o      xx')).prettyprint());
-    computerplay(b);
+    assert(computerplay(Board('o      xx')).board == 'o  o   xx');
+    computerplay(Board());
     return;
     # 'x' always starts
-    computerplayx=True;random.randint(0,1) == 0;
+    computerplayx=random.randint(0,1) == 0;
     while not finished(b):
         b=nextplay(b,computerplayx);
       
