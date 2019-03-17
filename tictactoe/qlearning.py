@@ -3,6 +3,7 @@
 import os;
 import pickle;
 import random;
+import math;
 
 N=9;
 class Board:
@@ -122,124 +123,103 @@ class Board:
         return Board(b);
     
     def children(self):
-        for p in self.free():
+        F=self.free();
+        random.shuffle(F);
+        for p in F:
             yield self.child(p);
 
-visits=0;
-def walk_children(b,tree=None):
-    if tree is None:
-        tree=dict();
-        
-    global visits;
-    visits = visits + 1;
-    if visits % 1000 == 0:
-        percent=100*len(tree)/765;
-        print('progress:{percent:{width}.1f}% visits:{visits:{widthv}}'.format(percent=percent, width=3, visits=visits, widthv=6),end="\r");
-    if not b in tree:
-        tree[b.normalize()]=set(); 
-    for c in b.children():
-        tree[b.normalize()].add(c.normalize());
-        walk_children(c,tree);
-    return tree;
-
-def walk_score(b,tree,score=None):
-    if score is None:
-        score=dict();
-    assert(b.normalize()==b);
-    if b in score:
-        return score;
-     
+            
+scoretxt = "score.pickle";
+true_score = pickle.load(open(scoretxt,'rb'));
+score_table=dict();
+def Qscore(_b):
+    # 1 iff 'x' wins
+    # 0 iff 'o' wins
+    # 0.5 otherwise
+    global score_table;
+    b=_b.normalize();
+    if not b in score_table:
+        score_table[b]=0.5;
+    
     s=b.getscore();
     if not s is None:
-        score[b]=s;
-        return score;
- 
-    C=tree[b];
-    assert(C);
-    S = [walk_score(c,tree,score)[c] for c in C];
-    if b.xturn():
-        score[b]=max(S);
-    else:
-        score[b]=min(S);
-    return score;
+        score_table[b]=s;
 
-treetxt = "tree.pickle";
-scoretxt = "score.pickle";
+    return score_table[b];
 
-def build():
-    if not os.path.exists(treetxt):
-        print("compute tree");
-        tree=walk_children(Board());
-        pickle.dump(tree,open(treetxt,'wb'));
+def Qlearn(_b,target):
+    global score_table;
+    b=_b.normalize();
+    assert(b in score_table);
+    assert(0<=target and target<=1);
+    alpha=0.6;
+    score_table[b] = alpha*score_table[b] + (1-alpha)*target;
 
-    print("load tree");
-    tree = pickle.load(open(treetxt,'rb'));
-    print("loaded tree");
-    print("number of nodes:",len(tree));
-   
-    if not os.path.exists(scoretxt):
-        print("compute scores");
-        score=walk_score(Board(),tree);
-        pickle.dump(score,open(scoretxt,'wb'));
-             
-    score = pickle.load(open(scoretxt,'rb'));
-    print("loaded score");
-    print("number of scores:",len(score));
-
-def getposition(b,cn):
-    assert(cn.normalize() == cn);
-    for position in b.free():
-        if b.child(position).normalize() == cn:
-            return position;
-    return None;    
-
-def computerplay(b,tree,score):
-    bn = b.normalize();
-    C = tree[bn];
-    S = [score[c] for c in C];
-    m = min(S);
-    if b.xturn():
-        m = max(S);
-    position=None;
-    for cn in C:
-        if score[cn] == m:
-            return b.child(getposition(b,cn));
+def argmax(S,m):
+    assert(S);
+    for c in S:
+        if S[c] == m:
+            return c;
+    assert(0);
     return None;
 
-def humanplay(b):
-    F=b.free();
-    print("choices:",F);
-    pos=-1;
-    while not pos in F:
-        pos=int(input('you:'));
-    return b.child(pos);
+def computerplay(b):
+    S=dict();        
+    for c in b.children():
+        S[c]=Qscore(c);
+        if random.randint(0,20) == 0:
+            return c;
+    m = min(S.values());
+    if b.xturn():
+        m = max(S.values());
+    return argmax(S,m);
 
 def finished(b):
     F=b.free();
     if not F:
-        print("winner:",b.winner());
+        #print("winner:",b.winner());
         return True;
     return False;
 
-def nextplay(b,tree,score,computerplayx):
-    if computerplayx == b.xturn():
-        b=computerplay(b,tree,score);
-        print("computer:");
-        print(b.prettyprint());
-    else:
-        b=humanplay(b);
-        print(b.prettyprint());
-    return b;    
-        
+def nextplay(b):
+    return computerplay(b);
+
+nplay=0;
 def play():
-    tree = pickle.load(open(treetxt,'rb'));
-    score = pickle.load(open(scoretxt,'rb'));
+    global score_table,nplay;
+    
     b=Board();
     # 'x' always starts
-    computerplayx=random.randint(0,1) == 0;
+    path=list();
     while not finished(b):
-        b=nextplay(b,tree,score,computerplayx);
+        b=nextplay(b);
+        path.append(b);
+        #print(b.prettyprint());
+        
+    xwins=b.winner() and not b.xturn();
+    owins=b.winner() and b.xturn();
+    draw=(not xwins) and (not owins);
+    target=None;
+    if owins:
+        target=0;
+    if xwins:
+        target=1;
+    if draw:
+        target=0.5;
+    
+    for p in path:
+        Qlearn(p,target);
+           
+    e=0;
+    for b in score_table:
+        #print(b.board,score_table[b],score[b]);
+        e+=abs(score_table[b.normalize()]-true_score[b]);
+
+    nplay = nplay + 1;
+    print(nplay,len(score_table),e/len(score_table),end="\r");
+
       
 if __name__ == '__main__':
-    build();
-    play();
+    while True:
+        play();
+        #exit(0);
