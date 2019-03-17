@@ -9,35 +9,6 @@ class Board:
     # 0,1,2
     # 7,8,3
     # 6,5,4
-    def transform(I,b):
-        L = list(b);
-        R = [];
-        for i in I:
-            R.append(L[i]);
-        return ''.join(R);
-        
-    def rotations():
-        T=[];
-        T.append([0,1,2,3,4,5,6,7,8]);
-        T.append([2,3,4,5,6,7,0,1,8]);
-        T.append([4,5,6,7,0,1,2,3,8]);
-        T.append([6,7,0,1,2,3,4,5,8]);
-        return T;
-
-    def flips():
-        T=[];
-        T.append([0,1,2,3,4,5,6,7,8]);
-        T.append([2,1,0,7,6,5,4,3,8]);
-        T.append([6,5,4,3,2,1,0,7,8]);
-        return T;
-
-    def siblings(B):
-        ret=set();
-        for r in Board.rotations():
-            for f in Board.flips():
-                ret.add(Board.transform(f,Board.transform(r,B)));
-        return ret;
-
     def prettyprint(self):
         b=self.board;
         s=[];
@@ -125,86 +96,33 @@ class Board:
         for p in self.free():
             yield self.child(p);
 
-visits=0;
-def walk_children(b,tree=None):
-    if tree is None:
-        tree=dict();
-        
-    global visits;
-    visits = visits + 1;
-    if visits % 1000 == 0:
-        percent=100*len(tree)/765;
-        print('progress:{percent:{width}.1f}% visits:{visits:{widthv}}'.format(percent=percent, width=3, visits=visits, widthv=6),end="\r");
-    if not b in tree:
-        tree[b.normalize()]=set(); 
-    for c in b.children():
-        tree[b.normalize()].add(c.normalize());
-        walk_children(c,tree);
-    return tree;
-
-def walk_score(b,tree,score=None):
-    if score is None:
-        score=dict();
-    assert(b.normalize()==b);
-    if b in score:
-        return score;
-     
+def score(b):
     s=b.getscore();
     if not s is None:
-        score[b]=s;
-        return score;
- 
-    C=tree[b];
-    assert(C);
-    S = [walk_score(c,tree,score)[c] for c in C];
+        return s;
+    S = [score(c) for c in b.children()];
     if b.xturn():
-        score[b]=max(S);
+        return max(S);
     else:
-        score[b]=min(S);
+        return min(S);
     return score;
 
-treetxt = "tree.txt";
-scoretxt = "score.txt";
-
-def build():
-    if not os.path.exists(treetxt):
-        print("compute tree");
-        tree=walk_children(Board());
-        pickle.dump(tree,open(treetxt,'wb'));
-
-    print("load tree");
-    tree = pickle.load(open(treetxt,'rb'));
-    print("loaded tree");
-    print("number of nodes:",len(tree));
-   
-    if not os.path.exists(scoretxt):
-        print("compute scores");
-        score=walk_score(Board(),tree);
-        pickle.dump(score,open(scoretxt,'wb'));
-             
-    score = pickle.load(open(scoretxt,'rb'));
-    print("loaded score");
-    print("number of scores:",len(score));
-
-def getposition(b,cn):
-    assert(cn.normalize() == cn);
-    for position in b.free():
-        if b.child(position).normalize() == cn:
-            return position;
-    return None;    
-
-def computerplay(b,tree,score):
-    bn = b.normalize();
-    C = tree[bn];
-    S = [score[c] for c in C];
-    m = min(S);
-    if b.xturn():
-        m = max(S);
-    position=None;
-    for cn in C:
-        if score[cn] == m:
-            return b.child(getposition(b,cn));
-    return None;
+def computerplay(b):
+    S=dict();
+    for c in b.children():
+        print(c.board,score(c));
+        S[c] = score(c);
+        if S[c] == int(b.xturn()):
+            print(">", c.board);
+            return c;
+    for c in S:
+        if b.xturn():
+            if S[c] == max(S.values()):
+                return c;
+        else:
+            if S[c] == min(S.values()):
+                return c;
+    return S.keys[0];
 
 def humanplay(b):
     F=b.free();
@@ -221,9 +139,9 @@ def finished(b):
         return True;
     return False;
 
-def nextplay(b,tree,score,computerplayx):
+def nextplay(b,computerplayx):
     if computerplayx == b.xturn():
-        b=computerplay(b,tree,score);
+        b=computerplay(b);
         print("computer:");
         print(b.prettyprint());
     else:
@@ -232,14 +150,14 @@ def nextplay(b,tree,score,computerplayx):
     return b;    
         
 def play():
-    tree = pickle.load(open(treetxt,'rb'));
-    score = pickle.load(open(scoretxt,'rb'));
     b=Board();
+    print(computerplay(Board('o      xx')).prettyprint());
+    computerplay(b);
+    return;
     # 'x' always starts
-    computerplayx=random.randint(0,1) == 0;
+    computerplayx=True;random.randint(0,1) == 0;
     while not finished(b):
-        b=nextplay(b,tree,score,computerplayx);
+        b=nextplay(b,computerplayx);
       
 if __name__ == '__main__':
-    build();
     play();
