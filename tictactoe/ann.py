@@ -3,27 +3,39 @@
 import math;
 
 def f(x):
-    return math.cos(x*x);
+    return 0.5*(1+math.tanh(x));
 
 def df(x):
-    return -2*x*math.sin(x*x);
+    return 0.5*(1-math.pow(math.tanh(x),2));
 
-def gradient(f):
-    x = 0.1;
-    xold = None;
-    mu=0.10;
-    epsilon = mu/1000.0;
-    niter=0;
-    while (not xold) or math.fabs(x-xold)>epsilon:
-        xold = x;
-        x = x - mu*df(x);
-        niter = niter + 1;
-    print("niter:",niter);
-    return (x,f(x));
+def dJ(X,T,A):
+    a = A[0];
+    b = A[1];
+    da = sum([X[i]*df(a*X[i]+b)*(f(a*X[i]+b)-T[i]) for i in range(len(X))]);
+    db = sum([     df(a*X[i]+b)*(f(a*X[i]+b)-T[i]) for i in range(len(X))]);
+    #print(da,db);
+    return [da,db];
+
+def distance(A,Aold):
+    return sum([math.pow(A[i]-Aold[i],2) for i in range(len(A))]);
+
+def learn(X,T):
+    A=[1,1];
+    mu=0.5;
+    epsilon=mu/100;
+    Aold = None;
+    while not Aold or distance(A,Aold)>epsilon:
+        d = dJ(X,T,A);
+        A = [A[i] - mu*d[i] for i in range(len(A))];
+        A[0] = A[0]/math.fabs(A[0]);
+        print(A);
+    return A;
 
 def main():
-    (x,m)=gradient(f);
-    print("fmin={} at x={}".format(m,x));
+    X=[0,1,2,3,4,5,6,7,8,9];
+    T=[0,0,0,0,0,1,1,1,1,1];
+    A=learn(X,T);
+    print(A);
 
 if __name__ == '__main__':
     main();
