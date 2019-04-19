@@ -1,47 +1,86 @@
 #!/usr/bin/env python3
 
 import math;
+import numpy as np;
 
-def f(x):
+def _f(x):
     c=1;
     return 0.5*(1+math.tanh(c*x));
 
-def df(x):
+npf = None;
+def f(x):
+    global npf;
+    if not npf:
+        npf=np.vectorize(_f);
+    return npf(x);
+
+def _df(x):
     c=1;
     return c*0.5*(1-math.pow(math.tanh(c*x),2));
 
-def dJ(X,T,A):
-    a = A[0];
-    b = A[1];
-    da = sum([X[i]*df(a*X[i]+b)*(f(a*X[i]+b)-T[i]) for i in range(len(X))]);
-    db = sum([     df(a*X[i]+b)*(f(a*X[i]+b)-T[i]) for i in range(len(X))]);
-    return [da,db];
+npdf = None;
+def df(x):
+    global npdf;
+    if not npdf:
+        npdf=np.vectorize(_f);
+    return npdf(x);
 
-def J(X,T,A):
-    a = A[0];
-    b = A[1];
-    return sum([math.pow((f(a*X[i]+b)-T[i]),2) for i in range(len(X))]);
+def d(x,t,A,b):
+    return f(A*x+b)-t;
+
+def fp(x,t,A,b):
+    return df(A*x+b);
+
+def dp(x,t,A,b):
+    d_ = d(x,t,A,b);
+    fp_ = fp(x,t,A,b);
+    return np.diag(d_)*fp_;
+
+def dJ(X,T,A,b):
+    I = range(len(X));
+    dA = sum([X[i]*np.transpose(dp(X[i],T[i],A,b)) for i in I]);
+    i=0;
+    print(X[i].shape)
+    print(dp(X[i],T[i],A,b).shape);
+    print(dA.shape);
+    print("--");
+    db = sum([dp(X[i],T[i],A,b) for i in I]);
+    return [dA,db];
+
+def J(X,T,A,b):
+    I = range(len(X));
+    return sum([np.linalg.norm(f(A*X[i]+b)-T[i],2) for i in I]);
 
 def distance(A,Aold):
-    return sum([math.pow(A[i]-Aold[i],2) for i in range(len(A))]);
+    return np.linalg.norm(A-Aold,2);
 
 def learn(X,T):
-    A=[-0.8,0];
-    mu=0.5;
+    A=np.zeros((T[0].shape[0],X[0].shape[0]));
+    A[0,0]=1;
+    b=np.zeros(X[0].shape[0]);
+    print(A.shape,b.shape);
+    mu=1;
     epsilon=mu/10;
     Aold = None;
     while not Aold or distance(A,Aold)>epsilon:
-        d = dJ(X,T,A);
-        A = [A[i] - mu*d[i] for i in range(len(A))];
+        d = dJ(X,T,A,b);
+        A = A - mu*d[0];
+        b = b - mu*d[1];
         #A[0] = A[0]/math.fabs(A[0]);
-        print(-A[1]/A[0],J(X,T,A),A);
+        print(A.shape,b.shape);
+        return;
+        #print(J(X,T,A,b));
     return A;
 
 def main():
-    X=[0,1,2,3,4,5,6,7,8,9];
-    T=[0,0,0,0,0,1,1,1,1,1];
-    A=learn(X,T);
-    print(A);
+    X=[];
+    T=[]; 
+    for i in range(4):
+        x1=int(i&2>0);
+        x2=int(i&1>0);
+        X.append(np.array([x1,x2]));
+        T.append(np.array([int(x1 or x2)]));
+    learn(X,T);
 
 if __name__ == '__main__':
     main();
