@@ -65,7 +65,7 @@ def learn(X,T):
     mu=0.5;
     while J(X,T,A,b)>0: 
         d = dJ(X,T,A,b);
-        d = d/norm(d);
+        #d = d/norm(d);
         A = A - mu*d[0];
         b = b - mu*d[1];
         print(J(X,T,A,b));
