@@ -59,13 +59,13 @@ def learn(X,T):
     N=T[0].shape[0];
     M=X[0].shape[0];
     A=np.zeros((N,M));
-    A[0,0]=1;
+    A[0,0]=0;
     A[0,1]=0;
     b=np.zeros(N);
     mu=0.5;
     while J(X,T,A,b)>0: 
         d = dJ(X,T,A,b);
-        #d = d/norm(d);
+        d = d/norm(d);
         A = A - mu*d[0];
         b = b - mu*d[1];
         print(J(X,T,A,b));
@@ -80,7 +80,7 @@ def main():
         x[0] = int(i&2>0);
         x[1] = int(i&1>0);
         X.append(x);
-        T.append(np.array([int(x[0] or x[1])]));
+        T.append(np.array([int(x[0] and x[1])]));
     learn(X,T);
 
 if __name__ == '__main__':
