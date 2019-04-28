@@ -15,8 +15,16 @@ def main():
     f(L);
     print(L);
     print(L[-1]);
+
+    x = np.zeros((M+1,));
+    for i in range(M+1):
+        x[i]=i;
+    print("x",x);
+    x = np.delete(x,x.shape[0]-1,0)
+    print("x",x);
     
     x = np.zeros((M,));
+    
 
 
     
