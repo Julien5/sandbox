@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 
 import math;
+import time;
 import numpy as np;
 
 def _sigma(x):
-    c=1;
+    c=100;
+    return 1/(1+math.exp(-c*x));
     return 0.5*(1+math.tanh(c*x));
+
 npf = None;
 def sigma(x):
     global npf;
@@ -14,7 +17,8 @@ def sigma(x):
     return npf(x);
 
 def _dsigma(x):
-    c=1;
+    c=100;
+    return _sigma(x)*(1-_sigma(x));
     return c*0.5*(1-math.pow(math.tanh(c*x),2));
             
 npdf = None;
@@ -46,23 +50,17 @@ class Layer:
         self.y=sigma(self.z);
 
     def backpropagate(self,layer):
-        #self.dC=np.dot(np.transpose(layer.W), np.multiply(dsigma(layer.z),layer.dC));
-        d=np.dot(np.transpose(layer.W), layer.dC);
-        d=np.delete(d,d.shape[0]-1,0)
+        # remove bias
+        W = np.delete(layer.W,layer.W.shape[1]-1,1);
+        d=np.dot(np.transpose(W), layer.dC);
         self.dC=np.multiply(dsigma(self.z),d);
-        
-        #print("   l.dC=",norm(layer.dC));
-        #print("l.ds(z)=",norm(dsigma(layer.z)));
-        #self.dC = np.delete(self.dC,self.dC.shape[0]-1,0)
-        assert(self.dC.shape == self.y.shape);
+        assert(self.dC.shape == self.z.shape);
         
     def settarget(self,t):
-        self.dC=2*(self.y - t);
+        self.dC=2*np.multiply((self.y - t),dsigma(self.z));
         
     def adapt(self):
-        dW=np.dot(np.multiply(dsigma(self.z),self.dC),np.transpose(self.x));
-        #print("dC=",norm(self.dC));
-        #print("dW=",norm(dW));
+        dW=np.dot(self.dC,np.transpose(self.x));
         mu = 0.1;
         assert(self.W.shape == dW.shape);
         if norm(dW)>0:
@@ -82,17 +80,18 @@ def learn(x,t,layers):
     K = len(layers);
     propagate(x,layers);       
     # backprop
-    debug=0;
-    #print("input:",np.transpose(x));
+    nG=[];
     for k in reversed(range(K)):
         #print("layer:",k);
         if k == K-1:
             layers[k].settarget(t);
         else:
-             layers[k].backpropagate(layers[k+1]);
-        layers[k].adapt();
-
-
+            layers[k].backpropagate(layers[k+1]);
+        nGk=layers[k].adapt();
+        nG.append(nGk);
+    if not any(nG):
+        return False;
+    return True;
 
 def _J(x,t,layers):
     propagate(x,layers);
@@ -103,7 +102,7 @@ def J(X,T,layers):
     return sum([_J(X[i],T[i],layers) for i in range(len(X))]);
         
 def main():
-    N=[2,2,2,1];
+    N=[2,2,1];
     # init
     layers=[];
     for i in range(1,len(N)):
@@ -121,15 +120,13 @@ def main():
 
     iter=0;
     while J(X,T,layers)>0:
+        print("J=",J(X,T,layers))
         for i in range(len(X)):
             learn(X[i],T[i],layers);
-        print("---- iter -------");
-        for l in layers:
-            print("W=",l.W);            
-        print("J=",J(X,T,layers));
-        if iter==100:
-            break;
+        #if iter==10:
+        #    break;
         iter = iter + 1;
+        time.sleep(0.1);
     
 
 
