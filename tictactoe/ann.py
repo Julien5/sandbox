@@ -96,7 +96,7 @@ def learn(X,T,layers):
     # backprop
     nG=[];
     for k in reversed(range(K)):
-        #print("layer:",k);
+        # print("layer:",k);
         if k == K-1:
             layers[k].settarget(T);
         else:
@@ -114,13 +114,13 @@ def J(X,Target,layers):
     return sum([norm(Y[:,t]-Target[:,t]) for t in range(T)]);
         
 def main():
-    N=[2,2,1];
+    N=[2,2,2,2,1];
     # init
     layers=[];
     for i in range(1,len(N)):
         layers.append(Layer(N[i-1],N[i]));
 
-    T=6;
+    T=60;
     X=np.zeros((2,T));
     Target=np.zeros((1,T)); 
     for t in range(T):
