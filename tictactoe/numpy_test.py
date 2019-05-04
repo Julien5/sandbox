@@ -9,6 +9,12 @@ def f(L):
 def main():
     N = 3;
     M = 2;
+
+    d=np.ones((1,));
+    d=np.reshape(d,(1,1));
+    X=np.ones((3,));
+    X=np.reshape(X,(3,1));
+    np.dot(d,np.transpose(X));
     
     L=[1,2,3];
     print(L);

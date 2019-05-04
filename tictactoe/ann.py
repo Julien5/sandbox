@@ -41,50 +41,64 @@ class Layer:
             self.W[i,M]=0*-0.5;
         pass;
 
-    def propagate(self,x):
+    def propagate(self,X):
         M = self.W.shape[1]-1;
-        assert( x.shape == (M,1) );
-        self.x = np.append(x, [[1]], axis = 0);
-        assert( self.x.shape == (M+1,1) );
-        self.z=np.dot(self.W,self.x);
-        self.y=sigma(self.z);
+        assert( X.shape[0] == M );
+        T = X.shape[1];
+        self.X = np.append(X, np.ones((1,T)), axis = 0);
+        assert( self.X.shape == (M+1,T) );
+        self.Z=np.dot(self.W,self.X);
+        self.Y=sigma(self.Z);
 
     def backpropagate(self,layer):
         # remove bias
+        T = self.X.shape[1];
         W = np.delete(layer.W,layer.W.shape[1]-1,1);
-        d=np.dot(np.transpose(W), layer.dC);
-        self.dC=np.multiply(dsigma(self.z),d);
-        assert(self.dC.shape == self.z.shape);
+        assert(layer.dC.shape[1]==T);
+        D=np.dot(np.transpose(W), layer.dC);
+        assert(D.shape[1]==T);
+        self.dC=np.multiply(dsigma(self.Z),D);
+        assert(self.dC.shape == self.Z.shape);
         
-    def settarget(self,t):
-        self.dC=2*np.multiply((self.y - t),dsigma(self.z));
-        
+    def settarget(self,Target):
+        T = Target.shape[1];
+        self.dC=2*np.multiply((self.Y - Target),dsigma(self.Z));
+        assert(self.dC.shape[1]==T);
+            
     def adapt(self):
-        dW=np.dot(self.dC,np.transpose(self.x));
-        mu = 0.1;
+        # mean
+        T = self.X.shape[1];
+        N = self.W.shape[0];
+        M = self.X.shape[0]-1;
+        dW = np.zeros((N,M+1));
+        for t in range(T):
+            dCt = np.reshape(self.dC[:,t],(N,1));
+            Xt = np.reshape(self.X[:,t],(M+1,1));
+            dW=dW+np.dot(dCt,np.transpose(Xt));
+        mu = .01/T;
         assert(self.W.shape == dW.shape);
         if norm(dW)>0:
             self.W = self.W - mu*dW/norm(dW);
             return True;
         return False;
 
-def propagate(x,layers):
+def propagate(X,layers):
     K = len(layers);
     for k in range(K):
         if k == 0:
-            layers[k].propagate(x);
+            layers[k].propagate(X);
         else:
-            layers[k].propagate(layers[k-1].y);
+            layers[k].propagate(layers[k-1].Y);
 
-def learn(x,t,layers):
+def learn(X,T,layers):
     K = len(layers);
-    propagate(x,layers);       
+    propagate(X,layers);       
     # backprop
     nG=[];
     for k in reversed(range(K)):
         #print("layer:",k);
         if k == K-1:
-            layers[k].settarget(t);
+            layers[k].settarget(T);
         else:
             layers[k].backpropagate(layers[k+1]);
         nGk=layers[k].adapt();
@@ -93,13 +107,11 @@ def learn(x,t,layers):
         return False;
     return True;
 
-def _J(x,t,layers):
-    propagate(x,layers);
-    y=layers[-1].y;
-    return norm(y-t);
-
-def J(X,T,layers):
-    return sum([_J(X[i],T[i],layers) for i in range(len(X))]);
+def J(X,Target,layers):
+    propagate(X,layers);
+    Y=layers[-1].Y;
+    T=X.shape[1];
+    return sum([norm(Y[:,t]-Target[:,t]) for t in range(T)]);
         
 def main():
     N=[2,2,1];
@@ -107,26 +119,23 @@ def main():
     layers=[];
     for i in range(1,len(N)):
         layers.append(Layer(N[i-1],N[i]));
-        print(layers[-1].W);
-  
-    X=[];
-    T=[]; 
-    for i in range(4):
-        x = np.zeros((2,1));
-        x[0] = int(i&2>0);
-        x[1] = int(i&1>0);
-        X.append(x);
-        T.append(np.array([int(x[0] or x[1])]));
+
+    T=6;
+    X=np.zeros((2,T));
+    Target=np.zeros((1,T)); 
+    for t in range(T):
+        x = np.zeros(2);
+        x[0] = int(t&2>0);
+        x[1] = int(t&1>0);
+        X[:,t]=x;
+        Target[0,t]=int(x[0] or x[1]);
 
     iter=0;
-    while J(X,T,layers)>0:
-        print("J=",J(X,T,layers))
-        for i in range(len(X)):
-            learn(X[i],T[i],layers);
-        #if iter==10:
-        #    break;
+    while J(X,Target,layers)>0:
+        print("J=",J(X,Target,layers))
+        learn(X,Target,layers);
         iter = iter + 1;
-        time.sleep(0.1);
+        #time.sleep(0.1);
     
 
 
