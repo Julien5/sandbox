@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
 import math;
-import time;
+import random;
 import numpy as np;
 
 def _sigma(x):
-    c=100;
-    return 1/(1+math.exp(-c*x));
+    c=1;
+    #return 1/(1+math.exp(-c*x));
     return 0.5*(1+math.tanh(c*x));
 
 npf = None;
@@ -17,8 +17,8 @@ def sigma(x):
     return npf(x);
 
 def _dsigma(x):
-    c=100;
-    return _sigma(x)*(1-_sigma(x));
+    c=1;
+    #return _sigma(x)*(1-_sigma(x));
     return c*0.5*(1-math.pow(math.tanh(c*x),2));
             
 npdf = None;
@@ -37,8 +37,8 @@ class Layer:
     def __init__(self,M,N):
         self.W = np.zeros((N,M+1));
         for i in range(min(N,M+1)):
-            self.W[i,i]=0*1;
-            self.W[i,M]=0*-0.5;
+            self.W[i,i]=random.random()*math.sqrt(1/M);
+            self.W[i,M]=0;
         pass;
 
     def propagate(self,X):
@@ -96,7 +96,6 @@ def learn(X,T,layers):
     # backprop
     nG=[];
     for k in reversed(range(K)):
-        # print("layer:",k);
         if k == K-1:
             layers[k].settarget(T);
         else:
@@ -114,28 +113,33 @@ def J(X,Target,layers):
     return sum([norm(Y[:,t]-Target[:,t]) for t in range(T)]);
         
 def main():
-    N=[2,2,2,2,1];
+    N=[1,100,1];
     # init
     layers=[];
     for i in range(1,len(N)):
         layers.append(Layer(N[i-1],N[i]));
 
-    T=60;
-    X=np.zeros((2,T));
-    Target=np.zeros((1,T)); 
+    T=20;
+    X=np.zeros((N[0],T));
+    Target=np.zeros((N[-1],T)); 
     for t in range(T):
-        x = np.zeros(2);
-        x[0] = int(t&2>0);
-        x[1] = int(t&1>0);
+        x = np.zeros(N[0]);
+        x[0] = random.random();#int(t&2>0);
+        # x[1] = int(t&1>0);
         X[:,t]=x;
-        Target[0,t]=int(x[0] or x[1]);
+        Target[0,t]=math.sin(x[0]);#int(x[0] or x[1]);
 
     iter=0;
-    while J(X,Target,layers)>0:
-        print("J=",J(X,Target,layers))
+    Jold=None;
+    JX=None;
+    while Jold is None or JX<Jold:
+        Jold=JX;
+        JX=J(X,Target,layers);
+        if iter % 20 == 0:
+            print("J=",JX)
         learn(X,Target,layers);
         iter = iter + 1;
-        #time.sleep(0.1);
+     
     
 
 
