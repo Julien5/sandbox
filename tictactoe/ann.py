@@ -36,8 +36,8 @@ class Layer:
     
     def __init__(self,M,N):
         self.W = np.zeros((N,M+1));
+        self.W = np.random.randn(N,M+1)*np.sqrt(1/M);
         for i in range(min(N,M+1)):
-            self.W[i,i]=random.random()*math.sqrt(1/M);
             self.W[i,M]=0;
         pass;
 
@@ -75,11 +75,13 @@ class Layer:
             dCt = np.reshape(self.dC[:,t],(N,1));
             Xt = np.reshape(self.X[:,t],(M+1,1));
             dW=dW+np.dot(dCt,np.transpose(Xt));
-        mu = .01/T;
+        mu = .005/(M*N);
         assert(self.W.shape == dW.shape);
         if norm(dW)>0:
-            self.W = self.W - mu*dW/norm(dW);
+            self.W = self.W - mu*dW/(.1+norm(dW));
             return True;
+        else:
+            print("warning: null gradient");
         return False;
 
 def propagate(X,layers):
@@ -111,37 +113,55 @@ def J(X,Target,layers):
     Y=layers[-1].Y;
     T=X.shape[1];
     return sum([norm(Y[:,t]-Target[:,t]) for t in range(T)]);
-        
-def main():
-    N=[1,100,1];
-    # init
-    layers=[];
-    for i in range(1,len(N)):
-        layers.append(Layer(N[i-1],N[i]));
 
-    T=20;
+def dataset(key):
+    if key == "xor":
+        N=[2,2,1];
+        T=4;
+        function=lambda x: int(x[0]!=x[1]);
+    elif key == "sin":
+        N=[1,200,50,1];
+        T=20;
+        function=lambda x: math.sin(x[0]);
+
     X=np.zeros((N[0],T));
     Target=np.zeros((N[-1],T)); 
     for t in range(T):
         x = np.zeros(N[0]);
-        x[0] = random.random();#int(t&2>0);
-        # x[1] = int(t&1>0);
-        X[:,t]=x;
-        Target[0,t]=math.sin(x[0]);#int(x[0] or x[1]);
+        if key == 'xor':
+            x[0] = int(t&2>0);
+            x[1] = int(t&1>0);
+        if key == 'sin':
+            x[0] = random.random();
+        X[:,t]=x;        
+        Target[0,t]=function(X[:,t]);
+    return N,X,Target;
 
+def decreasing(s):
+    if len(s)<10:
+        return all(x>y for x, y in zip(s, s[1:]));
+    last = s[-1];
+    Last = s[-10:];
+    mean = sum(Last)/len(Last);
+    return last < mean;
+
+def main():
+    N,X,Target = dataset('sin');
+
+    T=X.shape[1];
+     # init
+    layers=[];
+    for i in range(1,len(N)):
+        layers.append(Layer(N[i-1],N[i]));    
     iter=0;
-    Jold=None;
-    JX=None;
-    while Jold is None or JX<Jold:
-        Jold=JX;
-        JX=J(X,Target,layers);
-        if iter % 20 == 0:
-            print("J=",JX)
+    scores=[];
+    while not scores or decreasing(scores):
+        scores.append(J(X,Target,layers));
+        if iter % 100 == 0:
+            print("J=",scores[-1])
         learn(X,Target,layers);
         iter = iter + 1;
-     
-    
-
+    print("J=",scores[-1]);
 
 if __name__ == '__main__':
     main();
