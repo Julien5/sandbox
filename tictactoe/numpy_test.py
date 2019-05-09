@@ -10,10 +10,16 @@ def main():
     N = 3;
     M = 2;
 
+    D = {};
+    D[f] = 1;
+
     d=np.ones((1,));
-    d=np.reshape(d,(1,1));
+    #d=np.reshape(d,(1,1));
     X=np.ones((3,));
     X=np.reshape(X,(3,1));
+    print(d);
+    print(X);
+    print(X.T);
     np.dot(d,np.transpose(X));
     
     L=[1,2,3];
