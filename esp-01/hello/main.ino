@@ -139,11 +139,9 @@ bool wifi_work() {
     delay(200);
     return false;
   }
-  
-  upload_statistics(esp);
 
-  if (time_approaches_overflow()) 
-    reset();
+  if (!upload_statistics(esp))
+    return false;
 
   uint32_t secs_until_next_wifi=0;
   if (get::seconds_until_next_wifi(esp,&secs_until_next_wifi))
@@ -152,6 +150,9 @@ bool wifi_work() {
     millis_next_upload = millis() + 1000L*kDefaultSecondsBetweenWifi; 
 
   update_display_wifi(esp);
+
+  if (time_approaches_overflow()) 
+    reset();
 
   return true;
 }

@@ -3,6 +3,7 @@
 import math;
 import random;
 import numpy as np;
+import dataset;
 
 def sigma(x):
     c=1;
@@ -22,7 +23,8 @@ def norm(x):
 
 def C(y,t):
     d=(t-y);
-    return float(d.T*d);
+    r=norm(d);
+    return r*r;
 
 def dC(y,t):
     d=y-t;
@@ -121,7 +123,7 @@ def J(X,Target,layers):
     T=X.shape[1];
     return sum([C(Y[:,t],Target[:,t]) for t in range(T)]);
 
-def dataset(key):
+def minidataset(key):
     if key == "xor":
         N=[2,2,1];
         T=4;
@@ -153,7 +155,8 @@ def decreasing(s):
     return last < mean;
 
 def main():
-    N,X,Target = dataset('sin');
+    #N,X,Target = minidataset('sin');
+    N,X,Target = dataset.get();
 
     T=X.shape[1];
      # init
@@ -164,7 +167,7 @@ def main():
     scores=[];
     while not scores or decreasing(scores):
         scores.append(J(X,Target,layers));
-        if iter % 100 == 0:
+        if iter % 10 == 0:
             print("J=",scores[-1])
         learn(X,Target,layers);
         iter = iter + 1;

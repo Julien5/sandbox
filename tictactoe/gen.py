@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import pickle;
 import os;
 from board import Board;
 
@@ -63,6 +64,7 @@ def build():
     score = pickle.load(open(scoretxt,'rb'));
     print("loaded score");
     print("number of scores:",len(score));
+    return tree,score;
     
 if __name__ == '__main__':
     build();

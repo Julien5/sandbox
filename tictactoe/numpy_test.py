@@ -9,8 +9,11 @@ def f(L):
 def main():
     N = 3;
     M = 2;
-
+    print(np.zeros((2,0)))
     D = {};
+    D[0]=0;
+    D[list(D.keys())[0]]
+    len(D);
     D[f] = 1;
 
     d=np.ones((1,));
