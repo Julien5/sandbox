@@ -5,6 +5,7 @@ import random;
 import numpy as np;
 import dataset;
 import layer;
+import pickle;
 
 def minidataset(key):
     if key == "xor":
@@ -50,8 +51,11 @@ def main():
     scores=[];
     while not scores or decreasing(scores):
         scores.append(layer.J(X,Target,layers));
-        if iter % 10 == 0:
+        if iter % 50 == 0:
             print("J=",scores[-1])
+            filename="layer."+str(iter);
+            pickle.dump(layers,open(filename+".pickle",'wb'));
+            open(filename+".info",'w').write("J="+str(scores[-1])+"\n");
         layer.learn(X,Target,layers);
         iter = iter + 1;
     print("J=",scores[-1]);

@@ -120,5 +120,9 @@ class Board:
         for p in self.free():
             yield self.child(p);
 
-
-
+def finished(b):
+    F=b.free();
+    if not F:
+        #print("winner:",b.winner());
+        return True;
+    return False;

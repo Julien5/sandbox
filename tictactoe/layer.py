@@ -100,6 +100,7 @@ def propagate(X,layers):
             layers[k].propagate(X);
         else:
             layers[k].propagate(layers[k-1].Y);
+    return layers[-1].Y;
 
 def learn(X,T,layers):
     K = len(layers);
