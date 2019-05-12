@@ -93,3 +93,32 @@ class Layer:
             print("warning: null gradient");
         return False;
 
+def propagate(X,layers):
+    K = len(layers);
+    for k in range(K):
+        if k == 0:
+            layers[k].propagate(X);
+        else:
+            layers[k].propagate(layers[k-1].Y);
+
+def learn(X,T,layers):
+    K = len(layers);
+    propagate(X,layers);       
+    # backprop
+    nG=[];
+    for k in reversed(range(K)):
+        if k == K-1:
+            layers[k].settarget(T);
+        else:
+            layers[k].backpropagate(layers[k+1]);
+        nGk=layers[k].adapt();
+        nG.append(nGk);
+    if not any(nG):
+        return False;
+    return True;
+
+def J(X,Target,layers):
+    propagate(X,layers);
+    Y=layers[-1].Y;
+    T=X.shape[1];
+    return sum([C(Y[:,t],Target[:,t]) for t in range(T)]);

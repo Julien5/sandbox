@@ -6,36 +6,6 @@ import numpy as np;
 import dataset;
 import layer;
 
-def propagate(X,layers):
-    K = len(layers);
-    for k in range(K):
-        if k == 0:
-            layers[k].propagate(X);
-        else:
-            layers[k].propagate(layers[k-1].Y);
-
-def learn(X,T,layers):
-    K = len(layers);
-    propagate(X,layers);       
-    # backprop
-    nG=[];
-    for k in reversed(range(K)):
-        if k == K-1:
-            layers[k].settarget(T);
-        else:
-            layers[k].backpropagate(layers[k+1]);
-        nGk=layers[k].adapt();
-        nG.append(nGk);
-    if not any(nG):
-        return False;
-    return True;
-
-def J(X,Target,layers):
-    propagate(X,layers);
-    Y=layers[-1].Y;
-    T=X.shape[1];
-    return sum([layer.C(Y[:,t],Target[:,t]) for t in range(T)]);
-
 def minidataset(key):
     if key == "xor":
         N=[2,2,1];
@@ -79,10 +49,10 @@ def main():
     iter=0;
     scores=[];
     while not scores or decreasing(scores):
-        scores.append(J(X,Target,layers));
+        scores.append(layer.J(X,Target,layers));
         if iter % 10 == 0:
             print("J=",scores[-1])
-        learn(X,Target,layers);
+        layer.learn(X,Target,layers);
         iter = iter + 1;
     print("J=",scores[-1]);
 
