@@ -34,7 +34,7 @@ def layers():
 def ann_play(b):
     L=layers();
     X=np.zeros((len(b.board),1));
-    X[:,0]=dataset.board_to_vector(b);
+    X[:,0]=dataset.board_to_vector(b.normalize());
     Y=layer.propagate(X,L);
     R=range(Y.shape[0]);
     S=[Y[i,0] for i in R];
@@ -43,7 +43,11 @@ def ann_play(b):
             S[i]=0;
     for i in R:
         if S[i] == max(S):
-            return b.child(i);
+            opt=b.child(i).normalize();
+            for c in b.children():
+                if c.normalize() == opt:
+                    return c;
+            assert(0);
     assert(0);
     return b;
 
