@@ -18,7 +18,7 @@ def board_to_vector(B):
             assert(0);
     return x;
 
-def board_to_target(score,B):
+def board_to_target_0(score,B):
     N=len(B.board);
     y=np.zeros(N);
     if not B.free():
@@ -33,25 +33,35 @@ def board_to_target(score,B):
             y[i]=1;
     return y;        
 
+def board_to_target_1(score,B):
+    N=len(B.board);
+    y=np.zeros(1);
+    y[0]=score[B.normalize()];
+    return y;
+
+def board_to_target(score,B):
+    return board_to_target_1(score,B);
+
 def get():
     tree,score=gen.build();
     N=[];
+    Ntarget=0;
     for b in tree:
         N.append(len(b.board));
+        N.append(board_to_target(score,b).shape[0]);
         break;
     T=len(tree);
     assert(N[0]==9);
     X=np.zeros((N[0],T));
-    Target=np.zeros((N[0],T));
+    Target=np.zeros((N[1],T));
     t=0;
     for b in tree:
         X[:,t]=board_to_vector(b);        
         Target[:,t]=board_to_target(score,b);
         t=t+1;
-    N.append(N[0]);
-
     # hidden layers;
     N.insert(1,27);
+    # N.insert(1,27);
     return N,X,Target;
 
 def main():

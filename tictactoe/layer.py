@@ -42,6 +42,11 @@ class Layer:
             self.W[i,M]=0;
         pass;
 
+    def shape(self):
+        M=self.W.shape[1]-1;
+        N=self.W.shape[0];
+        return (M,N);
+
     def sigma(self,x):        
         return self.activation[0](x);
 

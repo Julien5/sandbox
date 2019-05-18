@@ -53,7 +53,7 @@ def main():
         scores.append(layer.J(X,Target,layers));
         if iter % 50 == 0:
             print("J=",scores[-1])
-            filename="layer."+str(iter);
+            filename="res/layer."+str(iter);
             pickle.dump(layers,open(filename+".pickle",'wb'));
             open(filename+".info",'w').write("J="+str(scores[-1])+"\n");
         layer.learn(X,Target,layers);
