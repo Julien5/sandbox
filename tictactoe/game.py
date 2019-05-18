@@ -11,11 +11,13 @@ import os;
 
 def argmax(S,m):
     assert(S);
+    C=[];
     for c in S:
         if S[c] == m:
-            return c;
-    assert(0);
-    return None;
+            C.append(c);
+    assert(C);
+    random.shuffle(C);
+    return C[0];
 
 import gen;
 true_score=None;
@@ -26,8 +28,14 @@ def Tscore(_b):
     b=_b.normalize();
     return true_score[b];
 
+def layerfiles():
+    return sorted(glob.glob('res/layer.*.pickle'),key=os.path.getctime);
+
+_layerfile=None;
 def layerfile():
-    list_of_files = glob.glob('res/layer.*.pickle') # * means all if need specific format then *.csv
+    if _layerfile:
+        return _layerfile;
+    list_of_files = layerfiles();
     if not list_of_files:
         return None;
     return max(list_of_files, key=os.path.getctime);
@@ -75,7 +83,7 @@ def play_random(b):
     F=b.free();
     if not F:
         return None;
-    random.shuffle(F)
+    random.shuffle(F) 
     return b.child(F[0]);
 
 def display_error():
@@ -131,23 +139,24 @@ def winner(xstrategy,ostrategy):
 
 def perf_against_random():
     W=[];
-    for i in range(100):
+    for i in range(10):
         W.append(winner(2,0));
     return 100*W.count(2)/len(W);
 
 def perf_against_minimax():
     W=[];
-    for i in range(100):
+    for i in range(10):
         W.append(winner(2,1));
     return 100*W.count(None)/len(W);
 
 def main():
-    print("use:",layerfile());
-    print("random:",perf_against_random(),"%");
-    print("minimax:",perf_against_minimax(),"%");
+    print("use:",layerfile()," info:",open(layerfile().replace(".pickle",".info"),'r').read().rstrip());
+    print("random:",perf_against_random(),"% minimax:",perf_against_minimax(),"%");
     
 if __name__ == '__main__':
     assert(winner(1,0) in {None,1});
     assert(winner(0,1) in {None,1});
-    main();
+    for f in layerfiles():
+        _layerfile=f;
+        main();
     #display_error();
