@@ -44,17 +44,21 @@ def walk_score(b,tree,score=None):
 
 treetxt = "tree.pickle";
 scoretxt = "score.pickle";
-
+tree=None;
+score=None;
 def build():
+    global tree,score;
+    if tree and score:
+        return tree,score;
     if not os.path.exists(treetxt):
         print("compute tree");
         tree=walk_children(Board());
         pickle.dump(tree,open(treetxt,'wb'));
 
-    print("load tree");
+    #print("load tree");
     tree = pickle.load(open(treetxt,'rb'));
-    print("loaded tree");
-    print("number of nodes:",len(tree));
+    #print("loaded tree");
+    #print("number of nodes:",len(tree));
    
     if not os.path.exists(scoretxt):
         print("compute scores");
@@ -62,8 +66,8 @@ def build():
         pickle.dump(score,open(scoretxt,'wb'));
              
     score = pickle.load(open(scoretxt,'rb'));
-    print("loaded score");
-    print("number of scores:",len(score));
+    #print("loaded score");
+    #print("number of scores:",len(score));
     return tree,score;
     
 if __name__ == '__main__':

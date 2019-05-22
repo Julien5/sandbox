@@ -40,7 +40,7 @@ def decreasing(s):
 
 def main():
     #N,X,Target = minidataset('sin');
-    N,X,Target = dataset.get();
+    N,X,Target = dataset.get(50);
 
     T=X.shape[1];
      # init

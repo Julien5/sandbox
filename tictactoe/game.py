@@ -8,6 +8,7 @@ import dataset;
 import numpy as np;
 import glob;
 import os;
+import sys;
 
 def argmax(S,m):
     assert(S);
@@ -16,6 +17,8 @@ def argmax(S,m):
         if S[c] == m:
             C.append(c);
     assert(C);
+    print([(c.board,S[c]) for c in S]);
+    print([(c.board,S[c]) for c in C]);
     random.shuffle(C);
     return C[0];
 
@@ -33,6 +36,7 @@ def layerfiles():
 
 _layerfile=None;
 def layerfile():
+    global _layerfile;
     if _layerfile:
         return _layerfile;
     list_of_files = layerfiles();
@@ -73,7 +77,7 @@ def play_minimax(b):
     S=dict();        
     for c in b.children():        
         S[c]=Tscore(c);
-        
+    assert(not b.xturn());
     m = min(S.values());
     if b.xturn():
         m = max(S.values());
@@ -85,6 +89,13 @@ def play_random(b):
         return None;
     random.shuffle(F) 
     return b.child(F[0]);
+
+def play_human(b):
+    print(b.prettyprint());
+    choice=None;
+    while not choice or choice not in b.free():
+        choice=int(input("choice:"+str(b.free())));
+    return b.child(choice);
 
 def display_error():
     b=board.Board();
@@ -103,12 +114,12 @@ def display_error():
             b=play_ann(b);
         else:
             b=play_minimax(b);
-    
-        
+
 def computerplay(b,strategy=0):
     # strategy = 0 => random 
     # strategy = 1 => minimax
     # strategy = 2 => neural net
+    # strategy = 3 => human
     assert(b.free());
     if strategy == 0:
         return play_random(b);
@@ -119,17 +130,29 @@ def computerplay(b,strategy=0):
     if strategy == 2:
         return play_ann(b);
 
+    if strategy == 3:
+        return play_human(b);
+
     print("error: strategy invalid");
     assert(0);
     return None;
 
 def winner(xstrategy,ostrategy):
     b=board.Board();
+    B=[];
     while not board.finished(b):
         strategy = xstrategy;
         if not b.xturn():
             strategy = ostrategy;
         b=computerplay(b, strategy);
+        B.append(b);
+    if True and ostrategy==3 or xstrategy==3:
+        print("finished");
+        print(b.prettyprint());
+    if True and xstrategy==2 and ostrategy==1 and b.winner()!='o':
+        for x in B:
+            print(x.board);
+        print(b.prettyprint());
     if b.winner() == 'x':
         return xstrategy;
     elif b.winner() == 'o':
@@ -141,7 +164,7 @@ def perf_against_random():
     W=[];
     for i in range(10):
         W.append(winner(2,0));
-    return 100*W.count(2)/len(W);
+    return 100*(W.count(2)+W.count(None))/len(W);
 
 def perf_against_minimax():
     W=[];
@@ -149,14 +172,24 @@ def perf_against_minimax():
         W.append(winner(2,1));
     return 100*W.count(None)/len(W);
 
-def main():
-    print("use:",layerfile()," info:",open(layerfile().replace(".pickle",".info"),'r').read().rstrip());
-    print("random:",perf_against_random(),"% minimax:",perf_against_minimax(),"%");
+def process():
+    #print("use:",layerfile()," info:",open(layerfile().replace(".pickle",".info"),'r').read().rstrip());
+    N,X,Target=dataset.get();
+    print(layerfile(),":","random:", perf_against_random(),"% minimax:",perf_against_minimax(),"%","Jall=",layer.J(X,Target,layers()));
+    #if perf_against_minimax()==100:
+    #    winner(2,3);
     
-if __name__ == '__main__':
-    assert(winner(1,0) in {None,1});
-    assert(winner(0,1) in {None,1});
-    for f in layerfiles():
-        _layerfile=f;
-        main();
+def main():
+    global _layerfile;
+    #assert(winner(1,0) in {None,1});
+    #assert(winner(0,1) in {None,1});
+    _layerfile=None;
+    if len(sys.argv) >= 2:
+        _layerfile=sys.argv[1];
+    if _layerfile and not os.path.isfile(_layerfile):
+        _layerfile=None;
+    process();
     #display_error();
+
+if __name__ == '__main__':
+    main();

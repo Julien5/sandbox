@@ -2,6 +2,7 @@
 
 import gen
 import numpy as np;
+import random;
 
 def board_to_vector(B):
     N=len(B.board);
@@ -42,7 +43,7 @@ def board_to_target_1(score,B):
 def board_to_target(score,B):
     return board_to_target_1(score,B);
 
-def get():
+def get(part=100):
     tree,score=gen.build();
     N=[];
     Ntarget=0;
@@ -50,22 +51,26 @@ def get():
         N.append(len(b.board));
         N.append(board_to_target(score,b).shape[0]);
         break;
-    T=len(tree);
+    T=int(len(tree)*part/100);
+    assert(T<=len(tree));
     assert(N[0]==9);
     X=np.zeros((N[0],T));
     Target=np.zeros((N[1],T));
     t=0;
-    for b in tree:
+    B=list(tree.keys());
+    random.shuffle(B);
+    B=B[0:T];
+    for b in B:
         X[:,t]=board_to_vector(b);        
         Target[:,t]=board_to_target(score,b);
         t=t+1;
     # hidden layers;
-    N.insert(1,27);
+    N.insert(1,3);
     # N.insert(1,27);
     return N,X,Target;
 
 def main():
-    N,X,Target=get();
+    N,X,Target=get(25);
     print(N);
     for t in range(X.shape[1]):
         print("X:",X[:,t]);
