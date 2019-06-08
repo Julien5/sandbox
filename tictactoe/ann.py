@@ -40,7 +40,7 @@ def learn(nhidden):
 
     scores=[];
     iter=0;
-    while not scores or decreasing(scores):
+    while not scores or (decreasing(scores) and iter<200):
         scores.append(layer.J(X,Target,layers));
         if iter % 50 == 0:
             pfile="{}/{}.pickle".format(dirname,iter);
@@ -51,6 +51,7 @@ def learn(nhidden):
         layer.learn(X,Target,layers);
         iter = iter + 1;
     print("J=",scores[-1]);
+    return scores[-1];
 
 def main():
     learn(3);
