@@ -139,8 +139,9 @@ def play_random(b):
 def play_human(b):
     print(b.prettyprint());
     choice=None;
-    while not choice or choice not in b.free():
-        choice=int(input("choice:"+str(b.free())));
+    while choice is None or choice not in b.free():
+        choice=int(input("choice "+str(b.free())+": "));
+        print("entered:",choice);
     return b.child(choice);
 
 def display_error():
@@ -259,7 +260,11 @@ def present():
     for i in range(len(L)):
         W=L[i].W;
         print(i,"#input :",W.shape[1]-1, "=> #output:",W.shape[0]);
-        print(W);       
+        print(W);
+
+def play():
+    while True:
+        winner(board.Board(),2,3);
     
 def main():
     global _layerfile;
@@ -277,6 +282,7 @@ def main():
         L=[filename];
         _layerfile=filename;
         present();
+        play();
     for l in L:
         _layerfile=l;
         process();

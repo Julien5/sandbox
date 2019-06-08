@@ -1,34 +1,12 @@
 #!/usr/bin/env python3
 
 import math;
+import os;
 import random;
 import numpy as np;
 import dataset;
 import layer;
 import pickle;
-
-def minidataset(key):
-    if key == "xor":
-        N=[2,2,1];
-        T=4;
-        function=lambda x: int(x[0]!=x[1]);
-    elif key == "sin":
-        N=[1,200,50,1];
-        T=20;
-        function=lambda x: math.sin(x[0]);
-
-    X=np.zeros((N[0],T));
-    Target=np.zeros((N[-1],T)); 
-    for t in range(T):
-        x = np.zeros(N[0]);
-        if key == 'xor':
-            x[0] = int(t&2>0);
-            x[1] = int(t&1>0);
-        if key == 'sin':
-            x[0] = random.random();
-        X[:,t]=x;        
-        Target[0,t]=function(X[:,t]);
-    return N,X,Target;
 
 def decreasing(s):
     if len(s)<10:
@@ -38,27 +16,44 @@ def decreasing(s):
     mean = sum(Last)/len(Last);
     return last < mean;
 
-def main():
-    #N,X,Target = minidataset('sin');
-    N,X,Target = dataset.get(50);
+def learn(nhidden):
+    X,Target = dataset.get(50);
+    N=[];
+    # input layer
+    N.append(X.shape[0]);
+    
+    # hidden layer(s)
+    N.append(nhidden);
 
+    # output layer
+    N.append(Target.shape[0]);
+    
     T=X.shape[1];
-     # init
+    # init
     layers=[];
     for i in range(1,len(N)):
-        layers.append(layer.Layer(N[i-1],N[i],layer.activation('sigma'),0.001));    
-    iter=0;
+        layers.append(layer.Layer(N[i-1],N[i],layer.activation('sigma'),0.001));
+        
+    dirname="{}/{}".format("results",nhidden);
+    if not os.path.exists(dirname):
+        os.makedirs(dirname);
+
     scores=[];
+    iter=0;
     while not scores or decreasing(scores):
         scores.append(layer.J(X,Target,layers));
         if iter % 50 == 0:
-            print("J=",scores[-1])
-            filename="res/layer."+str(iter);
-            pickle.dump(layers,open(filename+".pickle",'wb'));
-            open(filename+".info",'w').write("J="+str(scores[-1])+"\n");
+            pfile="{}/{}.pickle".format(dirname,iter);
+            pickle.dump(layers,open(pfile,'wb'));
+            ifile="{}/{}.info".format(dirname,iter);
+            open(ifile+".info",'w').write("J="+str(scores[-1])+"\n");
+            print("J=",scores[-1],pfile,ifile)
         layer.learn(X,Target,layers);
         iter = iter + 1;
     print("J=",scores[-1]);
 
+def main():
+    learn(3);
+    
 if __name__ == '__main__':
     main();

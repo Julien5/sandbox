@@ -19,38 +19,20 @@ def board_to_vector(B):
             assert(0);
     return x;
 
-def board_to_target_0(score,B):
-    N=len(B.board);
-    y=np.zeros(N);
-    if not B.free():
-        return y;
-    # y[i] = 1 if i is a position that maximizes the score
-    #        0 otherwise
-    M=max([score[c.normalize()] for c in B.children()]);
-    for i in B.free():
-        c=B.child(i).normalize();
-        assert(c in score);
-        if score[c]==M:
-            y[i]=1;
-    return y;        
-
-def board_to_target_1(score,B):
+def board_to_target(score,B):
     N=len(B.board);
     y=np.zeros(1);
     y[0]=score[B.normalize()];
     return y;
 
-def board_to_target(score,B):
-    return board_to_target_1(score,B);
-
 def get(part=100):
     tree,score=gen.build();
     N=[];
-    Ntarget=0;
     for b in tree:
         N.append(len(b.board));
         N.append(board_to_target(score,b).shape[0]);
         break;
+    
     T=int(len(tree)*part/100);
     assert(T<=len(tree));
     assert(N[0]==9);
@@ -64,14 +46,33 @@ def get(part=100):
         X[:,t]=board_to_vector(b);        
         Target[:,t]=board_to_target(score,b);
         t=t+1;
-    # hidden layers;
-    N.insert(1,3);
-    # N.insert(1,27);
-    return N,X,Target;
+    return X,Target;
+
+def mini(key):
+    if key == "xor":
+        N=[2,2,1];
+        T=4;
+        function=lambda x: int(x[0]!=x[1]);
+    elif key == "sin":
+        N=[1,200,50,1];
+        T=20;
+        function=lambda x: math.sin(x[0]);
+        
+    X=np.zeros((N[0],T));
+    Target=np.zeros((N[-1],T)); 
+    for t in range(T):
+        x = np.zeros(N[0]);
+        if key == 'xor':
+            x[0] = int(t&2>0);
+            x[1] = int(t&1>0);
+        if key == 'sin':
+            x[0] = random.random();
+        X[:,t]=x;        
+        Target[0,t]=function(X[:,t]);
+    return X,Target;
 
 def main():
-    N,X,Target=get(25);
-    print(N);
+    X,Target=get(25);
     for t in range(X.shape[1]):
         print("X:",X[:,t]);
         print("T:",Target[:,t]);
