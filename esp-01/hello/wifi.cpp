@@ -233,7 +233,7 @@ bool wifi::esp8266::join() {
 }
 
 bool wifi::esp8266::ping() {
-  return sendCommandAndWaitForResponse("AT+PING=\"192.168.178.24\"",short_timeout);
+  return sendCommandAndWaitForResponse("AT+PING=\"pi.fritz.box\"",short_timeout);
 }
 
 class Slower {
@@ -256,7 +256,7 @@ public:
 class IPConnection {
   bool m_opened=false;
   bool open() {
-    return (sendCommandAndWaitForResponse("AT+CIPSTART=\"TCP\",\"192.168.178.24\",8000",long_timeout)
+    return (sendCommandAndWaitForResponse("AT+CIPSTART=\"TCP\",\"pi.fritz.box\",8000",long_timeout)
 	    &options::wait_for_ok) != 0;
   }
   bool close() {
@@ -327,7 +327,7 @@ int wifi::esp8266::post(const char * req, const uint8_t * data, const int Ldata,
 	   "%s\n"
 	   "\n",
 	   req,
-	   "Host: 192.168.178.24",
+	   "Host: pi.fritz.box",
 	   "Accept: */*",
 	   contentlength,
 	   "Content-Type: application/octet-stream"
