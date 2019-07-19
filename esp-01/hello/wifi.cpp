@@ -343,7 +343,7 @@ int wifi::esp8266::post(const char * req, const uint8_t * data, const int Ldata,
 
   unsigned char ok=0;
   char trials=1;
-  while(trials>0 && !(ok=sendCommandAndWaitForResponse(cipsend,short_timeout))) {
+  while(trials>0 && !(ok=sendCommandAndWaitForResponse(cipsend,long_timeout))) {
     trials--;
     delay(1000);
   }
@@ -363,6 +363,9 @@ int wifi::esp8266::post(const char * req, const uint8_t * data, const int Ldata,
   return 0;
 }
 
+int wifi::esp8266::test_upload() {
+  return post("test_upload",0,0,0);
+}
 
 int wifi::test() {
   return 0;

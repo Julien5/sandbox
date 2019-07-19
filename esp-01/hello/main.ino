@@ -120,12 +120,29 @@ bool upload_statistics(wifi::esp8266 &esp) {
   return false;
 }
 
+int test_upload(wifi::esp8266 &esp) {
+  display::lcd.print(0,"test upload..");
+  int d=esp.test_upload();
+  char msg[16];
+  if (d!=0) {
+    snprintf(msg, 16,"test error: %d",d);
+    display::lcd.print(msg);
+    return false;
+  } else {
+    display::lcd.print(0,"OK");
+  }
+  return true;
+}
+
 bool time_approaches_overflow() {
   return millis()>ULONG_MAX/2;
 }
 
 uint32_t millis_next_upload = 0;
 bool wifi_work() {
+  // if upload time has not come, or hamster just did run
+  // do not upload (TODO: enable upload and counter at the
+  // same time).
   if (millis()<=millis_next_upload || counter.recently_active())
     return true;
 
@@ -139,7 +156,12 @@ bool wifi_work() {
     delay(200);
     return false;
   }
-
+  
+  // test upload only at startup.
+  if (millis_next_upload==0)
+    if (!test_upload(esp))
+      return false;
+  
   if (!upload_statistics(esp))
     return false;
 
@@ -219,13 +241,20 @@ void loop() {
   if (!wake_on_rising_reed && slept) {
     // wake after sleep;
     Clock::wake_up_after(sleep_duration);
+    if (counter.save_eeprom_if_necessary())
+      display::lcd.print("saved to eeprom");
     slept=false;
   }
 
   update_display_local();
  
   if (!wake_on_rising_reed) {
-    wifi_work();
+    if (!wifi_work()) {
+      counter.save_eeprom_if_necessary();
+      // Hopefully reset will help.
+      // Maybe in case esp8266 got stuck.
+      reset();
+    } 
     sleep_now();
   }
   

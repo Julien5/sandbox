@@ -34,6 +34,7 @@ class tickscounter {
   int compress_index();
   void denoise();
   void remove_holes();
+  static bool reset_eeprom();
 public:
   tickscounter();
   tickscounter(const uint8_t *addr);
@@ -54,7 +55,8 @@ public:
   bin getbin(const int &k) const;
   bool recently_active();
   uint8_t bin_count() const;
-  uint8_t *getdata(int * Lout) const;
+  uint8_t *getdata(uint16_t * Lout) const;
   bool operator==(const tickscounter &other) const;
   static int test();
+  bool save_eeprom_if_necessary();
 } __attribute__((packed));
