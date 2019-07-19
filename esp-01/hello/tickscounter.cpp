@@ -353,6 +353,7 @@ int tickscounter::test() {
   assert(C.total()==0);
   int T=0;
   const int K1=NTICKS-2;
+  assert(C.total()==T);
   for(int k = 0; k<K1; ++k) {
     delay(one_minute()*2);
     T+=some_real_ticks(C);
@@ -363,7 +364,7 @@ int tickscounter::test() {
   for(int k = 0; k<10; ++k) {
     delay(one_minute()*2);
     some_spurious_ticks(C);
-    assert(C.total()!=T);
+    assert(C.total()==T);
   }
  
   const int K2=5;
