@@ -241,8 +241,8 @@ void loop() {
   if (!wake_on_rising_reed && slept) {
     // wake after sleep;
     Clock::wake_up_after(sleep_duration);
-    //if (counter.save_eeprom_if_necessary())
-    //  display::lcd.print("saved to eeprom");
+    if (counter.save_eeprom_if_necessary())
+      display::lcd.print("saved to eeprom");
     slept=false;
   }
 
@@ -250,7 +250,7 @@ void loop() {
  
   if (!wake_on_rising_reed) {
     if (!wifi_work()) {
-      //counter.save_eeprom_if_necessary();
+      counter.save_eeprom_if_necessary();
       // Hopefully reset will help.
       // Maybe in case esp8266 got stuck.
       reset();

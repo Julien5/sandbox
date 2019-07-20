@@ -85,7 +85,21 @@ bin::duration bin::distance(const bin &other) const {
 tickscounter::tickscounter()
   : m_bins{}
 {
-
+  eeprom e;
+  int index=0;
+  uint8_t should_be_magic=e.read(index++);
+  if (should_be_magic==MAGIC) {
+    uint16_t L;
+    char _L[2]={};
+    _L[0]=e.read(index++);
+    _L[1]=e.read(index++);
+    L=*(uint16_t*)(&_L);
+    printf("L=%d\n",L);
+    for(int k=0; k<L; ++k) {
+      char d=e.read(index++);
+      memcpy((char*)(this)+k, &d, 1);
+    }  
+  }
 }
 
 tickscounter::tickscounter(const uint8_t *addr) {
@@ -93,6 +107,7 @@ tickscounter::tickscounter(const uint8_t *addr) {
 }
 
 void tickscounter::reset() {
+  reset_eeprom();
   for(int k = 0; k<NTICKS; ++k)
     m_bins[k].reset();
   m_transmission_time=0;
