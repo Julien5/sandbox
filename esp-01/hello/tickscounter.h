@@ -58,5 +58,6 @@ public:
   uint8_t *getdata(uint16_t * Lout) const;
   bool operator==(const tickscounter &other) const;
   static int test();
+  bool load_eeprom();
   bool save_eeprom_if_necessary();
 } __attribute__((packed));

@@ -45,6 +45,7 @@ void setup()
   delay(50);  
   display::lcd.print("setup...");
   delay(1000);
+  counter.load_eeprom();
 
   pinMode(reed_pin, INPUT_PULLUP);
   
@@ -143,8 +144,14 @@ bool wifi_work() {
   // if upload time has not come, or hamster just did run
   // do not upload (TODO: enable upload and counter at the
   // same time).
-  if (millis()<=millis_next_upload || counter.recently_active())
+  if (millis()<=millis_next_upload) {
     return true;
+  }
+  
+  if (counter.recently_active()) {
+    display::lcd.print(0,"wifi: skip");
+    return true;
+  }
 
   display::lcd.print(0,"wifi...");
   
