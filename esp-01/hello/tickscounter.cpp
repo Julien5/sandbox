@@ -3,7 +3,8 @@
 #include "debug.h"
 #include <limits.h>
 #include "defines.h"
-
+#include "eeprom.h"
+#include <string.h>
 #ifndef ARDUINO
 #include <fstream>
 #endif
@@ -80,15 +81,33 @@ bin::duration bin::distance(const bin &other) const {
   return other.m_start - end();
 }
 
+#define MAGIC 79
 tickscounter::tickscounter()
   : m_bins{}
-{}
+{
+  eeprom e;
+  int index=0;
+  uint8_t should_be_magic=e.read(index++);
+  if (should_be_magic==MAGIC) {
+    uint16_t L;
+    char _L[2]={};
+    _L[0]=e.read(index++);
+    _L[1]=e.read(index++);
+    L=*(uint16_t*)(&_L);
+    printf("L=%d\n",L);
+    for(int k=0; k<L; ++k) {
+      char d=e.read(index++);
+      memcpy((char*)(this)+k, &d, 1);
+    }  
+  }
+}
 
 tickscounter::tickscounter(const uint8_t *addr) {
   *this = *(tickscounter*)addr;
 }
 
 void tickscounter::reset() {
+  reset_eeprom();
   for(int k = 0; k<NTICKS; ++k)
     m_bins[k].reset();
   m_transmission_time=0;
@@ -258,10 +277,38 @@ bin tickscounter::getbin(const int &k) const {
   return m_bins[k];
 }
 
-uint8_t* tickscounter::getdata(int * Lout) const {
+uint8_t* tickscounter::getdata(uint16_t * Lout) const {
   m_transmission_time = Clock::millis_since_start();
   *Lout = sizeof(*this);
   return (uint8_t*)this; 
+}
+
+static uint16_t s_total_at_last_save=0;
+bool tickscounter::save_eeprom_if_necessary() {
+  if (empty())
+    return false;
+  if (total()==s_total_at_last_save)
+    return false;
+  if (recently_active())
+    return false;
+  uint16_t L=0;
+  uint8_t* data=getdata(&L);
+  eeprom e;
+  int index=0;
+  e.write(index++,MAGIC);
+  char * _L=(char*)&L;
+  e.write(index++,*(_L++));
+  e.write(index++,*(_L++));
+  for(int k=0; k<L; ++index,++k)
+    e.write(index,data[k]);
+  s_total_at_last_save=total();
+  return true;
+}
+
+bool tickscounter::reset_eeprom() {
+  eeprom e;
+  e.write(0,0);
+  s_total_at_last_save=0;
 }
 
 #ifndef ARDUINO
@@ -302,7 +349,7 @@ bool tickscounter::operator==(const tickscounter &other) const {
       return false;
   }
   return true;
-}  
+}
 
 void tickscounter::print() const {
 #ifndef ARDUINO
@@ -376,7 +423,7 @@ int tickscounter::test() {
   C.print();
   assert(C.total()==T);
 
-  int L=0;
+  uint16_t L=0;
   const uint8_t * data = C.getdata(&L);
   debug(L);
 
@@ -388,6 +435,20 @@ int tickscounter::test() {
   file.open("tickscounter.bin", ios::out | ios::binary);
   file.write((char*)data,L);
 #endif
+
+  {
+    tickscounter::reset_eeprom();
+    C.save_eeprom_if_necessary();
+    C.print();
+    tickscounter B;
+    B.print();
+    assert(C==B);
+    some_real_ticks(C);
+    C.save_eeprom_if_necessary();
+    tickscounter E;
+    assert(C==E);
+  }
+  
   return 0;
 }
 
