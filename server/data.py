@@ -170,6 +170,7 @@ def ticks_from_post_data(data,t):
     tT=to_datetime(t);
     hx=binascii.hexlify(data).decode('ascii');
     json=hamster.tickscounter.asJson(hx);
+    print("json:",json);
     return Ticks(_bins(json,tT));
     
 def try_create(sqlite,stm):
@@ -193,6 +194,7 @@ class Sql:
         if data:
             self.insert_ticks(ticks_from_post_data(data,t)); 
         self.conn.commit();
+        
     def _insert_bin(self,b):
         start = b.start;
         duration_ms = int(b.duration/datetime.timedelta(milliseconds=1));
@@ -236,7 +238,17 @@ if __name__ == "__main__":
     # update_plot("minutes/2019-01-22.csv");
     # update_plot("millis/2019-01-19-18:7-0.csv");
     # rebuild();
-    ticks=TicksHandler(Sql().select_ticks());
-    print("string:",ticks.string());
-    print("stats:",ticks.stats());    
-    print("sms:",ticks.sms());
+    database=Sql();
+    ticks=TicksHandler(database.select_ticks());
+    d0=datetime.timedelta(minutes=10);
+    now=datetime.datetime.now();
+    b=[Bin(now,datetime.timedelta(minutes=2),20,now+d0),
+       Bin(now+d0/2,datetime.timedelta(minutes=1),10,now+d0)];
+    ticks=Ticks(b);
+    database.insert_ticks(ticks);
+    print("sms:",TicksHandler(database.select_ticks()).sms());
+    d=open('bin','rb').read();
+    database.insert_request('foo',d);
+    #print("string:",ticks.string());
+    #print("stats:",ticks.stats());    
+    #print("sms:",ticks.sms());

@@ -296,7 +296,7 @@ bin tickscounter::getbin(const int &k) const {
 }
 
 uint8_t* tickscounter::getdata(uint16_t * Lout) const {
-  m_transmission_time = Clock::millis_since_start();
+  m_transmission_time = Clock::millis_since_start(); // FIXME
   *Lout = sizeof(*this);
   return (uint8_t*)this; 
 }
@@ -307,8 +307,9 @@ bool tickscounter::save_eeprom_if_necessary() {
     return false;
   if (total()==s_total_at_last_save)
     return false;
-  //if (recently_active())
-  //  return false;
+  if (recently_active())
+    return false;
+  
   uint16_t L=0;
   uint8_t* data=getdata(&L);
   eeprom e;
