@@ -270,7 +270,7 @@ uint8_t* tickscounter::getdata(uint16_t * Lout) const {
 
 static uint16_t s_total_at_last_save=0;
 bool tickscounter::save_eeprom_if_necessary() {
-  /*if (empty())
+  if (empty())
     return false;
   if (total()==s_total_at_last_save)
     return false;
@@ -287,7 +287,6 @@ bool tickscounter::save_eeprom_if_necessary() {
   for(int k=0; k<L; ++index,++k)
     e.write(index,data[k]);
   s_total_at_last_save=total();
-  */
   return true;
 }
 
