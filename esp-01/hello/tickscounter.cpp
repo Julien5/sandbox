@@ -292,10 +292,9 @@ bool tickscounter::save_eeprom_if_necessary() {
 }
 
 bool tickscounter::reset_eeprom() {
-  /*eeprom e;
+  eeprom e;
   e.write(0,0);
   s_total_at_last_save=0;
-  */
 }
 
 #ifndef ARDUINO
