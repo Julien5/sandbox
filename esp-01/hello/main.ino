@@ -44,9 +44,12 @@ void setup()
   Serial.println("@START");
   display::lcd.init();
   delay(50);  
-  display::lcd.print("setup...");
-  delay(1000);
-  counter.load_eeprom();
+  display::lcd.print("load eeprom");
+  delay(100);
+  if (!counter.load_eeprom()) {
+    display::lcd.print("eeprom failed");
+    delay(500);
+  }
 
   pinMode(reed_pin, INPUT_PULLUP);
   
@@ -260,8 +263,10 @@ void loop() {
   if (!wake_on_rising_reed && slept) {
     // wake after sleep;
     Clock::wake_up_after(sleep_duration);
-    if (counter.save_eeprom_if_necessary())
+    if (counter.save_eeprom_if_necessary()) {
       display::lcd.print("saved to eeprom");
+      delay(150);
+    }
     slept=false;
   }
 

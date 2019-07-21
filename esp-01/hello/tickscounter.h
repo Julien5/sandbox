@@ -24,6 +24,7 @@ struct bin {
   bool operator==(const bin &other) const;
 } __attribute__((packed));
 
+// do not forget to change MAGIC if you change this.
 constexpr int NTICKS = 20;
 
 class tickscounter {

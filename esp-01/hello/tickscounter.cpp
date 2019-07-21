@@ -81,24 +81,66 @@ bin::duration bin::distance(const bin &other) const {
   return other.m_start - end();
 }
 
+#define MAGIC 86
 
-#define MAGIC 82
+bool eeprom_check(eeprom *e, uint16_t *length, int *indx) {
+  int index=0;
+  uint8_t should_be_magic=e->read(index++);
+  if (should_be_magic!=MAGIC)
+    return false;
+  if (length)
+    *length=0;
+  uint16_t L=0;
+  {
+    char _L[2]={};
+    _L[0]=e->read(index++);
+    _L[1]=e->read(index++);
+    L=*(uint16_t*)(&_L);
+    if (indx)
+      *indx=index;
+  }
+  uint8_t checksum=0;
+  for(int k=0; k<L; ++k,++index) {
+    uint8_t d=e->read(index);
+    checksum+=d;
+  }
+  uint8_t checksum_saved=e->read(index++);
+  #ifndef ARDUINO
+  printf("checksum:%#02x checkum_saved:%#02x\n",checksum,checksum_saved);
+  #endif
+  if (checksum != checksum_saved)
+    return false;
+  if (length)
+    *length=L;
+  return true;
+}
+
+class InterruptsDisabler {
+public:
+  InterruptsDisabler() {
+#ifdef ARDUINO
+    noInterrupts();
+#endif
+  }
+  ~InterruptsDisabler() {
+#ifdef ARDUINO
+    interrupts();
+#endif
+  }
+};
+
 bool tickscounter::load_eeprom() {
   eeprom e;
+  uint16_t L;
   int index=0;
-  uint8_t should_be_magic=e.read(index++);
-  if (should_be_magic==MAGIC) {
-    uint16_t L;
-    char _L[2]={};
-    _L[0]=e.read(index++);
-    _L[1]=e.read(index++);
-    L=*(uint16_t*)(&_L);
-    printf("L=%d\n",L);
-    for(int k=0; k<L; ++k) {
-      char d=e.read(index++);
-      memcpy((char*)(this)+k, &d, 1);
-    }  
-  }
+  if (!eeprom_check(&e,&L,&index))
+    return false;
+  InterruptsDisabler D;
+  for(int k=0; k<L; ++k) {
+    char d=e.read(index++);
+    memcpy((char*)(this)+k, &d, 1);
+  }    
+  return true;
 }
 
 tickscounter::tickscounter()
@@ -331,6 +373,13 @@ uint8_t* tickscounter::getdata(uint16_t * Lout) const {
   return (uint8_t*)this; 
 }
 
+uint8_t checksum(uint8_t* data, uint16_t L) {
+  uint8_t ret=0;
+  for(int k=0; k<L; ++k)
+    ret+=data[k];
+  return ret;
+}
+
 static uint16_t s_total_at_last_save=0;
 bool tickscounter::save_eeprom_if_necessary() {
   if (empty())
@@ -343,22 +392,24 @@ bool tickscounter::save_eeprom_if_necessary() {
   uint16_t L=0;
   uint8_t* data=getdata(&L);
   eeprom e;
+
+  int index=0;
+  e.write(index++,MAGIC);
   
-  // invalidate
-  e.write(0,0);
-
-  // write
-  int index=1;
-
   char * _L=(char*)&L;
   e.write(index++,*(_L++));
   e.write(index++,*(_L++));
+
   for(int k=0; k<L; ++index,++k)
     e.write(index,data[k]);
-  s_total_at_last_save=total();
-  
-  // validate 
-  e.write(0,MAGIC);
+  e.write(index++,checksum(data,L));
+
+  // check
+  if (!eeprom_check(&e,0,0))
+    return false;
+ 
+  s_total_at_last_save=total();  
+
   return true;
 }
 
@@ -495,15 +546,24 @@ int tickscounter::test() {
 
   {
     tickscounter::reset_eeprom();
-    C.save_eeprom_if_necessary();
+    if (!C.save_eeprom_if_necessary())
+      assert(0);
     C.print();
     tickscounter B;
+    B.load_eeprom();
     B.print();
     assert(C==B);
     some_real_ticks(C);
-    C.save_eeprom_if_necessary();
+    if (!C.save_eeprom_if_necessary())
+      assert(0);
     tickscounter E;
+    if (!E.load_eeprom())
+      assert(0);
     assert(C==E);
+
+    eeprom e;
+    e.write(12,0);
+    assert(!E.load_eeprom());
   }
   
   return 0;
