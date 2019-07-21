@@ -81,7 +81,7 @@ bin::duration bin::distance(const bin &other) const {
   return other.m_start - end();
 }
 
-#define MAGIC 81
+#define MAGIC 82
 bool tickscounter::load_eeprom() {
   eeprom e;
   int index=0;
@@ -98,6 +98,7 @@ bool tickscounter::load_eeprom() {
       memcpy((char*)(this)+k, &d, 1);
     }  
   }
+  DBGTXLN(bin_count());
 }
 
 tickscounter::tickscounter()
@@ -117,15 +118,28 @@ template<> uint16_t numeric_max() {
   return UINT16_MAX;
 }
 
-void tickscounter::shift_bins(const time_since_epoch delta) {
+template<> int32_t numeric_max() {
+  return INT32_MAX;
+}
+
+
+void tickscounter::shift_bins(const time_since_epoch delta_seconds) {
   // bin::time max is around 49 days
+  bin::time delta = delta_seconds * 1000;
+  DBGTXLN(int(delta_seconds));
+  DBGTXLN(delta);
+  DBGTXLN(numeric_max<bin::time>());
   if (delta<0 || delta>numeric_max<bin::time>())
     return;
   for(int k=0; k<NTICKS; ++k) {
     if (m_bins[k].empty())
       continue;
+    DBGTXLN(m_bins[k].m_start);
     m_bins[k].m_start -= delta;
+    DBGTXLN(m_bins[k].m_start);
   }
+  // m_transmission time does not make sense if have to shift.
+  m_transmission_time -= delta;
 }
 
 void tickscounter::set_epochtime_at_init(const time_since_epoch T0) {
@@ -315,7 +329,8 @@ bin tickscounter::getbin(const int &k) const {
 }
 
 uint8_t* tickscounter::getdata(uint16_t * Lout) const {
-  m_transmission_time = Clock::millis_since_start(); // FIXME
+  m_transmission_time = Clock::millis_since_start();
+  DBGTXLN(m_transmission_time);
   *Lout = sizeof(*this);
   return (uint8_t*)this; 
 }

@@ -5,7 +5,6 @@ import sys;
 import os;
 import sqlite3;
 
-sys.path.append("~/home/julien/.local/lib/python3.6/site-packages/");
 import statistics;
 import datetime;
 import json;

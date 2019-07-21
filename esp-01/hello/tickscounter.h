@@ -5,7 +5,7 @@
 #endif
 
 struct bin {
-  typedef uint32_t time;
+  typedef int32_t time;
   typedef uint16_t count;
   typedef uint32_t duration;
 
@@ -24,7 +24,7 @@ struct bin {
   bool operator==(const bin &other) const;
 } __attribute__((packed));
 
-constexpr int NTICKS = 20;
+constexpr int NTICKS = 3;
 
 class tickscounter {
 public:
