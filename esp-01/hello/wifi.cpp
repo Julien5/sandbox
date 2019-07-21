@@ -29,7 +29,6 @@ const int long_timeout = 20000;
 
 namespace comm {
   int available() {
-    //return 0;
     return ESPRX.available();
   }
   
@@ -66,6 +65,11 @@ void flushRX() {
 parse::MessageParser message_parser;
 
 unsigned char waitFor(const unsigned char opts, const int timeout) {
+  /*
+   * This function is at the core of the whole stuff.
+   * Be careful, in particular w.r.t. memory usage.
+   */
+  
   flushRX();
   unsigned long now = millis();
   unsigned long deadline = now + timeout;
@@ -80,7 +84,7 @@ unsigned char waitFor(const unsigned char opts, const int timeout) {
   
   delay(250);
   TRACE();
-  DBGTX("waitfor[");
+  DBGTX("[");
   char buffer[BUFFER_LENGTH]={0};
   while(millis()<deadline && !found) {
     while(comm::available() && !found) {
@@ -111,11 +115,11 @@ unsigned char waitFor(const unsigned char opts, const int timeout) {
     }
     buffer[0]='\0';
   }
-  DBGTX("message={");DBGTX(message_parser.get());DBGTX("}");
+  if (message_parser.get())
+    DBGTX("message={");DBGTX(message_parser.get());DBGTX("}");
   
   TRACE();
-  DBGTX("]...");
-  DBGTX("\r\n*\r\n*\r\n");
+  DBGTX("]\r\n\r\n");
   return found;  
 }
 
@@ -123,8 +127,7 @@ unsigned char sendCommandAndWaitForResponse(const char * command, const int leng
 {
   comm::write(command,length);
   comm::write("\r\n");
-  DBGTX("command: ");
-  DBGTXLN(command);
+  DBGTX("C:");DBGTXLN(command);
   if (strstr(command,UARTCUR)!=NULL) {
     delay(150);
     return options::wait_for_ok;
@@ -134,9 +137,7 @@ unsigned char sendCommandAndWaitForResponse(const char * command, const int leng
     opts |= options::wait_for_gt;
   if (strstr(command,ATRST)!=NULL)
     opts |= options::wait_for_connected;
-  TRACE();
   unsigned char ret=waitFor(opts, timeout);
-  DBGTX("sendCommandAndWaitForResponse: ");
   DBGTXLN(int(ret));
   return ret;
 }
@@ -170,7 +171,6 @@ wifi::esp8266::~esp8266() {
 }
 
 bool wifi::esp8266::enable() {
-  DBGTX("wifi up");
   digitalWrite(enable_pin, HIGH);
   delay(250);
   if (!reset())
@@ -182,7 +182,6 @@ bool wifi::esp8266::enable() {
 }
 
 void wifi::esp8266::disable() {
-  DBGTX("wifi down");
   digitalWrite(enable_pin, LOW);
 }
 
@@ -253,13 +252,19 @@ public:
   }  
 };
 
+static long long last_connection_time=0;
 class IPConnection {
   bool m_opened=false;
   bool open() {
+    // it seems esp8266 does not like too close CIPSTART..
+    // => wait a little if the last CIPSTART is recent.
+    if ((millis() - last_connection_time)<1000)
+      delay(1000);
     return (sendCommandAndWaitForResponse("AT+CIPSTART=\"TCP\",\"pi.fritz.box\",8000",long_timeout)
 	    &options::wait_for_ok) != 0;
   }
   bool close() {
+    last_connection_time=millis();
     return (sendCommandAndWaitForResponse(ATCIPCLOSE,short_timeout)
 	    &options::wait_for_ok) != 0;
   }

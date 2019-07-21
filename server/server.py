@@ -5,6 +5,7 @@ import urllib.parse;
 import sqlite3;
 import os;
 import datetime;
+import time;
 import cgi;
 import binascii;
 import data;
@@ -55,6 +56,8 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
             message = "updated";
         elif self.path == "/time":
             message = "{%s}" % (datetime.datetime.now());
+        elif self.path == "/utime":
+            message = "{%s}" % int(time.time());
         elif self.path == "/message":
             sms=ticksHandler.sms();
             message = "{"+sms+"}";
@@ -95,9 +98,15 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
         post_data = self.rfile.read(content_length) 
         log("POST request for {} at {}".format(self.path,datetime.datetime.now()));
         log("received {} bytes".format(len(post_data)));
-        database.insert_request(self.path,post_data);
+        
         sms=data.TicksHandler(database.select_ticks()).sms();
-        log("sms:"+sms);
+        log("sms_0:"+sms);
+
+        database.insert_request(self.path,post_data);
+
+        sms=data.TicksHandler(database.select_ticks()).sms();
+        log("sms_1:"+sms);
+
         message = "{"+sms+"}";
         # Write content as utf-8 data
         self.wfile.write(bytes(message, "utf8"));        

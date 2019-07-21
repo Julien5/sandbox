@@ -24,3 +24,5 @@ namespace utils {
 };
 
 #endif
+
+long long fixed_atoll(char *s);

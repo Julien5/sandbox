@@ -81,10 +81,9 @@ bin::duration bin::distance(const bin &other) const {
   return other.m_start - end();
 }
 
-#define MAGIC 79
-tickscounter::tickscounter()
-  : m_bins{}
-{
+
+#define MAGIC 82
+bool tickscounter::load_eeprom() {
   eeprom e;
   int index=0;
   uint8_t should_be_magic=e.read(index++);
@@ -100,6 +99,51 @@ tickscounter::tickscounter()
       memcpy((char*)(this)+k, &d, 1);
     }  
   }
+}
+
+tickscounter::tickscounter()
+  : m_bins{}
+{
+}
+
+template<typename X> X numeric_max() {
+  return 0;
+}
+
+template<> uint32_t numeric_max() {
+  return UINT32_MAX;
+}
+
+template<> uint16_t numeric_max() {
+  return UINT16_MAX;
+}
+
+template<> int32_t numeric_max() {
+  return INT32_MAX;
+}
+
+
+void tickscounter::shift_bins(const time_since_epoch delta_seconds) {
+  // bin::time max is around 49 days
+  bin::time delta = delta_seconds * 1000;
+
+  if (delta<0 || delta>numeric_max<bin::time>())
+    return;
+  for(int k=0; k<NTICKS; ++k) {
+    if (m_bins[k].empty())
+      continue;
+    m_bins[k].m_start -= delta;
+  }
+  // m_transmission time does not make sense if have to shift.
+  m_transmission_time -= delta;
+}
+
+void tickscounter::set_epochtime_at_init(const time_since_epoch T0) {
+  if (m_epochtime_at_init!=0) {
+    const time_since_epoch delta = T0 - m_epochtime_at_init;
+    shift_bins(delta);
+  }
+  m_epochtime_at_init = T0;
 }
 
 tickscounter::tickscounter(const uint8_t *addr) {
@@ -221,6 +265,9 @@ bin::time tickscounter::last_tick_time() {
 }
 
 bin::time tickscounter::age() {
+  // to allow wiki_work to run at start.
+  if (empty())
+    return numeric_max<bin::time>();
   const Clock::ms now = Clock::millis_since_start();
   assert(now>=last_tick_time());
   return now - last_tick_time();
@@ -279,6 +326,7 @@ bin tickscounter::getbin(const int &k) const {
 
 uint8_t* tickscounter::getdata(uint16_t * Lout) const {
   m_transmission_time = Clock::millis_since_start();
+  DBGTXLN(m_transmission_time);
   *Lout = sizeof(*this);
   return (uint8_t*)this; 
 }
@@ -291,17 +339,26 @@ bool tickscounter::save_eeprom_if_necessary() {
     return false;
   if (recently_active())
     return false;
+  
   uint16_t L=0;
   uint8_t* data=getdata(&L);
   eeprom e;
-  int index=0;
-  e.write(index++,MAGIC);
+  
+  // invalidate
+  e.write(0,0);
+
+  // write
+  int index=1;
+
   char * _L=(char*)&L;
   e.write(index++,*(_L++));
   e.write(index++,*(_L++));
   for(int k=0; k<L; ++index,++k)
     e.write(index,data[k]);
   s_total_at_last_save=total();
+  
+  // validate 
+  e.write(0,MAGIC);
   return true;
 }
 

@@ -9,6 +9,7 @@
 #include <limits.h>
 #include "ui.h"
 #include "defines.h"
+#include "utils.h"
 
 void stop() {
   display::lcd.print("stop.");
@@ -45,6 +46,7 @@ void setup()
   delay(50);  
   display::lcd.print("setup...");
   delay(1000);
+  counter.load_eeprom();
 
   pinMode(reed_pin, INPUT_PULLUP);
   
@@ -143,8 +145,15 @@ bool wifi_work() {
   // if upload time has not come, or hamster just did run
   // do not upload (TODO: enable upload and counter at the
   // same time).
-  if (millis()<=millis_next_upload || counter.recently_active())
+
+  if (millis()<=millis_next_upload) {
     return true;
+  }
+  
+  if (counter.recently_active()) {
+    display::lcd.print(0,"wifi: skip");
+    return true;
+  }
 
   display::lcd.print(0,"wifi...");
   
@@ -158,10 +167,20 @@ bool wifi_work() {
   }
   
   // test upload only at startup.
-  if (millis_next_upload==0)
-    if (!test_upload(esp))
+  if (millis_next_upload==0) {
+    // test
+    if (!test_upload(esp)) 
       return false;
-  
+    display::lcd.print(0,"OK1");
+    // get T0
+    char *internal=0;
+    if (!esp.get("utime",&internal))
+      return false;
+    display::lcd.print(0,"OK2");
+    tickscounter::time_since_epoch T0=fixed_atoll(internal);
+    counter.set_epochtime_at_init(T0);
+  }
+ 
   if (!upload_statistics(esp))
     return false;
 
