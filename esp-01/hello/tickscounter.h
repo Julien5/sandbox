@@ -24,7 +24,7 @@ struct bin {
   bool operator==(const bin &other) const;
 } __attribute__((packed));
 
-constexpr int NTICKS = 3;
+constexpr int NTICKS = 20;
 
 class tickscounter {
 public:
