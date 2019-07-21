@@ -81,7 +81,7 @@ bin::duration bin::distance(const bin &other) const {
   return other.m_start - end();
 }
 
-#define MAGIC 80
+#define MAGIC 81
 bool tickscounter::load_eeprom() {
   eeprom e;
   int index=0;
@@ -103,6 +103,37 @@ bool tickscounter::load_eeprom() {
 tickscounter::tickscounter()
   : m_bins{}
 {
+}
+
+template<typename X> X numeric_max() {
+  return 0;
+}
+
+template<> uint32_t numeric_max() {
+  return UINT32_MAX;
+}
+
+template<> uint16_t numeric_max() {
+  return UINT16_MAX;
+}
+
+void tickscounter::shift_bins(const time_since_epoch delta) {
+  // bin::time max is around 49 days
+  if (delta<0 || delta>numeric_max<bin::time>())
+    return;
+  for(int k=0; k<NTICKS; ++k) {
+    if (m_bins[k].empty())
+      continue;
+    m_bins[k].m_start -= delta;
+  }
+}
+
+void tickscounter::set_epochtime_at_init(const time_since_epoch T0) {
+  if (m_epochtime_at_init!=0) {
+    const time_since_epoch delta = T0 - m_epochtime_at_init;
+    shift_bins(delta);
+  }
+  m_epochtime_at_init = T0;
 }
 
 tickscounter::tickscounter(const uint8_t *addr) {
@@ -221,18 +252,6 @@ bin::time tickscounter::last_tick_time() {
   if (k>=0)
     return m_bins[k].end();
   return 0;
-}
-
-template<typename X> X numeric_max() {
-  return 0;
-}
-
-template<> uint32_t numeric_max() {
-  return UINT32_MAX;
-}
-
-template<> uint16_t numeric_max() {
-  return UINT16_MAX;
 }
 
 bin::time tickscounter::age() {

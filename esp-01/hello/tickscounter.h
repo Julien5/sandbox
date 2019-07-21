@@ -8,6 +8,7 @@ struct bin {
   typedef uint32_t time;
   typedef uint16_t count;
   typedef uint32_t duration;
+
   bin();
   time m_start=0;
   count m_count=0;
@@ -26,9 +27,19 @@ struct bin {
 constexpr int NTICKS = 20;
 
 class tickscounter {
+public:
+  typedef int64_t time_since_epoch;
+  
+private:  
+  time_since_epoch m_epochtime_at_init=0;
+  void shift_bins(const time_since_epoch t); 
+
+  
   bin m_bins[NTICKS];
   mutable bin::time m_transmission_time=0;
+  
 
+  
   bool tick_if_possible();
   void compress(); 
   int compress_index();
@@ -38,6 +49,8 @@ class tickscounter {
 public:
   tickscounter();
   tickscounter(const uint8_t *addr);
+  void set_epochtime_at_init(const time_since_epoch T0);
+  
   void reset();
 #ifndef ARDUINO
   static tickscounter fromHex(const std::string &hex);

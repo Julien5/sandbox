@@ -9,6 +9,7 @@
 #include <limits.h>
 #include "ui.h"
 #include "defines.h"
+#include "utils.h"
 
 void stop() {
   display::lcd.print("stop.");
@@ -165,9 +166,19 @@ bool wifi_work() {
   }
   
   // test upload only at startup.
-  if (millis_next_upload==0)
-    if (!test_upload(esp))
+  if (millis_next_upload==0) {
+    // test
+    if (!test_upload(esp)) 
       return false;
+    display::lcd.print(0,"OK1");
+    // get T0
+    char *internal=0;
+    if (!esp.get("utime",&internal))
+      return false;
+    display::lcd.print(0,"OK2");
+    tickscounter::time_since_epoch T0=fixed_atoll(internal);
+    counter.set_epochtime_at_init(T0);
+  }
   
   if (!upload_statistics(esp))
     return false;

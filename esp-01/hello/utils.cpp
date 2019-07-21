@@ -21,3 +21,10 @@ namespace utils {
 };
 
 #endif
+
+long long fixed_atoll(char *s) {
+  long long result = 0;
+  for (int i = 0; s[i] != '\0'; ++i)
+    result = result*10 + s[i] - '0';
+  return result;
+}
