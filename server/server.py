@@ -12,6 +12,7 @@ import data;
 import html;
 import sys;
 import webdir;
+import mail;
 
 def log(msg):
     print("log:",msg);
@@ -98,17 +99,16 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
         post_data = self.rfile.read(content_length) 
         log("POST request for {} at {}".format(self.path,datetime.datetime.now()));
         log("received {} bytes".format(len(post_data)));
-        
-        sms=data.TicksHandler(database.select_ticks()).sms();
-        log("sms_0:"+sms);
-
         database.insert_request(self.path,post_data);
-
         sms=data.TicksHandler(database.select_ticks()).sms();
-        log("sms_1:"+sms);
+        
+        log("sms:"+sms);
+
+        if post_data:
+            msg="path={0}\nsize:{1}\nsms:{2}".format(self.path,len(post_data),sms);
+            mail.sendmail("message de google",msg);
 
         message = "{"+sms+"}";
-        # Write content as utf-8 data
         self.wfile.write(bytes(message, "utf8"));        
         log("good.");
     
