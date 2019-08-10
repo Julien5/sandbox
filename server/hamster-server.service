@@ -1,0 +1,10 @@
+[Service]
+WorkingDirectory=/opt/hamster-server
+ExecStart=/opt/hamster-server/start_server.sh
+Restart=always
+RestartSec=5
+StandardOutput=/opt/hamster-server/start_server.stdout
+StandardError=/opt/hamster-server/start_server.stderr
+User=julien
+Group=julien
+Environment=
