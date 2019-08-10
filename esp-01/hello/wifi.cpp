@@ -50,11 +50,12 @@ namespace comm {
 }
 
 namespace options {
-  const unsigned char wait_for_ok = 0x1; 
-  const unsigned char wait_for_error = 0x2;
-  const unsigned char wait_for_closed = 0x4;
-  const unsigned char wait_for_gt = 0x8;
-  const unsigned char wait_for_connected = 0x10;
+  const unsigned char wait_for_ok        = 0b00000001; 
+  const unsigned char wait_for_error     = 0b00000010;
+  const unsigned char wait_for_closed    = 0b00000100;
+  const unsigned char wait_for_gt        = 0b00001000;
+  const unsigned char wait_for_connected = 0b00010000;
+  const unsigned char wait_for_no_ap     = 0b00100000;
 }
 
 void flushRX() {
@@ -79,6 +80,7 @@ unsigned char waitFor(const unsigned char opts, const int timeout) {
   parse::StringAwaiter closed_wait("CLOSED");
   parse::StringAwaiter gt_wait(">");
   parse::StringAwaiter connected_wait("CONNECTED");
+  parse::StringAwaiter no_ap_wait("No AP");
 
   unsigned char found = 0;
   
@@ -111,6 +113,10 @@ unsigned char waitFor(const unsigned char opts, const int timeout) {
 	if (connected_wait.read(buffer))
 	  found |= options::wait_for_connected;
       }
+      if (options::wait_for_no_ap & opts) {
+	if (no_ap_wait.read(buffer))
+	  found |= options::wait_for_no_ap;
+      }
       message_parser.read(buffer);
     }
     buffer[0]='\0';
@@ -137,6 +143,8 @@ unsigned char sendCommandAndWaitForResponse(const char * command, const int leng
     opts |= options::wait_for_gt;
   if (strstr(command,ATRST)!=NULL)
     opts |= options::wait_for_connected;
+  if (strstr(command,ATCWJAP)!=NULL)
+    opts |= options::wait_for_no_ap;
   unsigned char ret=waitFor(opts, timeout);
   DBGTXLN(int(ret));
   return ret;
@@ -215,12 +223,15 @@ bool wifi::esp8266::reset() {
 }
 
 bool wifi::esp8266::join() {
-  if (sendCommandAndWaitForResponse(ATCWJAP,short_timeout)==options::wait_for_ok)
-    m_joined=true;
-  
+  const unsigned char cwjap_response=sendCommandAndWaitForResponse(ATCWJAP,short_timeout);
+  if (cwjap_response&options::wait_for_ok)
+    m_joined=false;
+  if (cwjap_response&options::wait_for_no_ap)
+    m_joined=false;
   if (!m_joined) {
     sendCommandAndWaitForResponse(ATE1,short_timeout);
     sendCommandAndWaitForResponse(AT,short_timeout);
+    sendCommandAndWaitForResponse("AT+CWMODE=1",short_timeout);
     //while(!sendCommandAndWaitForResponse("AT+CWLAP",long_timeout)) {
     //  AT::RST();
     //  delay(250);
