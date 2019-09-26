@@ -10,6 +10,7 @@ import datetime;
 import json;
 import subprocess;
 import binascii;
+import math;
 
 def output_name(filename):
     return filename.replace(".csv",".png");
@@ -65,7 +66,7 @@ class Bin:
         tr=self.transmit_time.strftime("%Y-%m-%d-%H:%M");
         st=self.start.strftime("%d-%H:%M");
         du=int(self.duration.total_seconds());
-        return "transmit:{} start:{} duration:{:3d} count:{:4d}".format(tr,st,du,self.count);
+        return "transmit:{} start:{} duration:{:3d}s count:{:4d}".format(tr,st,du,self.count);
         
 class Ticks:
     def __init__(self,bins):
@@ -100,6 +101,7 @@ class Ticks:
         B=list();
         for b in self.bins:
             if b.end() >= start and b.start <= end:
+            
                 B.append(b);
         if not B:
             return None;
@@ -165,12 +167,25 @@ def _bins(jstring,tT):
 def to_datetime(s):
     return datetime.datetime.strptime(s,"%Y-%m-%d %H:%M:%S.%f");
 
+def bad_bin(b):
+    if b.duration.total_seconds()*1000>=math.pow(2,32-1): # 24 days
+        # overflow
+        return True;
+    return False;
+
 def ticks_from_post_data(data,t):
     tT=to_datetime(t);
     hx=binascii.hexlify(data).decode('ascii');
     json=hamster.tickscounter.asJson(hx);
-    print("json:",json);
-    return Ticks(_bins(json,tT));
+    # print("json:",json);
+    B0=Ticks(_bins(json,tT)).bins;
+    B1=list();
+    for b in B0:
+        if not bad_bin(b):
+            B1.append(b);
+        else:
+            print("bad bin detected",b.string());
+    return Ticks(B1);
     
 def try_create(sqlite,stm):
     try:
@@ -222,13 +237,12 @@ class Sql:
             duration = datetime.timedelta(milliseconds=_duration_ms);
             bins.append(Bin(start,duration,count,transmit));
         return Ticks(bins);            
-                  
-# update = reset + rebuild all => really not efficient
+
 def rebuild():
     sql=Sql();
     sql.exe("DELETE FROM ticks;");
-    for row in sql.exe("SELECT path,data,time FROM _requests"):
-        (path,data,t)=row;
+    for row in sql.exe("SELECT ID,path,data,time FROM _requests"):
+        (ID,path,data,t)=row;
         if "tickscounter" in path:
             assert(isinstance(data,bytes));
             sql.insert_ticks(ticks_from_post_data(data,t));
@@ -236,18 +250,20 @@ def rebuild():
 if __name__ == "__main__":
     # update_plot("minutes/2019-01-22.csv");
     # update_plot("millis/2019-01-19-18:7-0.csv");
-    # rebuild();
+    rebuild();
     database=Sql();
-    ticks=TicksHandler(database.select_ticks());
-    d0=datetime.timedelta(minutes=10);
-    now=datetime.datetime.now();
-    b=[Bin(now,datetime.timedelta(minutes=2),20,now+d0),
-       Bin(now+d0/2,datetime.timedelta(minutes=1),10,now+d0)];
-    ticks=Ticks(b);
-    database.insert_ticks(ticks);
     print("sms:",TicksHandler(database.select_ticks()).sms());
-    d=open('bin','rb').read();
-    database.insert_request('foo',d);
+    
+    #ticks=TicksHandler(database.select_ticks());
+    #d0=datetime.timedelta(minutes=10);
+    #now=datetime.datetime.now();
+    #b=[Bin(now,datetime.timedelta(minutes=2),20,now+d0),
+    #   Bin(now+d0/2,datetime.timedelta(minutes=1),10,now+d0)];
+    #ticks=Ticks(b);
+    #database.insert_ticks(ticks);
+    # print("sms:",TicksHandler(database.select_ticks()).sms());
+    #d=open('bin','rb').read();
+    #database.insert_request('foo',d);
     #print("string:",ticks.string());
     #print("stats:",ticks.stats());    
     #print("sms:",ticks.sms());
