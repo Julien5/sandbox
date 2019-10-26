@@ -18,7 +18,12 @@ pushd swig
 make
 popd
 
+sudo cp hamster-server.service  /etc/systemd/user
+sudo chmod u+r /etc/systemd/user/hamster-server.service
+sudo systemctl enable hamster-server
+sudo systemctl start  hamster-server
+
 popd
 
-cd $DST
-./start_server.sh &> start_server.log &
+#cd $DST
+#./start_server.sh &> start_server.log &

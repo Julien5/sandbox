@@ -1,0 +1,7 @@
+*.o
+*~
+.depend
+build-uno
+__pycache__
+*.pyc
+*.so
