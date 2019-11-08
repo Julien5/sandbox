@@ -1,9 +1,9 @@
 #pragma once
 #include <stdint.h>
-#include <string>
 #define _NOP() do {} while (0)
 
 #ifndef ARDUINO
+#include <string>
 class MockSerial {
 public:
   void begin(unsigned long baud);

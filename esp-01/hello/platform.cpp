@@ -1,4 +1,6 @@
+#ifndef ARDUINO
 #include <iostream>
+
 #include "platform.h"
 
 MockSerial Serial;
@@ -38,3 +40,4 @@ void digitalWrite(uint8_t, uint8_t) {
 
 void attachInterrupt(uint8_t interrupt, void ISR(void), uint8_t mode) {
 }
+#endif
