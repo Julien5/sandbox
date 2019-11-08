@@ -8,7 +8,7 @@ class sensor {
   Clock::ms last_time_rising_reed=0;
   atomic<bool> wake_on_rising_reed;
 public:
-  sensor():wake_on_rising_reed(false){}    
+  sensor();   
   void on_rising_reed() {
     wake_on_rising_reed.store(true);
   }    

@@ -20,8 +20,6 @@ void stop() {
 
 tickscounter counter;
 
-bool wake_on_rising_reed=false;
-
 const int reed_pin = 2;
 
 /* we seem to have 870 bytes working place.
@@ -31,9 +29,7 @@ char full[75+3+24]={0};
 
 
 sensor reed_sensor;
-void on_rising_reed() {
-  reed_sensor.on_rising_reed();
-}
+
 
 void reset() {
   counter.save_eeprom_if_necessary();
@@ -64,7 +60,6 @@ void setup()
     digitalWrite(LED_BUILTIN, LOW);
     delay(100);
   }
-  attachInterrupt(0,on_rising_reed,RISING);
 }
 
 namespace get {
@@ -157,7 +152,6 @@ bool wifi_work() {
   }
   
   if (counter.recently_active()) {
-    display::lcd.print(0,"wifi: skip");
     return true;
   }
 
@@ -245,18 +239,12 @@ void loop() {
     display::lcd.print("saved to eeprom");
     delay(150);
   }
-
   update_display_local();
- 
-  if (!wake_on_rising_reed) {
-    if (!wifi_work()) {
-      // Hopefully reset will help.
-      // Maybe in case esp8266 got stuck.
-      reset();
-    } 
-  }
-  
   if (reed_sensor.has_ticked()) {
     counter.tick();
-  } 
+  } else if (!wifi_work()) {
+    // Hopefully reset will help.
+    // Maybe in case esp8266 got stuck.
+    reset();
+  }   
 }

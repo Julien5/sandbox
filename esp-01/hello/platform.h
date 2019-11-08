@@ -4,6 +4,7 @@
 
 #ifndef ARDUINO
 #include <string>
+#include <iostream>
 class MockSerial {
 public:
   void begin(unsigned long baud);
