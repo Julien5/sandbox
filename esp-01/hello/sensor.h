@@ -2,25 +2,7 @@
 
 #include "clock.h"
 #include "defines.h"
-
-#ifdef ARDUINO
-template<typename T>
-class atomic {
-  private T value;
-public:
-  atomic(T v):value(v){};
-  T load() const {
-    return t;
-  }
-  T operator=(T val) noexcept {
-    value=val;
-  }
-}
-#else
-#include <atomic>
-  template <typename T>
-  using atomic = std::atomic<T>;
-#endif
+#include "platform.h"
 
 class sensor {
   Clock::ms last_time_rising_reed=0;
