@@ -19,7 +19,8 @@ utils.cpp \
 ui.cpp \
 lcd.cpp \
 platform.cpp \
-wifi.cpp
+wifi.cpp \
+sensor.cpp 
 
 # ../wifi.cpp 
 # Objs are all the sources, with .cpp replaced by .o

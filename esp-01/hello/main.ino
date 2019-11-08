@@ -10,6 +10,8 @@
 #include "defines.h"
 #include "utils.h"
 #include "platform.h"
+#include "sensor.h"
+
 
 void stop() {
   display::lcd.print("stop.");
@@ -28,8 +30,10 @@ char buffer[768]={0};
 char full[75+3+24]={0};
 */
 
+
+sensor reed_sensor;
 void on_rising_reed() {
-  wake_on_rising_reed=true;
+  reed_sensor.on_rising_reed();
 }
 
 void reset() {
@@ -239,16 +243,12 @@ void update_display_local() {
 }
 
 Clock::ms sleep_duration = 0;
-Clock::ms last_time_rising_reed=0;
 Clock::ms time_last_upload_failed=0;
 
 constexpr Clock::ms one_minute=60*1000L;
 constexpr Clock::ms one_hour=60*one_minute;
 
 void loop() {
-  Clock::ms current_time=Clock::millis_since_start();
-  Clock::ms time_since_last_rising_reed = current_time-last_time_rising_reed;
-  
   if (counter.save_eeprom_if_necessary()) {
     display::lcd.print("saved to eeprom");
     delay(150);
@@ -264,11 +264,7 @@ void loop() {
     } 
   }
   
-  if (wake_on_rising_reed) {
-    Serial.print("tick:");Serial.println(time_since_last_rising_reed);
-    if (time_since_last_rising_reed>kAntiBoucingMillis) // avoid interrupt bouncing
-      counter.tick();
-    last_time_rising_reed=current_time;
-    wake_on_rising_reed=false;
+  if (reed_sensor.has_ticked()) {
+    counter.tick();
   } 
 }
