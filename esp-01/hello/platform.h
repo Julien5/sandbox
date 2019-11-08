@@ -46,26 +46,29 @@ void attachInterrupt(uint8_t interrupt, void ISR(void), uint8_t mode);
 #endif
 #define min(a,b) ((a)<(b)?(a):(b))
 
+#else
+#include "Arduino.h"
 #endif
 
 
 #ifdef ARDUINO
 template<typename T>
-class atomic {
-  private T value;
+class Atomic {
+  T value;
 public:
-  atomic(T v):value(v){};
+  Atomic(T v):value(v){};
   T load() const {
-    return t;
+    return value;
   }
   T operator=(T val) noexcept {
     value=val;
+    return value;
   }
-}
+};
 #else
 #include <atomic>
   template <typename T>
-  using atomic = std::atomic<T>;
+  using Atomic = std::atomic<T>;
 #endif
 
 #ifndef ARDUINO

@@ -6,11 +6,11 @@
 
 class sensor {
   Clock::ms last_time_rising_reed=0;
-  atomic<bool> wake_on_rising_reed;
+  Atomic<bool> wake_on_rising_reed;
 public:
   sensor();   
   void on_rising_reed() {
-    wake_on_rising_reed.store(true);
+    wake_on_rising_reed=true;
   }    
   bool has_ticked();
 };
