@@ -7,7 +7,12 @@
 #include "tickscounter.h"
 #include "ui.h"
 
-int display(int exitcode) {
+#include <vector>
+#include <algorithm>
+
+#include "main.ino"
+
+int display_exit_code(int exitcode) {
   if (exitcode!=0)
     std::cout << "bad.\n";
   else
@@ -17,13 +22,24 @@ int display(int exitcode) {
   return exitcode;
 }
 
+std::vector<std::string> args(int argc, char ** argv) {
+  return std::vector<std::string>(argv,argv+argc);
+}
+
 int main(int argc, char ** argv) {
   std::cout << "test\n";
-  display(parse::test());
-  display(nstring::test());
-  display(Clock::test());
-  display(statistics::test());
-  display(tickscounter::test());
-  display(ui::test());
+  const auto A = args(argc,argv);
+  if (std::find(A.begin(),A.end(),std::string("main"))==A.end()) {
+    display_exit_code(parse::test());
+    display_exit_code(nstring::test());
+    display_exit_code(Clock::test());
+    display_exit_code(statistics::test());
+    display_exit_code(tickscounter::test());
+    display_exit_code(ui::test());
+  } else {
+    setup();
+    std::cout << "setup done\n";
+    loop();
+  }
   return 0;
 }

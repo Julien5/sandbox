@@ -6,10 +6,16 @@
 #include "clock.h"
 #include "debug.h"
 
+#ifdef ARDUINO
 #include "AltSoftSerial.h"
 AltSoftSerial Altser;
 #define ESPTX Altser
 #define ESPRX Altser
+#else
+#include "platform.h"
+#define ESPTX Serial
+#define ESPRX Serial
+#endif
 
 #define BUFFER_LENGTH 16
 
@@ -38,13 +44,13 @@ namespace comm {
   
   int write(const uint8_t *buffer, int length=-1) {
     if (length>=0)
-      return ESPTX.write(buffer,length);
+      return ESPTX.write((const char*)buffer,length);
     return ESPTX.write((const char*)buffer);
   }
   
   int write(const char *buffer, int length=-1) {
     if (length>=0)
-      return ESPTX.write((const uint8_t *)buffer,length);
+      return ESPTX.write(buffer,length);
     return ESPTX.write(buffer);
   }
 }

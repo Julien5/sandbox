@@ -9,15 +9,18 @@
   } while(0)
 #define debug2(X,Y)							\
   do {									\
-    std::cout << __LINE__ << ":" << (X) << (Y) << std::endl;		\
+    if (X && Y)								\
+      std::cout << __LINE__ << ":" << (X) << (Y) << std::endl;		\
   } while(0)
 #define DBGTX(X)					\
   do {							\
-    std::cout << __LINE__ << ":" << #X << "=" << (X);	\
+    if (X)						\
+      std::cout << __LINE__ << ":" << #X << "=" << (X);	\
   } while(0)
 #define DBGTXLN(X)							\
   do {									\
-    std::cout << __LINE__ << ":" << #X << "=" << (X) << std::endl;	\
+    if (X)								\
+      std::cout << __LINE__ << ":" << #X << "=" << (X) << std::endl;	\
   } while(0)
 
 #define TRACE()					\
@@ -27,7 +30,7 @@
     std::cout << ":";				\
     std::cout << __LINE__;			\
     std::cout << ":";				\
-    std::cout << counter++ << "\n";		\
+    std::cout << __counter__++ << "\n";		\
   } while(0)
 
 using test_ms = uint32_t;

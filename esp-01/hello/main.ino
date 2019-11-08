@@ -1,4 +1,3 @@
-#include "LowPower.h"
 #include "debug.h"
 #include "parse.h"
 #include "wifi.h"
@@ -10,6 +9,7 @@
 #include "ui.h"
 #include "defines.h"
 #include "utils.h"
+#include "platform.h"
 
 void stop() {
   display::lcd.print("stop.");
@@ -43,7 +43,7 @@ void setup()
   Serial.begin(9600);
   Serial.println("@START");
   display::lcd.init();
-  delay(50);  
+  delay(50);
   display::lcd.print("load eeprom");
   delay(100);
   if (!counter.load_eeprom()) {
@@ -93,7 +93,7 @@ void update_display_wifi(wifi::esp8266 &esp) {
 }
 
 char try_upload_statistics(wifi::esp8266 &esp) {
-  int length=0;
+  uint16_t length=0;
   uint8_t * data = counter.getdata(&length);
   int ret=esp.post("tickscounter",data,length,0);
   if (ret != 0) {
@@ -241,13 +241,6 @@ Clock::ms sleep_duration = 0;
 bool slept=false;
 void sleep_now() {
   slept=true;
-#if 0
-  // disabled, because the watchdog timer is too inacurate:
-  // so sleep_duration is actually unknow :-(
-  display::lcd.print("sleep");
-  sleep_duration = 8000;
-  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF);
-#endif
 }
 
 Clock::ms last_time_rising_reed=0;

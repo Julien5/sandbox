@@ -12,7 +12,7 @@ char eeprom::read(int addr) {
   return EEPROM.read(addr);
 #else
   if (addr<10)
-    printf("read %d : %#02x\n",addr,mem[addr]);
+    printf("[read %d : %#02x]\n",addr,mem[addr]);
   return mem[addr];
 #endif
 }

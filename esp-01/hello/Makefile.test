@@ -1,32 +1,32 @@
 CC=gcc
 CXX=g++
 RM=rm -f
-CXXFLAGS=-Wall -I.. -std=c++14
+CXXFLAGS=-Wall -I. -std=c++14 -DDEBUG -g
 LDFLAGS=
 LIBS=
 
-debug: CXXFLAGS += -DDEBUG -g
-debug: test
-
 SRCS := \
-test.cpp \
-../parse.cpp \
-../nstring.cpp \
-../statistics.cpp \
-../eeprom.cpp  \
-../freememory.cpp \
-../debug.cpp \
-../clock.cpp \
-../tickscounter.cpp \
-../utils.cpp \
-../ui.cpp
+tests/test.cpp \
+parse.cpp \
+nstring.cpp \
+statistics.cpp \
+eeprom.cpp  \
+freememory.cpp \
+debug.cpp \
+clock.cpp \
+tickscounter.cpp \
+utils.cpp \
+ui.cpp \
+lcd.cpp \
+platform.cpp \
+wifi.cpp
 
 # ../wifi.cpp 
 # Objs are all the sources, with .cpp replaced by .o
 OBJS := $(SRCS:.cpp=.o)
 
-%.o: %.c 
-	$(CXX) $(CXXFLAGS) -c $<
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 all: test
 
