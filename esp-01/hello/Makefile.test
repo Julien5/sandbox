@@ -20,6 +20,7 @@ ui.cpp \
 lcd.cpp \
 platform.cpp \
 wifi.cpp \
+wifi_esp.cpp \
 sensor.cpp 
 
 # ../wifi.cpp 

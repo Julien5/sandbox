@@ -1,6 +1,7 @@
 #include "debug.h"
 #include "parse.h"
 #include "wifi.h"
+#include "wifi_esp.h"
 #include "lcd.h"
 #include "tickscounter.h"
 #include "freememory.h"
@@ -12,7 +13,6 @@
 #include "platform.h"
 #include "sensor.h"
 
-
 void stop() {
   display::lcd.print("stop.");
   while(1);
@@ -23,7 +23,6 @@ tickscounter counter;
 bool wake_on_rising_reed=false;
 
 const int reed_pin = 2;
-const int wifi_enable_pin = 3;
 
 /* we seem to have 870 bytes working place.
 char buffer[768]={0};
@@ -69,17 +68,16 @@ void setup()
 }
 
 namespace get {
-  bool message(wifi::esp8266 &esp, char * buffer) {
+  bool message(wifi::interface &esp, char * buffer) {
     char *internal=0;
     if (!esp.get("message",&internal)) {
       // retry ?
-      /*esp.disable();if (!esp.enable()) return false; if (!esp.get("message",&internal)) return false;*/
       return false;
     }
     strncpy(buffer,internal,16);
     return true;
   }
-  bool seconds_until_next_wifi(wifi::esp8266 &esp, uint32_t *buffer) {
+  bool seconds_until_next_wifi(wifi::interface &esp, uint32_t *buffer) {
     char *internal=0;
     if (!esp.get("sunw",&internal)) {
       return false;
@@ -90,14 +88,14 @@ namespace get {
   }
 }
 
-void update_display_wifi(wifi::esp8266 &esp) {
+void update_display_wifi(wifi::interface &esp) {
   char line2[17]={0};
   if (!get::message(esp,line2))
     snprintf(line2,17,"%s","(no message)");
   display::lcd.print(0,line2);
 }
 
-char try_upload_statistics(wifi::esp8266 &esp) {
+char try_upload_statistics(wifi::interface &esp) {
   uint16_t length=0;
   uint8_t * data = counter.getdata(&length);
   int ret=esp.post("tickscounter",data,length,0);
@@ -113,7 +111,7 @@ char try_upload_statistics(wifi::esp8266 &esp) {
   return 0;
 }
 
-bool upload_statistics(wifi::esp8266 &esp) {
+bool upload_statistics(wifi::interface &esp) {
   if (counter.empty())
       return true;
   display::lcd.print("uploading...");
@@ -130,7 +128,7 @@ bool upload_statistics(wifi::esp8266 &esp) {
   return false;
 }
 
-int test_upload(wifi::esp8266 &esp) {
+int test_upload(wifi::interface &esp) {
   display::lcd.print(0,"test upload..");
   int d=esp.test_upload();
   char msg[16];
@@ -165,7 +163,7 @@ bool wifi_work() {
 
   display::lcd.print(0,"wifi...");
   
-  wifi::esp8266 esp(wifi_enable_pin);
+  wifi::mock esp;
   digitalWrite(LED_BUILTIN, LOW);
   if (!esp.enabled()) {
     digitalWrite(LED_BUILTIN, HIGH);
@@ -241,12 +239,6 @@ void update_display_local() {
   
   bin_indx++;
 }
-
-Clock::ms sleep_duration = 0;
-Clock::ms time_last_upload_failed=0;
-
-constexpr Clock::ms one_minute=60*1000L;
-constexpr Clock::ms one_hour=60*one_minute;
 
 void loop() {
   if (counter.save_eeprom_if_necessary()) {

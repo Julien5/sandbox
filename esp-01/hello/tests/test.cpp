@@ -38,7 +38,8 @@ int main(int argc, char ** argv) {
     display_exit_code(ui::test());
   } else {
     setup();
-    loop();
+    while(true)
+      loop();
   }
   return 0;
 }
