@@ -14,7 +14,7 @@ public:
   void begin(int n, int m){};
   void setCursor(int n, int m){};
   void print(const std::string &s) {
-    std::cout << s << std::endl;
+    std::cout << "LCD: [" << s << "]" << std::endl;
   };
 };
 #endif

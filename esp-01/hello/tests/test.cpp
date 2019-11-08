@@ -38,7 +38,6 @@ int main(int argc, char ** argv) {
     display_exit_code(ui::test());
   } else {
     setup();
-    std::cout << "setup done\n";
     loop();
   }
   return 0;
