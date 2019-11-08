@@ -66,3 +66,9 @@ public:
   template <typename T>
   using atomic = std::atomic<T>;
 #endif
+
+#ifndef ARDUINO
+using test_ms = uint32_t;
+test_ms millis();
+void delay(test_ms d);
+#endif

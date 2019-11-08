@@ -33,10 +33,6 @@
     std::cout << __counter__++ << "\n";		\
   } while(0)
 
-using test_ms = uint32_t;
-test_ms millis();
-void delay(test_ms d);
-
 #define F(X) (X)
 
 #define PROGMEM 

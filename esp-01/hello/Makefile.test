@@ -18,10 +18,10 @@ tickscounter.cpp \
 utils.cpp \
 ui.cpp \
 lcd.cpp \
-platform.cpp \
 wifi.cpp \
 wifi_esp.cpp \
-sensor.cpp 
+sensor.cpp \
+platform.cpp 
 
 # ../wifi.cpp 
 # Objs are all the sources, with .cpp replaced by .o

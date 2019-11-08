@@ -5,6 +5,7 @@
 #include "freememory.h"
 #include "clock.h"
 #include "debug.h"
+#include "platform.h"
 
 #ifdef ARDUINO
 #include "AltSoftSerial.h"
