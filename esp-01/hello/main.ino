@@ -33,6 +33,7 @@ void on_rising_reed() {
 }
 
 void reset() {
+  counter.save_eeprom_if_necessary();
   display::lcd.print("reset.");
   delay(1000);
   asm volatile ("jmp 0");
@@ -238,11 +239,6 @@ void update_display_local() {
 }
 
 Clock::ms sleep_duration = 0;
-bool slept=false;
-void sleep_now() {
-  slept=true;
-}
-
 Clock::ms last_time_rising_reed=0;
 Clock::ms time_last_upload_failed=0;
 
@@ -252,27 +248,20 @@ constexpr Clock::ms one_hour=60*one_minute;
 void loop() {
   Clock::ms current_time=Clock::millis_since_start();
   Clock::ms time_since_last_rising_reed = current_time-last_time_rising_reed;
-
-  if (!wake_on_rising_reed && slept) {
-    // wake after sleep;
-    Clock::wake_up_after(sleep_duration);
-    if (counter.save_eeprom_if_necessary()) {
-      display::lcd.print("saved to eeprom");
-      delay(150);
-    }
-    slept=false;
+  
+  if (counter.save_eeprom_if_necessary()) {
+    display::lcd.print("saved to eeprom");
+    delay(150);
   }
 
   update_display_local();
  
   if (!wake_on_rising_reed) {
     if (!wifi_work()) {
-      counter.save_eeprom_if_necessary();
       // Hopefully reset will help.
       // Maybe in case esp8266 got stuck.
       reset();
     } 
-    sleep_now();
   }
   
   if (wake_on_rising_reed) {

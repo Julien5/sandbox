@@ -2,13 +2,8 @@
 #include "debug.h"
 
 namespace Clock {
-  ms sleep_millis = 0;
-  void wake_up_after(ms m) {
-    sleep_millis += m;
-  }
-  
   ms millis_since_start() {
-    return millis() + sleep_millis;
+    return millis();
   }
   
   mn minutes_since_start() {
