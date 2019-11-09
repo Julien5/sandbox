@@ -43,9 +43,10 @@ void attachInterrupt(uint8_t interrupt, void ISR(void), uint8_t mode) {
 #endif
 
 #ifndef ARDUINO
-test_ms test_t=0;
+#include <atomic>
+std::atomic<test_ms> test_t(0);
 test_ms millis() {
-  return test_t; 
+  return test_t.load(); 
 }
 void delay(test_ms d) {
   test_t+=d;

@@ -37,17 +37,23 @@ int random_number() {
 }
 
 #include <future>
+#include <mutex>
+int smalldelay(int count) {
+  int d=kAntiBoucingMillis+random_number();
+  if (count%10 == 0)
+    d+=2000;
+  delay(d);
+}
+
 void generate_interrupts() {
   static int count=0;
   while(true) {
-    int d=kAntiBoucingMillis+random_number();
-    if (count%10 == 0)
-      d+=2000;
-    delay(d);
-    std::this_thread::yield();
-    if (count<15000)
+    if (count<15000) {
       addr->on_rising_reed();
+    }
     count++;
+    smalldelay(count);
+    std::this_thread::yield();
   }
 }
 void start_sensor() {
@@ -61,14 +67,15 @@ sensor::sensor():wake_on_rising_reed(false) {
 }
 
 bool sensor::has_ticked() {
+  if (!wake_on_rising_reed.load())
+    return false;
+  
   Clock::ms current_time=Clock::millis_since_start();
   Clock::ms time_since_last_rising_reed = current_time-last_time_rising_reed;
+
   auto C=make_set_on_return(&last_time_rising_reed,current_time);
   auto W=make_set_on_return(&wake_on_rising_reed,false);
-
-  if (wake_on_rising_reed.load()) {
-    if (time_since_last_rising_reed>kAntiBoucingMillis) // avoid interrupt bouncing
-      return true;
-  }
+  if (time_since_last_rising_reed>kAntiBoucingMillis) // avoid interrupt bouncing
+    return true;
   return false;
 }

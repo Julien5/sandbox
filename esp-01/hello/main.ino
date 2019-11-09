@@ -247,5 +247,6 @@ void loop() {
     // Hopefully reset will help.
     // Maybe in case esp8266 got stuck.
     reset();
-  }   
+  }
+  delay(1);
 }

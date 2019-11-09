@@ -7,14 +7,6 @@
 #include <string.h>
 #include "platform.h"
 
-#ifndef ARDUINO
-#include <fstream>
-#endif
-
-#ifndef abs
-#define abs(x) ((x)>0?(x):-(x))
-#endif
-
 bin::bin(){
   reset();
 }
@@ -22,13 +14,23 @@ bin::bin(){
 bin::time bin::end() const {
   return m_start+m_duration;
 }
-
+ 
 bool bin::accepts() const {
   if (empty()) {
     return true;
   }
   Clock::ms now = Clock::millis_since_start();
-  assert(now>end());
+  /* There is a subtle reason why we may have
+        now == end()
+     (and not now > end()). This is because an interrupt may occur during the
+     processing of tick(). If less than 1ms has passed until the next tick() 
+     processing, we have now=end(). In case of thread-generated interrupts with
+     delay(), this can also happen if the call to delay() occurs in a
+     call of tick. The next time tick() is entered, no delay() has passed.
+     Note that in this case, only one tick is counted, although two (or more)
+     occured.
+  */
+  assert(now>=end());
   if ((now - end()) > 2000)
     return false;
   return true;
@@ -504,6 +506,11 @@ int some_spurious_ticks(tickscounter &C) {
   }
   return k;
 }
+
+
+#ifndef ARDUINO
+#include <fstream>
+#endif
 
 int tickscounter::test() {
   tickscounter C;
