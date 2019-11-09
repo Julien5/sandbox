@@ -24,7 +24,9 @@ static sensor *addr=nullptr;
 void on_rising_reed() {
   addr->on_rising_reed();
 }
+const int reed_pin = 2;
 void start_sensor() {
+  pinMode(reed_pin, INPUT_PULLUP);
   attachInterrupt(0,on_rising_reed,RISING);
 }
 #else
@@ -37,8 +39,7 @@ int random_number() {
 }
 
 #include <future>
-#include <mutex>
-int smalldelay(int count) {
+void smalldelay(int count) {
   int d=kAntiBoucingMillis+random_number();
   if (count%10 == 0)
     d+=2000;
