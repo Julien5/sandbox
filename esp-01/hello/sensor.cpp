@@ -1,29 +1,23 @@
 #include "sensor.h"
 #include "clock.h"
+#include "platform.h"
 
-// RAII 
-template<typename T>
+// RAII
+template<typename A, typename V>
 class set_on_return {
-  T * const addr;
-  const T value;
+  A const addr;
+  const V value;
 public:
-  set_on_return(T *_addr, const T _value):addr(_addr),value(_value){}
+  set_on_return(A _addr, const V _value):addr(_addr),value(_value){}
   ~set_on_return() {
     *addr=value;
   }
 };
 
-template<>
-template<typename T>
-class set_on_return<Atomic<T>> {
-  Atomic<T> * const addr;
-  const T value;
-public:
-  set_on_return(Atomic<T> *_addr, const T _value):addr(_addr),value(_value){}
-  ~set_on_return() {
-    *addr = value;
-  }
-};
+template<typename U, typename V>
+set_on_return<U,V> make_set_on_return(U u, V v) {
+  return set_on_return<U,V>(u,v);
+}		     
 
 static sensor *addr=nullptr;
 #ifdef ARDUINO
@@ -34,10 +28,6 @@ void start_sensor() {
   attachInterrupt(0,on_rising_reed,RISING);
 }
 #else
-#undef abs
-#undef min
-#undef max
-
 #include <random>
 int random_number() {
   std::random_device rd;     
@@ -73,8 +63,8 @@ sensor::sensor():wake_on_rising_reed(false) {
 bool sensor::has_ticked() {
   Clock::ms current_time=Clock::millis_since_start();
   Clock::ms time_since_last_rising_reed = current_time-last_time_rising_reed;
-  set_on_return<Clock::ms> C(&last_time_rising_reed,current_time);
-  set_on_return<Atomic<bool>> W(&wake_on_rising_reed,false);
+  auto C=make_set_on_return(&last_time_rising_reed,current_time);
+  auto W=make_set_on_return(&wake_on_rising_reed,false);
 
   if (wake_on_rising_reed.load()) {
     if (time_since_last_rising_reed>kAntiBoucingMillis) // avoid interrupt bouncing

@@ -2,7 +2,7 @@
 
 #include "clock.h"
 #include "defines.h"
-#include "platform.h"
+#include "xatomic.h"
 
 class sensor {
   Clock::ms last_time_rising_reed=0;
