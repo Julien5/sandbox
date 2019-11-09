@@ -4,6 +4,7 @@
 #include "freememory.h"
 #include <string.h>
 #include "clock.h"
+#include "platform.h"
 
 #ifndef ARDUINO
 #include <vector>

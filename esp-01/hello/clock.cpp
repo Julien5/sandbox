@@ -1,5 +1,6 @@
 #include "clock.h"
 #include "debug.h"
+#include "platform.h"
 
 namespace Clock {
   ms millis_since_start() {

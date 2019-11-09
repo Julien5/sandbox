@@ -97,7 +97,7 @@ unsigned char waitFor(const unsigned char opts, const int timeout) {
   char buffer[BUFFER_LENGTH]={0};
   while(millis()<deadline && !found) {
     while(comm::available() && !found) {
-      int n=comm::readBytes(buffer,min(comm::available(),BUFFER_LENGTH-1));
+      int n=comm::readBytes(buffer,xMin(comm::available(),BUFFER_LENGTH-1));
       buffer[n]='\0';
       DBGTX(buffer);
       if (options::wait_for_ok & opts) {

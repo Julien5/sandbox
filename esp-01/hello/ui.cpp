@@ -5,6 +5,7 @@
 #include <math.h>
 #include "debug.h"
 #include "utils.h"
+#include "platform.h"
 
 char FMT[][5] = {
   "%0li",
@@ -18,11 +19,8 @@ char FMT[][5] = {
   "%8li",
 };
 
-//             0123456789
-char EXP[] = {"asdKgaaaa"};
-
 void ui::format(int32_t n, char * buffer, size_t L) {
-  L=min(L,size_t(8));
+  L=xMin(L,size_t(8));
   
   // maxlength = L
   int E=0;
@@ -31,19 +29,6 @@ void ui::format(int32_t n, char * buffer, size_t L) {
     snprintf(buffer,L,FMT[L-1],n);
     return;
   }
-
-  debug(n);
-  debug(M);
-  // try 100 => 1h
-  /*
-  if (n<10*M) {
-    n=n/100;
-    snprintf(buffer,L,FMT[L-2],n);
-    buffer[L-2]='h';
-    buffer[L-1]=0;
-    return;
-  }
-  */
   
   // try 1000 => 1k
   if (n<100*M) {
@@ -66,7 +51,7 @@ void ui::format_seconds(int32_t secs, char * buffer, size_t L) {
     snprintf(buffer,L,"E%li",secs);
     return;
   }
-  L=min(L,size_t(8));
+  L=xMin(L,size_t(8));
 
   int M=int(pow(10,L-2));
   if (secs<M) {

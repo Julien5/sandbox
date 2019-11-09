@@ -1,6 +1,7 @@
 #include "lcd.h"
 #include "freememory.h"
 #include "debug.h"
+#include "platform.h"
 
 #ifdef ARDUINO
 #include "Arduino.h"

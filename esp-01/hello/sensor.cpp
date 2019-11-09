@@ -40,9 +40,9 @@ void start_sensor() {
 
 #include <random>
 int random_number() {
-  std::random_device rd;     // only used once to initialise (seed) engine
-  std::mt19937 rng(rd());    // random-number engine used (Mersenne-Twister in this case)
-  std::uniform_int_distribution<int> uni(0,100);
+  std::random_device rd;     
+  std::mt19937 rng(rd());
+  std::uniform_int_distribution<int> uni(100,750);
   return uni(rng);
 }
 
@@ -50,13 +50,12 @@ int random_number() {
 void generate_interrupts() {
   static int count=0;
   while(true) {
-    int r=kAntiBoucingMillis+random_number();
+    int d=kAntiBoucingMillis+random_number();
     if (count%10 == 0)
-      r+=2000;
+      d+=2000;
+    delay(d);
     std::this_thread::yield();
-    std::this_thread::sleep_for(std::chrono::milliseconds(r));
-    delay(r);
-    if (count<50)
+    if (count<15000)
       addr->on_rising_reed();
     count++;
   }

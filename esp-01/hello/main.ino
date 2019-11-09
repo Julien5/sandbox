@@ -158,6 +158,7 @@ bool wifi_work() {
   display::lcd.print(0,"wifi...");
   
   wifi::mock esp;
+  //wifi::esp8266 esp;
   digitalWrite(LED_BUILTIN, LOW);
   if (!esp.enabled()) {
     digitalWrite(LED_BUILTIN, HIGH);

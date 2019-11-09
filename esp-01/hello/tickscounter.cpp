@@ -5,6 +5,8 @@
 #include "defines.h"
 #include "eeprom.h"
 #include <string.h>
+#include "platform.h"
+
 #ifndef ARDUINO
 #include <fstream>
 #endif
