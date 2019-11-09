@@ -20,16 +20,7 @@ void stop() {
 
 tickscounter counter;
 
-const int reed_pin = 2;
-
-/* we seem to have 870 bytes working place.
-char buffer[768]={0};
-char full[75+3+24]={0};
-*/
-
-
 sensor reed_sensor;
-
 
 void reset() {
   counter.save_eeprom_if_necessary();
@@ -50,8 +41,6 @@ void setup()
     display::lcd.print("eeprom failed");
     delay(500);
   }
-
-  pinMode(reed_pin, INPUT_PULLUP);
   
   pinMode(LED_BUILTIN, OUTPUT);
   for(int k=0;k<5;k++) {

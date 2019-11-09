@@ -24,7 +24,9 @@ static sensor *addr=nullptr;
 void on_rising_reed() {
   addr->on_rising_reed();
 }
+const int reed_pin = 2;
 void start_sensor() {
+  pinMode(reed_pin, INPUT_PULLUP);
   attachInterrupt(0,on_rising_reed,RISING);
 }
 #else
