@@ -13,11 +13,6 @@
 #include "platform.h"
 #include "sensor.h"
 
-void stop() {
-  display::lcd.print("stop.");
-  while(1);
-}
-
 tickscounter counter;
 
 sensor reed_sensor;
@@ -100,10 +95,8 @@ bool upload_statistics(wifi::interface &esp) {
       return true;
   display::lcd.print("uploading...");
   int trials = 3;
-  char ret=1;
   while(trials-- > 0) {
-    ret=try_upload_statistics(esp);
-    if (ret == 0) {
+    if (try_upload_statistics(esp) == 0) {
       return true;
     }
     esp.reset();
@@ -115,8 +108,8 @@ bool upload_statistics(wifi::interface &esp) {
 int test_upload(wifi::interface &esp) {
   display::lcd.print(0,"test upload..");
   int d=esp.test_upload();
-  char msg[16];
   if (d!=0) {
+    char msg[16];
     snprintf(msg, 16,"test error: %d",d);
     display::lcd.print(msg);
     return false;

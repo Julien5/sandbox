@@ -6,7 +6,6 @@
 
 namespace wifi {
   class esp8266 : public interface {
-    int timeout;
     char enable_pin;
     bool m_enabled=false;
     bool m_joined=false;

@@ -417,7 +417,7 @@ bool tickscounter::save_eeprom_if_necessary() {
   return true;
 }
 
-bool tickscounter::reset_eeprom() {
+void tickscounter::reset_eeprom() {
   eeprom e;
   e.write(0,0);
   s_total_at_last_save=0;

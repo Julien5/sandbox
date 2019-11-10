@@ -38,6 +38,9 @@ test: $(OBJS)
 clean:
 	$(RM) $(OBJS)
 
+check:
+	cppcheck --language=c++ --enable=all --template=gcc $(SRCS) main.ino
+
 depend: .depend
 
 .depend: $(SRCS)

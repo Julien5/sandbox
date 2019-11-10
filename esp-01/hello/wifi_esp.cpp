@@ -169,8 +169,7 @@ void resetSerial() {
 
 const int wifi_enable_pin = 3;
 wifi::esp8266::esp8266()
-  : timeout(3000)
-  , enable_pin(wifi_enable_pin) {
+  : enable_pin(wifi_enable_pin) {
   resetSerial();
   pinMode(enable_pin, OUTPUT);
   delay(250);
@@ -199,10 +198,6 @@ bool wifi::esp8266::enable() {
 
 void wifi::esp8266::disable() {
   digitalWrite(enable_pin, LOW);
-}
-
-void wifi::esp8266::setTimeout(int t) {
-  timeout=t;
 }
 
 namespace command {
