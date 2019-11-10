@@ -8,6 +8,7 @@
 #include <LiquidCrystal.h>
 #else
 #include <iostream>
+#include <iomanip>
 class LiquidCrystal {
 public:
   typedef uint8_t pin;
@@ -15,7 +16,9 @@ public:
   void begin(int n, int m){};
   void setCursor(int n, int m){};
   void print(const std::string &s) {
-    std::cout << "LCD: [" << s << "]" << std::endl;
+    std::cout << "LCD: " ;
+    std::cout << std::setw(10);
+    std::cout << millis() << " [" << s << "]\n";
   };
 };
 #endif

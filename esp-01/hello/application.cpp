@@ -43,6 +43,7 @@ void application::setup()
     digitalWrite(LED_BUILTIN, LOW);
     delay(100);
   }
+  TRACE();
 }
 
 namespace get {
@@ -184,9 +185,9 @@ Clock::ms last_update_display=0;
 int bin_indx=0;
 void update_display_local() {
   Clock::ms t=Clock::millis_since_start();
-  
   if ((t-last_update_display)<1000) 
     return;
+  
   last_update_display=t;
   
   char line1[17]={0};
@@ -205,7 +206,7 @@ void update_display_local() {
 
     char f3[5]={0};
     ui::format(int(b.m_count),f3,sizeof(f3));
-        
+    DBG(int(b.m_count));
     snprintf(line1,17,"%s.%s.%s.%2d",
 	     f1,f2,f3,int(bin_indx+1));
   }
@@ -219,7 +220,6 @@ void update_display_local() {
 
 void application::loop() {
   static sensor reed_sensor;
-  
   if (counter.save_eeprom_if_necessary()) {
     display::lcd.print("saved to eeprom");
     delay(150);

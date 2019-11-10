@@ -22,7 +22,7 @@ bool wifi::mock::get(const char * req, char** response) {
     *response = "123456789";
   }
   if (strstr(req,"sunw")!=NULL) {
-    *response = "1000000";
+    *response = "50000";
   }
   if (strstr(req,"message")!=NULL) {
     *response = "hello";

@@ -40,8 +40,9 @@ int random_number() {
 
 #include <future>
 void smalldelay(int count) {
+  // genarates bursts of 17 ticks in about 17-20 secs
   int d=kAntiBoucingMillis+random_number();
-  if (count%10 == 0)
+  if (count%17 == 0)
     d+=2000;
   delay(d);
 }

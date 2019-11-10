@@ -218,6 +218,7 @@ int tickscounter::compress_index() {
 }
 
 void tickscounter::compress() {
+  DBG("compress");
   clean();
   const int k=compress_index();
   m_bins[k].take(m_bins[k+1]);
@@ -542,7 +543,7 @@ int tickscounter::test() {
 
   uint16_t L=0;
   const uint8_t * data = C.getdata(&L);
-  debug(L);
+  DBG(L);
 
   tickscounter C2(data);
   assert(C==C2);
