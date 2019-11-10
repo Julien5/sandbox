@@ -10,7 +10,7 @@
 #include <vector>
 #include <algorithm>
 
-#include "main.ino"
+#include "application.h"
 
 int display_exit_code(int exitcode) {
   if (exitcode!=0)
@@ -37,9 +37,9 @@ int main(int argc, char ** argv) {
     display_exit_code(tickscounter::test());
     display_exit_code(ui::test());
   } else {
-    setup();
+    application::setup();
     while(true) {
-      loop();
+      application::loop();
     }
   }
   return 0;

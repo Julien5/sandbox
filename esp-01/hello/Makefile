@@ -21,7 +21,8 @@ lcd.cpp \
 wifi.cpp \
 wifi_esp.cpp \
 sensor.cpp \
-platform.cpp 
+platform.cpp\
+application.cpp
 
 # ../wifi.cpp 
 # Objs are all the sources, with .cpp replaced by .o
