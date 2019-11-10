@@ -372,7 +372,7 @@ bin tickscounter::getbin(const int &k) const {
 
 uint8_t* tickscounter::getdata(uint16_t * Lout) const {
   m_transmission_time = Clock::millis_since_start();
-  DBGTXLN(m_transmission_time);
+  DBG(m_transmission_time);
   *Lout = sizeof(*this);
   return (uint8_t*)this; 
 }

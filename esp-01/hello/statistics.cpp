@@ -93,7 +93,7 @@ void read_data(uint8_t *c, unsigned char length, int *index, const uint8_t *data
   int k=*index;
   for(int i=0; i<length; i++) {
     if (k>=NDATA) {
-      DBGTXLN("BAAAAD");
+      DBG("BAAAAD");
       delay(1000);
       return;
     }

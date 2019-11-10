@@ -16,8 +16,6 @@
 
 tickscounter counter;
 
-sensor reed_sensor;
-
 void reset() {
   counter.save_eeprom_if_necessary();
   display::lcd.print("reset.");
@@ -218,7 +216,10 @@ void update_display_local() {
   bin_indx++;
 }
 
+
 void application::loop() {
+  static sensor reed_sensor;
+  
   if (counter.save_eeprom_if_necessary()) {
     display::lcd.print("saved to eeprom");
     delay(150);

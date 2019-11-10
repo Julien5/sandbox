@@ -38,7 +38,6 @@ void display::LCD::init() {
 int min_free_memory=2048;
 int last_memory=4096;
 void display::LCD::print(const char * msg1, const char *msg2) {
-  DBGTX(msg1); DBGTX("#"); DBGTXLN(msg2);
   if (msg1) {
     char m1[17]={0};
     snprintf(m1,17,"%-16.16s",msg1);

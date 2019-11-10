@@ -1,28 +1,13 @@
 #pragma once
 
 #ifndef ARDUINO
+
 #include <iostream>
 #include <cassert>
-#define debug(X)							\
+#define DBG(X)						\
   do {									\
-    std::cout << __LINE__ << ":" << #X << "=" << (X) << std::endl;	\
+    std::cout << __FILE__ << ":" << __LINE__ << ":" << X << std::endl << std::flush; \
   } while(0)
-#define debug2(X,Y)							\
-  do {									\
-    if (X && Y)								\
-      std::cout << __LINE__ << ":" << (X) << (Y) << std::endl;		\
-  } while(0)
-#define DBGTX(X)					\
-  do {							\
-    if (X)						\
-      std::cout << __LINE__ << ":" << #X << "=" << (X);	\
-  } while(0)
-#define DBGTXLN(X)							\
-  do {									\
-    if (X)								\
-      std::cout << __LINE__ << ":" << #X << "=" << (X) << std::endl;	\
-  } while(0)
-
 #define TRACE()					\
   do {						\
     static int __counter__ = 0;			\
@@ -32,9 +17,7 @@
     std::cout << ":";				\
     std::cout << __counter__++ << "\n";		\
   } while(0)
-
 #define F(X) (X)
-
 #define PROGMEM 
 
 #else
