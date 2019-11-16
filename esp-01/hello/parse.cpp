@@ -102,7 +102,7 @@ int message_test() {
   assert(!m.get());
   m.read("}  d ");
   assert(m.get());
-  debug(m.get());
+  DBG(m.get());
   return 0;
  }
 
@@ -144,20 +144,20 @@ int parse_test() {
   }
   
   {
-    debug("*******");
+    DBG("*******");
     StringAwaiter a("OK");
     assert(a.read("OXOK"));
   }
 
   {
-    debug("*******");
+    DBG("*******");
     StringAwaiter a("ERROR");
     assert(!a.read("ERR"));
     assert(a.read("OR\n"));
   }
 
   {
-    debug("*******");
+    DBG("*******");
     StringAwaiter a("OK");
     assert(!a.read(",\"7"));
     assert(!a.read("c:f"));
@@ -178,9 +178,9 @@ int parse_test() {
 char pmessage[16];
 bool pget(char ** m) {
   snprintf(pmessage,16,"%u for %02d:%02d",1,2,3);
-  debug(pmessage);
+  DBG(pmessage);
   *m=pmessage;
-  debug(*m);
+  DBG(*m);
   assert(*m);
   return true;
 }
@@ -190,7 +190,7 @@ int smoke() {
   char * m=0;
   if (!pget(&m))
       return 0;
-  debug(m);
+  DBG(m);
   assert(m);
   assert(strlen(m));
   printf("XX[%-.16s]\n","A23456789B123456XXXXXXXX");

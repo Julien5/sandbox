@@ -269,9 +269,9 @@ bool statistics::load_eeprom() {
 bool statistics::operator==(const statistics& other) const{
   for(int k=0; k<NDATA; ++k) {
     if (data[k] != other.data[k]) {
-      debug(data[k]);
-      debug(other.data[k]);
-      debug(k);
+      DBG(data[k]);
+      DBG(other.data[k]);
+      DBG(k);
       return false;
     }
   }
@@ -332,9 +332,9 @@ int statistics::test() {
     assert(m==12);
 
     for(int k=0; S.get_milli(k)!=0; ++k)
-      debug(S.get_milli(k));
+      DBG(S.get_milli(k));
 
-    debug(S.get_milli(1));
+    DBG(S.get_milli(1));
     
     assert(S.get_milli(0)!=0);
     assert(S.get_milli(1)!=0);
@@ -343,15 +343,15 @@ int statistics::test() {
     assert(S.get_milli(4)!=0);
     assert(S.get_milli(5)==0);
     assert(S.day_total() == 5);
-    debug(int(S.full_total()));
+    DBG(int(S.full_total()));
     assert(S.full_total() == 5);
     S.save_eeprom();
   }
 
   int L=0;
   uint8_t * data = S.getdata(&L);
-  debug(L);
-  debug(NDATA);
+  DBG(L);
+  DBG(NDATA);
 
   statistics T;
   T.load_eeprom();
@@ -371,6 +371,6 @@ int statistics::test() {
   assert(U.day_total() == 0);
   assert(U.full_total() > 0);
   
-  debug("statistics::test is good");
+  DBG("statistics::test is good");
   return 0;
 }

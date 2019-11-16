@@ -15,7 +15,6 @@ namespace Clock {
     assert(millis_since_start()==0);
     delay(1000);
     assert(millis_since_start()==1000);
-    debug("clock is good");
     return 0;
   }
 }

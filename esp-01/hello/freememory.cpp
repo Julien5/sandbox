@@ -61,7 +61,7 @@ void printMemory(int marker) {
 
 extern "C" {
   void printMemory(char marker) {
-    debug("mem");
+    DBG("mem");
   }
 }
 

@@ -30,16 +30,7 @@
 #include "Arduino.h"
 #include "HardwareSerial.h"
 #if 1
-#define DBGTX(X)				\
-  do {						\
-    Serial.print((X));				\
-    Serial.flush();				\
-  } while(0)
-#define DBGTXLN(X)				\
-  do {						\
-    Serial.println((X));			\
-    Serial.flush();				\
-  } while(0)
+#define DBG(X) ((void) 0)			
 #define TRACE()					\
   do {						\
     Serial.print(__FILE__);			\
@@ -50,11 +41,8 @@
     Serial.flush();				\
   } while(0)
 #else
-#define DBGTX(X) ((void) 0)
-#define DBGTXLN(X) ((void) 0)
+#define DBG(X) ((void) 0)					\
 #define TRACE() ((void) 0)
 #endif
 #define assert(ignore)
-#define debug(X)((void) 0)
-#define debug2(X,Y)((void) 0)
 #endif
