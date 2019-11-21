@@ -101,10 +101,9 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
         log("received {} bytes".format(len(post_data)));
         database.insert_request(self.path,post_data);
         sms=data.TicksHandler(database.select_ticks()).sms();
-        
         log("sms:"+sms);
 
-        if post_data:
+        if "tickscounter" in self.path:
             msg="path={0}\nsize:{1}\nsms:{2}".format(self.path,len(post_data),sms);
             mail.sendmail("message de google",msg);
 
