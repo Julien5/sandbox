@@ -13,10 +13,27 @@
 
 #include "http.h"
 
+#include <espressif/esp_sta.h>
+#include <espressif/esp_wifi.h>
+#include <espressif/esp_system.h>
+
 namespace gpio {
   const int led = 2;
   const int dht = 4;
 }
+
+#define SLEEP_1HR 0xD693A400
+#define SLEEP_10SECS 10*1000*1000
+
+static void deep_sleep()
+{
+    /* Clean all network connections */
+    sdk_wifi_station_disconnect();
+
+    /* Now just wait for the RTC to kill the CPU core */
+    sdk_system_deep_sleep(SLEEP_10SECS); 
+}
+
 
 void getCallback(uint8_t *data, const int16_t length) {
   printf("receveid %d bytes\n", length);
@@ -45,6 +62,7 @@ void mainTask(void *pvParameters)
     http::post((uint8_t*)log,strlen(log),getCallback);
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     printf("done\n");
+    deep_sleep();
   }
 }
 
