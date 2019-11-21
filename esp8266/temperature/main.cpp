@@ -11,9 +11,15 @@
 #include "esp8266.h"
 #include <string.h>
 
+#include "http.h"
+
 namespace gpio {
   const int led = 2;
   const int dht = 4;
+}
+
+void getCallback(uint8_t *data, const int16_t length) {
+  printf("receveid %d bytes\n", length);
 }
 
 void mainTask(void *pvParameters)
@@ -23,18 +29,22 @@ void mainTask(void *pvParameters)
   
   gpio_enable(gpio::led, GPIO_OUTPUT);
   while(1) {
+    char log[128]={0};
     if (dht_read_data(DHT_TYPE_DHT11, gpio::dht, &humidity, &temperature)) {
-      printf("Humidity: %d%% Temp: %dC\n", 
-	     humidity / 10, 
-	     temperature / 10);
+      snprintf(log, 128,
+	       "Humidity: %d%% Temp: %dC", 
+	       humidity / 10, 
+	       temperature / 10
+	       );
+      printf("%s",log);
     } else {
       printf("Could not read data from sensor\n");
     }
-    printf("hi\n");
-    gpio_write(gpio::led, 1);
     vTaskDelay(1000 / portTICK_PERIOD_MS);
-    gpio_write(gpio::led, 0);
+    // http::get(getCallback);
+    http::post((uint8_t*)log,strlen(log),getCallback);
     vTaskDelay(1000 / portTICK_PERIOD_MS);
+    printf("done\n");
   }
 }
 
@@ -42,6 +52,7 @@ extern "C" {
   void user_init(void)
   {
     uart_set_baud(0, 115200);
-    xTaskCreate(mainTask, "mainTask", 256, NULL, 2, NULL);
+    xTaskCreate(mainTask, "mainTask", 1024, NULL, 2, NULL);
   }
+
 }
