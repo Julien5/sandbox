@@ -18,10 +18,10 @@ pushd swig
 make
 popd
 
-sudo cp hamster-server.service  /etc/systemd/user
-sudo chmod u+r /etc/systemd/user/hamster-server.service
-sudo systemctl enable hamster-server
-sudo systemctl start  hamster-server
+#sudo cp hamster-server.service  /etc/systemd/user
+#sudo chmod u+r /etc/systemd/user/hamster-server.service
+#sudo systemctl enable hamster-server
+#sudo systemctl start  hamster-server
 
 popd
 

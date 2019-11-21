@@ -4,6 +4,7 @@
 
 #ifndef ARDUINO
 #include <string>
+#include <iostream>
 class MockSerial {
 public:
   void begin(unsigned long baud);
@@ -30,19 +31,23 @@ void attachInterrupt(uint8_t interrupt, void ISR(void), uint8_t mode);
 #define CHANGE 1
 #define FALLING 2
 #define RISING 3
-#ifdef abs
-#undef abs
+/* Note:
+ * define abs, max and min macros causes problems with
+ * stl headers. 
+ */
+#else
+#include "Arduino.h"
 #endif
-#define abs(x) ((x)>0?(x):-(x))
 
-#ifdef max
-#undef max
-#endif
-#define max(a,b) ((a)>(b)?(a):(b))
+template<typename T>
+T xMin(const T &a, const T &b) {
+  if (a<b)
+    return a;
+  return b;
+}
 
-#ifdef min
-#undef min
-#endif
-#define min(a,b) ((a)<(b)?(a):(b))
-
+#ifndef ARDUINO
+using test_ms = uint32_t;
+test_ms millis();
+void delay(test_ms d);
 #endif

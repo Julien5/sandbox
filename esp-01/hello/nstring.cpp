@@ -10,18 +10,18 @@ auto nstring::make(const char *s) {
 
 int nstring::test() {
   auto x = nstring::make("hello");
-  debug(x);
+  DBG(x);
   auto y = nstring::make(" foo ");
   auto z = x + y; 
-  debug(z);
+  DBG(z);
 
   auto a = nstring::make("aaa,bb\r\n+cc"); // 9 chars
-  debug(a);
+  DBG(a);
   a.zeroes(",\r\n+");
-  debug(a);
-  debug(a.zeroes());
+  DBG(a);
+  DBG(a.zeroes());
   while(char *p=a.tok()) {
-    debug(p);
+    DBG(p);
     assert(p);
   }
   return 0;

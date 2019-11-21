@@ -5,13 +5,7 @@
 #include "defines.h"
 #include "eeprom.h"
 #include <string.h>
-#ifndef ARDUINO
-#include <fstream>
-#endif
-
-#ifndef abs
-#define abs(x) ((x)>0?(x):-(x))
-#endif
+#include "platform.h"
 
 bin::bin(){
   reset();
@@ -20,13 +14,23 @@ bin::bin(){
 bin::time bin::end() const {
   return m_start+m_duration;
 }
-
+ 
 bool bin::accepts() const {
   if (empty()) {
     return true;
   }
   Clock::ms now = Clock::millis_since_start();
-  assert(now>end());
+  /* There is a subtle reason why we may have
+        now == end()
+     (and not now > end()). This is because an interrupt may occur during the
+     processing of tick(). If less than 1ms has passed until the next tick() 
+     processing, we have now=end(). In case of thread-generated interrupts with
+     delay(), this can also happen if the call to delay() occurs in a
+     call of tick. The next time tick() is entered, no delay() has passed.
+     Note that in this case, only one tick is counted, although two (or more)
+     occured.
+  */
+  assert(now>=end());
   if ((now - end()) > 2000)
     return false;
   return true;
@@ -214,6 +218,7 @@ int tickscounter::compress_index() {
 }
 
 void tickscounter::compress() {
+  DBG("compress");
   clean();
   const int k=compress_index();
   m_bins[k].take(m_bins[k+1]);
@@ -368,7 +373,7 @@ bin tickscounter::getbin(const int &k) const {
 
 uint8_t* tickscounter::getdata(uint16_t * Lout) const {
   m_transmission_time = Clock::millis_since_start();
-  DBGTXLN(m_transmission_time);
+  DBG(m_transmission_time);
   *Lout = sizeof(*this);
   return (uint8_t*)this; 
 }
@@ -413,7 +418,7 @@ bool tickscounter::save_eeprom_if_necessary() {
   return true;
 }
 
-bool tickscounter::reset_eeprom() {
+void tickscounter::reset_eeprom() {
   eeprom e;
   e.write(0,0);
   s_total_at_last_save=0;
@@ -503,6 +508,11 @@ int some_spurious_ticks(tickscounter &C) {
   return k;
 }
 
+
+#ifndef ARDUINO
+#include <fstream>
+#endif
+
 int tickscounter::test() {
   tickscounter C;
   assert(C.total()==0);
@@ -533,7 +543,7 @@ int tickscounter::test() {
 
   uint16_t L=0;
   const uint8_t * data = C.getdata(&L);
-  debug(L);
+  DBG(L);
 
   tickscounter C2(data);
   assert(C==C2);

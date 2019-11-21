@@ -1,28 +1,13 @@
 #pragma once
 
 #ifndef ARDUINO
+
 #include <iostream>
 #include <cassert>
-#define debug(X)							\
+#define DBG(X)						\
   do {									\
-    std::cout << __LINE__ << ":" << #X << "=" << (X) << std::endl;	\
+    std::cout << __FILE__ << ":" << __LINE__ << ":" << X << std::endl << std::flush; \
   } while(0)
-#define debug2(X,Y)							\
-  do {									\
-    if (X && Y)								\
-      std::cout << __LINE__ << ":" << (X) << (Y) << std::endl;		\
-  } while(0)
-#define DBGTX(X)					\
-  do {							\
-    if (X)						\
-      std::cout << __LINE__ << ":" << #X << "=" << (X);	\
-  } while(0)
-#define DBGTXLN(X)							\
-  do {									\
-    if (X)								\
-      std::cout << __LINE__ << ":" << #X << "=" << (X) << std::endl;	\
-  } while(0)
-
 #define TRACE()					\
   do {						\
     static int __counter__ = 0;			\
@@ -32,13 +17,7 @@
     std::cout << ":";				\
     std::cout << __counter__++ << "\n";		\
   } while(0)
-
-using test_ms = uint32_t;
-test_ms millis();
-void delay(test_ms d);
-
 #define F(X) (X)
-
 #define PROGMEM 
 
 #else
@@ -51,16 +30,7 @@ void delay(test_ms d);
 #include "Arduino.h"
 #include "HardwareSerial.h"
 #if 1
-#define DBGTX(X)				\
-  do {						\
-    Serial.print((X));				\
-    Serial.flush();				\
-  } while(0)
-#define DBGTXLN(X)				\
-  do {						\
-    Serial.println((X));			\
-    Serial.flush();				\
-  } while(0)
+#define DBG(X) ((void) 0)			
 #define TRACE()					\
   do {						\
     Serial.print(__FILE__);			\
@@ -71,11 +41,8 @@ void delay(test_ms d);
     Serial.flush();				\
   } while(0)
 #else
-#define DBGTX(X) ((void) 0)
-#define DBGTXLN(X) ((void) 0)
+#define DBG(X) ((void) 0)					\
 #define TRACE() ((void) 0)
 #endif
 #define assert(ignore)
-#define debug(X)((void) 0)
-#define debug2(X,Y)((void) 0)
 #endif

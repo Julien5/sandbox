@@ -1,12 +1,14 @@
 #include "lcd.h"
 #include "freememory.h"
 #include "debug.h"
+#include "platform.h"
 
 #ifdef ARDUINO
 #include "Arduino.h"
 #include <LiquidCrystal.h>
 #else
 #include <iostream>
+#include <iomanip>
 class LiquidCrystal {
 public:
   typedef uint8_t pin;
@@ -14,7 +16,9 @@ public:
   void begin(int n, int m){};
   void setCursor(int n, int m){};
   void print(const std::string &s) {
-    std::cout << "LCD: [" << s << "]" << std::endl;
+    std::cout << "LCD: " ;
+    std::cout << std::setw(10);
+    std::cout << millis() << " [" << s << "]\n";
   };
 };
 #endif
@@ -37,7 +41,6 @@ void display::LCD::init() {
 int min_free_memory=2048;
 int last_memory=4096;
 void display::LCD::print(const char * msg1, const char *msg2) {
-  DBGTX(msg1); DBGTX("#"); DBGTXLN(msg2);
   if (msg1) {
     char m1[17]={0};
     snprintf(m1,17,"%-16.16s",msg1);

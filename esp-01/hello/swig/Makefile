@@ -20,14 +20,20 @@ CXXFLAGS = -std=c++14 -c -fpic -Wall -I/usr/include/python$(PYTHON_VERSION)m/
 LDFLAGS = -shared
 
 SRCS := \
+../clock.cpp \
+../debug.cpp \
+../eeprom.cpp \
+../freememory.cpp \
+../lcd.cpp \
+../nstring.cpp \
+../parse.cpp \
+../platform.cpp \
+../sensor.cpp \
 ../statistics.cpp \
 ../tickscounter.cpp \
-../eeprom.cpp \
-../debug.cpp \
-../clock.cpp \
 ../utils.cpp \
 statistics_wrap.cpp
-#SRCS := x.cpp x_wrap.cpp
+
 OBJS := $(SRCS:.cpp=.o)
 
 all: build deploy

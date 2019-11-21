@@ -46,7 +46,7 @@ private:
   int compress_index();
   void denoise();
   void remove_holes();
-  static bool reset_eeprom();
+  static void reset_eeprom();
 public:
   tickscounter();
   tickscounter(const uint8_t *addr);
