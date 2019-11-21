@@ -8,6 +8,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "esp8266.h"
+#include <string.h>
 
 const int gpio = 2;
 
@@ -16,13 +17,14 @@ const int gpio = 2;
  */
 void blinkenTask(void *pvParameters)
 {
-    gpio_enable(gpio, GPIO_OUTPUT);
-    while(1) {
-        gpio_write(gpio, 1);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-        gpio_write(gpio, 0);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-    }
+  gpio_enable(gpio, GPIO_OUTPUT);
+  while(1) {
+    printf("hi\n");
+    gpio_write(gpio, 1);
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    gpio_write(gpio, 0);
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+  }
 }
 
 
@@ -41,19 +43,19 @@ void blinkenTask(void *pvParameters)
 */
 void blinkenRegisterTask(void *pvParameters)
 {
-    GPIO.ENABLE_OUT_SET = BIT(gpio);
-    IOMUX_GPIO2 = IOMUX_GPIO2_FUNC_GPIO | IOMUX_PIN_OUTPUT_ENABLE; /* change this line if you change 'gpio' */
-    while(1) {
-        GPIO.OUT_SET = BIT(gpio);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-        GPIO.OUT_CLEAR = BIT(gpio);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-    }
+  GPIO.ENABLE_OUT_SET = BIT(gpio);
+  IOMUX_GPIO2 = IOMUX_GPIO2_FUNC_GPIO | IOMUX_PIN_OUTPUT_ENABLE; /* change this line if you change 'gpio' */
+  while(1) {
+    GPIO.OUT_SET = BIT(gpio);
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    GPIO.OUT_CLEAR = BIT(gpio);
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+  }
 }
 
 void user_init(void)
 {
-    uart_set_baud(0, 115200);
-    xTaskCreate(blinkenTask, "blinkenTask", 256, NULL, 2, NULL);
-    //xTaskCreate(blinkenRegisterTask, "blinkenRegisterTask", 256, NULL, 2, NULL);
+  uart_set_baud(0, 115200);
+  xTaskCreate(blinkenTask, "blinkenTask", 256, NULL, 2, NULL);
+  //xTaskCreate(blinkenRegisterTask, "blinkenRegisterTask", 256, NULL, 2, NULL);
 }
