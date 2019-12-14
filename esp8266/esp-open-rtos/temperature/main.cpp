@@ -1,7 +1,3 @@
-/* The classic "blink" example
- *
- * This sample code is in the public domain.
- */
 #include <stdlib.h>
 #include <dht/dht.h>
 #include "espressif/esp_common.h"
