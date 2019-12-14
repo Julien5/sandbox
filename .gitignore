@@ -5,3 +5,6 @@ build-uno
 __pycache__
 *.pyc
 *.so
+private_ssid_config.h
+build
+a.out
