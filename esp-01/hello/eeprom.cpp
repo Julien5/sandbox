@@ -8,116 +8,17 @@
 
 #ifdef ARDUINO
 #include <EEPROM.h>
-// [magic number, length16, data, checksum on data]
 
 namespace arduino {
-  char readbyte(int addr) {
+  char read(int addr) {
     return EEPROM.read(addr);
   }
-  void writebyte(int addr, char d) {
+  void write(int addr, char d) {
     EEPROM.write(addr,d);
   }
 }
 using namespace arduino;
 eeprom::eeprom(){};
-#endif
-
-#ifdef DEVHOST
-
-namespace x86 {
-  static char mem[4096];
-  char readbyte(int addr) {
-    if (addr<10)
-      printf("read %d : %#02x\n",addr,mem[addr] & 0xff);
-    return mem[addr];
-  }
-  void writebyte(int addr, char d) {
-    if (addr<10)
-      printf("write %d : %#02x\n",addr,d & 0xff);
-    mem[addr]=d;
-  }
-}
-eeprom::eeprom(){
-  // eeprom mock is volatile !
-  for(int k=0; k<sizeof(x86::mem)/sizeof(char);++k)
-    x86::writebyte(0,0);
-}
-using namespace x86;
-#endif
-
-#if defined (ARDUINO) || defined (DEVHOST)
-#define BYTEWISE
-#define MAGIC 0xaa
-namespace bytewise {
-  uint8_t checksum(uint8_t const * d, const int &L) {
-    uint8_t r=0;
-    for(int k=0; k<L; ++k) {
-      r+=d[k];
-    }
-    return r;
-  }
-  bool eeprom_check(uint16_t *length, int *indx) {
-    int index=0;
-    uint8_t should_be_magic=readbyte(index++);
-    if (should_be_magic!=MAGIC) {
-      DBG("first byte is not magic");
-      return false;
-    }
-    if (length)
-      *length=0;
-    uint16_t L=0;
-    {
-      char _L[2]={};
-      _L[0]=readbyte(index++);
-      _L[1]=readbyte(index++);
-      L=*(uint16_t*)(&_L);
-      if (indx)
-	*indx=index;
-    }
-    uint8_t checksum=0;
-    for(int k=0; k<L; ++k,++index) {
-      uint8_t d=readbyte(index);
-      checksum+=d;
-    }
-    uint8_t checksum_saved=readbyte(index++);
-    if (checksum != checksum_saved) {
-      DBG("checkum failed:"<<(int)checksum<<" vs. "<<(int)checksum_saved);
-      return false;
-    }
-    if (length)
-      *length=L;
-    return true;
-  }
-  eeprom::length read(const eeprom::ram_address &dst, const eeprom::length &L) {
-    const eeprom::eeprom_address src=0;
-    eeprom::length ret=0;
-    int index=0;
-    DBG("check eeprom");
-    if (!eeprom_check(&ret,&index))
-      return 0;
-    eeprom::ram_address addr=dst;
-    for(int k=0; k<xMin(ret,L); ++k) {
-      *addr=readbyte(index++);
-      addr++;
-    }
-    return ret;
-  }
-  eeprom::length write(const eeprom::const_ram_address &src, const eeprom::length &L) {
-    const eeprom::eeprom_address dst=0;
-    int index=0;
-    writebyte(index++,MAGIC);
-    
-    char * _L=(char*)&L;
-    writebyte(index++,*(_L++));
-    writebyte(index++,*(_L++));
-    
-    for(int k=0; k<L; ++index,++k)
-      writebyte(index,src[k]);
-    writebyte(index++,checksum(src,L));
-    return L;
-  }
-}
-using namespace bytewise;
 #endif
 
 #ifdef ESP8266
@@ -135,30 +36,145 @@ namespace esp8266 {
 }
 #endif
 
-eeprom::length eeprom::read(const eeprom_address &src, const eeprom::ram_address &dst, const eeprom::length &L) {
-  return bytewise::read(dst,L);
-}
-
-eeprom::length eeprom::write(const eeprom_address &dst, const eeprom::const_ram_address &src, const eeprom::length &L) {
-  return bytewise::write(src,L);
-}
-
 #ifdef DEVHOST
+namespace x86 {
+  static char mem[4096];
+  char read(int addr) {
+    if (addr<10)
+      printf("read %d : 0x%02x\n",addr,mem[addr] & 0xff);
+    return mem[addr];
+  }
+  void write(int addr, char d) {
+    if (addr<10)
+      printf("write %d : 0x%02x\n",addr,d & 0xff);
+    mem[addr]=d;
+  }
+}
+eeprom::eeprom(){
+  // eeprom mock is volatile !
+  for(int k=0; k<sizeof(x86::mem)/sizeof(char);++k)
+    x86::write(0,0);
+}
+using namespace x86;
+#endif
+
+#define MAGIC 0xaa
+namespace impl {
+  typedef uint16_t eeprom_address;
+  uint8_t checksum(uint8_t const * d, const int &L) {
+    uint8_t r=0;
+    for(int k=0; k<L; ++k) {
+      r+=d[k];
+    }
+    return r;
+  }
+  // [magic number, uint16_t length, data, uint8_t checksum on data]
+  bool eeprom_check(uint16_t *length, int *indx) {
+    int index=0;
+    uint8_t should_be_magic=read(index++);
+    if (should_be_magic!=MAGIC) {
+      DBG("first byte is not magic");
+      return false;
+    }
+    if (length)
+      *length=0;
+    uint16_t L=0;
+    {
+      char _L[2]={};
+      _L[0]=read(index++);
+      _L[1]=read(index++);
+      L=*(uint16_t*)(&_L);
+      if (indx)
+	*indx=index;
+    }
+    DBG("length="<<(int)L);
+    uint8_t checksum=0;
+    for(int k=0; k<L; ++k,++index) {
+      uint8_t d=read(index);
+      checksum+=d;
+    }
+    uint8_t checksum_saved=read(index++);
+    if (checksum != checksum_saved) {
+      DBG("checkum failed:"<<(int)checksum<<" vs. "<<(int)checksum_saved);
+      return false;
+    }
+    if (length)
+      *length=L;
+    return true;
+  }
+  eeprom::length Read(const eeprom::ram_address &dst, const eeprom::length &L) {
+    uint16_t ret=0;
+    int index=0;
+    DBG("check eeprom");
+    if (!eeprom_check(&ret,&index))
+      return -1;
+    DBG("OK");
+    eeprom::ram_address addr=dst;
+    for(int k=0; k<xMin(eeprom::length(ret),L); ++k) {
+      *addr=read(index++);
+      addr++;
+    }
+    return ret;
+  }
+  eeprom::length Write(const eeprom::const_ram_address &src, const eeprom::length &L) {
+    int index=0;
+    write(index++,MAGIC);
+    
+    char * _L=(char*)&L;
+    // write the length of the data.
+    write(index++,*(_L++));
+    write(index++,*(_L++));
+    
+    for(int k=0; k<L; ++index,++k)
+       write(index,src[k]);
+    
+    write(index++,checksum(src,L));
+    // TODO check for overflows.
+    return L;
+  }
+}
+
+
+eeprom::length eeprom::read(const eeprom::ram_address &dst, const eeprom::length &L) {
+  return impl::Read(dst,L);
+}
+
+eeprom::length eeprom::write(const eeprom::const_ram_address &src, const eeprom::length &L) {
+  return impl::Write(src,L);
+}
+
+void eeprom::reset() {
+  ::write(0,0);
+}
+
+#include <string.h>
 int eeprom::test() {
-  const char * data = "hello";
   eeprom e;
-  e.write(0,(ram_address)&data,sizeof(data));
-  uint8_t read_buffer[4]={0};
-  length L=e.read(0,read_buffer,sizeof(read_buffer));
-  DBG(L);
-  if (L==0)
+  const char * data = "hello";
+
+  const size_t Ldata=strlen(data)+1;
+  DBG("sizeof(data)="<<Ldata);
+ 
+  e.write((ram_address)data,Ldata);
+  uint8_t read_buffer[32]={0};
+  DBG("sizeof(read_buffer)="<<sizeof(read_buffer));
+  length L=e.read(read_buffer,sizeof(read_buffer));
+  if (L<0)
     return 1;
-  const uint8_t bad = 0xba;
-  writebyte(1,bad);
-  L=e.read(0,read_buffer,sizeof(read_buffer));
-  DBG(L);
-  if (L!=0)
+  DBG("L="<<L);
+  DBG((char*)read_buffer);
+  if (strcmp(data,(char*)read_buffer)!=0)
+    return 1;
+
+  // read again
+  L=e.read(read_buffer,sizeof(read_buffer));
+  if (L<0)
+    return 1;
+
+  DBG("test corruption");
+  ::write(4,0xba);
+  L=e.read(read_buffer,sizeof(read_buffer));
+  if (L>=0)
     return 1;
   return 0;
 }
-#endif

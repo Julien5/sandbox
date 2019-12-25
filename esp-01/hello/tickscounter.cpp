@@ -108,7 +108,7 @@ public:
 bool tickscounter::load_eeprom() {
   eeprom e;
   const auto Ldst=sizeof(this);
-  const auto Lsrc=e.read(0,(uint8_t*)this,Ldst);
+  const auto Lsrc=e.read((uint8_t*)this,Ldst);
   return (Ldst == Lsrc);
 }
 
@@ -357,13 +357,13 @@ bool tickscounter::save_eeprom_if_necessary() {
   
   eeprom e;
   s_total_at_last_save=total();
-  return e.write(0,data,L) == L;
+  return e.write(data,L) == L;
 }
 
 void tickscounter::reset_eeprom() {
   eeprom e;
   const uint8_t zero=0;
-  e.write(0,&zero,1);
+  e.write(&zero,1);
   s_total_at_last_save=0;
 }
 
@@ -513,11 +513,6 @@ int tickscounter::test() {
     if (!E.load_eeprom())
       assert(0);
     assert(C==E);
-
-    eeprom e;
-    const uint8_t somenumber=12;
-    e.write(0,&somenumber,1);
-    assert(!E.load_eeprom());
   }
   
   return 0;
