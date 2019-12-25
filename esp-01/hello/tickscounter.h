@@ -1,8 +1,23 @@
 #pragma once
+
 #include <stdint.h>
+#include "eeprom.h"
+
 #ifndef ARDUINO
 #include <string>
 #endif
+
+namespace config {
+  // may be quite short, we assume the data are uploaded
+  // during the day.
+  // tickscounter: do not transmit if activity for less than:
+  constexpr int kRecentlyActiveSeconds = 20;
+  // tickscounter: clean bin if kMinAloneTicks ticks or less (noise_at_index)
+  constexpr int kMinAloneTicks = 2;
+  // tickscounter: if a bin is older than kSecondsUntilAloneTick, then it is checked if it is noise
+  // (noise_at_index)
+  constexpr int kSecondsUntilAloneTick = kRecentlyActiveSeconds;
+}
 
 struct bin {
   typedef int32_t time;

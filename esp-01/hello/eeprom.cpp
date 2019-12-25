@@ -28,12 +28,12 @@ namespace x86 {
   static char mem[4096];
   char readbyte(int addr) {
     if (addr<10)
-      printf("read %d : %#02x\n",addr,mem[addr]);
+      printf("read %d : %#02x\n",addr,mem[addr] & 0xff);
     return mem[addr];
   }
   void writebyte(int addr, char d) {
     if (addr<10)
-      printf("write %d : %#02x\n",addr,d);
+      printf("write %d : %#02x\n",addr,d & 0xff);
     mem[addr]=d;
   }
 }
@@ -47,13 +47,22 @@ using namespace x86;
 
 #if defined (ARDUINO) || defined (DEVHOST)
 #define BYTEWISE
-#define MAGIC 86
+#define MAGIC 0xaa
 namespace bytewise {
+  uint8_t checksum(uint8_t const * d, const int &L) {
+    uint8_t r=0;
+    for(int k=0; k<L; ++k) {
+      r+=d[k];
+    }
+    return r;
+  }
   bool eeprom_check(uint16_t *length, int *indx) {
     int index=0;
     uint8_t should_be_magic=readbyte(index++);
-    if (should_be_magic!=MAGIC)
+    if (should_be_magic!=MAGIC) {
+      DBG("first byte is not magic");
       return false;
+    }
     if (length)
       *length=0;
     uint16_t L=0;
@@ -71,8 +80,10 @@ namespace bytewise {
       checksum+=d;
     }
     uint8_t checksum_saved=readbyte(index++);
-    if (checksum != checksum_saved)
+    if (checksum != checksum_saved) {
+      DBG("checkum failed:"<<(int)checksum<<" vs. "<<(int)checksum_saved);
       return false;
+    }
     if (length)
       *length=L;
     return true;
@@ -81,6 +92,7 @@ namespace bytewise {
     const eeprom::eeprom_address src=0;
     eeprom::length ret=0;
     int index=0;
+    DBG("check eeprom");
     if (!eeprom_check(&ret,&index))
       return 0;
     eeprom::ram_address addr=dst;
@@ -90,7 +102,7 @@ namespace bytewise {
     }
     return ret;
   }
-  eeprom::length write(const eeprom::ram_address &src, const eeprom::length &L) {
+  eeprom::length write(const eeprom::const_ram_address &src, const eeprom::length &L) {
     const eeprom::eeprom_address dst=0;
     int index=0;
     writebyte(index++,MAGIC);
@@ -101,7 +113,7 @@ namespace bytewise {
     
     for(int k=0; k<L; ++index,++k)
       writebyte(index,src[k]);
-    //writebyte(index++,checksum(src,L));
+    writebyte(index++,checksum(src,L));
     return L;
   }
 }
@@ -127,6 +139,26 @@ eeprom::length eeprom::read(const eeprom_address &src, const eeprom::ram_address
   return bytewise::read(dst,L);
 }
 
-eeprom::length eeprom::write(const eeprom_address &dst, const eeprom::ram_address &src, const eeprom::length &L) {
+eeprom::length eeprom::write(const eeprom_address &dst, const eeprom::const_ram_address &src, const eeprom::length &L) {
   return bytewise::write(src,L);
 }
+
+#ifdef DEVHOST
+int eeprom::test() {
+  const char * data = "hello";
+  eeprom e;
+  e.write(0,(ram_address)&data,sizeof(data));
+  uint8_t read_buffer[4]={0};
+  length L=e.read(0,read_buffer,sizeof(read_buffer));
+  DBG(L);
+  if (L==0)
+    return 1;
+  const uint8_t bad = 0xba;
+  writebyte(1,bad);
+  L=e.read(0,read_buffer,sizeof(read_buffer));
+  DBG(L);
+  if (L!=0)
+    return 1;
+  return 0;
+}
+#endif

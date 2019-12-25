@@ -1,7 +1,7 @@
 CC=gcc
 CXX=g++
 RM=rm -f
-CXXFLAGS=-Wall -I. -std=c++14 -DDEBUG -g
+CXXFLAGS=-Wall -I. -std=c++14 -DDEBUG -g 
 LDFLAGS=
 LIBS=-lpthread
 
@@ -9,7 +9,6 @@ SRCS := \
 tests/test.cpp \
 parse.cpp \
 nstring.cpp \
-statistics.cpp \
 eeprom.cpp  \
 freememory.cpp \
 debug.cpp \

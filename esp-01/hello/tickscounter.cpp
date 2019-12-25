@@ -2,7 +2,6 @@
 #include "clock.h"
 #include "debug.h"
 #include <limits.h>
-#include "defines.h"
 #include "eeprom.h"
 #include <string.h>
 #include "platform.h"
@@ -14,7 +13,7 @@ bin::bin(){
 bin::time bin::end() const {
   return m_start+m_duration;
 }
- 
+
 bool bin::accepts() const {
   if (empty()) {
     return true;
@@ -85,38 +84,11 @@ bin::duration bin::distance(const bin &other) const {
   return other.m_start - end();
 }
 
-#define MAGIC 86
-
-bool eeprom_check(eeprom *e, uint16_t *length, int *indx) {
-  int index=0;
-  uint8_t should_be_magic=e->read(index++);
-  if (should_be_magic!=MAGIC)
-    return false;
-  if (length)
-    *length=0;
-  uint16_t L=0;
-  {
-    char _L[2]={};
-    _L[0]=e->read(index++);
-    _L[1]=e->read(index++);
-    L=*(uint16_t*)(&_L);
-    if (indx)
-      *indx=index;
-  }
-  uint8_t checksum=0;
-  for(int k=0; k<L; ++k,++index) {
-    uint8_t d=e->read(index);
-    checksum+=d;
-  }
-  uint8_t checksum_saved=e->read(index++);
-  #ifndef ARDUINO
-  printf("checksum:%#02x checkum_saved:%#02x\n",checksum,checksum_saved);
-  #endif
-  if (checksum != checksum_saved)
-    return false;
-  if (length)
-    *length=L;
-  return true;
+uint8_t checksum(uint8_t* data, uint16_t L) {
+  uint8_t ret=0;
+  for(int k=0; k<L; ++k)
+    ret+=data[k];
+  return ret;
 }
 
 class InterruptsDisabler {
@@ -135,16 +107,9 @@ public:
 
 bool tickscounter::load_eeprom() {
   eeprom e;
-  uint16_t L;
-  int index=0;
-  if (!eeprom_check(&e,&L,&index))
-    return false;
-  InterruptsDisabler D;
-  for(int k=0; k<L; ++k) {
-    char d=e.read(index++);
-    memcpy((char*)(this)+k, &d, 1);
-  }    
-  return true;
+  const auto Ldst=sizeof(this);
+  const auto Lsrc=e.read(0,(uint8_t*)this,Ldst);
+  return (Ldst == Lsrc);
 }
 
 tickscounter::tickscounter()
@@ -241,8 +206,8 @@ bool noise_at_index(const bin (&bins)[NTICKS], int k) {
     return false;
   assert(now>=b.end());
   const Clock::ms age = now - b.end();
-  const Clock::ms max_age = kSecondsUntilAloneTick*1000L;
-  if (age>max_age && b.m_count<=kMinAloneTicks) {
+  const Clock::ms max_age = config::kSecondsUntilAloneTick*1000L;
+  if (age>max_age && b.m_count<=config::kMinAloneTicks) {
     // situation where count is too low.
     // is it really dirt ?
     // distance to previous and next
@@ -322,7 +287,7 @@ bin::time tickscounter::age() {
 
 
 bool tickscounter::recently_active() {
-  constexpr Clock::ms T=kRecentlyActiveSeconds*1000L; // 1 min
+  constexpr Clock::ms T=config::kRecentlyActiveSeconds*1000L; // 1 min
   return age() < T;
 }
 
@@ -378,13 +343,6 @@ uint8_t* tickscounter::getdata(uint16_t * Lout) const {
   return (uint8_t*)this; 
 }
 
-uint8_t checksum(uint8_t* data, uint16_t L) {
-  uint8_t ret=0;
-  for(int k=0; k<L; ++k)
-    ret+=data[k];
-  return ret;
-}
-
 static uint16_t s_total_at_last_save=0;
 bool tickscounter::save_eeprom_if_necessary() {
   if (empty())
@@ -396,31 +354,16 @@ bool tickscounter::save_eeprom_if_necessary() {
   
   uint16_t L=0;
   uint8_t* data=getdata(&L);
-  eeprom e;
-
-  int index=0;
-  e.write(index++,MAGIC);
   
-  char * _L=(char*)&L;
-  e.write(index++,*(_L++));
-  e.write(index++,*(_L++));
-
-  for(int k=0; k<L; ++index,++k)
-    e.write(index,data[k]);
-  e.write(index++,checksum(data,L));
-
-  // check
-  if (!eeprom_check(&e,0,0))
-    return false;
- 
-  s_total_at_last_save=total();  
-
-  return true;
+  eeprom e;
+  s_total_at_last_save=total();
+  return e.write(0,data,L) == L;
 }
 
 void tickscounter::reset_eeprom() {
   eeprom e;
-  e.write(0,0);
+  const uint8_t zero=0;
+  e.write(0,&zero,1);
   s_total_at_last_save=0;
 }
 
@@ -500,7 +443,7 @@ int some_real_ticks(tickscounter &C) {
 
 int some_spurious_ticks(tickscounter &C) {
   int k = 0;
-  for(; k<kMinAloneTicks; ++k) {
+  for(; k<config::kMinAloneTicks; ++k) {
     delay(2*one_minute());
     C.tick();
     delay(one_minute());
@@ -572,7 +515,8 @@ int tickscounter::test() {
     assert(C==E);
 
     eeprom e;
-    e.write(12,0);
+    const uint8_t somenumber=12;
+    e.write(0,&somenumber,1);
     assert(!E.load_eeprom());
   }
   
