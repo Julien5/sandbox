@@ -1,53 +1,18 @@
-CXX=/usr/share/arduino/hardware/tools/avr/bin/avr-g++
-CC=/usr/share/arduino/hardware/tools/avr/bin/avr-gcc
-RM=rm -f
-LIBS=-lc -lm 
-LDFLAGS=-Wl,--gc-sections -flto -fuse-linker-plugin 
-CFLAGS=-mmcu=atmega328p -DF_CPU=16000000L -DARDUINO=105  -D__PROG_TYPES_COMPAT__ -I/usr/share/arduino/hardware/arduino/cores/arduino -I/usr/share/arduino/hardware/arduino/variants/standard -Wall -ffunction-sections -fdata-sections -Os
-CXXFLAGS=$(CFLAGS) -fpermissive
-AR=/usr/share/arduino/hardware/tools/avr/bin/avr-gcc-ar
-
-
-CSRCS := \
-/usr/share/arduino/hardware/arduino/cores/arduino/wiring.c \
-/usr/share/arduino/hardware/arduino/cores/arduino/WInterrupts.c \
-/usr/share/arduino/hardware/arduino/cores/arduino/wiring_digital.c \
-/usr/share/arduino/hardware/arduino/cores/arduino/wiring_pulse.c \
-/usr/share/arduino/hardware/arduino/cores/arduino/wiring_analog.c \
-/usr/share/arduino/hardware/arduino/cores/arduino/wiring_shift.c \
-/usr/share/arduino/hardware/arduino/cores/arduino/avr-libc/realloc.c \
-/usr/share/arduino/hardware/arduino/cores/arduino/avr-libc/malloc.c
+include Makefile.core
 
 CXXSRCS := \
-/usr/share/arduino/hardware/arduino/cores/arduino/IPAddress.cpp \
-/usr/share/arduino/hardware/arduino/cores/arduino/new.cpp \
-/usr/share/arduino/hardware/arduino/cores/arduino/WString.cpp \
-/usr/share/arduino/hardware/arduino/cores/arduino/Tone.cpp \
-/usr/share/arduino/hardware/arduino/cores/arduino/Print.cpp \
-/usr/share/arduino/hardware/arduino/cores/arduino/HID.cpp \
-/usr/share/arduino/hardware/arduino/cores/arduino/Stream.cpp \
-/usr/share/arduino/hardware/arduino/cores/arduino/USBCore.cpp \
-/usr/share/arduino/hardware/arduino/cores/arduino/WMath.cpp \
-/usr/share/arduino/hardware/arduino/cores/arduino/main.cpp \
-/usr/share/arduino/hardware/arduino/cores/arduino/HardwareSerial.cpp \
-/usr/share/arduino/hardware/arduino/cores/arduino/CDC.cpp \
 BareMinimum.cpp
 
 # Objs are all the sources, with .cpp replaced by .o
-OBJS := $(notdir $(CSRCS:.c=.o)) $(notdir $(CXXSRCS:.cpp=.o))
+OBJS += $(notdir $(CXXSRCS:.cpp=.o))
 
-%.o: /usr/share/arduino/hardware/arduino/cores/arduino/%.cpp
-	$(CXX) $(CXXFLAGS) -include Arduino.h -c -o $(notdir $@) $<
-
-%.o: /usr/share/arduino/hardware/arduino/cores/arduino/%.c
-	$(CC) $(CFLAGS) -include Arduino.h -c -o $(notdir $@) $<
-
-%.o: /usr/share/arduino/hardware/arduino/cores/arduino/avr-libc/%.c
-	$(CC) $(CFLAGS) -include Arduino.h -c -o $(notdir $@) $<
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 all: $(OBJS)
 	$(AR) rcs libcore.a $(OBJS) 
 	$(CXX) $(CXXFLAGS) libcore.a $(LFLAGS) $(LIBS) -o min.elf
+
 clean:
 	$(RM) *.o
 
