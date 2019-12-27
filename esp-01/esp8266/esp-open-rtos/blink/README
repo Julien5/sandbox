@@ -1,0 +1,8 @@
+build and run:
+
+dev.esp8266.open.rtos
+	aka
+	DIR=/opt/esp8266/esp8266-toolchain
+	export PATH=$PATH:$DIR/compiler/xtensa-lx106-elf/bin/
+	
+make -j2 test

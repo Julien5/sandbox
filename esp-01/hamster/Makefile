@@ -1,29 +1,29 @@
 CC=gcc
 CXX=g++
 RM=rm -f
-CXXFLAGS=-Wall -I. -std=c++14 -DDEBUG -g 
 LDFLAGS=
 LIBS=-lpthread
+COMMONDIR=../common
+CXXFLAGS=-Wall -I. -I$(COMMONDIR) -std=c++14 -DDEBUG -g 
 
 SRCS := \
+$(COMMONDIR)/eeprom.cpp  \
+$(COMMONDIR)/tickscounter.cpp \
+$(COMMONDIR)/utils.cpp \
+$(COMMONDIR)/platform.cpp\
+$(COMMONDIR)/debug.cpp \
 tests/test.cpp \
 parse.cpp \
 nstring.cpp \
-eeprom.cpp  \
 freememory.cpp \
-debug.cpp \
 clock.cpp \
-tickscounter.cpp \
-utils.cpp \
 ui.cpp \
 lcd.cpp \
 wifi.cpp \
 wifi_esp.cpp \
 sensor.cpp \
-platform.cpp\
 application.cpp
 
-# ../wifi.cpp 
 # Objs are all the sources, with .cpp replaced by .o
 OBJS := $(SRCS:.cpp=.o)
 
@@ -47,4 +47,5 @@ depend: .depend
 	$(RM) ./.depend
 	$(CXX) $(CXXFLAGS) -MM $^ -MF  ./.depend;
 
-include .depend
+# TODO fix makefiles
+# include .depend
