@@ -1,0 +1,27 @@
+include settings
+
+SRCSDIR := /usr/share/arduino/hardware/arduino/cores/arduino
+OBJSDIR := /tmp/build/arduino/core
+
+CXXSRCS := $(wildcard $(SRCSDIR)/*.cpp)
+CSRCS := $(wildcard $(SRCSDIR)/*.c)
+CSRCS += $(wildcard $(SRCSDIR)/avr-libc/*.c)
+
+CXXOBJS := $(patsubst $(SRCSDIR)/%.cpp,$(OBJSDIR)/%.o,$(CXXSRCS))
+COBJS += $(patsubst $(SRCSDIR)/%.c,$(OBJSDIR)/%.o,$(CSRCS))
+
+.PHONY: dir
+
+dir:
+	mkdir -p $(OBJSDIR) $(OBJSDIR)/avr-libc
+
+all: dir $(COBJS) $(CXXOBJS)
+	$(AR) rcs $(OBJSDIR)/libcore.a $(COBJS) $(CXXOBJS) 
+
+$(CXXOBJS): $(OBJSDIR)/%.o : $(SRCSDIR)/%.cpp
+	$(CXX) $(CXXFLAGS) -include Arduino.h -c -o $@ $<
+
+$(COBJS): $(OBJSDIR)/%.o : $(SRCSDIR)/%.c
+	$(CC) $(CFLAGS) -include Arduino.h -c -o $@ $<
+
+
