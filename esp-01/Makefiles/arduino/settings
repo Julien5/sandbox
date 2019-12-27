@@ -2,9 +2,27 @@ CXX=/usr/share/arduino/hardware/tools/avr/bin/avr-g++
 CC=/usr/share/arduino/hardware/tools/avr/bin/avr-gcc
 RM=rm -f
 LIBS=-lc -lm 
-LDFLAGS=-Wl,--gc-sections -flto -fuse-linker-plugin 
-CFLAGS=-mmcu=atmega328p -DF_CPU=16000000L -DARDUINO=105  -D__PROG_TYPES_COMPAT__ -I/usr/share/arduino/hardware/arduino/cores/arduino -I/usr/share/arduino/hardware/arduino/variants/standard -Wall -ffunction-sections -fdata-sections -Os -flto
-CXXFLAGS=$(CFLAGS) -fpermissive
+LDFLAGS=-Wl,--gc-sections -fuse-linker-plugin
+DEFINES=-DF_CPU=16000000L -DARDUINO=105 -D__PROG_TYPES_COMPAT__
+CFLAGS=-MMD -mmcu=atmega328p -Wall -ffunction-sections -fdata-sections -Os -flto 
+CXXFLAGS=$(CFLAGS) -fpermissive -fno-exceptions -std=gnu++11 -fno-threadsafe-statics
+
 AR=/usr/share/arduino/hardware/tools/avr/bin/avr-gcc-ar
 
-INCLUDE := -I.
+ifndef INCLUDE
+INCLUDE :=
+else
+INCLUDE := -I/usr/share/arduino/hardware/arduino/cores/arduino -I/usr/share/arduino/hardware/arduino/variants/standard
+endif
+
+ifndef XINCLUDE
+XINCLUDE :=
+endif
+
+ifndef LIBS
+LIBS :=
+endif
+
+ifndef XLIBS
+XLIBS :=
+endif

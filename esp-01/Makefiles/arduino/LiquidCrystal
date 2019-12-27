@@ -1,26 +1,10 @@
+NAME:=LiquidCrystal
+XINCLUDE += -I/usr/share/arduino/libraries/$(NAME)
+XLIBS += -L/tmp/build/arduino/$(NAME)/ -l$(NAME)
+
+ifndef OBJS
 include ../settings
 include settings
-
-NAME:=LiquidCrystal
-
 SRCSDIR := /usr/share/arduino/libraries/$(NAME)
-OBJSDIR := /tmp/build/arduino/$(NAME)
-
-INCLUDE += -I$(SRCSDIR)
-
-SRCS := $(wildcard $(SRCSDIR)/*.cpp)
-OBJS := $(patsubst $(SRCSDIR)/%.cpp,$(OBJSDIR)/%.o,$(SRCS))
-
-.PHONY: dir
-
-dir:
-	mkdir -p $(OBJSDIR) 
-
-all: dir $(OBJS) 
-	$(AR) rcs $(OBJSDIR)/lib$(NAME).a $(OBJS) 
-
-$(OBJS): $(OBJSDIR)/%.o : $(SRCSDIR)/%.cpp
-	$(CXX) $(CXXFLAGS) -include Arduino.h $(INCLUDE) -c -o $@ $<
-
-clean: 
-	find $(OBJSDIR) -type f -delete -print
+include build-lib.mk
+endif

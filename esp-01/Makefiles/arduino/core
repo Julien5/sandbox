@@ -1,7 +1,11 @@
-include settings
+NAME:=core
+XINCLUDE += -I/usr/share/arduino/hardware/arduino/cores/arduino -I/usr/share/arduino/hardware/arduino/variants/standard/
+XLIBS += -L/tmp/build/arduino/$(NAME)/ -l$(NAME)
 
+ifndef OBJS
+include settings
 SRCSDIR := /usr/share/arduino/hardware/arduino/cores/arduino
-OBJSDIR := /tmp/build/arduino/core
+OBJSDIR := /tmp/build/arduino/$(NAME)
 
 CXXSRCS := $(wildcard $(SRCSDIR)/*.cpp)
 CSRCS := $(wildcard $(SRCSDIR)/*.c)
@@ -16,12 +20,14 @@ dir:
 	mkdir -p $(OBJSDIR) $(OBJSDIR)/avr-libc
 
 all: dir $(COBJS) $(CXXOBJS)
-	$(AR) rcs $(OBJSDIR)/libcore.a $(COBJS) $(CXXOBJS) 
+	$(AR) rcs $(OBJSDIR)/lib$(NAME).a $(COBJS) $(CXXOBJS) 
 
 $(CXXOBJS): $(OBJSDIR)/%.o : $(SRCSDIR)/%.cpp
-	$(CXX) $(CXXFLAGS) -include Arduino.h -c -o $@ $<
+	$(CXX) $(DEFINES) $(CXXFLAGS) -c -o $@ $<
 
 $(COBJS): $(OBJSDIR)/%.o : $(SRCSDIR)/%.c
-	$(CC) $(CFLAGS) -include Arduino.h -c -o $@ $<
+	$(CC) $(DEFINES) $(CFLAGS) -std=gnu11 -c -o $@ $<
 
-
+clean:
+	find $(OBJSDIR) -type f -delete -print
+endif
