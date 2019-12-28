@@ -1,0 +1,13 @@
+XNAME:=common
+XINCLUDE += -I$(DIRROOT)/esp-01/$(XNAME)
+XLIBS += -L/tmp/build/esp8266/$(XNAME)/ -l$(XNAME)
+
+ifndef SRCSDIR
+include ../settings
+include settings
+NAME:=$(XNAME)
+INCLUDE += -I/usr/share/arduino/libraries/EEPROM/
+SRCSDIR := $(DIRROOT)/esp-01/$(NAME)
+include build.mk
+endif
+
