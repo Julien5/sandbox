@@ -3,7 +3,6 @@ MAKEFILESDIR := ../Makefiles
 include $(MAKEFILESDIR)/settings
 include $(MAKEFILESDIR)/arduino/settings
 
-INCLUDE += -I../common
 CXXFLAGS += -std=c++14
 
 OBJS = $(patsubst %.cpp,%.o,$(wildcard *.cpp))
@@ -21,7 +20,8 @@ all: $(OBJS)
 	$(CXX) $(LDFLAGS) $(OBJS) $(XLIBS) $(LIBS) -o hamster.elf
 
 clean:
-	$(RM) -Rvf *.o obj 
+	find /tmp/build/   -type f -print -delete
+	find . -name "*.o" -type f -print -delete
 
 print:
 	$(info INCLUDE is $(INCLUDE))

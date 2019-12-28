@@ -1,0 +1,25 @@
+CXX=g++
+CC=gcc
+RM=rm -f
+AR=ar
+
+LIBS=-lc -lm -lpthread
+CFLAGS=-Wall 
+CXXFLAGS=$(CFLAGS) -fpermissive -fno-exceptions -std=gnu++11 -fno-threadsafe-statics -DDEBUG -g
+DEFINES += -DDEVHOST=1
+
+ifndef INCLUDE
+INCLUDE := 
+endif
+
+ifndef XINCLUDE
+XINCLUDE :=
+endif
+
+ifndef LIBS
+LIBS :=
+endif
+
+ifndef XLIBS
+XLIBS :=
+endif

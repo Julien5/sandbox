@@ -1,7 +1,7 @@
 ifndef SRCSDIR
-SRCSDIR := /usr/share/arduino/libraries/$(NAME)
+$(error SRCSDIR undefined)
 endif
-OBJSDIR := /tmp/build/arduino/$(NAME)
+OBJSDIR := /tmp/build/devhost/$(NAME)
 
 # todo: remove duplicates.
 INCLUDE += -I$(SRCSDIR) $(XINCLUDE)
@@ -18,7 +18,7 @@ all: dir $(OBJS)
 	$(AR) rcs $(OBJSDIR)/lib$(NAME).a $(OBJS) 
 
 $(OBJS): $(OBJSDIR)/%.o : $(SRCSDIR)/%.cpp
-	$(CXX) $(DEFINES) $(CXXFLAGS) -include Arduino.h $(INCLUDE) -c -o $@ $<
+	$(CXX) $(DEFINES) $(CXXFLAGS) $(INCLUDE) -c -o $@ $<
 
 clean: dir
 	find $(OBJSDIR) -type f -delete -print

@@ -10,3 +10,13 @@ extern "C" {
     application::loop();
   }
 }
+
+#ifdef DEVHOST
+int main(int argc, char ** argv) {
+  setup();
+  while(true) {
+    loop();
+  }
+  return 0;
+}
+#endif

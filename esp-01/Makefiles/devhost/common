@@ -1,0 +1,11 @@
+NAME:=common
+XINCLUDE += -I$(DIRROOT)/esp-01/$(NAME)
+XLIBS += -L/tmp/build/devhost/$(NAME)/ -l$(NAME)
+
+ifndef OBJS
+include ../settings
+include settings
+SRCSDIR := $(DIRROOT)/esp-01/$(NAME)
+include build-lib.mk
+endif
+
