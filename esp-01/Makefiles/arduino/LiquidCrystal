@@ -1,10 +1,11 @@
-NAME:=LiquidCrystal
-XINCLUDE += -I/usr/share/arduino/libraries/$(NAME)
-XLIBS += -L/tmp/build/arduino/$(NAME)/ -l$(NAME)
+XNAME:=LiquidCrystal
+XINCLUDE += -I/usr/share/arduino/libraries/$(XNAME)
+XLIBS += -L/tmp/build/arduino/$(XNAME)/ -l$(XNAME)
 
-ifndef OBJS
+ifndef SRCSDIR
 include ../settings
 include settings
+NAME:=$(XNAME)
 SRCSDIR := /usr/share/arduino/libraries/$(NAME)
-include build-lib.mk
+include build.mk
 endif

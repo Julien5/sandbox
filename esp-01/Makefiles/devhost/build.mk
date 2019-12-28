@@ -14,8 +14,11 @@ OBJS := $(patsubst $(SRCSDIR)/%.cpp,$(OBJSDIR)/%.o,$(SRCS))
 dir:
 	mkdir -p $(OBJSDIR) 
 
-all: dir $(OBJS) 
-	$(AR) rcs $(OBJSDIR)/lib$(NAME).a $(OBJS) 
+lib: dir $(OBJS) 
+	$(AR) rcs $(OBJSDIR)/lib$(NAME).a $(OBJS)
+
+exe: dir $(OBJS)
+	$(CXX) $(LDFLAGS) $(OBJS) $(XLIBS) $(LIBS) -o $(NAME).devhost
 
 $(OBJS): $(OBJSDIR)/%.o : $(SRCSDIR)/%.cpp
 	$(CXX) $(DEFINES) $(CXXFLAGS) $(INCLUDE) -c -o $@ $<

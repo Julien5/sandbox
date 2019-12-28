@@ -1,11 +1,12 @@
-NAME:=AltSoftSerial
-XINCLUDE += -I$(DIR3RDPARTY)/$(NAME)
-XLIBS += -L/tmp/build/arduino/$(NAME)/ -l$(NAME)
+XNAME:=AltSoftSerial
+XINCLUDE += -I$(DIR3RDPARTY)/$(XNAME)
+XLIBS += -L/tmp/build/arduino/$(XNAME)/ -l$(XNAME)
 
-ifndef OBJS
+ifndef SRCSDIR
 include ../settings
 include settings
+NAME:=$(XNAME)
 SRCSDIR := $(DIR3RDPARTY)/$(NAME)
-include build-lib.mk
+include build.mk
 endif
 

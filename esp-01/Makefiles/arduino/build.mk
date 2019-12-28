@@ -14,11 +14,14 @@ OBJS := $(patsubst $(SRCSDIR)/%.cpp,$(OBJSDIR)/%.o,$(SRCS))
 dir:
 	mkdir -p $(OBJSDIR) 
 
-all: dir $(OBJS) 
-	$(AR) rcs $(OBJSDIR)/lib$(NAME).a $(OBJS) 
+lib: dir $(OBJS) 
+	$(AR) rcs $(OBJSDIR)/lib$(NAME).a $(OBJS)
+
+exe: dir $(OBJS)
+	$(CXX) $(LDFLAGS) $(OBJS) $(XLIBS) $(LIBS) -o $(NAME).arduino
 
 $(OBJS): $(OBJSDIR)/%.o : $(SRCSDIR)/%.cpp
-	$(CXX) $(DEFINES) $(CXXFLAGS) -include Arduino.h $(INCLUDE) -c -o $@ $<
+	$(CXX) $(DEFINES) $(CXXFLAGS) -include Arduino.h $(XINCLUDE) $(INCLUDE) -c -o $@ $<
 
 clean: dir
 	find $(OBJSDIR) -type f -delete -print

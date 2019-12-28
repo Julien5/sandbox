@@ -1,9 +1,10 @@
-NAME:=core
-XINCLUDE += -I/usr/share/arduino/hardware/arduino/cores/arduino -I/usr/share/arduino/hardware/arduino/variants/standard/
-XLIBS += -L/tmp/build/arduino/$(NAME)/ -l$(NAME)
+XNAME:=core
+XLIBS += -L/tmp/build/arduino/$(XNAME)/ -l$(XNAME)
 
-ifndef OBJS
+ifndef SRCSDIR
 include settings
+# TODO: use build.mk
+NAME:=$(XNAME)
 SRCSDIR := /usr/share/arduino/hardware/arduino/cores/arduino
 OBJSDIR := /tmp/build/arduino/$(NAME)
 
@@ -19,7 +20,7 @@ COBJS += $(patsubst $(SRCSDIR)/%.c,$(OBJSDIR)/%.o,$(CSRCS))
 dir:
 	mkdir -p $(OBJSDIR) $(OBJSDIR)/avr-libc
 
-all: dir $(COBJS) $(CXXOBJS)
+lib: dir $(COBJS) $(CXXOBJS)
 	$(AR) rcs $(OBJSDIR)/lib$(NAME).a $(COBJS) $(CXXOBJS) 
 
 $(CXXOBJS): $(OBJSDIR)/%.o : $(SRCSDIR)/%.cpp

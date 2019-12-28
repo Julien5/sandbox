@@ -2,10 +2,6 @@
 #include "debug.h"
 #include "platform.h"
 
-#if !defined(ARDUINO) && !defined(ESP8266)
-#define DEVHOST
-#endif
-
 #ifdef ARDUINO
 #include <EEPROM.h>
 

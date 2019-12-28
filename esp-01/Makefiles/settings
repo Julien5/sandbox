@@ -3,6 +3,6 @@ DIR3RDPARTY=/home/julien/projects/3rdparty
 
 # default rule for object files in the current directory.
 
-%.o: %.cpp
+$(OBJSDIR)/%.o: %.cpp
 	$(CXX) $(DEFINES) $(CXXFLAGS) $(INCLUDE) $(XINCLUDE) -c -o $@ $<
 

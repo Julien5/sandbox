@@ -1,21 +1,20 @@
+NAME:=hamster
 MAKEFILESDIR := ../Makefiles
-
-OBJS = $(patsubst %.cpp,%.o,$(wildcard *.cpp))
+SRCSDIR := .
 
 include $(MAKEFILESDIR)/settings
 include $(MAKEFILESDIR)/devhost/settings
 include $(MAKEFILESDIR)/devhost/common
 
-all: $(OBJS)
-	make -C $(MAKEFILESDIR)/devhost -f common all
-	$(CXX) $(LDFLAGS) $(OBJS) $(XLIBS) $(LIBS) -o hamster.devhost
+all: dir $(OBJS) libs exe
+
+include $(MAKEFILESDIR)/devhost/build.mk
+
+libs:
+	make -C $(MAKEFILESDIR)/devhost -f common lib
 
 check:
 	cppcheck --language=c++ --enable=all --template=gcc $(wildcard *.cpp)
-
-clean:
-	find /tmp/build/   -type f -print -delete
-	find . -name "*.o" -type f -print -delete
 
 print:
 	$(info INCLUDE is $(INCLUDE))
