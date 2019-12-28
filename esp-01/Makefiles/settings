@@ -1,2 +1,5 @@
 DIRROOT=/home/julien/projects/sandbox/
 DIR3RDPARTY=/home/julien/projects/3rdparty
+
+%.o: %.cpp
+	$(CXX) $(DEFINES) $(CXXFLAGS) $(INCLUDE) $(XINCLUDE) -c -o $@ $<

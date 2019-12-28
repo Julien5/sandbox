@@ -23,10 +23,10 @@ all: dir $(COBJS) $(CXXOBJS)
 	$(AR) rcs $(OBJSDIR)/lib$(NAME).a $(COBJS) $(CXXOBJS) 
 
 $(CXXOBJS): $(OBJSDIR)/%.o : $(SRCSDIR)/%.cpp
-	$(CXX) $(DEFINES) $(CXXFLAGS) -c -o $@ $<
+	$(CXX) $(CXXFLAGS) $(DEFINES) $(INCLUDE) -c -o $@ $<
 
 $(COBJS): $(OBJSDIR)/%.o : $(SRCSDIR)/%.c
-	$(CC) $(DEFINES) $(CFLAGS) -std=gnu11 -c -o $@ $<
+	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDE) -std=gnu11 -c -o $@ $<
 
 clean:
 	find $(OBJSDIR) -type f -delete -print

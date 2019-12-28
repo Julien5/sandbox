@@ -1,24 +1,24 @@
-include ../Makefiles/settings
-include ../Makefiles/arduino/settings
+MAKEFILESDIR := ../Makefiles
 
-INCLUDE += -I../common -I$(DIR3RDPARTY)/AltSoftSerial -I/usr/share/arduino/libraries/LiquidCrystal
+include $(MAKEFILESDIR)/settings
+include $(MAKEFILESDIR)/arduino/settings
+
+INCLUDE += -I../common
 CXXFLAGS += -std=c++14
 
 OBJS = $(patsubst %.cpp,%.o,$(wildcard *.cpp))
 
-%.o: %.cpp
-	$(CXX) $(CXXFLAGS) $(INCLUDE) -c -o $@ $<
+include $(MAKEFILESDIR)/arduino/LiquidCrystal
+include $(MAKEFILESDIR)/arduino/AltSoftSerial
+include $(MAKEFILESDIR)/arduino/common
+include $(MAKEFILESDIR)/arduino/core
 
 all: $(OBJS) 
-	make -C ../Makefiles/arduino -f core all
-	make -C ../Makefiles/arduino -f AltSoftSerial all
-	make -C ../Makefiles/arduino -f LiquidCrystal all
-	$(CXX) $(CXXFLAGS) $(LFLAGS) $(OBJS) \
-	$(wildcard /tmp/build/arduino/AltSoftSerial/lib*.a) \
-	$(wildcard /tmp/build/arduino/LiquidCrystal/lib*.a) \
-	$(wildcard /tmp/build/arduino/core/lib*.a) \
-	$(LIBS) \
-	-o hamster.elf
+	make -C $(MAKEFILESDIR)/arduino -f core all
+	make -C $(MAKEFILESDIR)/arduino -f AltSoftSerial all
+	make -C $(MAKEFILESDIR)/arduino -f LiquidCrystal all
+	make -C $(MAKEFILESDIR)/arduino -f common all
+	$(CXX) $(LDFLAGS) $(OBJS) $(XLIBS) $(LIBS) -o hamster.elf
 
 clean:
 	$(RM) -Rvf *.o obj 

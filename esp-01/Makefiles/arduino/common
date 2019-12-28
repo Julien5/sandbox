@@ -1,0 +1,12 @@
+NAME:=common
+XINCLUDE += -I$(DIRROOT)/esp-01/$(NAME)
+XLIBS += -L/tmp/build/arduino/$(NAME)/ -l$(NAME)
+
+ifndef OBJS
+include ../settings
+include settings
+INCLUDE += -I/usr/share/arduino/libraries/EEPROM/
+SRCSDIR := $(DIRROOT)/esp-01/$(NAME)
+include build-lib.mk
+endif
+
