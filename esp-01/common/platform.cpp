@@ -1,5 +1,8 @@
 #ifndef ARDUINO
+
+#ifdef DEVHOST
 #include <iostream>
+#endif
 
 #include "platform.h"
 
@@ -8,16 +11,30 @@ MockSerial Serial;
 void MockSerial::begin(unsigned long baud) {
 }
 
-void MockSerial::println(const std::string &s) {
+template <typename S>
+void printline(S s) {
+  #ifdef DEVHOST
   std::cout << s << std::endl;
+  #endif
+}
+
+template <typename S>
+void print(S s) {
+  #ifdef DEVHOST
+  std::cout << s;
+  #endif
+}
+
+void MockSerial::println(const std::string &s) {
+  printline(s);
 }
 
 void MockSerial::println(uint32_t s) {
-  std::cout << s << std::endl;
+  printline(s);
 }
 
 void MockSerial::print(const std::string &s) {
-  std::cout << s;
+  print(s);
 }
 
 uint32_t MockSerial::available() const {

@@ -20,7 +20,9 @@ void reset() {
   counter.save_eeprom_if_necessary();
   display::lcd.print("reset.");
   delay(1000);
+#if defined(ARDUINO)
   asm volatile ("jmp 0");
+#endif
 }
 
 void application::setup()

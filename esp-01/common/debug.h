@@ -1,10 +1,9 @@
 #pragma once
 
-#ifndef ARDUINO
-
+#if defined(DEVHOST)
 #include <iostream>
 #include <cassert>
-#define DBG(X)						\
+#define DBG(X)								\
   do {									\
     std::cout << __FILE__ << ":" << __LINE__ << ":" << X << std::endl << std::flush; \
   } while(0)
@@ -20,16 +19,13 @@
 #define F(X) (X)
 #define PROGMEM 
 
-#else
-
+#elif defined(ARDUINO) && !defined(NDEBUG)
 /*
  * note: in debug mode, DBGTX takes memory.
  * reduce NDATA
  */
-
 #include "Arduino.h"
 #include "HardwareSerial.h"
-#if 1
 #define DBG(X) ((void) 0)			
 #define TRACE()					\
   do {						\
@@ -40,9 +36,11 @@
     printMemory(0);				\
     Serial.flush();				\
   } while(0)
-#else
-#define DBG(X) ((void) 0)					\
-#define TRACE() ((void) 0)
-#endif
 #define assert(ignore)
+#else
+
+#define DBG(X) ((void) 0)			
+#define TRACE() ((void) 0)
+#define assert(ignore)
+
 #endif

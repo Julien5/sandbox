@@ -18,18 +18,15 @@ eeprom::eeprom(){};
 #endif
 
 #ifdef ESP8266
-// use directly: spiflash_write from spiflash.h
-#include <sysparam.h>
-using namespace esp8266;
 namespace esp8266 {
-  eeprom::eeprom() {
-  }
-  eeprom::length read(const eeprom::ram_address &dst, const eeprom::length &L) {
+  char read(int addr) {
     return 0;
   }
-  eeprom::length write(const eeprom::ram_address &src, const eeprom::length &L) {
+  void write(int addr, char d) {
+
   }
 }
+using namespace esp8266;
 #endif
 
 #ifdef DEVHOST
@@ -76,10 +73,10 @@ namespace impl {
       *length=0;
     uint16_t L=0;
     {
-      char _L[2]={};
-      _L[0]=read(index++);
-      _L[1]=read(index++);
-      L=*(uint16_t*)(&_L);
+      char L_[2]={};
+      L_[0]=read(index++);
+      L_[1]=read(index++);
+      L=*(uint16_t*)(&L_);
       if (indx)
 	*indx=index;
     }
@@ -116,10 +113,10 @@ namespace impl {
     int index=0;
     write(index++,MAGIC);
     
-    char * _L=(char*)&L;
+    char * L2=(char*)&L;
     // write the length of the data.
-    write(index++,*(_L++));
-    write(index++,*(_L++));
+    write(index++,*(L2++));
+    write(index++,*(L2++));
     
     for(int k=0; k<L; ++index,++k)
        write(index,src[k]);

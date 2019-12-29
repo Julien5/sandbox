@@ -1,6 +1,6 @@
 #pragma once
 
-#ifndef ARDUINO
+#if !defined(ARDUINO) && !defined(ESP8266)
 
 // min and max are defined in Arduino.h
 #include <vector>

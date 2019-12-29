@@ -20,7 +20,7 @@ set_on_return<U,V> make_set_on_return(U u, V v) {
 }		     
 
 static sensor *addr=nullptr;
-#ifdef ARDUINO
+#if defined(ARDUINO) || defined(ESP8266)
 void on_rising_reed() {
   addr->on_rising_reed();
 }

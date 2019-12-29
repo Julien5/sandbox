@@ -367,7 +367,8 @@ void tickscounter::reset_eeprom() {
   s_total_at_last_save=0;
 }
 
-#ifndef ARDUINO
+#if !defined(ARDUINO) && !defined(ESP8266)
+
 #include "utils.h"
 tickscounter tickscounter::fromHex(const std::string &hex) {
   std::vector<uint8_t> bytes=utils::hex_to_bytes(hex);
@@ -408,7 +409,7 @@ bool tickscounter::operator==(const tickscounter &other) const {
 }
 
 void tickscounter::print() const {
-#ifndef ARDUINO
+#if !defined(ARDUINO) && !defined(ESP8266)
   for(int k = 0; k<NTICKS; ++k) {
     bin::time d=0;
     if ((k+1)<NTICKS)

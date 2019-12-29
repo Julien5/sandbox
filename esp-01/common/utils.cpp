@@ -1,4 +1,4 @@
-#ifndef ARDUINO
+#if !defined(ARDUINO) && !defined(ESP8266)
 
 #include "utils.h"
 

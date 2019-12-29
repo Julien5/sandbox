@@ -6,7 +6,7 @@
 #ifdef ARDUINO
 #include "Arduino.h"
 #include <LiquidCrystal.h>
-#else
+#elif defined(DEVHOST)
 #include <iostream>
 #include <iomanip>
 class LiquidCrystal {
@@ -20,6 +20,15 @@ public:
     std::cout << std::setw(10);
     std::cout << millis() << " [" << s << "]\n";
   };
+};
+#else
+class LiquidCrystal {
+public:
+  typedef uint8_t pin;
+  LiquidCrystal(pin p1, pin p2, pin p3, pin p4, pin p5, pin p6){};
+  void begin(int n, int m){};
+  void setCursor(int n, int m){};
+  void print(const std::string &s) {};
 };
 #endif
   

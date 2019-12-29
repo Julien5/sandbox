@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include "eeprom.h"
 
-#ifndef ARDUINO
+#if !defined(ARDUINO) && !defined(ESP8266)
 #include <string>
 #endif
 
@@ -68,7 +68,7 @@ public:
   void set_epochtime_at_init(const time_since_epoch T0);
   
   void reset();
-#ifndef ARDUINO
+#if !defined(ARDUINO) && !defined(ESP8266)
   static tickscounter fromHex(const std::string &hex);
   std::string json() const;
   static std::string asJson(const std::string &hex);

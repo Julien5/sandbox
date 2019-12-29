@@ -3,6 +3,10 @@
 #include <string.h>
 #include <stdlib.h>
 
+#ifdef ESP8266
+#include <stdio.h>
+#endif
+
 /* We want to find if either
    (1) substr is contained in buffer at position 'startbuffer' OR if
    (2) the beginning of substr if contained at the end of buffer.

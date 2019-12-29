@@ -18,7 +18,7 @@ lib: dir $(OBJS)
 	$(AR) rcs $(OBJSDIR)/lib$(NAME).a $(OBJS)
 
 exe: dir $(OBJS)
-	$(CXX) $(LDFLAGS) $(OBJS) $(XLIBS) $(LIBS) -o $(NAME).esp8266
+	$(CXX) $(OBJS) $(XLIBS) $(LIBS) $(LDFLAGS) -o $(NAME).esp8266
 
 $(OBJS): $(OBJSDIR)/%.o : $(SRCSDIR)/%.cpp
 	$(CXX) $(DEFINES) $(CXXFLAGS) $(XINCLUDE) $(INCLUDE) -c -o $@ $<

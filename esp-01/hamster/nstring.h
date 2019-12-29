@@ -35,7 +35,7 @@ namespace nstring {
     const char* c_str() const { return s; }
     
     
-#ifndef ARDUINO
+#if defined(DEVHOST)
     friend std::ostream& operator<<(std::ostream& os, STR s)
     {
       return os.write(s.c_str(), s.size());

@@ -1,0 +1,54 @@
+CXX=xtensa-lx106-elf-g++
+CC=xtensa-lx106-elf-gcc
+RM=rm -f
+
+LIBS=\
+-L/tmp/build/esp8266/core/sdklib \
+-L/opt/esp8266/esp8266-toolchain/esp-open-rtos/lib \
+-L/opt/esp8266/esp8266-toolchain/esp-open-rtos/libc/xtensa-lx106-elf/lib 
+
+LDFLAGS=\
+-nostdlib -Wl,--no-check-sections \
+-u call_user_start \
+-Wl,-static -Wl,-Map=/tmp/build/esp8266/core/blink.map \
+-Wl,-gc-sections -g -O2 \
+-T/opt/esp8266/esp8266-toolchain/esp-open-rtos/ld/program.ld \
+-T/opt/esp8266/esp8266-toolchain/esp-open-rtos/ld/rom.ld \
+-u _printf_float \
+-u _scanf_float \
+-Wl,--whole-archive /tmp/build/esp8266/core/open_esplibs_libmain.a /tmp/build/esp8266/core/open_esplibs_libnet80211.a /tmp/build/esp8266/core/open_esplibs_libphy.a /tmp/build/esp8266/core/open_esplibs_libpp.a /tmp/build/esp8266/core/open_esplibs_libwpa.a \
+-Wl,--no-whole-archive -Wl,--start-group  /tmp/build/esp8266/core/program.a /tmp/build/esp8266/core/freertos.a /tmp/build/esp8266/core/lwip.a /tmp/build/esp8266/core/core.a /tmp/build/esp8266/core/open_esplibs.a /tmp/build/esp8266/core/libgcc.a /tmp/build/esp8266/core/libc.a -lhal -lmain -lnet80211 -lphy -lpp -lwpa -Wl,--end-group
+
+DEFINES=-DESP8266=1 -DGITSHORTREV=\"53fa634\"
+CFLAGS=-mlongcalls -mtext-section-literals -Wall -Wl,-EL -nostdlib  -ffunction-sections -fdata-sections -g -O2 # -std=gnu99
+CXXFLAGS=$(CFLAGS) -fpermissive -fno-exceptions -std=gnu++11 -fno-threadsafe-statics
+
+AR=xtensa-lx106-elf-ar
+
+ifndef INCLUDE
+INCLUDE := \
+-I/opt/esp8266/esp8266-toolchain/esp-open-rtos/core/include \
+-I/opt/esp8266/esp8266-toolchain/esp-open-rtos/FreeRTOS/Source/include \
+-I/opt/esp8266/esp8266-toolchain/esp-open-rtos/FreeRTOS/Source/portable/esp8266 \
+-I/opt/esp8266/esp8266-toolchain/esp-open-rtos/include \
+-I/opt/esp8266/esp8266-toolchain/esp-open-rtos/libc/xtensa-lx106-elf/include \
+-I/opt/esp8266/esp8266-toolchain/esp-open-rtos/lwip/include \
+-I/opt/esp8266/esp8266-toolchain/esp-open-rtos/lwip/lwip/src/include \
+-I/opt/esp8266/esp8266-toolchain/esp-open-rtos/lwip/lwip/src/include/compat/posix \
+-I/opt/esp8266/esp8266-toolchain/esp-open-rtos/lwip/lwip/src/include/ipv4 \
+-I/opt/esp8266/esp8266-toolchain/esp-open-rtos/lwip/lwip/src/include/ipv4/lwip \
+-I/opt/esp8266/esp8266-toolchain/esp-open-rtos/lwip/lwip/src/include/lwip \
+-I/opt/esp8266/esp8266-toolchain/esp-open-rtos/open_esplibs/include 
+endif
+
+ifndef XINCLUDE
+XINCLUDE :=
+endif
+
+ifndef LIBS
+LIBS :=
+endif
+
+ifndef XLIBS
+XLIBS :=
+endif

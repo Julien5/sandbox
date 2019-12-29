@@ -4,7 +4,7 @@
 
 #ifndef ARDUINO
 #include <string>
-#include <iostream>
+#include <stdio.h>
 class MockSerial {
 public:
   void begin(unsigned long baud);
@@ -35,7 +35,7 @@ void attachInterrupt(uint8_t interrupt, void ISR(void), uint8_t mode);
  * define abs, max and min macros causes problems with
  * stl headers. 
  */
-#else
+#elif defined(ARDUINO)
 #include "Arduino.h"
 #endif
 

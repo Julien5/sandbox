@@ -13,7 +13,7 @@ include $(MAKEFILESDIR)/esp8266/build.mk
 
 libs:
 	make -j2 -C $(MAKEFILESDIR)/esp8266 -i -f core > /dev/null 2>&1 
-	make -C $(MAKEFILESDIR)/esp8266 -f common 
+	make -C $(MAKEFILESDIR)/esp8266 -f common lib
 
 print:
 	$(info INCLUDE is $(INCLUDE))
