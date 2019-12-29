@@ -5,20 +5,7 @@
 #ifndef ARDUINO
 #include <string>
 #include <stdio.h>
-class MockSerial {
-public:
-  void begin(unsigned long baud);
-  void println(const std::string &);
-  void println(uint32_t);
-  void print(const std::string &);
-  
-  uint32_t available() const;
-  int readBytes(char *buffer, const int length);
-  int write(const char *buffer, int length=-1);
-  void flushInput();
-    
-};
-extern MockSerial Serial;
+
 void digitalWrite(uint8_t, uint8_t);
 void attachInterrupt(uint8_t interrupt, void ISR(void), uint8_t mode);
 
@@ -46,7 +33,12 @@ T xMin(const T &a, const T &b) {
   return b;
 }
 
-#ifndef ARDUINO
+#if defined(DEVHOST)
+using test_ms = uint32_t;
+test_ms millis();
+void delay(test_ms d);
+#elif defined(ESP8266)
+// TODO
 using test_ms = uint32_t;
 test_ms millis();
 void delay(test_ms d);

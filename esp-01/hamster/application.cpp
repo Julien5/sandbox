@@ -2,7 +2,6 @@
 #include "debug.h"
 #include "parse.h"
 #include "wifi.h"
-#include "wifi_esp.h"
 #include "lcd.h"
 #include "tickscounter.h"
 #include "freememory.h"
@@ -27,8 +26,10 @@ void reset() {
 
 void application::setup()
 {
+#ifdef ARDUINO
   Serial.begin(9600);
   Serial.println("@START");
+#endif
   display::lcd.init();
   delay(50);
   display::lcd.print("load eeprom");

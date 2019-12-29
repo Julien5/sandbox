@@ -1,5 +1,10 @@
 #pragma once
 
+
+#ifndef ARDUINO
+#error "this source is only for arduino target"
+#endif
+
 #include "parse.h"
 #include <stdint.h>
 #include "wifi.h"

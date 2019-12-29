@@ -1,57 +1,6 @@
-#ifndef ARDUINO
-
-#ifdef DEVHOST
-#include <iostream>
-#endif
-
 #include "platform.h"
 
-MockSerial Serial;
-
-void MockSerial::begin(unsigned long baud) {
-}
-
-template <typename S>
-void printline(S s) {
-  #ifdef DEVHOST
-  std::cout << s << std::endl;
-  #endif
-}
-
-template <typename S>
-void print(S s) {
-  #ifdef DEVHOST
-  std::cout << s;
-  #endif
-}
-
-void MockSerial::println(const std::string &s) {
-  printline(s);
-}
-
-void MockSerial::println(uint32_t s) {
-  printline(s);
-}
-
-void MockSerial::print(const std::string &s) {
-  print(s);
-}
-
-uint32_t MockSerial::available() const {
-  return 0;
-}
-
-int MockSerial::readBytes(char *buffer, const int length) {
-  return 0;
-}
-
-int MockSerial::write(const char *buffer, int length) {
-  return 0;
-}
-
-void MockSerial::flushInput() {
-}
-
+#ifndef ARDUINO
 void digitalWrite(uint8_t, uint8_t) {
 }
 

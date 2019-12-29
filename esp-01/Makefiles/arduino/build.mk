@@ -6,7 +6,7 @@ OBJSDIR := /tmp/build/arduino/$(NAME)
 # todo: remove duplicates.
 INCLUDE += -I$(SRCSDIR) $(XINCLUDE)
 
-SRCS := $(wildcard $(SRCSDIR)/*.cpp)
+SRCS := $(shell find $(SRCSDIR) -maxdepth 1 \( \( -name "*.cpp" -and -not -name "*_*" \) -or  -name "*_arduino.cpp" \))
 OBJS := $(patsubst $(SRCSDIR)/%.cpp,$(OBJSDIR)/%.o,$(SRCS))
 
 .PHONY: dir

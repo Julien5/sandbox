@@ -1,4 +1,4 @@
-#include "wifi_esp.h"
+#include "wifi_arduino.h"
 #include "parse.h"
 #include <stdlib.h>
 #include "lcd.h"
@@ -13,9 +13,7 @@ AltSoftSerial Altser;
 #define ESPTX Altser
 #define ESPRX Altser
 #else
-#include "platform.h"
-#define ESPTX Serial
-#define ESPRX Serial
+#error "this source is only for arduino target"
 #endif
 
 #define BUFFER_LENGTH 16
