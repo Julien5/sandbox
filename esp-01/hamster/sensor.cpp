@@ -20,7 +20,7 @@ set_on_return<U,V> make_set_on_return(U u, V v) {
 }		     
 
 static sensor *addr=nullptr;
-#if defined(ARDUINO) || defined(ESP8266)
+#if defined(ARDUINO) 
 void on_rising_reed() {
   addr->on_rising_reed();
 }
@@ -29,6 +29,12 @@ void start_sensor() {
   pinMode(reed_pin, INPUT_PULLUP);
   attachInterrupt(0,on_rising_reed,RISING);
 }
+
+#elif defined(ESP8266)
+// TODO
+void start_sensor() {
+}
+
 #else
 #include <random>
 int random_number() {

@@ -20,3 +20,11 @@ int main(int argc, char ** argv) {
   return 0;
 }
 #endif
+
+#ifdef ESP8266
+extern "C" {
+  void user_init(void)
+  {
+  }
+}
+#endif

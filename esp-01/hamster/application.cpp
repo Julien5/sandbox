@@ -15,6 +15,12 @@
 
 tickscounter counter;
 
+#ifndef ARDUINO
+#define LED_BUILTIN 13
+#define HIGH 0x1
+#define LOW  0x0
+#endif
+
 void reset() {
   counter.save_eeprom_if_necessary();
   display::lcd.print("reset.");
@@ -22,6 +28,14 @@ void reset() {
 #if defined(ARDUINO)
   asm volatile ("jmp 0");
 #endif
+}
+
+void turnLED(uint8_t pin, uint8_t mode) {
+#ifdef ARDUINO
+   pinMode(pin, OUTPUT);
+   digitalWrite(pin,mode);
+#else
+#endif   
 }
 
 void application::setup()
@@ -39,11 +53,11 @@ void application::setup()
     delay(500);
   }
   
-  pinMode(LED_BUILTIN, OUTPUT);
+ 
   for(int k=0;k<5;k++) {
-    digitalWrite(LED_BUILTIN, HIGH);
+    turnLED(LED_BUILTIN, HIGH);
     delay(50);
-    digitalWrite(LED_BUILTIN, LOW);
+    turnLED(LED_BUILTIN, LOW);
     delay(100);
   }
   TRACE();
@@ -144,9 +158,9 @@ bool wifi_work() {
   
   wifi::mock esp;
   //wifi::esp8266 esp;
-  digitalWrite(LED_BUILTIN, LOW);
+  turnLED(LED_BUILTIN, LOW);
   if (!esp.enabled()) {
-    digitalWrite(LED_BUILTIN, HIGH);
+    turnLED(LED_BUILTIN, HIGH);
     display::lcd.print(0,"wifi failed");
     delay(200);
     return false;
