@@ -1,5 +1,5 @@
 XNAME:=common
-XINCLUDE += -I$(DIRROOT)/esp-01/$(XNAME)
+XINCLUDE += -I$(DIREMBEDDED)/$(XNAME)
 XLIBS += -L/tmp/build/arduino/$(XNAME)/ -l$(XNAME)
 
 ifndef SRCSDIR
@@ -7,7 +7,7 @@ include ../settings
 include settings
 NAME:=$(XNAME)
 INCLUDE += -I/usr/share/arduino/libraries/EEPROM/
-SRCSDIR := $(DIRROOT)/esp-01/$(NAME)
+SRCSDIR := $(DIREMBEDDED)/$(NAME)
 include build.mk
 endif
 

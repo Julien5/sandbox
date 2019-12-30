@@ -1,4 +1,5 @@
 DIRROOT=/home/julien/projects/sandbox/
+DIREMBEDDED=/home/julien/projects/sandbox/embedded
 DIR3RDPARTY=/home/julien/projects/3rdparty
 
 # default rule for object files in the current directory.
