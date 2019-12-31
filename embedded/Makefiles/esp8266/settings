@@ -1,4 +1,4 @@
-CXX=xtensa-lx106-elf-g++
+CXX=xtensa-lx106-elf-gcc
 CC=xtensa-lx106-elf-gcc
 RM=rm -f
 
@@ -20,8 +20,8 @@ LDFLAGS=\
 -Wl,--no-whole-archive -Wl,--start-group  /tmp/build/esp8266/core/program.a /tmp/build/esp8266/core/freertos.a /tmp/build/esp8266/core/lwip.a /tmp/build/esp8266/core/core.a /tmp/build/esp8266/core/open_esplibs.a /tmp/build/esp8266/core/libgcc.a /tmp/build/esp8266/core/libc.a -lhal -lmain -lnet80211 -lphy -lpp -lwpa -Wl,--end-group
 
 DEFINES=-DESP8266=1 -DGITSHORTREV=\"53fa634\"
-CFLAGS=-mlongcalls -mtext-section-literals -Wall -Wl,-EL -nostdlib  -ffunction-sections -fdata-sections -g -O2 # -std=gnu99
-CXXFLAGS=$(CFLAGS) -fpermissive -fno-exceptions -std=gnu++11 -fno-threadsafe-statics
+CFLAGS=-mlongcalls -mtext-section-literals -fno-rtti -Wall -Wl,-EL -nostdlib -ffunction-sections -fdata-sections -g -O2 # -std=gnu99
+CXXFLAGS=$(CFLAGS) -fno-exceptions -std=c++0x
 
 AR=xtensa-lx106-elf-ar
 
