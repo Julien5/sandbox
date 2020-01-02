@@ -15,9 +15,11 @@ bool rtcmemory::write(uint32_t des_addr, void *src_addr, uint16_t save_size) {
 #include <espressif/esp_system.h>
 #include <stdio.h>
 rtcmemory::rtcmemory() {}
-// The arduino core uses a 64 byte offset.
+// The arduino core uses a 64 byte offset...
 // Arduino/cores/esp8266/Esp.cpp: ... system_rtc_mem_read(64 + offset, data, size);
-const uint32_t offset=128;
+// ... but the first 9 bytes after 64 seems buggy:
+// https://github.com/esp8266/Arduino/issues/619
+const uint32_t offset=73;
 bool rtcmemory::read(void *des_addr, uint16_t save_size) {
   const uint32_t src_addr = offset+0;
   if (src_addr > 191) {
@@ -29,7 +31,10 @@ bool rtcmemory::read(void *des_addr, uint16_t save_size) {
     return false;
   }
   if ((768 - (src_addr * 4)) < save_size) {
-    printf("error: bad paramaters ((768 - (src_addr * 4)) < save_size).");
+    printf("error: bad paramaters ((768 - (src_addr * 4)) < save_size):\n");
+    printf("error: \t(768 - (src_addr * 4))=%d\n",768 - (src_addr * 4));
+    printf("error: \tsave_size=%d\n",save_size);
+    printf("error: cannot read so much data, data_size should be <= 476\n");
     return false;
   }
   return sdk_system_rtc_mem_read(src_addr, des_addr, save_size);
