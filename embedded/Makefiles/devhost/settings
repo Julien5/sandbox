@@ -4,7 +4,7 @@ RM=rm -f
 AR=ar
 
 LIBS=-lc -lm -lpthread
-CFLAGS=-Wall 
+CFLAGS=-Wall -fPIC
 CXXFLAGS=$(CFLAGS) -fpermissive -fno-exceptions -std=gnu++11 -fno-threadsafe-statics -DDEBUG -g
 DEFINES += -DDEVHOST=1
 

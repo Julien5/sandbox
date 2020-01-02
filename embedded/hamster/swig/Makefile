@@ -1,56 +1,49 @@
-# swig3.0 -c++ -python -o statistics_wrap.cpp statistics.i
-# swig3.0 -c++ -python  statistics.i -o statistics_wrap.cpp
-#
-# g++ -fpic -c
-# ../eeprom.cpp
-# ../clock.cpp
-# ../statistics.cpp
-# ../debug.cpp
-# statistics_wrap.cpp -I/usr/include/python3.6m/
-#
-# g++ -shared clock.o eeprom.o debug.o statistics.o statistics_wrap.o -o _statistics.so
-#
-# python3 test.py
+NAME:=hamster-swig
+MAKEFILESDIR := ../../Makefiles
+SRCSDIR := .
 
-CXX = g++
-SWIG = swig3.0
-SWIGFLAGS = -c++ -python
-PYTHON_VERSION := $(shell python3 -c "import sys;t='{v[0]}.{v[1]}'.format(v=list(sys.version_info[:2]));sys.stdout.write(t)")
-CXXFLAGS = -std=c++14 -c -fpic -Wall -I/usr/include/python$(PYTHON_VERSION)m/ 
-LDFLAGS = -shared
+include $(MAKEFILESDIR)/settings
+include $(MAKEFILESDIR)/devhost/settings
+include $(MAKEFILESDIR)/devhost/common
+include $(MAKEFILESDIR)/devhost/build.mk
 
-SRCS := \
-../clock.cpp \
-../debug.cpp \
-../eeprom.cpp \
-../freememory.cpp \
-../lcd.cpp \
-../nstring.cpp \
-../parse.cpp \
-../platform.cpp \
-../sensor.cpp \
-../statistics.cpp \
-../tickscounter.cpp \
-../utils.cpp \
-statistics_wrap.cpp
+WRAPPERI:=$(SRCSDIR)/statistics.i
+WRAPPERSRCS:=$(SRCSDIR)/statistics_wrap_devhost.cpp
+WRAPPEROBJS:=$(patsubst $(SRCSDIR)/%.cpp,$(OBJSDIR)/%.o,$(WRAPPERSRCS))
 
-OBJS := $(SRCS:.cpp=.o)
+SRCS += $(WRAPPERSRCS)
+OBJS += $(WRAPPEROBJS)
 
-all: build deploy
+.PHONY: wrapper
 
-deploy:
-	cp hamster.py _hamster.so $(shell python3 -m site --user-site)
-
-build: _hamster.so
-
-%.so: $(OBJS)
-	$(CXX)  -o $@ $(LDFLAGS) $^
-
-%.o: ../%.cpp
-	$(CXX) $(CXXFLAGS) $? -o $@
-
-%_wrap.cpp: %.i
+$(WRAPPERSRCS): $(WRAPPERI)
 	$(SWIG) $(SWIGFLAGS) -o $@ $< 
 
-clean:
-	rm -Rvf *.pyc *.so *_wrap.* *~ *.o ../*.o 
+all: dir $(WRAPPERSRCS) $(OBJS) libs shared 
+
+
+print:
+	$(info SRCSDIR is $(SRCSDIR))	
+	$(info OBJSDIR is $(OBJSDIR))
+	$(info INCLUDE is $(INCLUDE))
+	$(info OBJS is $(OBJS))
+	$(info SRCS is $(SRCS))
+
+
+SWIG = swig3.0
+SWIGFLAGS = -c++ -python $(INCLUDE)
+PYTHON_VERSION := $(shell python3 -c "import sys;t='{v[0]}.{v[1]}'.format(v=list(sys.version_info[:2]));sys.stdout.write(t)")
+INCLUDE += -I/usr/include/python$(PYTHON_VERSION)m/
+
+statistics_wrap.cpp: statistics.i
+	$(SWIG) $(SWIGFLAGS) -o $@ $< 
+
+libs:
+	make -C $(MAKEFILESDIR)/devhost -f common lib
+
+deploy:
+	cp hamster.py  $(shell python3 -m site --user-site)
+	cp libhamster-swig.so $(shell python3 -m site --user-site)/_hamster.so
+
+$(OBJS): $(OBJSDIR)/%.o : $(SRCSDIR)/%.cpp
+	$(CXX) $(DEFINES) $(CXXFLAGS) $(INCLUDE) -c -o $@ $<

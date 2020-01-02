@@ -6,10 +6,10 @@ OBJSDIR := /tmp/build/devhost/$(NAME)
 # todo: remove duplicates.
 INCLUDE += -I$(SRCSDIR) $(XINCLUDE)
 
-SRCS := $(shell find $(SRCSDIR) -maxdepth 1 -name "*.cpp" -and -not -name "*_*.cpp" )
+SRCS := $(shell find $(SRCSDIR) -maxdepth 1 \( \( -name "*.cpp" -and -not -name "*_*" \) -or  -name "*_devhost.cpp" \))
 OBJS := $(patsubst $(SRCSDIR)/%.cpp,$(OBJSDIR)/%.o,$(SRCS))
 
-.PHONY: dir
+.PHONY: dir lib exe shared
 
 dir:
 	mkdir -p $(OBJSDIR) 
@@ -19,6 +19,9 @@ lib: dir $(OBJS)
 
 exe: dir $(OBJS)
 	$(CXX) $(LDFLAGS) $(OBJS) $(XLIBS) $(LIBS) -o $(NAME).devhost
+
+shared: dir $(OBJS)
+	$(CXX) -shared $(LDFLAGS) $(OBJS) $(XLIBS) $(LIBS) -o lib$(NAME).so
 
 $(OBJS): $(OBJSDIR)/%.o : $(SRCSDIR)/%.cpp
 	$(CXX) $(DEFINES) $(CXXFLAGS) $(INCLUDE) -c -o $@ $<
