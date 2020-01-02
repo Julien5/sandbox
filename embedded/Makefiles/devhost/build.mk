@@ -6,7 +6,10 @@ OBJSDIR := /tmp/build/devhost/$(NAME)
 # todo: remove duplicates.
 INCLUDE += -I$(SRCSDIR) $(XINCLUDE)
 
+ifndef SRCS
 SRCS := $(shell find $(SRCSDIR) -maxdepth 1 \( \( -name "*.cpp" -and -not -name "*_*" \) -or  -name "*_devhost.cpp" \))
+endif
+
 OBJS := $(patsubst $(SRCSDIR)/%.cpp,$(OBJSDIR)/%.o,$(SRCS))
 
 .PHONY: dir lib exe shared
