@@ -1,0 +1,28 @@
+NAME:=hamster
+MAKEFILESDIR := ../Makefiles
+SRCSDIR := .
+
+include $(MAKEFILESDIR)/settings
+include $(MAKEFILESDIR)/arduino/settings
+include $(MAKEFILESDIR)/arduino/LiquidCrystal
+include $(MAKEFILESDIR)/arduino/AltSoftSerial
+include $(MAKEFILESDIR)/arduino/common
+include $(MAKEFILESDIR)/arduino/core
+
+all: dir $(OBJS) libs exe
+
+include $(MAKEFILESDIR)/arduino/build.mk
+
+libs:
+	make -C $(MAKEFILESDIR)/arduino -f core lib
+	make -C $(MAKEFILESDIR)/arduino -f AltSoftSerial lib
+	make -C $(MAKEFILESDIR)/arduino -f LiquidCrystal lib
+	make -C $(MAKEFILESDIR)/arduino -f common lib
+
+print:
+	$(info INCLUDE is $(INCLUDE))
+	$(info XINCLUDE is $(XINCLUDE))
+	$(info OBJS is $(OBJS))
+	$(info CXXOBJS is $(CXXOBJS))
+	$(info COBJS is $(COBJS))
+
