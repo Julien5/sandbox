@@ -12,9 +12,6 @@
 
 const int gpio = 2;
 
-/* This task uses the high level GPIO API (esp_gpio.h) to blink an LED.
- *
- */
 void blinkenTask(void *pvParameters)
 {
   gpio_enable(gpio, GPIO_OUTPUT);
@@ -27,32 +24,34 @@ void blinkenTask(void *pvParameters)
   }
 }
 
-
-/* This task demonstrates an alternative way to use raw register
-   operations to blink an LED.
-
-   The step that sets the iomux register can't be automatically
-   updated from the 'gpio' constant variable, so you need to change
-   the line that sets IOMUX_GPIO2 if you change 'gpio'.
-
-   There is no significant performance benefit to this way over the
-   blinkenTask version, so it's probably better to use the blinkenTask
-   version.
-
-   NOTE: This task isn't enabled by default, see the commented out line in user_init.
-*/
-void blinkenRegisterTask(void *pvParameters)
+void app_main(void *pvParameters)
 {
-  GPIO.ENABLE_OUT_SET = BIT(gpio);
-  IOMUX_GPIO2 = IOMUX_GPIO2_FUNC_GPIO | IOMUX_PIN_OUTPUT_ENABLE; /* change this line if you change 'gpio' */
-  while(1) {
-    GPIO.OUT_SET = BIT(gpio);
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
-    GPIO.OUT_CLEAR = BIT(gpio);
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
-  }
+    printf("Hello world!\n");
+
+    /* Print chip information */
+    esp_chip_info_t chip_info;
+    esp_chip_info(&chip_info);
+    printf("This is ESP8266 chip with %d CPU cores, WiFi, ",
+            chip_info.cores);
+
+    printf("silicon revision %d, ", chip_info.revision);
+
+    printf("%dMB %s flash\n", spi_flash_get_chip_size() / (1024 * 1024),
+            (chip_info.features & CHIP_FEATURE_EMB_FLASH) ? "embedded" : "external");
+
+    for (int i = 10; i >= 0; i--) {
+        printf("Restarting in %d seconds...\n", i);
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+    }
+    printf("Restarting now.\n");
+    fflush(stdout);
+    esp_restart();
 }
 
+
+/* This task uses the high level GPIO API (esp_gpio.h) to blink an LED.
+ *
+ */
 void user_init(void)
 {
   uart_set_baud(0, 115200);

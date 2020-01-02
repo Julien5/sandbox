@@ -28,9 +28,6 @@ print:
 	$(info OBJS is $(OBJS))
 	$(info SRCS is $(SRCS))
 
-
-
-
 libs:
 	make -C $(MAKEFILESDIR)/devhost -f common lib
 

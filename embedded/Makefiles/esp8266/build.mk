@@ -12,7 +12,7 @@ endif
 
 OBJS := $(patsubst $(SRCSDIR)/%.cpp,$(OBJSDIR)/%.o,$(SRCS))
 
-.PHONY: dir lib exe flash
+.PHONY: dir lib exe flash rename
 
 dir:
 	mkdir -p $(OBJSDIR) 
@@ -25,7 +25,7 @@ exe: dir $(OBJS)
 	esptool.py elf2image --version=2 -fs 16m -fm qio -ff 40m $(OBJSDIR)/$(NAME).esp8266 -o $(NAME).esp8266
 
 flash: exe
-	esptool.py -p /dev/ttyUSB0 --baud 115200 write_flash -fs 16m -fm qio -ff 40m \
+	esptool.py -p /dev/ttyUSB0 --baud 460800 write_flash -fs 16m -fm qio -ff 40m \
 	0x0 /opt/esp8266/esp8266-toolchain/esp-open-rtos/bootloader/firmware_prebuilt/rboot.bin \
 	0x1000 /opt/esp8266/esp8266-toolchain/esp-open-rtos/bootloader/firmware_prebuilt/blank_config.bin \
 	0x2000 $(NAME).esp8266

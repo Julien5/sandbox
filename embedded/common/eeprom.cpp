@@ -18,12 +18,40 @@ eeprom::eeprom(){};
 #endif
 
 #ifdef ESP8266
+extern "C" {
+#include <spiflash.h>
+}
 namespace esp8266 {
+  bool dirty=true;
+  bool bad=false;
+  uint8_t cache[1024] = {0};
+  // from esp-open-rtos/tests/cases/08_spiflash.c
+  constexpr uint32_t base_addr = 0xF8000; 
   char read(int addr) {
-    return 0;
+    if (bad) 
+      DBG("bad read");
+    return char(cache[addr]);
   }
   void write(int addr, char d) {
-
+    cache[addr]=d;
+    dirty=true;
+  }
+  bool commit() {
+    if (bad) 
+      DBG("bad commit");
+    bool ok=spiflash_write(base_addr,cache, sizeof(cache)/sizeof(char));
+    if (ok) 
+      dirty=false;
+    else
+      DBG("bad commit");
+    return ok;
+  }
+}
+eeprom::eeprom(){
+  bool ok=spiflash_read(esp8266::base_addr,esp8266::cache,sizeof(esp8266::cache)/sizeof(char));
+  if (!ok) {
+    DBG("bad eeprom");
+    esp8266::bad=true;
   }
 }
 using namespace esp8266;
@@ -31,7 +59,7 @@ using namespace esp8266;
 
 #ifdef DEVHOST
 namespace x86 {
-  static char mem[4096];
+  static char mem[1024];
   char read(int addr) {
     if (addr<10)
       printf("read %d : 0x%02x\n",addr,mem[addr] & 0xff);
@@ -119,7 +147,7 @@ namespace impl {
     write(index++,*(L2++));
     
     for(int k=0; k<L; ++index,++k)
-       write(index,src[k]);
+      write(index,src[k]);
     
     write(index++,checksum(src,L));
     // TODO check for overflows.
