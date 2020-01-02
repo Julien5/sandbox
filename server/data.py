@@ -5,7 +5,6 @@ import sys;
 import os;
 import sqlite3;
 
-import statistics;
 import datetime;
 import json;
 import subprocess;
