@@ -20,7 +20,7 @@ popd
 if [[ ! -d ESP8266_RTOS_SDK ]]; then
     git clone https://github.com/espressif/ESP8266_RTOS_SDK.git
     pushd ESP8266_RTOS_SDK
-    git checkout release/v3.2
+    git checkout release/v2.1
     popd
 fi
 

@@ -1,0 +1,16 @@
+What happened ?
+
+I wanted to use sdk_system_deep_sleep_set_option, but it's not implemented:
+  https://github.com/SuperHouse/esp-open-rtos/issues/200
+
+So I tried to switch to Espressif toolkit.
+But the current release (v3.x) is not well documented.
+I could not find rtc memory read/write API.
+I suspect it is not implemented yet.
+
+So I had to downgrade to v2.x.
+But then I cannot get any ...
+
+ha.
+https://github.com/espressif/ESP8266_RTOS_SDK/issues/623
+RTC_DATA_ATTR
