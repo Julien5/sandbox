@@ -22,7 +22,10 @@ lib: dir $(OBJS)
 
 exe: dir $(OBJS)
 	$(AR) cru $(OBJSDIR)/lib$(NAME).a $(OBJS)
-	$(CXX) $(XLIBS) $(LIBS) $(LDFLAGS) -o $(OBJSDIR)/$(NAME).elf -Wl,-Map=$(OBJSDIR)/$(NAME).map
+	$(CXX) $(LDFLAGS) \
+	-Wl,--start-group $(LIBS) $(OBJSDIR)/lib$(NAME).a $(XLIBS) -Wl,--end-group \
+	-o $(OBJSDIR)/$(NAME).elf -Wl,-Map=$(OBJSDIR)/$(NAME).map
+
 	python /opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/esptool_py/esptool/esptool.py --chip esp8266 \
 	elf2image --flash_mode "dio" --flash_freq "40m" --flash_size "2MB" --version=3 -o $(NAME).esp8266 $(OBJSDIR)/$(NAME).elf
 

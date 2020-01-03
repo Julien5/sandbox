@@ -1,3 +1,5 @@
+#include "time.h"
+
 #include <stdio.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -24,6 +26,7 @@ extern "C" {
       printf("Restarting in %d seconds...\n", i);
       vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
+    time::delay(10000);
     printf("Restarting now.\n");
     fflush(stdout);
     esp_restart();
