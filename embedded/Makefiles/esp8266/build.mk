@@ -12,7 +12,7 @@ endif
 
 OBJS := $(patsubst $(SRCSDIR)/%.cpp,$(OBJSDIR)/%.o,$(SRCS))
 
-.PHONY: dir lib exe flash rename
+.PHONY: dir lib exe flash core
 
 dir:
 	mkdir -p $(OBJSDIR) 

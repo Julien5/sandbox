@@ -5,7 +5,7 @@
 #include <cassert>
 #define DBG(...)				\
   do {						\
-    printf("%s:%d:",__FILE__,__LINE__);		\
+    printf("%s:%d: ",__FILE__,__LINE__);		\
     printf(__VA_ARGS__);			\
   } while(0)
 #define TRACE()					\
@@ -44,7 +44,7 @@
 #include <stdio.h>
 #define DBG(...)				\
   do {						\
-    printf("%s:%d:",__FILE__,__LINE__);		\
+    printf("%s:%d: ",__FILE__,__LINE__);		\
     printf(__VA_ARGS__);			\
   } while(0)
 #define TRACE()					\
