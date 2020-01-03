@@ -5,6 +5,7 @@
 #include "eeprom.h"
 #include <string.h>
 #include "platform.h"
+#include "time.h"
 
 bin::bin(){
   reset();
@@ -437,7 +438,7 @@ int some_real_ticks(tickscounter &C) {
   int k=0;
   for(; k<60; ++k) {
     C.tick();
-    delay(1200L+jitter(k));
+    time::delay(1200L+jitter(k));
   }
   return k;
 }
@@ -445,9 +446,9 @@ int some_real_ticks(tickscounter &C) {
 int some_spurious_ticks(tickscounter &C) {
   int k = 0;
   for(; k<config::kMinAloneTicks; ++k) {
-    delay(2*one_minute());
+    time::delay(2*one_minute());
     C.tick();
-    delay(one_minute());
+    time::delay(one_minute());
   }
   return k;
 }
@@ -464,21 +465,21 @@ int tickscounter::test() {
   const int K1=NTICKS-2;
   assert(C.total()==T);
   for(int k = 0; k<K1; ++k) {
-    delay(one_minute()*2);
+    time::delay(one_minute()*2);
     T+=some_real_ticks(C);
     assert(C.total()==T);
   }
   C.print();
   
   for(int k = 0; k<10; ++k) {
-    delay(one_minute()*2);
+    time::delay(one_minute()*2);
     some_spurious_ticks(C);
     assert(C.total()==T);
   }
  
   const int K2=5;
   for(int k = 0; k<K2; ++k) {
-    delay(one_minute()*2);
+    time::delay(one_minute()*2);
     T+=some_real_ticks(C);
   }
   assert(T>(K1+K2));

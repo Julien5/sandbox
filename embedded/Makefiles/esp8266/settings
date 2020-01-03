@@ -2,32 +2,12 @@ CXX=xtensa-lx106-elf-gcc
 CC=xtensa-lx106-elf-gcc
 RM=rm -f
 
-LIBS=\
--L/tmp/build/esp8266/core/sdklib \
--L/tmp/build/esp8266/core/freertos/ \
--L/tmp/build/esp8266/core/lwip/ \
--L/opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/esp8266/ \
--L/opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/esp8266/lib/
+LIBS=
 
-# xtensa-lx106-elf-gcc -nostdlib -u call_user_start_cpu0  -Wl,--gc-sections -Wl,-static -Wl,--start-group  -L/tmp/build/esp8266/core/app_update -lapp_update -L/tmp/build/esp8266/core/aws_iot  -L/tmp/build/esp8266/core/bootloader_support -lbootloader_support -L/tmp/build/esp8266/core/cjson -lcjson -L/tmp/build/esp8266/core/coap -lcoap -L/tmp/build/esp8266/core/console -lconsole -L/tmp/build/esp8266/core/esp-tls -lesp-tls -L/tmp/build/esp8266/core/esp8266 -lesp8266 -L/opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/esp8266/lib -lgcc -lhal -lcore -lnet80211 -lphy -lpp -lsmartconfig -lssc -lwpa -lespnow -lwps -L /opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/esp8266/ld -T esp8266_out.ld -T esp8266_common_out.ld -Wl,--no-check-sections -u call_user_start -T esp8266.rom.ld -T esp8266.peripherals.ld
-
-LDFLAGS=\
--nostdlib -Wl,--no-check-sections \
--u call_user_start_cpu0 \
--Wl,-static \
--L/opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/esp8266/ld \
--L/tmp/build/esp8266/core/esp8266/ \
--T esp8266_out.ld -T esp8266_common_out.ld \
--Wl,-gc-sections \
--u _printf_float \
--u _scanf_float \
--Wl,--whole-archive -lnet80211 -lphy -lpp -lwpa \
--Wl,--no-whole-archive \
--Wl,--start-group  -lfreertos -llwip -lhal -lmain -lnet80211 -lphy -lpp -lwpa -lgcc -lstdc++ -Wl,--end-group \
--Wl,-EL 
+LDFLAGS=-nostdlib  -Wl,--gc-sections -Wl,-static -Wl,--start-group  -L/tmp/build/esp8266/core/app_update -lapp_update -L/tmp/build/esp8266/core/aws_iot  -L/tmp/build/esp8266/core/bootloader_support -lbootloader_support -L/tmp/build/esp8266/core/cjson -lcjson -L/tmp/build/esp8266/core/coap -lcoap -L/tmp/build/esp8266/core/console -lconsole -L/tmp/build/esp8266/core/esp-tls -lesp-tls -L/tmp/build/esp8266/core/esp8266 -lesp8266 -L/opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/esp8266/lib -lgcc -lhal -lcore -lnet80211 -lphy -lpp -lsmartconfig -lssc -lwpa -lespnow -lwps -L /opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/esp8266/ld -T esp8266_out.ld -T esp8266_common_out.ld -Wl,--no-check-sections  -T esp8266.rom.ld -T esp8266.peripherals.ld -L/tmp/build/esp8266/core/esp_http_client -lesp_http_client -L/tmp/build/esp8266/core/esp_http_server -lesp_http_server -L/tmp/build/esp8266/core/esp_https_ota -lesp_https_ota -L/tmp/build/esp8266/core/esp_ringbuf -lesp_ringbuf -L/tmp/build/esp8266/core/freertos -lfreertos -L/tmp/build/esp8266/core/heap -lheap -L/tmp/build/esp8266/core/http_parser -lhttp_parser -L/tmp/build/esp8266/core/jsmn -ljsmn -L/tmp/build/esp8266/core/libsodium -llibsodium -L/tmp/build/esp8266/core/log -llog -L/tmp/build/esp8266/core/lwip -llwip -L/tmp/build/esp8266/core/mdns -lmdns -L/tmp/build/esp8266/core/mqtt -lmqtt -L/tmp/build/esp8266/core/newlib /opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/newlib/newlib/lib/libc_nano.a /opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/newlib/newlib/lib/libm.a -lnewlib -L/tmp/build/esp8266/core/nvs_flash -lnvs_flash -L/tmp/build/esp8266/core/protobuf-c -lprotobuf-c -L/tmp/build/esp8266/core/protocomm -lprotocomm -L/tmp/build/esp8266/core/pthread -lpthread -L/tmp/build/esp8266/core/smartconfig_ack -lsmartconfig_ack -L/tmp/build/esp8266/core/spi_flash -lspi_flash -L/tmp/build/esp8266/core/spi_ram -lspi_ram -L/tmp/build/esp8266/core/spiffs -lspiffs -L/tmp/build/esp8266/core/ssl -lssl -L/tmp/build/esp8266/core/tcp_transport -ltcp_transport -L/tmp/build/esp8266/core/tcpip_adapter -ltcpip_adapter -L/tmp/build/esp8266/core/util -lutil -L/tmp/build/esp8266/core/vfs -lvfs -L/tmp/build/esp8266/core/wifi_provisioning -lwifi_provisioning -L/tmp/build/esp8266/core/wpa_supplicant -lwpa_supplicant -lgcc -lstdc++ $(OBJSDIR)/lib$(NAME).a -Wl,--end-group -Wl,-EL 
 
 DEFINES=-DESP8266=1 -DGITSHORTREV=\"53fa634\"
-CFLAGS=-mlongcalls -mtext-section-literals -fno-rtti -Wall -Wl,-EL -nostdlib -ffunction-sections -fdata-sections -g -O2 # -std=gnu99
+CFLAGS=-mlongcalls -mtext-section-literals -fno-rtti -Wall -Wl,-EL -nostdlib -ffunction-sections -fdata-sections -O2 # -std=gnu99
 CXXFLAGS=$(CFLAGS) -fno-exceptions -std=c++0x
 
 AR=xtensa-lx106-elf-ar
@@ -41,6 +21,7 @@ INCLUDE := \
 -I/opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/heap/port/esp8266/include/ \
 -I/opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/log/include/ \
 -I/opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/freertos/include/freertos/ \
+-I/opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/freertos/include/ \
 -I/tmp/build/esp8266/core/include \
 -I. \
 -I/opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/freertos/port/esp8266/include/freertos \

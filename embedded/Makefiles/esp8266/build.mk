@@ -21,17 +21,20 @@ lib: dir $(OBJS)
 	$(AR) rcs $(OBJSDIR)/lib$(NAME).a $(OBJS)
 
 exe: dir $(OBJS)
-	$(CXX) $(OBJS) $(XLIBS) $(LIBS) $(LDFLAGS) -o $(OBJSDIR)/$(NAME).elf -Wl,-Map=$(OBJSDIR)/$(NAME).map
-	esptool.py elf2image --version=2 -fs 16m -fm qio -ff 40m $(OBJSDIR)/$(NAME).elf -o $(NAME).esp8266
+	$(AR) cru $(OBJSDIR)/lib$(NAME).a $(OBJS)
+	$(CXX) $(XLIBS) $(LIBS) $(LDFLAGS) -o $(OBJSDIR)/$(NAME).elf -Wl,-Map=$(OBJSDIR)/$(NAME).map
+	python /opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/esptool_py/esptool/esptool.py --chip esp8266 \
+	elf2image --flash_mode "dio" --flash_freq "40m" --flash_size "2MB" --version=3 -o $(NAME).esp8266 $(OBJSDIR)/$(NAME).elf
 
 flash: exe
-	esptool.py -p /dev/ttyUSB0 --baud 460800 write_flash -fs 16m -fm qio -ff 40m \
-	0x0 /opt/esp8266/esp8266-toolchain/esp-open-rtos/bootloader/firmware_prebuilt/rboot.bin \
-	0x1000 /opt/esp8266/esp8266-toolchain/esp-open-rtos/bootloader/firmware_prebuilt/blank_config.bin \
-	0x2000 $(NAME).esp8266
+	python /opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/esptool_py/esptool/esptool.py --chip esp8266 \
+	--port "/dev/ttyUSB0" --baud 115200 --before "default_reset" --after "hard_reset" write_flash -z --flash_mode "dio" --flash_freq "40m" --flash_size "2MB"   \
+	0x0000 /tmp/build/esp8266/core/bootloader/bootloader.bin \
+	0x10000 $(NAME).esp8266  \
+	0x8000 /tmp/build/esp8266/core//partitions_singleapp.bin
 
 monitor:
-	screen -L /dev/ttyUSB0 115200
+	python /opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/tools/idf_monitor.py --baud 74880 --port "/dev/ttyUSB0" --toolchain-prefix "xtensa-lx106-elf-" --make "make" $(OBJSDIR)/$(NAME).elf
 
 $(OBJS): $(OBJSDIR)/%.o : $(SRCSDIR)/%.cpp
 	$(CXX) $(DEFINES) $(CXXFLAGS) $(XINCLUDE) $(INCLUDE) -c -o $@ $(shell realpath --relative-to=. $<)
