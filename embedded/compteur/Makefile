@@ -1,4 +1,4 @@
-NAME:=hamster
+NAME:=compteur
 MAKEFILESDIR := ../Makefiles
 SRCSDIR := .
 

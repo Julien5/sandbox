@@ -108,7 +108,7 @@ namespace impl {
       if (indx)
 	*indx=index;
     }
-    DBG("length="<<(int)L);
+    DBG("length=%d\n",(int)L);
     uint8_t checksum=0;
     for(int k=0; k<L; ++k,++index) {
       uint8_t d=read(index);
@@ -116,7 +116,7 @@ namespace impl {
     }
     uint8_t checksum_saved=read(index++);
     if (checksum != checksum_saved) {
-      DBG("checkum failed:"<<(int)checksum<<" vs. "<<(int)checksum_saved);
+      DBG("checkum failed");
       return false;
     }
     if (length)
@@ -174,15 +174,15 @@ int eeprom::test() {
   const char * data = "hello";
 
   const size_t Ldata=strlen(data)+1;
-  DBG("sizeof(data)="<<Ldata);
+  DBG("sizeof(data)=%d\n",Ldata);
  
   e.write((ram_address)data,Ldata);
   uint8_t read_buffer[32]={0};
-  DBG("sizeof(read_buffer)="<<sizeof(read_buffer));
+  DBG("sizeof(read_buffer)=%d\n",sizeof(read_buffer));
   length L=e.read(read_buffer,sizeof(read_buffer));
   if (L<0)
     return 1;
-  DBG("L="<<L);
+  DBG("L=%d\n",L);
   DBG((char*)read_buffer);
   if (strcmp(data,(char*)read_buffer)!=0)
     return 1;

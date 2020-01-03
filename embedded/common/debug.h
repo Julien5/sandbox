@@ -3,9 +3,10 @@
 #if defined(DEVHOST)
 #include <iostream>
 #include <cassert>
-#define DBG(X)								\
-  do {									\
-    std::cout << __FILE__ << ":" << __LINE__ << ":" << X << std::endl << std::flush; \
+#define DBG(...)				\
+  do {						\
+    printf("%s:%d:",__FILE__,__LINE__);		\
+    printf(__VA_ARGS__);			\
   } while(0)
 #define TRACE()					\
   do {						\
@@ -37,6 +38,26 @@
     Serial.flush();				\
   } while(0)
 #define assert(ignore)
+
+#elif defined(ESP8266) && !defined(NDEBUG)
+
+#include <stdio.h>
+#define DBG(...)				\
+  do {						\
+    printf("%s:%d:",__FILE__,__LINE__);		\
+    printf(__VA_ARGS__);			\
+  } while(0)
+#define TRACE()					\
+  do {						\
+    Serial.print(__FILE__);			\
+    Serial.print(":");				\
+    Serial.print(__LINE__);			\
+    Serial.print(":");				\
+    printMemory(0);				\
+    Serial.flush();				\
+  } while(0)
+#define assert(ignore)
+
 #else
 
 #define DBG(X) ((void) 0)			

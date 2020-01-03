@@ -34,7 +34,7 @@ monitor:
 	screen -L /dev/ttyUSB0 115200
 
 $(OBJS): $(OBJSDIR)/%.o : $(SRCSDIR)/%.cpp
-	$(CXX) $(DEFINES) $(CXXFLAGS) $(XINCLUDE) $(INCLUDE) -c -o $@ $<
+	$(CXX) $(DEFINES) $(CXXFLAGS) $(XINCLUDE) $(INCLUDE) -c -o $@ $(shell realpath --relative-to=. $<)
 
 clean: dir
 	find $(OBJSDIR) -type f -delete -print

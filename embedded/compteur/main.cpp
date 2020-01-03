@@ -15,7 +15,7 @@ extern "C" {
   {
     uart_set_baud(0, 115200);
     printf("SDK version:%s\n", sdk_system_get_sdk_version());
-    xTaskCreate(&maintask, "maintask", 1024, NULL, 2, NULL);
+    xTaskCreate(&maintask, "maintask", 1024*4, NULL, 2, NULL);
   }
 }
 #endif

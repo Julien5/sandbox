@@ -338,7 +338,7 @@ bin tickscounter::getbin(const int &k) const {
 
 uint8_t* tickscounter::getdata(uint16_t * Lout) const {
   m_transmission_time = Clock::millis_since_start();
-  DBG(m_transmission_time);
+  DBG("%d\n",m_transmission_time);
   *Lout = sizeof(*this);
   return (uint8_t*)this; 
 }
@@ -487,7 +487,7 @@ int tickscounter::test() {
 
   uint16_t L=0;
   const uint8_t * data = C.getdata(&L);
-  DBG(L);
+  DBG("L=%d\n",L);
 
   tickscounter C2(data);
   assert(C==C2);

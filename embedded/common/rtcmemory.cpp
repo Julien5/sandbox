@@ -1,14 +1,15 @@
 #include "rtcmemory.h"
+#include "debug.h"
 
 #if !defined(ESP8266)
 // TODO: use RAM on atmel.
 rtcmemory::rtcmemory() {}
 
-bool rtcmemory::read(uint32_t src_addr, void *des_addr, uint16_t save_size) {
+bool rtcmemory::read(void *des_addr, uint16_t save_size) {
   return false;
 }
 
-bool rtcmemory::write(uint32_t des_addr, void *src_addr, uint16_t save_size) {
+bool rtcmemory::write(void *src_addr, uint16_t save_size) {
   return false;
 }
 #else // ESP8266
@@ -44,3 +45,23 @@ bool rtcmemory::write(void *src_addr, uint16_t save_size) {
   return sdk_system_rtc_mem_write(offset, src_addr, save_size);
 }
 #endif
+#include "utils.h"
+int rtcmemory::test() {
+  DBG("rtcmemory::test()\n");
+  rtcmemory R;
+  constexpr size_t LEN=512-36;
+  unsigned char data0[LEN]={0};
+  if (!R.read(data0,sizeof(data0))) {
+    DBG("could not read\n");
+    return 1;
+  }
+  utils::dump(data0,LEN);
+  char data1[LEN]={0};
+  for(unsigned k=0;k<LEN;++k)
+    data1[k]=0xFF;
+  if (!R.write(data1,sizeof(data1))) {
+    DBG("could not write\n");
+    return 2;
+  }
+  return 0;
+}

@@ -1,8 +1,15 @@
 #include "sleep.h"
 
-#if !defined(ESP8266)
-#error implement me
-#else
+#if defined(DEVHOST)
+void sleep::deep_sleep(const uint32_t &ms) {
+  DBG("deep sleep (=> delay)\n");
+  delay(ms);
+}
+
+#elif defined(ARDUINO)
+#error implement me for arduino
+
+#elif defined(ESP8266)
 #include "espressif/esp_common.h"
 #include <espressif/esp_sta.h>
 #include <espressif/esp_wifi.h>
