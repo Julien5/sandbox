@@ -28,7 +28,7 @@ exe: dir $(OBJS)
 
 flash: exe
 	python /opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/esptool_py/esptool/esptool.py --chip esp8266 \
-	--port "/dev/ttyUSB0" --baud 115200 --before "default_reset" --after "hard_reset" write_flash -z --flash_mode "dio" --flash_freq "40m" --flash_size "2MB"   \
+	--port "/dev/ttyUSB0" --baud 460800 --before "default_reset" --after "hard_reset" write_flash -z --flash_mode "dio" --flash_freq "40m" --flash_size "2MB"   \
 	0x0000 /tmp/build/esp8266/core/bootloader/bootloader.bin \
 	0x10000 $(NAME).esp8266  \
 	0x8000 /tmp/build/esp8266/core//partitions_singleapp.bin
