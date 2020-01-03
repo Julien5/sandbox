@@ -10,9 +10,8 @@
 
 #include <inttypes.h>
 
-transient tr;
+TRANSIENT transient tr;
 void application::setup() {
-  transient::load(&tr);
   tr.n_wakeup++;
   time::set_current_epoch(tr.n_wakeup*100);
 }
@@ -27,5 +26,5 @@ void application::loop()
   }
   if (!transient::save(&tr))
     DBG("error: could not write transient!\n");
-  sleep().deep_sleep(100);
+  sleep().deep_sleep(1000);
 }
