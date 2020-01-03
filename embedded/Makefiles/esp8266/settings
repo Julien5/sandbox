@@ -2,8 +2,18 @@ CXX=xtensa-lx106-elf-gcc
 CC=xtensa-lx106-elf-gcc
 RM=rm -f
 
+CORELIBDIR=/tmp/build/esp8266/core
+
 LIBS=\
--L/tmp/build/esp8266/core/app_update -lapp_update -L/tmp/build/esp8266/core/aws_iot  -L/tmp/build/esp8266/core/bootloader_support -lbootloader_support -L/tmp/build/esp8266/core/cjson -lcjson -L/tmp/build/esp8266/core/coap -lcoap -L/tmp/build/esp8266/core/console -lconsole -L/tmp/build/esp8266/core/esp-tls -lesp-tls -L/tmp/build/esp8266/core/esp8266 -lesp8266 -L/opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/esp8266/lib -lgcc -lhal -lcore -lnet80211 -lphy -lpp -lsmartconfig -lssc -lwpa -lespnow -lwps -L /opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/esp8266/ld -T esp8266_out.ld -T esp8266_common_out.ld -Wl,--no-check-sections  -T esp8266.rom.ld -T esp8266.peripherals.ld -L/tmp/build/esp8266/core/esp_http_client -lesp_http_client -L/tmp/build/esp8266/core/esp_http_server -lesp_http_server -L/tmp/build/esp8266/core/esp_https_ota -lesp_https_ota -L/tmp/build/esp8266/core/esp_ringbuf -lesp_ringbuf -L/tmp/build/esp8266/core/freertos -lfreertos -L/tmp/build/esp8266/core/heap -lheap -L/tmp/build/esp8266/core/http_parser -lhttp_parser -L/tmp/build/esp8266/core/jsmn -ljsmn -L/tmp/build/esp8266/core/libsodium -llibsodium -L/tmp/build/esp8266/core/log -llog -L/tmp/build/esp8266/core/lwip -llwip -L/tmp/build/esp8266/core/mdns -lmdns -L/tmp/build/esp8266/core/mqtt -lmqtt -L/tmp/build/esp8266/core/newlib /opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/newlib/newlib/lib/libc_nano.a /opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/newlib/newlib/lib/libm.a -lnewlib -L/tmp/build/esp8266/core/nvs_flash -lnvs_flash -L/tmp/build/esp8266/core/protobuf-c -lprotobuf-c -L/tmp/build/esp8266/core/protocomm -lprotocomm -L/tmp/build/esp8266/core/pthread -lpthread -L/tmp/build/esp8266/core/smartconfig_ack -lsmartconfig_ack -L/tmp/build/esp8266/core/spi_flash -lspi_flash -L/tmp/build/esp8266/core/spi_ram -lspi_ram -L/tmp/build/esp8266/core/spiffs -lspiffs -L/tmp/build/esp8266/core/ssl -lssl -L/tmp/build/esp8266/core/tcp_transport -ltcp_transport -L/tmp/build/esp8266/core/tcpip_adapter -ltcpip_adapter -L/tmp/build/esp8266/core/util -lutil -L/tmp/build/esp8266/core/vfs -lvfs -L/tmp/build/esp8266/core/wifi_provisioning -lwifi_provisioning -L/tmp/build/esp8266/core/wpa_supplicant -lwpa_supplicant -lgcc -lstdc++
+-L$(CORELIBDIR)/app_update -lapp_update \
+-L$(CORELIBDIR)/aws_iot  -L$(CORELIBDIR)/bootloader_support -lbootloader_support \
+-L$(CORELIBDIR)/cjson -lcjson -L$(CORELIBDIR)/coap -lcoap \
+-L$(CORELIBDIR)/console -lconsole -L$(CORELIBDIR)/esp-tls -lesp-tls \
+-L$(CORELIBDIR)/esp8266 -lesp8266 \
+-L$(IDF_PATH)/components/esp8266/lib \
+-lgcc -lhal -lcore -lnet80211 -lphy -lpp -lsmartconfig -lssc -lwpa -lespnow -lwps \
+-L$(IDF_PATH)/components/esp8266/ld -T esp8266_out.ld -T esp8266_common_out.ld -Wl,--no-check-sections  -T esp8266.rom.ld -T esp8266.peripherals.ld \
+-L$(CORELIBDIR)/esp_http_client -lesp_http_client -L$(CORELIBDIR)/esp_http_server -lesp_http_server -L$(CORELIBDIR)/esp_https_ota -lesp_https_ota -L$(CORELIBDIR)/esp_ringbuf -lesp_ringbuf -L$(CORELIBDIR)/freertos -lfreertos -L$(CORELIBDIR)/heap -lheap -L$(CORELIBDIR)/http_parser -lhttp_parser -L$(CORELIBDIR)/jsmn -ljsmn -L$(CORELIBDIR)/libsodium -llibsodium -L$(CORELIBDIR)/log -llog -L$(CORELIBDIR)/lwip -llwip -L$(CORELIBDIR)/mdns -lmdns -L$(CORELIBDIR)/mqtt -lmqtt -L$(CORELIBDIR)/newlib $(IDF_PATH)/components/newlib/newlib/lib/libc_nano.a $(IDF_PATH)/components/newlib/newlib/lib/libm.a -lnewlib -L$(CORELIBDIR)/nvs_flash -lnvs_flash -L$(CORELIBDIR)/protobuf-c -lprotobuf-c -L$(CORELIBDIR)/protocomm -lprotocomm -L$(CORELIBDIR)/pthread -lpthread -L$(CORELIBDIR)/smartconfig_ack -lsmartconfig_ack -L$(CORELIBDIR)/spi_flash -lspi_flash -L$(CORELIBDIR)/spi_ram -lspi_ram -L$(CORELIBDIR)/spiffs -lspiffs -L$(CORELIBDIR)/ssl -lssl -L$(CORELIBDIR)/tcp_transport -ltcp_transport -L$(CORELIBDIR)/tcpip_adapter -ltcpip_adapter -L$(CORELIBDIR)/util -lutil -L$(CORELIBDIR)/vfs -lvfs -L$(CORELIBDIR)/wifi_provisioning -lwifi_provisioning -L$(CORELIBDIR)/wpa_supplicant -lwpa_supplicant -lgcc -lstdc++
 
 LDFLAGS=\
 -nostdlib  \
@@ -19,19 +29,19 @@ AR=xtensa-lx106-elf-ar
 
 ifndef INCLUDE
 INCLUDE := \
--I/opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/ \
--I/opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/spi_flash/include \
--I/opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/esp8266/include/ \
--I/opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/heap/include/ \
--I/opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/heap/port/esp8266/include/ \
--I/opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/log/include/ \
--I/opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/freertos/include/freertos/ \
--I/opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/freertos/include/ \
+-I$(IDF_PATH)/ \
+-I$(IDF_PATH)/components/spi_flash/include \
+-I$(IDF_PATH)/components/esp8266/include/ \
+-I$(IDF_PATH)/components/heap/include/ \
+-I$(IDF_PATH)/components/heap/port/esp8266/include/ \
+-I$(IDF_PATH)/components/log/include/ \
+-I$(IDF_PATH)/components/freertos/include/freertos/ \
+-I$(IDF_PATH)/components/freertos/include/ \
+-I$(IDF_PATH)/components/freertos/port/esp8266/include/freertos \
+-I$(IDF_PATH)/components/freertos/port/esp8266/include \
+-I$(IDF_PATH)/components/freertos/include/freertos/private/ \
 -I/tmp/build/esp8266/core/include \
--I. \
--I/opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/freertos/port/esp8266/include/freertos \
--I/opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/freertos/port/esp8266/include \
--I/opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/freertos/include/freertos/private/ 
+-I. 
 endif
 
 ifndef XINCLUDE
