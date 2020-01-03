@@ -1,9 +1,8 @@
 #pragma once
-#include <stdint.h>
-class rtcmemory {
-public:
-  rtcmemory();
-  bool read(void *des_addr, uint16_t save_size);
-  bool write(void *src_addr, uint16_t save_size);
-  static int test();
-};
+
+#if defined(ESP8266)
+#include <esp_attr.h>
+#define TRANSIENT RTC_DATA_ATTR
+#else
+#define TRANSIENT
+#endif

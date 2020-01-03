@@ -1,10 +1,11 @@
 #include "clock.h"
 #include "debug.h"
 #include "platform.h"
+#include "time.h"
 
 namespace Clock {
   ms millis_since_start() {
-    return millis();
+    return time::since_reset();
   }
   
   mn minutes_since_start() {
@@ -13,7 +14,7 @@ namespace Clock {
   
   int test() {
     assert(millis_since_start()==0);
-    delay(1000);
+    time::delay(1000);
     assert(millis_since_start()==1000);
     return 0;
   }

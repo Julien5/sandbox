@@ -4,20 +4,27 @@ RM=rm -f
 
 LIBS=\
 -L/tmp/build/esp8266/core/sdklib \
--L/opt/esp8266/esp8266-toolchain/esp-open-rtos/lib \
--L/opt/esp8266/esp8266-toolchain/esp-open-rtos/libc/xtensa-lx106-elf/lib 
+-L/tmp/build/esp8266/core/freertos/ \
+-L/tmp/build/esp8266/core/lwip/ \
+-L/opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/esp8266/ \
+-L/opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/esp8266/lib/
+
+# xtensa-lx106-elf-gcc -nostdlib -u call_user_start_cpu0  -Wl,--gc-sections -Wl,-static -Wl,--start-group  -L/tmp/build/esp8266/core/app_update -lapp_update -L/tmp/build/esp8266/core/aws_iot  -L/tmp/build/esp8266/core/bootloader_support -lbootloader_support -L/tmp/build/esp8266/core/cjson -lcjson -L/tmp/build/esp8266/core/coap -lcoap -L/tmp/build/esp8266/core/console -lconsole -L/tmp/build/esp8266/core/esp-tls -lesp-tls -L/tmp/build/esp8266/core/esp8266 -lesp8266 -L/opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/esp8266/lib -lgcc -lhal -lcore -lnet80211 -lphy -lpp -lsmartconfig -lssc -lwpa -lespnow -lwps -L /opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/esp8266/ld -T esp8266_out.ld -T esp8266_common_out.ld -Wl,--no-check-sections -u call_user_start -T esp8266.rom.ld -T esp8266.peripherals.ld
 
 LDFLAGS=\
 -nostdlib -Wl,--no-check-sections \
--u call_user_start \
--Wl,-static -Wl,-Map=/tmp/build/esp8266/core/blink.map \
--Wl,-gc-sections -g -O2 \
--T/opt/esp8266/esp8266-toolchain/esp-open-rtos/ld/program.ld \
--T/opt/esp8266/esp8266-toolchain/esp-open-rtos/ld/rom.ld \
+-u call_user_start_cpu0 \
+-Wl,-static \
+-L/opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/esp8266/ld \
+-L/tmp/build/esp8266/core/esp8266/ \
+-T esp8266_out.ld -T esp8266_common_out.ld \
+-Wl,-gc-sections \
 -u _printf_float \
 -u _scanf_float \
--Wl,--whole-archive /tmp/build/esp8266/core/open_esplibs_libmain.a /tmp/build/esp8266/core/open_esplibs_libnet80211.a /tmp/build/esp8266/core/open_esplibs_libphy.a /tmp/build/esp8266/core/open_esplibs_libpp.a /tmp/build/esp8266/core/open_esplibs_libwpa.a \
--Wl,--no-whole-archive -Wl,--start-group  /tmp/build/esp8266/core/program.a /tmp/build/esp8266/core/freertos.a /tmp/build/esp8266/core/lwip.a /tmp/build/esp8266/core/core.a /tmp/build/esp8266/core/open_esplibs.a /tmp/build/esp8266/core/libgcc.a /tmp/build/esp8266/core/libc.a -lhal -lmain -lnet80211 -lphy -lpp -lwpa -Wl,--end-group
+-Wl,--whole-archive -lnet80211 -lphy -lpp -lwpa \
+-Wl,--no-whole-archive \
+-Wl,--start-group  -lfreertos -llwip -lhal -lmain -lnet80211 -lphy -lpp -lwpa -lgcc -lstdc++ -Wl,--end-group \
+-Wl,-EL 
 
 DEFINES=-DESP8266=1 -DGITSHORTREV=\"53fa634\"
 CFLAGS=-mlongcalls -mtext-section-literals -fno-rtti -Wall -Wl,-EL -nostdlib -ffunction-sections -fdata-sections -g -O2 # -std=gnu99
@@ -27,18 +34,18 @@ AR=xtensa-lx106-elf-ar
 
 ifndef INCLUDE
 INCLUDE := \
--I/opt/esp8266/esp8266-toolchain/esp-open-rtos/core/include \
--I/opt/esp8266/esp8266-toolchain/esp-open-rtos/FreeRTOS/Source/include \
--I/opt/esp8266/esp8266-toolchain/esp-open-rtos/FreeRTOS/Source/portable/esp8266 \
--I/opt/esp8266/esp8266-toolchain/esp-open-rtos/include \
--I/opt/esp8266/esp8266-toolchain/esp-open-rtos/libc/xtensa-lx106-elf/include \
--I/opt/esp8266/esp8266-toolchain/esp-open-rtos/lwip/include \
--I/opt/esp8266/esp8266-toolchain/esp-open-rtos/lwip/lwip/src/include \
--I/opt/esp8266/esp8266-toolchain/esp-open-rtos/lwip/lwip/src/include/compat/posix \
--I/opt/esp8266/esp8266-toolchain/esp-open-rtos/lwip/lwip/src/include/ipv4 \
--I/opt/esp8266/esp8266-toolchain/esp-open-rtos/lwip/lwip/src/include/ipv4/lwip \
--I/opt/esp8266/esp8266-toolchain/esp-open-rtos/lwip/lwip/src/include/lwip \
--I/opt/esp8266/esp8266-toolchain/esp-open-rtos/open_esplibs/include 
+-I/opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/ \
+-I/opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/spi_flash/include \
+-I/opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/esp8266/include/ \
+-I/opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/heap/include/ \
+-I/opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/heap/port/esp8266/include/ \
+-I/opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/log/include/ \
+-I/opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/freertos/include/freertos/ \
+-I/tmp/build/esp8266/core/include \
+-I. \
+-I/opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/freertos/port/esp8266/include/freertos \
+-I/opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/freertos/port/esp8266/include \
+-I/opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/freertos/include/freertos/private/ 
 endif
 
 ifndef XINCLUDE

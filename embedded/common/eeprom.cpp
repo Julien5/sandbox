@@ -19,12 +19,12 @@ eeprom::eeprom(){};
 
 #ifdef ESP8266
 extern "C" {
-#include <spiflash.h>
+#include <spi_flash.h>
 }
 namespace esp8266 {
   bool dirty=true;
   bool bad=false;
-  uint8_t cache[1024] = {0};
+  uint32_t cache[1024] = {0};
   // from esp-open-rtos/tests/cases/08_spiflash.c
   constexpr uint32_t base_addr = 0xF8000; 
   char read(int addr) {
@@ -39,7 +39,7 @@ namespace esp8266 {
   bool commit() {
     if (bad) 
       DBG("bad commit");
-    bool ok=spiflash_write(base_addr,cache, sizeof(cache)/sizeof(char));
+    bool ok=spi_flash_write(base_addr,cache, sizeof(cache)/sizeof(char));
     if (ok) 
       dirty=false;
     else
@@ -48,7 +48,7 @@ namespace esp8266 {
   }
 }
 eeprom::eeprom(){
-  bool ok=spiflash_read(esp8266::base_addr,esp8266::cache,sizeof(esp8266::cache)/sizeof(char));
+  bool ok=spi_flash_read(esp8266::base_addr,esp8266::cache,sizeof(esp8266::cache)/sizeof(char));
   if (!ok) {
     DBG("bad eeprom");
     esp8266::bad=true;

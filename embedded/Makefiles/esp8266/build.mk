@@ -21,8 +21,8 @@ lib: dir $(OBJS)
 	$(AR) rcs $(OBJSDIR)/lib$(NAME).a $(OBJS)
 
 exe: dir $(OBJS)
-	$(CXX) $(OBJS) $(XLIBS) $(LIBS) $(LDFLAGS) -o $(OBJSDIR)/$(NAME).esp8266
-	esptool.py elf2image --version=2 -fs 16m -fm qio -ff 40m $(OBJSDIR)/$(NAME).esp8266 -o $(NAME).esp8266
+	$(CXX) $(OBJS) $(XLIBS) $(LIBS) $(LDFLAGS) -o $(OBJSDIR)/$(NAME).elf -Wl,-Map=$(OBJSDIR)/$(NAME).map
+	esptool.py elf2image --version=2 -fs 16m -fm qio -ff 40m $(OBJSDIR)/$(NAME).elf -o $(NAME).esp8266
 
 flash: exe
 	esptool.py -p /dev/ttyUSB0 --baud 460800 write_flash -fs 16m -fm qio -ff 40m \

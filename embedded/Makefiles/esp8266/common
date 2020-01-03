@@ -6,7 +6,6 @@ ifndef SRCSDIR
 include ../settings
 include settings
 NAME:=$(XNAME)
-INCLUDE += -I/usr/share/arduino/libraries/EEPROM/
 SRCSDIR := $(DIREMBEDDED)/$(NAME)
 include build.mk
 endif

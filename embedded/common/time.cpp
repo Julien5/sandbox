@@ -36,9 +36,9 @@ void time::delay(uint32_t d) {
 #endif
 
 #if defined(ESP8266)
-#include "espressif/esp_common.h"
+extern "C" uint32_t esp_get_time(void);
 uint32_t time::since_reset() {
-  return sdk_system_get_time()/1000;
+  return esp_get_time()/1000;
 }
 #include "FreeRTOS.h"
 #include "task.h"
