@@ -18,7 +18,7 @@ void sleep::deep_sleep(const uint32_t &ms) {
 void sleep::deep_sleep(const uint32_t &ms) {
   /* Clean all network connections */
   esp_wifi_disconnect();
-  // esp_deep_sleep_set_rf_option(4);
+  esp_deep_sleep_set_rf_option(0);
   /* Now just wait for the RTC to kill the CPU core */
   esp_deep_sleep(ms*1000);
   while(1){};
