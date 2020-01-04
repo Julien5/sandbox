@@ -13,7 +13,7 @@
 TRANSIENT transient tr;
 void application::setup() {
   tr.n_wakeup++;
-  time::set_current_epoch(tr.n_wakeup*100);
+  time::set_current_epoch(tr.n_wakeup*1000);
 }
 
 void application::loop()
