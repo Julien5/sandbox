@@ -15,6 +15,7 @@ uint64_t time::since_epoch() {
 
 #if defined(DEVHOST)
 #include <atomic>
+typedef uint32_t test_ms;
 std::atomic<test_ms> test_t(0);
 uint32_t time::since_reset() {
   return test_t.load(); 

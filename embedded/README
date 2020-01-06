@@ -14,3 +14,8 @@ But then I cannot get any ...
 ha.
 https://github.com/espressif/ESP8266_RTOS_SDK/issues/623
 RTC_DATA_ATTR
+
+BUT still
+esp8266 wakeup time is too long.
+About 300ms according to monitor.
+Way to long.

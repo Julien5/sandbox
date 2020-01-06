@@ -1,9 +1,10 @@
 #include "sleep.h"
+#include "debug.h"
 
 #if defined(DEVHOST)
 void sleep::deep_sleep(const uint32_t &ms) {
   DBG("deep sleep (=> delay)\n");
-  delay(ms);
+  time::delay(ms);
 }
 #endif
 
@@ -15,12 +16,13 @@ void sleep::deep_sleep(const uint32_t &ms) {
 #include <esp_system.h>
 #include <esp_sleep.h>
 #include <esp_wifi.h>
+#include "time.h"
 void sleep::deep_sleep(const uint32_t &ms) {
   /* Clean all network connections */
   esp_wifi_disconnect();
   esp_deep_sleep_set_rf_option(0);
   /* Now just wait for the RTC to kill the CPU core */
   esp_deep_sleep(ms*1000);
-  while(1){};
+  time::delay(1000);
 }
 #endif
