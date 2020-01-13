@@ -3,10 +3,11 @@ include $(MAKEFILESDIR)/arduino/settings
 include $(MAKEFILESDIR)/arduino/common
 include $(MAKEFILESDIR)/arduino/core
 
-all: dir $(OBJS) deps exe
+all: dir $(OBJS) deps elf
 
 NAME := compteur
 SRCSDIR := .
+
 include $(MAKEFILESDIR)/arduino/build.mk
 
 deps:

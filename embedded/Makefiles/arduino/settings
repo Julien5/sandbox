@@ -8,6 +8,9 @@ CFLAGS=-MMD -mmcu=atmega328p -Wall -ffunction-sections -fdata-sections -Os -flto
 CXXFLAGS=$(CFLAGS) -fpermissive -fno-exceptions -std=gnu++11 -fno-threadsafe-statics
 
 AR=/usr/share/arduino/hardware/tools/avr/bin/avr-gcc-ar
+OBJCOPY=/usr/share/arduino/hardware/tools/avr/bin/avr-objcopy
+AVRSIZE=/usr/share/arduino/hardware/tools/avr/bin/avr-size
+AVRDUDE=/usr/share/arduino/hardware/tools/avrdude
 
 ifndef INCLUDE
 INCLUDE := -I/usr/share/arduino/hardware/arduino/cores/arduino -I/usr/share/arduino/hardware/arduino/variants/standard

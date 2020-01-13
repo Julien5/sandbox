@@ -12,19 +12,37 @@ endif
 
 OBJS := $(patsubst $(SRCSDIR)/%.cpp,$(OBJSDIR)/%.o,$(SRCS))
 
-.PHONY: dir
-
 dir:
 	mkdir -p $(OBJSDIR) 
 
 lib: dir $(OBJS) 
 	$(AR) rcs $(OBJSDIR)/lib$(NAME).a $(OBJS)
 
-exe: dir $(OBJS)
-	$(CXX) $(LDFLAGS) $(OBJS) $(XLIBS) $(LIBS) -o $(NAME).arduino
+hex: deps elf
+	$(OBJCOPY) -O ihex -R .eeprom $(OBJSDIR)/$(NAME).elf $(OBJSDIR)/$(NAME).hex
+
+elf: dir $(OBJS) 
+	$(CXX) $(CFLAGS) $(LDFLAGS) $(OBJS) $(XLIBS) $(LIBS) -o $(OBJSDIR)/$(NAME).elf
+
+showsize: elf
+	$(AVRSIZE) --mcu=atmega328p -C --format=avr  $(OBJSDIR)/$(NAME).elf
+
+ARDUINO_PORT:=$(shell find /dev/ -name "ttyACM?")
+
+reset:
+	/usr/bin/ard-reset-arduino $(ARDUINO_PORT)
+
+flash: hex reset showsize
+	$(AVRDUDE) -q -V -p atmega328p \
+	-C /usr/share/arduino/hardware/tools/avrdude.conf \
+	-D -c arduino -b 115200 -P $(ARDUINO_PORT) \
+	-U flash:w:$(OBJSDIR)/$(NAME).hex:i
 
 $(OBJS): $(OBJSDIR)/%.o : $(SRCSDIR)/%.cpp
 	$(CXX) $(DEFINES) $(CXXFLAGS) -include Arduino.h $(XINCLUDE) $(INCLUDE) -c -o $@ $<
 
 clean: dir
 	find $(OBJSDIR) -type f -delete -print
+
+
+.PHONY: clean elf showsize hex lib dir reset flash
