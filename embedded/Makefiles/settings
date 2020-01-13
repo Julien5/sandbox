@@ -1,4 +1,4 @@
-DIRROOT:=/home/julien/projects/sandbox/
+DIRROOT:=/home/julien/projects/sandbox
 DIREMBEDDED:=$(DIRROOT)/embedded
 DIR3RDPARTY:=$(shell realpath $(DIRROOT)/../3rdparty)
 MAKEFILESDIR:=$(DIREMBEDDED)/Makefiles
@@ -8,4 +8,5 @@ MAKEFILESDIR:=$(DIREMBEDDED)/Makefiles
 
 $(OBJSDIR)/%.o: %.cpp
 	$(CXX) $(DEFINES) $(CXXFLAGS) $(INCLUDE) $(XINCLUDE) -c -o $@ $<
+
 
