@@ -17,8 +17,6 @@
     std::cout << ":";				\
     std::cout << __counter__++ << "\n";		\
   } while(0)
-#define F(X) (X)
-#define PROGMEM 
 
 #elif defined(ARDUINO)
 
@@ -46,8 +44,9 @@
 #define assert(ignore)
 #endif
 
-#elif defined(ESP8266) && !defined(NDEBUG)
+#elif defined(ESP8266)
 
+#if !defined(NDEBUG)
 #include <stdio.h>
 #define DBG(...)				\
   do {						\
@@ -64,6 +63,7 @@
     Serial.flush();				\
   } while(0)
 #define assert(ignore)
+#endif
 
 #else
 
@@ -72,3 +72,7 @@
 #define assert(ignore)
 
 #endif
+
+namespace debug {
+  void turnBuildinLED(bool on);
+}
