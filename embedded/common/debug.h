@@ -20,14 +20,16 @@
 #define F(X) (X)
 #define PROGMEM 
 
-#elif defined(ARDUINO) && !defined(NDEBUG)
+#elif defined(ARDUINO)
+
+#if !defined(NDEBUG)
 /*
  * note: in debug mode, DBGTX takes memory.
  * reduce NDATA
  */
 #include "Arduino.h"
 #include "HardwareSerial.h"
-#define DBG(X) ((void) 0)			
+#define DBG(...) ((void) 0)			
 #define TRACE()					\
   do {						\
     Serial.print(__FILE__);			\
@@ -38,6 +40,11 @@
     Serial.flush();				\
   } while(0)
 #define assert(ignore)
+#else
+#define DBG(...) ((void) 0)			
+#define TRACE() ((void) 0)
+#define assert(ignore)
+#endif
 
 #elif defined(ESP8266) && !defined(NDEBUG)
 

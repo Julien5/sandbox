@@ -1,6 +1,8 @@
-DIRROOT=/home/julien/projects/sandbox/
-DIREMBEDDED=/home/julien/projects/sandbox/embedded
-DIR3RDPARTY=/home/julien/projects/3rdparty
+DIRROOT:=/home/julien/projects/sandbox/
+DIREMBEDDED:=$(DIRROOT)/embedded
+DIR3RDPARTY:=$(shell realpath $(DIRROOT)/../3rdparty)
+MAKEFILESDIR:=$(DIREMBEDDED)/Makefiles
+# check that both are equal.
 
 # default rule for object files in the current directory.
 

@@ -9,7 +9,11 @@ void sleep::deep_sleep(const uint32_t &ms) {
 #endif
 
 #if defined(ARDUINO)
-#error implement me for arduino
+#include "LowPower.h"
+void sleep::deep_sleep(const uint32_t &ms) {
+  LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF);  
+
+}
 #endif
 
 #if defined(ESP8266)

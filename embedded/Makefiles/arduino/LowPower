@@ -1,0 +1,12 @@
+XNAME:=LowPower
+XINCLUDE += -I$(DIR3RDPARTY)/$(XNAME)
+XLIBS += -L/tmp/build/arduino/$(XNAME)/ -l$(XNAME)
+
+ifndef NAME
+include ../settings
+include settings
+NAME:=$(XNAME)
+SRCSDIR := $(DIR3RDPARTY)/$(NAME)
+include build.mk
+endif
+

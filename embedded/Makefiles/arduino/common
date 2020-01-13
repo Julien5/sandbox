@@ -1,13 +1,26 @@
+ifndef MAKEFILESDIR
+include ../settings
+endif
+
+include $(MAKEFILESDIR)/arduino/LowPower
+
 XNAME:=common
 XINCLUDE += -I$(DIREMBEDDED)/$(XNAME)
 XLIBS += -L/tmp/build/arduino/$(XNAME)/ -l$(XNAME)
 
-ifndef SRCSDIR
-include ../settings
+
+ifndef NAME
 include settings
 NAME:=$(XNAME)
+# build deps and me.
+all: deps lib
+
+deps:
+	make -C $(MAKEFILESDIR)/arduino -f LowPower lib
+
 INCLUDE += -I/usr/share/arduino/libraries/EEPROM/
 SRCSDIR := $(DIREMBEDDED)/$(NAME)
 include build.mk
+
 endif
 
