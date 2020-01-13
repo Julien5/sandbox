@@ -1,6 +1,11 @@
+ifeq ($(firstword $(MAKEFILE_LIST)),$(XNAME))
+	BUILDME=1
+endif
+
 ifndef MAKEFILESDIR
 include ../settings
 endif
+$(info C $(MAKEFILE_LIST))
 
 include $(MAKEFILESDIR)/arduino/LowPower
 
@@ -8,6 +13,7 @@ XNAME:=common
 XINCLUDE += -I$(DIREMBEDDED)/$(XNAME)
 XLIBS += -L/tmp/build/arduino/$(XNAME)/ -l$(XNAME)
 
+$(info C $(lastword $(MAKEFILE_LIST)))
 
 ifndef NAME
 include settings
@@ -24,3 +30,5 @@ include build.mk
 
 endif
 
+$(info C $(lastword $(MAKEFILE_LIST)))
+$(info C $(words $(MAKEFILE_LIST)))
