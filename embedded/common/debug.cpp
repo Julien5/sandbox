@@ -1,7 +1,6 @@
 #include "debug.h"
 
 #ifdef DEVHOST
-#include "Arduino.h"
 void debug::turnBuildinLED(bool on) {
 }
 #endif
