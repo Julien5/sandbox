@@ -17,7 +17,6 @@ void debug::turnBuildinLED(bool on) {
 #endif
 
 #ifdef ESP8266
-#include "Arduino.h"
 void debug::turnBuildinLED(bool on) {
 }
 #endif

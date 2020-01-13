@@ -7,7 +7,7 @@ include $(MAKEFILESDIR)/esp8266/settings
 include $(MAKEFILESDIR)/esp8266/common
 include $(MAKEFILESDIR)/esp8266/core
 
-all: dir $(OBJS) core libs exe
+all: dir core libs $(OBJS) exe
 
 include $(MAKEFILESDIR)/esp8266/build.mk
 
