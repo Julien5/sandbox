@@ -1,6 +1,6 @@
-
 XNAME:=common
 XINCLUDE += -I$(DIREMBEDDED)/$(XNAME)
 XLIBS += -L/tmp/build/arduino/$(XNAME)/ -l$(XNAME)
 
 include $(MAKEFILESDIR)/arduino/LowPower
+include $(MAKEFILESDIR)/arduino/EEPROM

@@ -1,9 +1,8 @@
 include ../settings
 include settings
-include LowPower
-
+include AltSoftSerial
+ 
 NAME:=$(XNAME)
 SRCSDIR := $(DIR3RDPARTY)/$(NAME)
 include build.mk
-
 

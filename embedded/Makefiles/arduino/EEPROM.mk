@@ -1,9 +1,6 @@
 include ../settings
 include settings
-include LowPower
-
+include EEPROM
 NAME:=$(XNAME)
-SRCSDIR := $(DIR3RDPARTY)/$(NAME)
+SRCSDIR := /usr/share/arduino/libraries/$(NAME)
 include build.mk
-
-

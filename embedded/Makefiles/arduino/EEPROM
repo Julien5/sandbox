@@ -1,4 +1,3 @@
-XNAME:=LiquidCrystal
+XNAME:=EEPROM
 XINCLUDE += -I/usr/share/arduino/libraries/$(XNAME)
 XLIBS += -L/tmp/build/arduino/$(XNAME)/ -l$(XNAME)
-

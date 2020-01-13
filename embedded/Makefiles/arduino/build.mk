@@ -15,8 +15,10 @@ OBJS := $(patsubst $(SRCSDIR)/%.cpp,$(OBJSDIR)/%.o,$(SRCS))
 dir:
 	mkdir -p $(OBJSDIR) 
 
-lib: dir $(OBJS) 
+$(OBJSDIR)/lib$(NAME).a: $(OBJS)
 	$(AR) rcs $(OBJSDIR)/lib$(NAME).a $(OBJS)
+
+lib: dir $(OBJS) $(OBJSDIR)/lib$(NAME).a
 
 hex: deps elf
 	$(OBJCOPY) -O ihex -R .eeprom $(OBJSDIR)/$(NAME).elf $(OBJSDIR)/$(NAME).hex
