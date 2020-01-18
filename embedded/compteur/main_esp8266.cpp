@@ -29,6 +29,6 @@ extern "C" {
   {
     hello();
     application::setup();
-    xTaskCreate(&maintask_esp8266, "maintask_esp8266", 1024*4, NULL, 2, NULL);
+    xTaskCreate(&maintask_esp8266, "maintask_esp8266", 1024*16, NULL, 2, NULL);
   }
 }

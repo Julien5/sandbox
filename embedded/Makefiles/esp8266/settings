@@ -23,7 +23,7 @@ LDFLAGS=\
 
 DEFINES=-DESP8266=1 -DGITSHORTREV=\"53fa634\"
 CFLAGS=-mlongcalls -mtext-section-literals -fno-rtti -Wall -Wl,-EL -nostdlib -ffunction-sections -fdata-sections -O2 # -std=gnu99
-CXXFLAGS=$(CFLAGS) -fno-exceptions -std=c++0x
+CXXFLAGS=$(CFLAGS) -fno-exceptions -std=c++11
 
 AR=xtensa-lx106-elf-ar
 
