@@ -106,16 +106,12 @@ void wifi_init_sta()
 // POST http://pi:8000/foo/test
 // GET http://pi:8000/stats
 
+
 #define WEB_SERVER "pi"
-#define WEB_PORT 8000
-#define WEB_URL "http://pi:8000/stats"
+#define WEB_PORT "8000"
+#define WEB_PATH "/test/foo"
 
-static const char *REQUEST = "GET " WEB_URL " HTTP/1.0\r\n"
-    "Host: "WEB_SERVER"\r\n"
-    "User-Agent: esp-idf/1.0 esp8266\r\n"
-    "\r\n";
-
-static void http_get()
+static void http_post(uint8_t *data, const uint16_t Ldata)
 {
   struct addrinfo hints = {};
   hints.ai_family = AF_INET;
@@ -168,12 +164,35 @@ static void http_get()
   ESP_LOGI(TAG, "... connected");
   freeaddrinfo(res);
 
-  if (write(s, REQUEST, strlen(REQUEST)) < 0) {
+  char contentlength[32]={0};
+  snprintf(contentlength, 32, "Content-Length: %d", Ldata);
+  
+  char request[128]={0};
+  snprintf(request, 128,
+	   "POST %s HTTP/1.1\r\n"
+	   "%s\n"
+	   "%s\n"
+	   "%s\n"
+	   "%s\n"
+	   "\n",
+	   WEB_PATH,
+	   "Host: pi.fritz.box",
+	   "Accept: */*",
+	   contentlength,
+	   "Content-Type: application/octet-stream"
+	   );
+  if (write(s, request, strlen(request)) < 0) {
     ESP_LOGE(TAG, "... socket send failed");
     close(s);
-    vTaskDelay(4000 / portTICK_PERIOD_MS);
     return;
   }
+
+  if (write(s, data, Ldata) < 0) {
+    printf("... socket send failed\r\n");
+    close(s);
+    return;
+  }
+  
   ESP_LOGI(TAG, "... socket send success");
 
   struct timeval receiving_timeout;
@@ -217,6 +236,8 @@ void application::setup() {
   auto err=adc_init(&config);
   DBG("err=%d\r\n",err);
   wifi_init_sta();
+  const char * d = "salut tout le monde";
+  http_post((uint8_t*)d,strlen(d));
 #endif
 }
 
@@ -228,6 +249,6 @@ void application::loop()
   DBG("a=%d\r\n",a);
   // time::delay(a);
   // debug::turnBuildinLED(bool(i%2));
-  http_get();
+  
   time::delay(50);
 }
