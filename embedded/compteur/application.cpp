@@ -38,19 +38,26 @@ void application::setup() {
 
   const char * d = "salut tout le monde";
   wifi::wifi w;
-  w.join();
-  w.post("/test/foo/bar",(uint8_t*)d,strlen(d));
+  //w.join();
+  //w.post("/test/foo/bar",(uint8_t*)d,strlen(d));
 #endif
 }
 
+int data[64] = {0};
+int indx=0;
 
 void application::loop()
 {
   // TRACE();
   auto a=analogRead();
   DBG("a=%d\r\n",a);
-  // time::delay(a);
-  // debug::turnBuildinLED(bool(i%2));
+  data[indx]=a;
   
-  time::delay(50);
+  debug::turnBuildinLED(bool(indx%2));
+
+  indx++;
+  if (indx>=sizeof(data)/sizeof(int))
+    indx=0;
+
+  time::delay(200);
 }
