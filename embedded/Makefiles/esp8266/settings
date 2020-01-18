@@ -40,9 +40,10 @@ INCLUDE := \
 -I$(IDF_PATH)/components/freertos/port/esp8266/include \
 -I$(IDF_PATH)/components/freertos/include/freertos/private/ \
 -I$(IDF_PATH)/components/lwip/lwip/src/include/ \
+-I$(IDF_PATH)/components/lwip/lwip/src/include/posix \
 -I$(IDF_PATH)/components/lwip/port/esp8266/include \
--I$(IDF_PATH)/components/tcpip_adapter/include/ \
 -I$(IDF_PATH)/components/lwip/include/lwip/apps/ \
+-I$(IDF_PATH)/components/tcpip_adapter/include/ \
 -I/tmp/build/esp8266/core/include \
 -I. 
 endif

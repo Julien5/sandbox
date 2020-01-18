@@ -40,6 +40,9 @@ flash: hex reset showsize
 	-D -c arduino -b 115200 -P $(ARDUINO_PORT) \
 	-U flash:w:$(OBJSDIR)/$(NAME).hex:i
 
+monitor:
+	screen -L $(ARDUINO_PORT) 9600
+
 $(OBJS): $(OBJSDIR)/%.o : $(SRCSDIR)/%.cpp
 	$(CXX) $(DEFINES) $(CXXFLAGS) -include Arduino.h $(XINCLUDE) $(INCLUDE) -c -o $@ $<
 

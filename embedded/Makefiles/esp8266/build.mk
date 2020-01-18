@@ -12,7 +12,7 @@ endif
 
 OBJS := $(patsubst $(SRCSDIR)/%.cpp,$(OBJSDIR)/%.o,$(SRCS))
 
-.PHONY: dir lib exe flash core
+.PHONY: dir lib elf flash core
 
 dir:
 	mkdir -p $(OBJSDIR) 
@@ -20,20 +20,20 @@ dir:
 lib: dir $(OBJS) 
 	$(AR) rcs $(OBJSDIR)/lib$(NAME).a $(OBJS)
 
-exe: dir $(OBJS)
+elf: dir $(OBJS)
 	$(AR) cru $(OBJSDIR)/lib$(NAME).a $(OBJS)
 	$(CXX) $(LDFLAGS) \
 	-Wl,--start-group $(LIBS) $(OBJSDIR)/lib$(NAME).a $(XLIBS) -Wl,--end-group \
 	-o $(OBJSDIR)/$(NAME).elf -Wl,-Map=$(OBJSDIR)/$(NAME).map
 
 	python /opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/components/esptool_py/esptool/esptool.py --chip esp8266 \
-	elf2image --flash_mode "dio" --flash_freq "40m" --flash_size "2MB" --version=3 -o $(NAME).esp8266 $(OBJSDIR)/$(NAME).elf
+	elf2image --flash_mode "dio" --flash_freq "40m" --flash_size "2MB" --version=3 -o $(OBJSDIR)/$(NAME).esp8266 $(OBJSDIR)/$(NAME).elf
 
-flash: exe
+flash: elf
 	python /opt/esp8266/esp8266-toolchain-espressif/esptool/esptool.py --chip esp8266 \
 	--port "/dev/ttyUSB0" --baud 460800 --before "default_reset" --after "hard_reset" write_flash -z --flash_mode "dio" --flash_freq "40m" --flash_size "2MB"   \
 	0x0000 /tmp/build/esp8266/core/bootloader/bootloader.bin \
-	0x10000 $(NAME).esp8266  \
+	0x10000 $(OBJSDIR)/$(NAME).esp8266  \
 	0x8000 /tmp/build/esp8266/core//partitions_singleapp.bin
 
 monitor:

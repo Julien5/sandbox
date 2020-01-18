@@ -5,7 +5,7 @@
 #include <cassert>
 #define DBG(...)				\
   do {						\
-    printf("%s:%d: ",__FILE__,__LINE__);		\
+    printf("%s:%d: ",__FILE__,__LINE__);	\
     printf(__VA_ARGS__);			\
   } while(0)
 #define TRACE()					\
@@ -27,14 +27,20 @@
  */
 #include "Arduino.h"
 #include "HardwareSerial.h"
-#define DBG(...) ((void) 0)			
+#define DBG(...)				\
+  do {						\
+    printf("%s:%d: ",__FILE__,__LINE__);	\
+    char buffer[32];				\
+    snprintf(buffer, 32,__VA_ARGS__);		\
+    Serial.print(buffer);			\
+    Serial.flush();				\
+  } while(0)
 #define TRACE()					\
   do {						\
     Serial.print(__FILE__);			\
     Serial.print(":");				\
     Serial.print(__LINE__);			\
-    Serial.print(":");				\
-    printMemory(0);				\
+    Serial.println(": TRACE");			\
     Serial.flush();				\
   } while(0)
 #define assert(ignore)
@@ -50,7 +56,7 @@
 #include <stdio.h>
 #define DBG(...)				\
   do {						\
-    printf("%s:%d: ",__FILE__,__LINE__);		\
+    printf("%s:%d: ",__FILE__,__LINE__);	\
     printf(__VA_ARGS__);			\
   } while(0)
 #define TRACE()					\
