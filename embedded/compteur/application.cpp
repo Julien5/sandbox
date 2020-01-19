@@ -23,6 +23,8 @@ uint16_t analogRead() {
 
 #include <string.h>
 
+wifi::wifi w;
+
 void application::setup() {
 #ifdef ARDUINO
   Serial.begin(9600);
@@ -32,23 +34,21 @@ void application::setup() {
 #ifdef ESP8266
   adc_config_t config;
   config.mode=ADC_READ_TOUT_MODE;
-  config.clk_div=8;
+  config.clk_div=32;
   auto err=adc_init(&config);
   DBG("err=%d\r\n",err);
 
   const char * d = "salut tout le monde";
-  wifi::wifi w;
-  //w.join();
-  //w.post("/test/foo/bar",(uint8_t*)d,strlen(d));
+  w.join();
+  w.post("/test/foo/bar",(uint8_t*)d,strlen(d));
 #endif
 }
 
-int data[64] = {0};
+int data[64*64] = {0};
 int indx=0;
 
 void application::loop()
 {
-  // TRACE();
   auto a=analogRead();
   DBG("a=%d\r\n",a);
   data[indx]=a;
@@ -56,8 +56,10 @@ void application::loop()
   debug::turnBuildinLED(bool(indx%2));
 
   indx++;
-  if (indx>=sizeof(data)/sizeof(int))
+  if (indx>=sizeof(data)/sizeof(int)) {
+    w.post("/test/compteur/ir/",(uint8_t*)data,sizeof(data));
     indx=0;
+  }
 
-  time::delay(10);
+  time::delay(8);
 }
