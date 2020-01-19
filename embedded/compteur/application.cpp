@@ -4,7 +4,6 @@
 #include "stdint.h"
 #include "wifi.h"
 
-
 #ifdef ARDUINO
 #include "Arduino.h"
 uint16_t analogRead() {
@@ -16,6 +15,7 @@ uint16_t analogRead() {
 #include "driver/adc.h"
 uint16_t analogRead() {
   uint16_t ret=0;
+  // adc_read_fast(&ret,1);
   adc_read(&ret);
   return ret;
 }
@@ -59,5 +59,5 @@ void application::loop()
   if (indx>=sizeof(data)/sizeof(int))
     indx=0;
 
-  time::delay(200);
+  time::delay(10);
 }

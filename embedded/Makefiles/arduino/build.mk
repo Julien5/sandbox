@@ -50,4 +50,4 @@ clean: dir
 	find $(OBJSDIR) -type f -delete -print
 
 
-.PHONY: clean elf showsize hex lib dir reset flash
+.PHONY: clean elf showsize hex lib dir reset flash monitor
