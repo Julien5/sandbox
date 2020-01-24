@@ -91,13 +91,13 @@ unsigned char waitFor(const unsigned char opts, const int timeout) {
   
   delay(250);
   TRACE();
-  DBG("[");
+  DBG("%s","[");
   char buffer[BUFFER_LENGTH]={0};
   while(millis()<deadline && !found) {
     while(comm::available() && !found) {
       int n=comm::readBytes(buffer,xMin(comm::available(),BUFFER_LENGTH-1));
       buffer[n]='\0';
-      DBG(buffer);
+      DBG("%s",buffer);
       if (options::wait_for_ok & opts) {
 	if (ok_wait.read(buffer))
 	  found |= options::wait_for_ok;
@@ -127,10 +127,10 @@ unsigned char waitFor(const unsigned char opts, const int timeout) {
     buffer[0]='\0';
   }
   if (message_parser.get())
-    DBG("message={"<<message_parser.get()<<"}");
+    DBG("message={%s}\r\n",message_parser.get());
   
   TRACE();
-  DBG("]\r\n\r\n");
+  DBG("%s","]\r\n\r\n");
   return found;  
 }
 
@@ -138,7 +138,7 @@ unsigned char sendCommandAndWaitForResponse(const char * command, const int leng
 {
   comm::write(command,length);
   comm::write("\r\n");
-  DBG("C:"<<command);
+  DBG("C:%s\n",command);
   if (strstr(command,UARTCUR)!=NULL) {
     delay(150);
     return options::wait_for_ok;
@@ -151,7 +151,7 @@ unsigned char sendCommandAndWaitForResponse(const char * command, const int leng
   if (strstr(command,ATCWJAP)!=NULL)
     opts |= options::wait_for_no_ap;
   unsigned char ret=waitFor(opts, timeout);
-  DBG(int(ret));
+  DBG("%d\n",int(ret));
   return ret;
 }
 
@@ -318,7 +318,7 @@ bool wifi::esp8266::get(const char * req, char** response) {
   }
   assert(response);  
   *response = message_parser.get();
-  DBG("*response={"<<*response<<"}");
+  DBG("*response={%s}\r\n",*response);
   
   return true;
 }

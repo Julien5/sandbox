@@ -4,7 +4,7 @@ RM=rm -f
 LIBS=-lc -lm 
 LDFLAGS=-Wl,--gc-sections -fuse-linker-plugin
 DEFINES=-DF_CPU=16000000L -DARDUINO=105 -D__PROG_TYPES_COMPAT__
-CFLAGS=-MMD -mmcu=atmega328p -Wall -ffunction-sections -fdata-sections -Os -flto 
+CFLAGS=-mmcu=atmega328p -Wall -ffunction-sections -fdata-sections -Os -flto # -MMD
 CXXFLAGS=$(CFLAGS) -fpermissive -fno-exceptions -std=gnu++11 -fno-threadsafe-statics
 
 AR=/usr/share/arduino/hardware/tools/avr/bin/avr-gcc-ar

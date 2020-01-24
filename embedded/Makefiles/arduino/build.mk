@@ -44,6 +44,7 @@ monitor:
 	screen -L $(ARDUINO_PORT) 9600
 
 $(OBJS): $(OBJSDIR)/%.o : $(SRCSDIR)/%.cpp
+	mkdir -p $(dir $@)
 	$(CXX) $(DEFINES) $(CXXFLAGS) -include Arduino.h $(XINCLUDE) $(INCLUDE) -c -o $@ $<
 
 clean: dir

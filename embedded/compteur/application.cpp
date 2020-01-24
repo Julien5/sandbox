@@ -3,6 +3,7 @@
 #include "time.h"
 #include "stdint.h"
 #include "wifi.h"
+#include "sdcard.h"
 
 #ifdef ARDUINO
 #include "Arduino.h"
@@ -28,8 +29,10 @@ wifi::wifi w;
 void application::setup() {
 #ifdef ARDUINO
   Serial.begin(9600);
+  while (!Serial) { }
   Serial.println("@START");
 #endif
+  sdcard S;
 
 #ifdef ESP8266
   adc_config_t config;
@@ -49,6 +52,7 @@ int indx=0;
 
 void application::loop()
 {
+  return;
   auto a=analogRead();
   DBG("a=%d\r\n",a);
   data[indx]=a;

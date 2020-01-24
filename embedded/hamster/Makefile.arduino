@@ -7,6 +7,8 @@ MAKEFILESDIR := ../Makefiles
 include $(MAKEFILESDIR)/arduino/LiquidCrystal
 include $(MAKEFILESDIR)/arduino/AltSoftSerial
 include $(MAKEFILESDIR)/arduino/common
+include $(MAKEFILESDIR)/arduino/LowPower
+include $(MAKEFILESDIR)/arduino/EEPROM
 include $(MAKEFILESDIR)/arduino/core
 
 all: dir $(OBJS) deps elf
@@ -18,6 +20,8 @@ deps:
 	make -C $(MAKEFILESDIR)/arduino -f core.mk lib
 	make -C $(MAKEFILESDIR)/arduino -f AltSoftSerial.mk lib
 	make -C $(MAKEFILESDIR)/arduino -f LiquidCrystal.mk lib
+	make -C $(MAKEFILESDIR)/arduino -f LowPower.mk lib
+	make -C $(MAKEFILESDIR)/arduino -f EEPROM.mk lib
 	make -C $(MAKEFILESDIR)/arduino -f common.mk lib
 
 print:
