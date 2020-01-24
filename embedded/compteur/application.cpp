@@ -34,7 +34,7 @@ void application::setup() {
 #ifdef ESP8266
   adc_config_t config;
   config.mode=ADC_READ_TOUT_MODE;
-  config.clk_div=32;
+  config.clk_div=8;
   auto err=adc_init(&config);
   DBG("err=%d\r\n",err);
 
@@ -61,5 +61,5 @@ void application::loop()
     indx=0;
   }
 
-  time::delay(8);
+  time::delay(10);
 }
