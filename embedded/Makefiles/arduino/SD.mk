@@ -1,8 +1,9 @@
 include ../settings
 include settings
+include SPI
 include SD
 NAME:=$(XNAME)
-SRCSDIR := /usr/share/arduino/libraries/$(NAME)
+SRCSDIR := $(DIR3RDPARTY)/$(NAME)/src
 INCLUDE += -I$(SRCSDIR) -I$(SRCSDIR)/utility
 SRCS := $(shell find $(SRCSDIR) -name "*.cpp")
 include build.mk
