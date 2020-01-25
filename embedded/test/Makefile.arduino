@@ -7,7 +7,7 @@ include $(MAKEFILESDIR)/arduino/core
 
 all: dir $(OBJS) deps elf
 
-NAME := compteur
+NAME := test
 SRCSDIR := .
 
 include $(MAKEFILESDIR)/arduino/build.mk

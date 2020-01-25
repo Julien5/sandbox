@@ -29,7 +29,6 @@
 #include "HardwareSerial.h"
 #define DBG(...)				\
   do {						\
-    while (!Serial) { }				\
     printf("%s:%d: ",__FILE__,__LINE__);	\
     char buffer[32];				\
     snprintf(buffer, 32,__VA_ARGS__);		\
@@ -38,7 +37,6 @@
   } while(0)
 #define TRACE()					\
   do {						\
-    while (!Serial) { }				\
     Serial.print(__FILE__);			\
     Serial.print(":");				\
     Serial.print(__LINE__);			\

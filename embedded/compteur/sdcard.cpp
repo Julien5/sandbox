@@ -3,26 +3,25 @@
 #include <SD.h>
 #include "debug.h"
 #include "Arduino.h"
-
-const int chipSelect = 4;    
+  
 
 sdcard::sdcard() {}
 
 void sdcard::init() {
-  pinMode(10, OUTPUT);
-  pinMode(chipSelect, OUTPUT);
-  if (!SD.begin()) {
+  if (!SD.begin(10)) {
     DBG("%s\r\n","cannot begin");
+    return;
   }
   DBG("%s\r\n","begin");
 }
-/*
+
+#ifdef INFO
 Sd2Card card;
 SdVolume volume;
 SdFile root;
-*/
+
 void sdcard::info() {
-  /*
+  const int chipSelect=10;
   // we'll use the initialization code from the utility libraries
   // since we're just testing if the card is working!
   if (!card.init(SPI_HALF_SPEED, chipSelect)) {
@@ -82,12 +81,16 @@ void sdcard::info() {
   
   // list all files in the card with date and size
   root.ls(LS_R | LS_DATE | LS_SIZE);
-  */
 }
+#else
+void sdcard::info(){}
+#endif
 
 #include "time.h"
+File file;
 void sdcard::write(const char * filename, const uint8_t * data, const size_t length) {
-  File file=SD.open(filename,FILE_WRITE);
+  time::delay(100);
+  file=SD.open(filename,FILE_WRITE);
   if (!file) {
     DBG("%s:%s\r\n","could not open file",filename);
   } else { 

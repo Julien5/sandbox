@@ -3,27 +3,21 @@
 #include "time.h"
 #include "sdcard.h"
 
-sdcard sd;
-
 void application::setup() {
 #ifdef ARDUINO
   Serial.begin(9600);
   while (!Serial) { }
   Serial.println("@START");
 #endif
-  DBG("mem:%d\r\n",debug::freeMemory());
+  sdcard sd;
   sd.init();
-  //sd.info();
-
+  sd.info();
+  const char * d = "ffff.ggg";
+  sd.write("foo.txt",(uint8_t*)d,strlen(d));
 }
 
-bool done=false;
 void application::loop()
 {
-  if (done)
-    return;
-      done=true;
-  const char * d = "salut-tout-le-monde";
-  sd.write("TEST2.TXT",(uint8_t*)d,strlen(d));
   DBG("mem:%d\r\n",debug::freeMemory());
+  time::delay(250);
 }

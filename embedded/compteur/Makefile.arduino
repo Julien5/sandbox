@@ -2,6 +2,7 @@ include ../Makefiles/settings
 include $(MAKEFILESDIR)/arduino/settings
 include $(MAKEFILESDIR)/arduino/common
 include $(MAKEFILESDIR)/arduino/SD
+include $(MAKEFILESDIR)/arduino/SPI
 include $(MAKEFILESDIR)/arduino/core
 
 all: dir $(OBJS) deps elf
@@ -15,6 +16,7 @@ deps:
 	make -C $(MAKEFILESDIR)/arduino -f core.mk lib
 	make -C $(MAKEFILESDIR)/arduino -f common.mk deps lib
 	make -C $(MAKEFILESDIR)/arduino -f SD.mk lib
+	make -C $(MAKEFILESDIR)/arduino -f SPI.mk lib
 
 print:
 	$(info MAKEFILESDIR is $(MAKEFILESDIR))	
