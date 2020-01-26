@@ -10,6 +10,7 @@ sdcard::sdcard() {}
 void sdcard::init() {
   if (!SD.begin(10)) {
     DBG("%s\r\n","cannot begin");
+    while(1){};
     return;
   }
   DBG("%s\r\n","begin");
@@ -89,7 +90,6 @@ void sdcard::info(){}
 #include "time.h"
 File file;
 void sdcard::write(const char * filename, const uint8_t * data, const size_t length) {
-  time::delay(100);
   file=SD.open(filename,FILE_WRITE);
   if (!file) {
     DBG("%s:%s\r\n","could not open file",filename);

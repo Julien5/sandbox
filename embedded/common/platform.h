@@ -12,3 +12,8 @@ T xMin(const T &a, const T &b) {
     return a;
   return b;
 }
+
+#ifdef DEVHOST
+#include <cstddef>
+typedef std::size_t size_t;
+#endif

@@ -4,11 +4,17 @@
 #include "sdcard.h"
 #include "stdint.h"
 
+#include <string.h>
 #ifdef ARDUINO
 #include "Arduino.h"
 uint16_t analogRead() {
   return analogRead(0);
 }
+#else
+uint16_t analogRead() {
+  return 1;
+}
+
 #endif
 
 sdcard sd;
@@ -25,8 +31,9 @@ void application::setup() {
   sd.write("foo.txt",(uint8_t*)d,strlen(d));
 }
 
-int data[256] = {0};
-int indx=0;
+uint16_t data[256] = {0};
+uint16_t indx=0;
+uint16_t counter=0;
 
 void application::loop()
 { 
@@ -35,15 +42,13 @@ void application::loop()
   DBG("data[%d]=%d\r\n",indx,a);
 
   if (indx>=sizeof(data)/sizeof(int)) {
-    auto ms = time::since_reset();
-    int sec = ms/1000;
-    char filename[12];
-    sprintf(filename,"%d.bin",sec);
+    char filename[13]; // 8.3 => 8+1+3+1 (zero termination) => 13 bytes.
+    sprintf(filename,"%08u.BIN",counter++);
     DBG("writing %s\r\n",filename);
     sd.write(filename,(uint8_t*)data,sizeof(data));
     indx=0;
     DBG("mem:%d\r\n",debug::freeMemory()); 
   }
   
-  time::delay(150);
+  time::delay(50);
 }

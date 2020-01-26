@@ -35,10 +35,11 @@ def read_hex(filename):
     ret=list();
     t=0;
     for hexline in open(filename,'r').readlines():
-        D8=chunks(hexline.strip(),8);
-        for d8 in D8:
-            assert(len(d8)==8);
-            c2 = chunks(d8,2);
+        D4=chunks(hexline.strip(),4);
+        for d4 in D4:
+            assert(len(d4)==4);
+            c2 = chunks(d4,2);
+            assert(len(c2)==2);
             x = int("".join(c2[::-1]), 16)
             ret.append([t/1000,x,filter(x)]);
             t+=8;
