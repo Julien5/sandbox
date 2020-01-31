@@ -23,8 +23,8 @@ def filter(x):
     if not xprev:
         xprev = x;
         yprev = x;
-    if x > 75 or x < 60:
-        x=67;        
+    #if x < 40:
+    #    x=xprev;
     alpha=0.5;
     y=alpha*yprev + (1-alpha)*x;
     xprev=x;
@@ -42,7 +42,7 @@ def read_hex(filename):
             assert(len(c2)==2);
             x = int("".join(c2[::-1]), 16)
             ret.append([t/1000,x,filter(x)]);
-            t+=8;
+            t+=50;
     return ret;
         
 write(read_hex("/tmp/irdata"),'data.csv');

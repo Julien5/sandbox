@@ -25,10 +25,12 @@ void application::setup() {
   while (!Serial) { }
   Serial.println("@START");
 #endif
-  sd.init();
-  sd.info();
-  const char * d = "ffff.ggg";
-  sd.write("foo.txt",(uint8_t*)d,strlen(d));
+  
+    sd.init();
+    sd.info();
+    const char * d = "ffff.ggg";
+    sd.write("foo.txt",(uint8_t*)d,strlen(d));
+  
 }
 
 uint16_t data[256] = {0};
