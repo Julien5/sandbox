@@ -51,6 +51,6 @@ void application::loop()
     indx=0;
     DBG("mem:%d\r\n",debug::freeMemory()); 
   }
-  
+  debug::turnBuildinLED(indx%2==0);
   time::delay(50);
 }
