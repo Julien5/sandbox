@@ -26,11 +26,10 @@ void application::setup() {
   Serial.println("@START");
 #endif
   
-    sd.init();
-    sd.info();
-    const char * d = "ffff.ggg";
-    sd.write("foo.txt",(uint8_t*)d,strlen(d));
-  
+  sd.init();
+  sd.info();
+  const char * d = "ffff.ggg";
+  sd.write("foo.txt",(uint8_t*)d,strlen(d));
 }
 
 uint16_t data[256] = {0};
@@ -51,6 +50,5 @@ void application::loop()
     indx=0;
     DBG("mem:%d\r\n",debug::freeMemory()); 
   }
-  debug::turnBuildinLED(indx%2==0);
   time::delay(50);
 }
