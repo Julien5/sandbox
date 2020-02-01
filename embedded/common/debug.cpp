@@ -36,7 +36,11 @@ int debug::freeMemory() {
 #ifdef ARDUINO
 #include "Arduino.h"
 void debug::turnBuildinLED(bool on) {
-  pinMode(LED_BUILTIN, OUTPUT);
+  static bool init_done=false;
+  if (!init_done) {
+    pinMode(LED_BUILTIN, OUTPUT);
+    init_done==true;
+  }
   if (on)
     digitalWrite(LED_BUILTIN,HIGH);
   else
