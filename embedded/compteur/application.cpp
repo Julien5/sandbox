@@ -119,7 +119,7 @@ uint16_t counter=0;
 
 
 class histogram {
-  static constexpr size_t N=16;
+  static constexpr size_t N=8;
   uint16_t occurences[N];
   uint8_t values[N];
 public:
@@ -132,11 +132,17 @@ public:
   void reg(const uint8_t &v) {
     auto i=index(v);
     if (i<0) {
-      for(int k=0;k<N;++k) 
+      int k=0;
+      for(;k<N;++k)  {
 	if (occurences[k]==0) {
 	  i=k;
 	  break;
 	}
+      }
+      if (k==N) {
+	DBG("not enough bins\r\n");
+	assert(0);
+      }
     }
     values[i]=v;
     occurences[i]++;
