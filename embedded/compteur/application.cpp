@@ -10,13 +10,26 @@
 uint16_t analogRead() {
   return analogRead(0);
 }
-#else
+#endif
+
+#ifdef ESP8266
+#include "driver/adc.h"
+#include "esp_sleep.h"
+uint16_t analogRead() {
+  uint16_t ret=0;
+  // adc_read_fast(&ret,1);
+  adc_read(&ret);
+  return ret;
+}
+#endif
+
+#ifdef DEVHOST
 uint16_t analogRead() {
   return 1;
 }
-
 #endif
 
+ 
 sdcard sd;
 
 void application::setup() {
@@ -25,7 +38,15 @@ void application::setup() {
   while (!Serial) { }
   Serial.println("@START");
 #endif
-  
+
+#ifdef ESP8266
+  // esp_wifi_fpm_set_sleep_type(WIFI_NONE_SLEEP_T);
+  adc_config_t config;
+  config.mode=ADC_READ_TOUT_MODE;
+  config.clk_div=8;
+  auto err=adc_init(&config);
+  DBG("err=%d\r\n",err);
+#endif
   sd.init();
   sd.info();
   const char * d = "ffff.ggg";
@@ -50,5 +71,5 @@ void application::loop()
     indx=0;
     DBG("mem:%d\r\n",debug::freeMemory()); 
   }
-  time::delay(50);
+  time::delay(10);
 }

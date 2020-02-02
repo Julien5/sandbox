@@ -10,7 +10,7 @@ set grid;
 set autoscale fix;
 set xtics 50
 
-# set yrange [20:80]
+#set yrange [30:170]
 # set xrange [1900:2400]
 # set xrange [14000:14320]
 # set xrange [1090:1110]

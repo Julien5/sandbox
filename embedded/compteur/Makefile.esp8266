@@ -7,9 +7,11 @@ include $(MAKEFILESDIR)/esp8266/settings
 include $(MAKEFILESDIR)/esp8266/common
 include $(MAKEFILESDIR)/esp8266/core
 
-all: dir core libs $(OBJS) elf
+all: dir deps $(OBJS) elf
 
 include $(MAKEFILESDIR)/esp8266/build.mk
+
+deps: core libs 
 
 core:
 	make -j2 -C $(MAKEFILESDIR)/esp8266 -i -f core > /dev/null 2>&1

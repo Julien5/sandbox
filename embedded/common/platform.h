@@ -13,7 +13,7 @@ T xMin(const T &a, const T &b) {
   return b;
 }
 
-#ifdef DEVHOST
+#if defined(DEVHOST) || defined(ESP8266)
 #include <cstddef>
 typedef std::size_t size_t;
 #endif
