@@ -1,0 +1,26 @@
+include ../Makefiles/settings
+include $(MAKEFILESDIR)/arduino/settings
+include $(MAKEFILESDIR)/arduino/common
+include $(MAKEFILESDIR)/arduino/AltSoftSerial
+include $(MAKEFILESDIR)/arduino/core
+
+all: dir $(OBJS) deps elf
+
+NAME := wifi-transmitter
+SRCSDIR := .
+
+include $(MAKEFILESDIR)/arduino/build.mk
+
+deps:
+	make -C $(MAKEFILESDIR)/arduino -f core.mk lib
+	make -C $(MAKEFILESDIR)/arduino -f AltSoftSerial.mk lib
+	make -C $(MAKEFILESDIR)/arduino -f common.mk deps lib
+
+print:
+	$(info MAKEFILESDIR is $(MAKEFILESDIR))	
+	$(info INCLUDE is $(INCLUDE))
+	$(info XINCLUDE is $(XINCLUDE))
+	$(info OBJS is $(OBJS))
+	$(info CXXOBJS is $(CXXOBJS))
+	$(info COBJS is $(COBJS))
+

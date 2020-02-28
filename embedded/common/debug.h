@@ -61,12 +61,7 @@
   } while(0)
 #define TRACE()					\
   do {						\
-    Serial.print(__FILE__);			\
-    Serial.print(":");				\
-    Serial.print(__LINE__);			\
-    Serial.print(":");				\
-    printMemory(0);				\
-    Serial.flush();				\
+    printf("%s:%d TRACE\n",__FILE__,__LINE__);	\
   } while(0)
 #define assert(ignore)
 #endif

@@ -32,6 +32,7 @@ showsize: elf
 ARDUINO_PORT:=$(shell find /dev/ -name "ttyACM?")
 
 reset:
+	@$(if $(strip $(ARDUINO_PORT)),,echo could not find arduino port!)
 	/usr/bin/ard-reset-arduino $(ARDUINO_PORT)
 
 flash: hex reset showsize
