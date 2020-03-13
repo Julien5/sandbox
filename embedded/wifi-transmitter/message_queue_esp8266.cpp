@@ -23,7 +23,7 @@ public:
       *ok=true;
       return ret;
     }
-    return message(0);
+    return message();
   }
 };
 

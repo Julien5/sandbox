@@ -27,9 +27,11 @@ void debug::turnBuildinLED(bool on) {
   else
     gpio_set_level(GPIO_NUM_2,0);
 }
+extern "C" {
+#include "esp_system.h"
+}
 int debug::freeMemory() {
-  // FIXME
-  return 0;
+  return esp_get_free_heap_size();
 }
 #endif
 

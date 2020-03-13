@@ -63,7 +63,9 @@
   do {						\
     printf("%s:%d TRACE\n",__FILE__,__LINE__);	\
   } while(0)
+#ifndef assert
 #define assert(ignore)
+#endif
 #endif
 
 #else
