@@ -2,9 +2,15 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-void maintask_esp8266(void *pvParameters) {
+void serial(void *pvParameters) {
   while (1) {
-    application::loop();
+    application::loop_serial();
+  }
+}
+
+void wifi(void *pvParameters) {
+  while (1) {
+    application::loop_wifi();
   }
 }
 
@@ -12,6 +18,7 @@ extern "C" {
   void app_main()
   {
     application::setup();
-    xTaskCreate(&maintask_esp8266, "maintask_esp8266", 1024*16, nullptr, 2, nullptr);
+    xTaskCreate(&serial, "serial_task", 1024*16, nullptr, 2, nullptr);
+    xTaskCreate(&wifi, "wifi_task", 1024*16, nullptr, 2, nullptr);
   }
 }

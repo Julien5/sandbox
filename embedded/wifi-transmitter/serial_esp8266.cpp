@@ -3,7 +3,7 @@
 #include "driver/uart.h"
 
 #define BUF_SIZE 1024
-#define PORT UART_NUM_2
+#define PORT UART_NUM_0
 
 void serial::init() {
   // For arduino: The default is 8 data bits, no parity, one stop bit.
