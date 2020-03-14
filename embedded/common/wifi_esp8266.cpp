@@ -70,9 +70,7 @@ void wifi_init_sta()
 }
 
 
-#define WEB_SERVER "example.com"
-#define WEB_PORT 80
-#define WEB_URL "http://example.com/"
+
 
 namespace Method {
   enum Method {
@@ -102,8 +100,9 @@ int http(Method::Method method, wifi::callback *r_cb)
   xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT,
 		      false, true, portMAX_DELAY);
   ESP_LOGI(TAG, "Connected to AP");
-
-  int err = getaddrinfo(WEB_SERVER, "80", &hints, &res);
+  const char * WEB_SERVER = "example.com";
+  const char * WEB_PORT="80";
+  int err = getaddrinfo(WEB_SERVER, WEB_PORT, &hints, &res);
 
   if(err != 0 || res == NULL) {
     ESP_LOGE(TAG, "DNS lookup failed err=%d res=%p", err, res);
@@ -141,6 +140,9 @@ int http(Method::Method method, wifi::callback *r_cb)
   //"Host: "WEB_SERVER"\r\n"
   //"User-Agent: esp-idf/1.0 esp32\r\n"
   //"\r\n";
+  
+
+#define WEB_URL "https://example.com/"
   
   char request[128]={0};
   snprintf(request, 128,
