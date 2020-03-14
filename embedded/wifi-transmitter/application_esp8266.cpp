@@ -3,7 +3,7 @@
 #include "time.h"
 #include "serial.h"
 #include "sync.h"
-
+#include "wifi.h"
 #include <string.h>
 
 // serial S;
@@ -43,10 +43,18 @@ void application::loop_serial() {
   */
 }
 
+wifi::wifi * W = nullptr;
+
 void application::loop_wifi() {
+  if (!W)
+    W=new wifi::wifi();
+  
+  W->get("http://192.168.178.22:8000/",0);
+  W->get("http://example.com/",0);
   bool ok=false;
   message rx=global::queue.wait(&ok);
   DBG("wifi loop: free=%d ok=%d rx=%s\n",debug::freeMemory(),int(ok),rx.data);
+  time::delay(5000);
 }
 
 

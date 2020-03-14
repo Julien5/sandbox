@@ -43,7 +43,13 @@
     Serial.println(": TRACE");			\
     Serial.flush();				\
   } while(0)
-#define assert(ignore)
+#define assert(x)				\
+  do {						\
+    if(!(x)) {					\
+      DBG("assertion failed");			\
+      while(1){};				\
+    }						\
+  } while(0)
 #else
 #define DBG(...) ((void) 0)			
 #define TRACE() ((void) 0)
@@ -64,7 +70,13 @@
     printf("%s:%d TRACE\n",__FILE__,__LINE__);	\
   } while(0)
 #ifndef assert
-#define assert(ignore)
+#define assert(x)				\
+  do {						\
+    if(!(x)) {					\
+      DBG("assertion failed");			\
+      while(1){};				\
+    }						\
+  } while(0)
 #endif
 #endif
 

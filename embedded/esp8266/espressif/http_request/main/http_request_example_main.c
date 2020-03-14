@@ -28,8 +28,9 @@
    If you'd rather not, just change the below entries to strings with
    the config you want - ie #define EXAMPLE_WIFI_SSID "mywifissid"
 */
-#define EXAMPLE_WIFI_SSID CONFIG_WIFI_SSID
-#define EXAMPLE_WIFI_PASS CONFIG_WIFI_PASSWORD
+#include "../../../../common/private_ssid_config.h"
+#define EXAMPLE_WIFI_SSID WIFI_SSID
+#define EXAMPLE_WIFI_PASS WIFI_PASS
 
 /* FreeRTOS event group to signal when we are connected & ready to make a request */
 static EventGroupHandle_t wifi_event_group;
