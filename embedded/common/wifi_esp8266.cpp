@@ -22,14 +22,6 @@
 
 static const char *TAG = "wifi_esp8266";
 const int CONNECTED_BIT = BIT0;
-#define WEB_SERVER "example.com"
-#define WEB_PORT 80
-#define WEB_URL "http://example.com/"
-
-static const char *REQUEST = "GET " WEB_URL " HTTP/1.0\r\n"
-    "Host: "WEB_SERVER"\r\n"
-    "User-Agent: esp-idf/1.0 esp32\r\n"
-    "\r\n";
 
 static EventGroupHandle_t wifi_event_group;
 
@@ -76,13 +68,6 @@ void wifi_init_sta()
   ESP_ERROR_CHECK( esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config) );
   ESP_ERROR_CHECK( esp_wifi_start() );
 }
-
-// POST http://pi:8000/foo/test
-// GET http://pi:8000/stats
-
-// server = "pi"
-// port = "8000"
-// request = "/test/foo"
 
 namespace Method {
   enum Method {
@@ -151,6 +136,12 @@ int http(Method::Method method, wifi::callback *r_cb)
   ESP_LOGI(TAG, "... connected");
   freeaddrinfo(res);
 
+  static const char *REQUEST = "GET " WEB_URL " HTTP/1.0\r\n"
+    "Host: "WEB_SERVER"\r\n"
+    "User-Agent: esp-idf/1.0 esp32\r\n"
+    "\r\n";
+
+  
   if (write(s, REQUEST, strlen(REQUEST)) < 0) {
     ESP_LOGE(TAG, "... socket send failed");
     close(s);
