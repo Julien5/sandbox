@@ -100,19 +100,22 @@ int http(Method::Method method, wifi::callback *r_cb)
   xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT,
 		      false, true, portMAX_DELAY);
   ESP_LOGI(TAG, "Connected to AP");
-  const char * WEB_SERVER = "example.com";
+
   const char * WEB_PORT="80";
   const char * WEB_URL="https://example.com/";
 
-  const char * beg=strstr(WEB_URL,"//")+2;
-  char * end1=strstr(beg,"/");
-  char * end2=strchr(beg,':');
-  char * end=end1;
   char web_server[64]={0};
-  if (end2 && end2<end1)
-    end=end2;
-  strncpy(web_server,beg,end-beg);
-  int err = getaddrinfo(web_server, WEB_PORT, &hints, &res);
+  {
+    // extract "example.com" from "https://example.com/blahblahblah"
+    const char * beg=strstr(WEB_URL,"//")+2;
+    char * end1=strstr(beg,"/");
+    char * end2=strchr(beg,':');
+    char * end=end1;
+    if (end2 && end2<end1)
+      end=end2;
+    strncpy(web_server,beg,end-beg);
+  }
+    int err = getaddrinfo(web_server, WEB_PORT, &hints, &res);
 
   if(err != 0 || res == NULL) {
     ESP_LOGE(TAG, "DNS lookup failed err=%d res=%p", err, res);
@@ -153,7 +156,7 @@ int http(Method::Method method, wifi::callback *r_cb)
 	   "\r\n",
 	   Method::names[method],
 	   WEB_URL,
-	   WEB_SERVER
+	   web_server
 	   );
   DBG("request:\n%s\n",request);
   
