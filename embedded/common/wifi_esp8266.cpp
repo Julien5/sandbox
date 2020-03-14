@@ -69,9 +69,6 @@ void wifi_init_sta()
   ESP_ERROR_CHECK( esp_wifi_start() );
 }
 
-
-
-
 namespace Method {
   enum Method {
     get,
@@ -113,7 +110,7 @@ int http(Method::Method method, const char * WEB_URL, wifi::callback *r_cb)
     char * end2=strchr(beg,':');
     char * end=end1;
 
-    path = end1+1;
+    path = end1;
     
     if (end2 && end2<end1) {
       end=end2;
@@ -122,6 +119,8 @@ int http(Method::Method method, const char * WEB_URL, wifi::callback *r_cb)
     strncpy(host,beg,end-beg);
     strncpy(schema,WEB_URL,beg-WEB_URL-3);
   }
+  DBG("parts: %s://%s:%s/%s\n",schema,host,port,path);
+ 
   char url[128]={0};
   // do not include the port
   snprintf(url, 128,"%s://%s/%s",schema,host,path);
@@ -167,7 +166,7 @@ int http(Method::Method method, const char * WEB_URL, wifi::callback *r_cb)
 	   "User-Agent: esp-idf/1.0 esp8266\r\n"
 	   "\r\n",
 	   Method::names[method],
-	   url,
+	   path,
 	   host
 	   );
   DBG("request:\n%s\n",request);
