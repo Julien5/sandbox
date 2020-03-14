@@ -84,6 +84,17 @@ namespace Method {
 #define WEB_PORT 80
 #define WEB_URL "http://example.com/"
 
+namespace Method {
+  enum Method {
+    get,
+    post
+  };
+  char const * names[2] = {
+    "GET",
+    "POST"
+  };
+}
+
 int http(Method::Method method, wifi::callback *r_cb)
 { 
   struct addrinfo hints = {};
@@ -136,10 +147,21 @@ int http(Method::Method method, wifi::callback *r_cb)
   ESP_LOGI(TAG, "... connected");
   freeaddrinfo(res);
 
-  static const char *REQUEST = "GET " WEB_URL " HTTP/1.0\r\n"
-    "Host: "WEB_SERVER"\r\n"
-    "User-Agent: esp-idf/1.0 esp32\r\n"
-    "\r\n";
+  //char *request = "GET " WEB_URL " HTTP/1.0\r\n"
+  //"Host: "WEB_SERVER"\r\n"
+  //"User-Agent: esp-idf/1.0 esp32\r\n"
+  //"\r\n";
+  
+  char request[128]={0};
+  snprintf(request, 128,
+	   "%s %s HTTP/1.0\r\n"
+	   "Host: %s\n"
+	   "User-Agent: esp-idf/1.0 esp8266\r\n"
+	   "\r\n",
+	   Method::names[m],
+	   WEB_URL,
+	   WEB_SERVER
+	   );
 
   
   if (write(s, REQUEST, strlen(REQUEST)) < 0) {
