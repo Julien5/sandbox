@@ -102,6 +102,8 @@ int http(Method::Method method, wifi::callback *r_cb)
   ESP_LOGI(TAG, "Connected to AP");
   const char * WEB_SERVER = "example.com";
   const char * WEB_PORT="80";
+  const char * WEB_URL="https://example.com/";
+  
   int err = getaddrinfo(WEB_SERVER, WEB_PORT, &hints, &res);
 
   if(err != 0 || res == NULL) {
@@ -142,7 +144,6 @@ int http(Method::Method method, wifi::callback *r_cb)
   //"\r\n";
   
 
-#define WEB_URL "https://example.com/"
   
   char request[128]={0};
   snprintf(request, 128,
