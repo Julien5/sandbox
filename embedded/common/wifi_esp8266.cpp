@@ -83,7 +83,7 @@ namespace Method {
   };
 }
 
-int http(Method::Method method, wifi::callback *r_cb)
+int http(Method::Method method, const char * WEB_URL, wifi::callback *r_cb)
 { 
   struct addrinfo hints = {};
   hints.ai_family = AF_INET;
@@ -101,21 +101,33 @@ int http(Method::Method method, wifi::callback *r_cb)
 		      false, true, portMAX_DELAY);
   ESP_LOGI(TAG, "Connected to AP");
 
-  const char * WEB_PORT="80";
-  const char * WEB_URL="https://example.com/";
-
-  char web_server[64]={0};
+  char schema[6]={0};
+  char * path = {0};
+  char host[64]={0};
+  char port[5]="80";
   {
-    // extract "example.com" from "https://example.com/blahblahblah"
+    // extract "example.com" from "https://example.com:80/blahblahblah"
+    //                                     b          2  1
     const char * beg=strstr(WEB_URL,"//")+2;
     char * end1=strstr(beg,"/");
     char * end2=strchr(beg,':');
     char * end=end1;
-    if (end2 && end2<end1)
+
+    path = end1+1;
+    
+    if (end2 && end2<end1) {
       end=end2;
-    strncpy(web_server,beg,end-beg);
+      strncpy(port,end2+1,end1-end2-1);
+    }
+    strncpy(host,beg,end-beg);
+    strncpy(schema,WEB_URL,beg-WEB_URL-3);
   }
-    int err = getaddrinfo(web_server, WEB_PORT, &hints, &res);
+  char url[128]={0};
+  // do not include the port
+  snprintf(url, 128,"%s://%s/%s",schema,host,path);
+  
+  DBG("recomposed: %s\n",url);
+  int err = getaddrinfo(host, port, &hints, &res);
 
   if(err != 0 || res == NULL) {
     ESP_LOGE(TAG, "DNS lookup failed err=%d res=%p", err, res);
@@ -149,14 +161,14 @@ int http(Method::Method method, wifi::callback *r_cb)
   ESP_LOGI(TAG, "... connected");
   freeaddrinfo(res);  
   char request[256]={0};
-  snprintf(request, 128,
+  snprintf(request, 256,
 	   "%s %s HTTP/1.0\r\n"
 	   "Host: %s\n"
 	   "User-Agent: esp-idf/1.0 esp8266\r\n"
 	   "\r\n",
 	   Method::names[method],
-	   WEB_URL,
-	   web_server
+	   url,
+	   host
 	   );
   DBG("request:\n%s\n",request);
   
@@ -202,16 +214,16 @@ namespace wifi {
   wifi::~wifi() {
   }
  
-  int wifi::post(const char* req, const uint8_t * data, const int Ldata, callback * r) {
+  int wifi::post(const char* url, const uint8_t * data, const int Ldata, callback * r) {
     //const char * server = "pi";
     //const char * port = "8000";
     // return http_post(server,port,req,data,Ldata);
-    return http(Method::post,nullptr);
+    return http(Method::post,url,nullptr);
   }
-  int wifi::get(const char* req, callback * r) {
+  int wifi::get(const char* url, callback * r) {
     //const char * server = "pi";
     //const char * port = "8000";
     // return http_post(server,port,req,data,Ldata);
-    return http(Method::get,nullptr);
+    return http(Method::get,url,r);
   }
 }
