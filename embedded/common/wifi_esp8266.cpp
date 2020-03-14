@@ -103,8 +103,16 @@ int http(Method::Method method, wifi::callback *r_cb)
   const char * WEB_SERVER = "example.com";
   const char * WEB_PORT="80";
   const char * WEB_URL="https://example.com/";
-  
-  int err = getaddrinfo(WEB_SERVER, WEB_PORT, &hints, &res);
+
+  const char * beg=strstr(WEB_URL,"//")+2;
+  char * end1=strstr(beg,"/");
+  char * end2=strchr(beg,':');
+  char * end=end1;
+  char web_server[64]={0};
+  if (end2 && end2<end1)
+    end=end2;
+  strncpy(web_server,beg,end-beg);
+  int err = getaddrinfo(web_server, WEB_PORT, &hints, &res);
 
   if(err != 0 || res == NULL) {
     ESP_LOGE(TAG, "DNS lookup failed err=%d res=%p", err, res);
@@ -136,16 +144,8 @@ int http(Method::Method method, wifi::callback *r_cb)
   }
 
   ESP_LOGI(TAG, "... connected");
-  freeaddrinfo(res);
-
-  //char *request = "GET " WEB_URL " HTTP/1.0\r\n"
-  //"Host: "WEB_SERVER"\r\n"
-  //"User-Agent: esp-idf/1.0 esp32\r\n"
-  //"\r\n";
-  
-
-  
-  char request[128]={0};
+  freeaddrinfo(res);  
+  char request[256]={0};
   snprintf(request, 128,
 	   "%s %s HTTP/1.0\r\n"
 	   "Host: %s\n"
@@ -155,7 +155,7 @@ int http(Method::Method method, wifi::callback *r_cb)
 	   WEB_URL,
 	   WEB_SERVER
 	   );
-
+  DBG("request:\n%s\n",request);
   
   if (write(s, request, strlen(request)) < 0) {
     ESP_LOGE(TAG, "... socket send failed");
