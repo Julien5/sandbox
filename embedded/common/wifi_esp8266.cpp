@@ -69,16 +69,6 @@ void wifi_init_sta()
   ESP_ERROR_CHECK( esp_wifi_start() );
 }
 
-namespace Method {
-  enum Method {
-    get,
-    post
-  };
-  char const * names[2] = {
-    "GET",
-    "POST"
-  };
-}
 
 #define WEB_SERVER "example.com"
 #define WEB_PORT 80
@@ -158,13 +148,13 @@ int http(Method::Method method, wifi::callback *r_cb)
 	   "Host: %s\n"
 	   "User-Agent: esp-idf/1.0 esp8266\r\n"
 	   "\r\n",
-	   Method::names[m],
+	   Method::names[method],
 	   WEB_URL,
 	   WEB_SERVER
 	   );
 
   
-  if (write(s, REQUEST, strlen(REQUEST)) < 0) {
+  if (write(s, request, strlen(request)) < 0) {
     ESP_LOGE(TAG, "... socket send failed");
     close(s);
     vTaskDelay(4000 / portTICK_PERIOD_MS);
