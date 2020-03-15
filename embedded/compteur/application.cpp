@@ -1,13 +1,15 @@
 #include "application.h"
 #include "common/debug.h"
 #include "common/time.h"
+#include "common/serial.h"
+
 #include "sdcard.h"
 #include "stdint.h"
 
 #include <string.h>
 #ifdef ARDUINO
 #include "Arduino.h"
-uint16_t analogRead() {
+uint16_t analogread() {
   return analogRead(0);
 }
 #endif
@@ -66,7 +68,7 @@ namespace devhost {
   }
 }
 
-uint16_t analogRead() {
+uint16_t analogread() {
   using namespace devhost;
   if (s_numbers.empty()) {
     get_data();
@@ -77,8 +79,7 @@ uint16_t analogRead() {
 }
 #endif
 
- 
-sdcard sd;
+std::unique_ptr<sdcard> sd;
 
 void application::setup() {
 #ifdef ARDUINO
@@ -86,11 +87,10 @@ void application::setup() {
   while (!Serial) { }
   Serial.println("@START");
 #endif
-
-  sd.init();
-  sd.info();
+  sd=std::unique_ptr<sdcard>(new sdcard);
+  sd->info();
   const char * d = "ffff.ggg";
-  sd.write("foo.txt",(uint8_t*)d,strlen(d));
+  sd->write("foo.txt",(uint8_t*)d,strlen(d));
 }
 
 uint16_t data[256] = {0};
@@ -123,7 +123,7 @@ public:
 	ret=v;
     }
     return ret;
-    }
+  }
   void reg(const uint8_t &v) {
     auto i=index(v);
     if (i<0) {
@@ -156,12 +156,11 @@ histogram h;
 
 void application::loop()
 {
-
-
+  
   return;
 
   
-  int a=analogRead();
+  int a=analogread();
   h.reg(a);
   data[indx++]=a;
   
@@ -169,7 +168,7 @@ void application::loop()
     char filename[13]; // 8.3 => 8+1+3+1 (zero termination) => 13 bytes.
     sprintf(filename,"%08u.BIN",counter++);
     DBG("writing %s\r\n",filename);
-    sd.write(filename,(uint8_t*)data,sizeof(data));
+    sd->write(filename,(uint8_t*)data,sizeof(data));
     indx=0;
     DBG("mem:%d\r\n",debug::freeMemory());
     h.print();

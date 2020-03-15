@@ -17,3 +17,28 @@ T xMin(const T &a, const T &b) {
 #include <cstddef>
 typedef std::size_t size_t;
 #endif
+
+#if defined(ARDUINO)
+namespace std {
+  template<typename T>
+  class unique_ptr {
+  private:
+    T* _ptr;
+  public:
+    unique_ptr() {
+      _ptr = 0;
+    }
+    unique_ptr(T * t) {
+      _ptr = t;
+    }
+    T* operator->() const {
+      return _ptr;
+    }
+    ~unique_ptr() {
+      delete _ptr;
+    }
+  };
+}
+#else
+#include <memory>
+#endif

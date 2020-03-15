@@ -1,5 +1,5 @@
-#include "serial.h"
-#include "debug.h"
+#include "common/serial.h"
+#include "common/debug.h"
 
 #include "AltSoftSerial.h"
 
@@ -11,7 +11,7 @@ namespace delme {
   }
 }
 
-void serial::serial() {
+serial::serial() {
   DBG("init uart\n");
   SOFT_UART.begin(9600);
 }

@@ -5,9 +5,7 @@
 #include "Arduino.h"
   
 
-sdcard::sdcard() {}
-
-void sdcard::init() {
+sdcard::sdcard() {
   if (!SD.begin(10)) {
     DBG("%s\r\n","cannot begin");
     while(1){};

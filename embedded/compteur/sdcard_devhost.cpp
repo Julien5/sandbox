@@ -5,9 +5,6 @@
 
 sdcard::sdcard() {}
 
-void sdcard::init() {
-}
-
 void sdcard::info() {
 }
 
