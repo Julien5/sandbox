@@ -10,7 +10,7 @@ void wait(int n=500) {
 
 void arduino() {
   while (1) {
-    application::loop();
+    application::loop_arduino();
     wait();
   }
 }

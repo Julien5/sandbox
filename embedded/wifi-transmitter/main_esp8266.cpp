@@ -1,7 +1,7 @@
 #include "application.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "debug.h"
+#include "common/debug.h"
 
 void serial(void *pvParameters) {
   while (1) {

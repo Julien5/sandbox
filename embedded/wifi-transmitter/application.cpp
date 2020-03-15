@@ -28,9 +28,10 @@ bool read_serial(serial *S, uint8_t * addr, const size_t &L) {
   return true;
 }
 
-const uint8_t kBegin=0xFF;
 
-void application::loop() {
+const uint8_t kBegin=0xFF;
+#ifdef DEVHOST
+void application::loop_arduino() {
   const char command = 'G';
   const char * url = "http://foo.bar/xx";
   const char * data = nullptr;
@@ -54,6 +55,7 @@ void application::loop() {
   DBG("arduino sent\n");
   Time::delay(2000);
 }
+#endif
 
 int k=0;
 void application::loop_serial() {

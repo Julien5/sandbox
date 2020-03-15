@@ -2,7 +2,9 @@
 
 namespace application {
   void setup();
-  void loop();
+#ifdef DEVHOST
+  void loop_arduino();
+#endif
   void loop_serial();
   void loop_wifi();
 }
