@@ -1,6 +1,6 @@
 #include "application.h"
-#include "debug.h"
-#include "time.h"
+#include "common/debug.h"
+#include "common/time.h"
 #include "sdcard.h"
 #include "stdint.h"
 
@@ -9,17 +9,6 @@
 #include "Arduino.h"
 uint16_t analogRead() {
   return analogRead(0);
-}
-#endif
-
-#ifdef ESP8266
-#include "driver/adc.h"
-#include "esp_sleep.h"
-uint16_t analogRead() {
-  uint16_t ret=0;
-  // adc_read_fast(&ret,1);
-  adc_read(&ret);
-  return ret;
 }
 #endif
 
@@ -98,15 +87,6 @@ void application::setup() {
   Serial.println("@START");
 #endif
 
-#ifdef ESP8266
-  // esp_wifi_fpm_set_sleep_type(WIFI_NONE_SLEEP_T);
-  adc_config_t config;
-  config.mode=ADC_READ_TOUT_MODE;
-  config.clk_div=8;
-  auto err=adc_init(&config);
-  DBG("err=%d\r\n",err);
-#endif
-  
   sd.init();
   sd.info();
   const char * d = "ffff.ggg";
@@ -117,22 +97,37 @@ uint16_t data[256] = {0};
 uint16_t indx=0;
 uint16_t counter=0;
 
-
 class histogram {
   static constexpr size_t N=8;
-  uint16_t occurences[N];
-  uint8_t values[N];
+  uint16_t occurences[N]={0};
+  uint8_t values[N]={0};
 public:
   int8_t index(const uint8_t &v) {
-    for(int k=0;k<N;++k) 
+    for(size_t k=0;k<N;++k) 
       if (values[k]==v)
 	return k;
     return -1;
   }
+  int8_t Min() const {
+    auto ret = values[0];
+    for(auto v : values) {
+      if (v < ret)
+	ret=v;
+    }
+    return ret;
+  }
+  int8_t Max() const {
+    auto ret = values[0];
+    for(auto v : values) {
+      if (v > ret)
+	ret=v;
+    }
+    return ret;
+    }
   void reg(const uint8_t &v) {
     auto i=index(v);
     if (i<0) {
-      int k=0;
+      size_t k=0;
       for(;k<N;++k)  {
 	if (occurences[k]==0) {
 	  i=k;
@@ -148,21 +143,28 @@ public:
     occurences[i]++;
   }
   void print() {
-    for(int k=0;k<N;++k) {
-      DBG("value: %d #=%d\r\n",values[k],occurences[k]);
+    for(int v=Min();v<=Max();++v) {
+      auto i=index(v);
+      if (i<0)
+	continue;
+      DBG("value: %d #=%d\r\n",values[i],occurences[i]);
     }
   }
-  
 };
 
 histogram h;
 
 void application::loop()
-{ 
+{
+
+
+  return;
+
+  
   int a=analogRead();
   h.reg(a);
   data[indx++]=a;
-  DBG("data[%d]=%d\r\n",indx,a);
+  
   if (indx>=sizeof(data)/sizeof(uint16_t)) {
     char filename[13]; // 8.3 => 8+1+3+1 (zero termination) => 13 bytes.
     sprintf(filename,"%08u.BIN",counter++);
@@ -173,5 +175,5 @@ void application::loop()
     h.print();
     // exit(0);
   }
-  time::delay(10);
+  Time::delay(10);
 }

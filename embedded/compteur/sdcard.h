@@ -1,6 +1,6 @@
 #pragma once
 #include <stdint.h>
-#include "platform.h"
+#include "common/platform.h"
 
 class sdcard {
 public:

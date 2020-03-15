@@ -1,5 +1,5 @@
 #include "sdcard.h"
-#include "debug.h"
+#include "common/debug.h"
 #include <iostream>
 #include <fstream>
 

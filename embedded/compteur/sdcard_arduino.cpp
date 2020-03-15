@@ -1,7 +1,7 @@
 #include "sdcard.h"
 
 #include <SD.h>
-#include "debug.h"
+#include "common/debug.h"
 #include "Arduino.h"
   
 

@@ -11,9 +11,13 @@
 #include <string.h>
 
 std::unique_ptr<serial> S =nullptr;
+std::unique_ptr<wifi::wifi> W = nullptr;
+
 void application::setup() {
   assert(!S);
   S=std::unique_ptr<serial>(new serial);
+  assert(!W);
+  W=std::unique_ptr<wifi::wifi>(new wifi::wifi());
 }
 
 bool read_serial(serial *S, uint8_t * addr, const size_t &L) {
@@ -27,7 +31,6 @@ bool read_serial(serial *S, uint8_t * addr, const size_t &L) {
   }
   return true;
 }
-
 
 const uint8_t kBegin=0xFF;
 #ifdef DEVHOST
@@ -47,7 +50,7 @@ void application::loop_arduino() {
   S->write((uint8_t*)&Ldata,sizeof(Ldata));
   S->write((uint8_t*)data,Ldata);
 
-  // garbage
+  // garbage (to test)
   const uint8_t g=0x42;
   S->write((uint8_t*)&g,1);
   S->write((uint8_t*)&g,1);
@@ -88,8 +91,6 @@ void application::loop_serial() {
   Time::delay(200);
 }
 
-wifi::wifi * W = nullptr;
-
 void application::loop_wifi() {
   bool ok=false;
   received::message rx=global::queue.wait(&ok);
@@ -101,10 +102,6 @@ void application::loop_wifi() {
   received::wifi_command cmd = received::read_wifi_command(rx);
 
   DBG("wifi read url:%s\n",cmd.url);
-  
-  if (!W) {
-    W=new wifi::wifi();
-  }
 
   if (cmd.command == 'G')
     W->get(cmd.url,0);

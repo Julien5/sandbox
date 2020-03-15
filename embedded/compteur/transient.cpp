@@ -1,6 +1,6 @@
 #include "transient.h"
-#include "rtcmemory.h"
-#include "debug.h"
+#include "common/rtcmemory.h"
+#include "common/debug.h"
 
 bool transient::load(transient *t) {
   return true;

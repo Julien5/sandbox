@@ -51,7 +51,7 @@ void utils::dump(const unsigned char *data_buffer, const unsigned int length) {
   } // end for
 }
 #else
-#include "debug.h"
+#include "common/debug.h"
 void utils::dump(const unsigned char *data_buffer, const unsigned int length) {
   DBG("not implemented\n");
 }
