@@ -5,7 +5,7 @@
 #include "common/wifi.h"
 #include "common/utils.h"
 
-#include "serial.h"
+#include "common/serial.h"
 #include "sync.h"
 
 #include <string.h>
@@ -21,15 +21,7 @@ void application::setup() {
 }
 
 bool read_serial(serial *S, uint8_t * addr, const size_t &L) {
-  const uint16_t timeout=10;
-  const auto addr0 = addr;
-  while((addr-addr0) != int(L)) {
-    const auto Lread=S->read(addr,L-(addr-addr0),timeout);
-    if (Lread == 0)
-      return false;
-    addr += Lread;
-  }
-  return true;
+  return S->read_until(addr,L);
 }
 
 const uint8_t kBegin=0xFF;
@@ -66,15 +58,7 @@ void application::loop_serial() {
   received::message m;
 
   debug::turnBuildinLED(true);
-  while(true) {
-    uint8_t begin=0;
-    bool ok=read_serial(S.get(),reinterpret_cast<uint8_t*>(&begin),sizeof(begin));
-    if (!ok)
-      continue;
-    DBG("begin? 0x%02x\n",begin);
-    if (begin == kBegin)
-      break;
-  }
+  S->wait_for_begin();
     
   bool ok=read_serial(S.get(),reinterpret_cast<uint8_t*>(&m.length),sizeof(m.length));
   DBG("read serial: %d\n",m.length);

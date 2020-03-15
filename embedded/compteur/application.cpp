@@ -79,7 +79,10 @@ uint16_t analogread() {
 }
 #endif
 
+#include "common/serial.h"
+
 std::unique_ptr<sdcard> sd;
+std::unique_ptr<serial> uart;
 
 void application::setup() {
 #ifdef ARDUINO
@@ -87,10 +90,14 @@ void application::setup() {
   while (!Serial) { }
   Serial.println("@START");
 #endif
-  sd=std::unique_ptr<sdcard>(new sdcard);
-  sd->info();
-  const char * d = "ffff.ggg";
-  sd->write("foo.txt",(uint8_t*)d,strlen(d));
+  uart=std::unique_ptr<serial>(new serial);
+  //sd=std::unique_ptr<sdcard>(new sdcard);
+  if (sd) {
+    sd->info();
+    const char * d = "ffff.ggg";
+    sd->write("foo.txt",(uint8_t*)d,strlen(d));
+  }
+    
 }
 
 uint16_t data[256] = {0};
@@ -156,7 +163,19 @@ histogram h;
 
 void application::loop()
 {
-  
+  const char command = 'G';
+  const char * url = "http://foo.bar/xx";
+  const char * nodata = nullptr;
+  const uint16_t Ldata = 0;
+  //                G   http......    0 + Ldata + data
+  uint16_t Ltotal = 1 + strlen(url) + 1 + sizeof(Ldata) + Ldata;
+  uart->begin();
+  uart->write((uint8_t*)&Ltotal,sizeof(Ltotal));
+  uart->write((uint8_t*)&command,sizeof(command));
+  uart->write((uint8_t*)url,strlen(url)+1);
+  uart->write((uint8_t*)&Ldata,sizeof(Ldata));
+  uart->write((uint8_t*)nodata,Ldata);
+  DBG("sent %d bytes\r\n",Ltotal);
   return;
 
   
@@ -168,7 +187,8 @@ void application::loop()
     char filename[13]; // 8.3 => 8+1+3+1 (zero termination) => 13 bytes.
     sprintf(filename,"%08u.BIN",counter++);
     DBG("writing %s\r\n",filename);
-    sd->write(filename,(uint8_t*)data,sizeof(data));
+    if (sd)
+      sd->write(filename,(uint8_t*)data,sizeof(data));
     indx=0;
     DBG("mem:%d\r\n",debug::freeMemory());
     h.print();

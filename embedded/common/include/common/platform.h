@@ -31,6 +31,9 @@ namespace std {
     unique_ptr(T * t) {
       _ptr = t;
     }
+    explicit operator bool() const {
+      return _ptr;
+    }
     T* operator->() const {
       return _ptr;
     }
