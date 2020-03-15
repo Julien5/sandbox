@@ -11,7 +11,7 @@ namespace delme {
   }
 }
 
-void serial::init() {
+void serial::serial() {
   DBG("init uart\n");
   SOFT_UART.begin(9600);
 }

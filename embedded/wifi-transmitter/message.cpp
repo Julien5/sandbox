@@ -1,7 +1,7 @@
 #include "message.h"
 #include <string.h>
-#include "debug.h"
-#include "utils.h"
+#include "common/debug.h"
+#include "common/utils.h"
 
 namespace received {
   message::message() {
@@ -9,19 +9,19 @@ namespace received {
   }
 
   template<typename T>
-  void read(uint8_t * data, T * ret) {
+  void read(const uint8_t * data, T * ret) {
     uint8_t * ret_addr = reinterpret_cast<uint8_t*>(ret);
-    for(int i=0; i < sizeof(T); ++i) {
+    for(size_t i=0; i < sizeof(T); ++i) {
       ret_addr[i] = data[i];
     }
   }
 
   wifi_command read_wifi_command(const message &m) {
     wifi_command ret;
-    uint8_t * cursor = m.data;
+    uint8_t * cursor = const_cast<uint8_t*>(m.data);
     read(cursor,&ret.command);
     cursor += sizeof(ret.command);
-    ret.url = cursor;
+    ret.url = (char*) cursor;
     cursor += strlen(ret.url)+1;
     assert(m.length >= (strlen(ret.url)+2) );
     ret.Ldata = m.length - strlen(ret.url) - 2;
@@ -29,7 +29,7 @@ namespace received {
     ret.data = cursor;
     return ret;
   }
-
+#ifdef DEVHOST
   message make_message(const wifi_command &cmd) {
     message ret;
     ret.length = 1 + strlen(cmd.url) + 2 + cmd.Ldata;
@@ -38,7 +38,7 @@ namespace received {
     (*cursor) = (uint8_t) cmd.command;
     cursor++;
 
-    strcpy(cursor,cmd.url);
+    strcpy((char*)cursor,cmd.url);
     cursor += strlen(cmd.url)+1;
 
     (*cursor) = reinterpret_cast<const uint8_t*>(&cmd.Ldata)[0];
@@ -53,6 +53,7 @@ namespace received {
     return ret;
   }
 
+  
   void test() {
     wifi_command cmd1;
     cmd1.command = 'G';
@@ -80,4 +81,5 @@ namespace received {
     for(int i=0; i<cmd1.Ldata; ++i)
       assert(cmd1.data[i] == cmd2.data[i]);
   }
+#endif
 }

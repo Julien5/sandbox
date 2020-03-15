@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-namespace time {
+namespace Time {
   // set with an external time source.
   void set_current_epoch(uint64_t ms);
   uint64_t since_epoch();

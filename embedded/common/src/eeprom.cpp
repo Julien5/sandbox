@@ -1,6 +1,6 @@
-#include "eeprom.h"
-#include "debug.h"
-#include "platform.h"
+#include "common/eeprom.h"
+#include "common/debug.h"
+#include "common/platform.h"
 
 #ifdef ARDUINO
 #include <EEPROM.h>

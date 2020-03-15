@@ -1,10 +1,11 @@
-#include "sleep.h"
-#include "debug.h"
+#include "common/sleep.h"
+#include "common/debug.h"
+#include "common/time.h"
 
 #if defined(DEVHOST)
 void sleep::deep_sleep(const uint32_t &ms) {
   DBG("deep sleep (=> delay)\n");
-  time::delay(ms);
+  Time::delay(ms);
 }
 #endif
 
@@ -27,6 +28,6 @@ void sleep::deep_sleep(const uint32_t &ms) {
   esp_deep_sleep_set_rf_option(0);
   /* Now just wait for the RTC to kill the CPU core */
   esp_deep_sleep(ms*1000);
-  time::delay(1000);
+  Time::delay(1000);
 }
 #endif

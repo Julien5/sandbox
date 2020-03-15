@@ -5,7 +5,7 @@
 #define BUF_SIZE 1024
 #define PORT UART_NUM_0
 
-void serial::init() {
+serial::serial() {
   // For arduino: The default is 8 data bits, no parity, one stop bit.
   uart_config_t uart_config = {
     .baud_rate = 9600,

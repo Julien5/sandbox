@@ -2,6 +2,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "debug.h"
+
 void serial(void *pvParameters) {
   while (1) {
     application::loop_serial();

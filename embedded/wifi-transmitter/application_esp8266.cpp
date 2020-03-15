@@ -6,53 +6,59 @@
 #include "wifi.h"
 #include <string.h>
 
-// serial S;
+std::unique_ptr<serial> S =nullptr;
 void application::setup() {
-  // S.init();
+  assert(!S);
+  S=std::unique_ptr<serial>(new serial);
 }
 
-uint8_t rxb[1024]={0};
-uint8_t txb[1024]={0};
-
-const uint16_t timeout=10;
+bool read_serial(serial *S, uint8_t * addr, const size_t &L) {
+  const uint16_t timeout=10;
+  const auto addr0 = addr;
+  while((addr-addr0) != int(L)) {
+    const auto Lread=S->read(addr,L-(addr-addr0),timeout);
+    if (Lread == 0)
+      return false;
+    addr += Lread;
+  }
+  return true;
+}
 
 int k=0;
 void application::loop_serial() {
   DBG("serial loop\n");
-  debug::turnBuildinLED(true);
-  time::delay(200);
+  received::message m;
 
-  message m;
-  m.data[0] = 'a'+k;
-  m.data[1] = 'A'+k;
-  m.data[2] = '0'+k;
-  
+  debug::turnBuildinLED(true);
+  bool ok=read_serial(S.get(),reinterpret_cast<uint8_t*>(&m.length),sizeof(m.length));
+  assert(ok);
+  ok=read_serial(S.get(),m.data,m.length);
+  assert(ok);
   global::queue.push(m);
-  k++;
   debug::turnBuildinLED(false);
   time::delay(200);
-  /*
-  memset(txb,0,sizeof(txb));
-  memset(rxb,0,sizeof(rxb));
-  auto Lr=S.read(rxb,sizeof(rxb),timeout);
-  if (Lr==0) {
-    return;
-  }  
-  sprintf((char*)txb,"(esped)%s",(char*)rxb);
-  auto Lw=S.write(txb,strlen((char*)txb));
-  */
 }
 
 wifi::wifi * W = nullptr;
 
 void application::loop_wifi() {
-  if (!W)
-    W=new wifi::wifi();
-  
-  W->get("http://192.168.178.22:8000/",0);
-  W->get("http://example.com/",0);
   bool ok=false;
-  message rx=global::queue.wait(&ok);
+  received::message rx=global::queue.wait(&ok);
+  if (!ok)
+    return;
+  
+  received::wifi_command cmd = received::read_wifi_command(rx);
+
+  if (!W) {
+    W=new wifi::wifi();
+  }
+
+  if (cmd.command == 'G')
+    W->get(cmd.url,0);
+
+  if (cmd.command == 'P')
+    W->post(cmd.url,cmd.data,cmd.Ldata,0);
+  
   DBG("wifi loop: free=%d ok=%d rx=%s\n",debug::freeMemory(),int(ok),rx.data);
   time::delay(5000);
 }

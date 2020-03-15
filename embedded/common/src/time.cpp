@@ -1,49 +1,49 @@
-#include "time.h"
-#include "debug.h"
+#include "common/time.h"
+#include "common/debug.h"
 
-namespace time {
+namespace Time {
   uint64_t epoch_offset;
 }
 
-void time::set_current_epoch(uint64_t ms) {
-  time::epoch_offset=ms;
+void Time::set_current_epoch(uint64_t ms) {
+  Time::epoch_offset=ms;
 }
 
-uint64_t time::since_epoch() {
-  return time::epoch_offset+since_reset();
+uint64_t Time::since_epoch() {
+  return Time::epoch_offset+since_reset();
 }
 
 #if defined(DEVHOST)
 #include <atomic>
 typedef uint32_t test_ms;
 std::atomic<test_ms> test_t(0);
-uint32_t time::since_reset() {
+uint32_t Time::since_reset() {
   return test_t.load(); 
 }
-void time::delay(test_ms d) {
+void Time::delay(test_ms d) {
   test_t+=d;
 }
 #endif
 
 #if defined(ARDUINO)
 #include "Arduino.h"
-uint32_t time::since_reset() {
+uint32_t Time::since_reset() {
   return millis();
 }
 
-void time::delay(uint32_t d) {
+void Time::delay(uint32_t d) {
   return ::delay(d);
 }
 #endif
 
 #if defined(ESP8266)
 extern "C" uint32_t esp_get_time(void);
-uint32_t time::since_reset() {
+uint32_t Time::since_reset() {
   return esp_get_time()/1000;
 }
 #include "FreeRTOS.h"
 #include "task.h"
-void time::delay(uint32_t d) {
+void Time::delay(uint32_t d) {
   vTaskDelay( d/portTICK_PERIOD_MS);
 }
 #endif

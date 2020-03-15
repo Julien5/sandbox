@@ -1,11 +1,11 @@
-#include "tickscounter.h"
-#include "clock.h"
-#include "debug.h"
+#include "common/tickscounter.h"
+#include "common/clock.h"
+#include "common/debug.h"
 #include <limits.h>
-#include "eeprom.h"
+#include "common/eeprom.h"
 #include <string.h>
-#include "platform.h"
-#include "time.h"
+#include "common/platform.h"
+#include "common/time.h"
 
 bin::bin(){
   reset();
@@ -370,7 +370,7 @@ void tickscounter::reset_eeprom() {
 
 #if !defined(ARDUINO) && !defined(ESP8266)
 
-#include "utils.h"
+#include "common/utils.h"
 tickscounter tickscounter::fromHex(const std::string &hex) {
   std::vector<uint8_t> bytes=utils::hex_to_bytes(hex);
   return tickscounter(utils::as_cbytes(bytes));
@@ -438,7 +438,7 @@ int some_real_ticks(tickscounter &C) {
   int k=0;
   for(; k<60; ++k) {
     C.tick();
-    time::delay(1200L+jitter(k));
+    Time::delay(1200L+jitter(k));
   }
   return k;
 }
@@ -446,9 +446,9 @@ int some_real_ticks(tickscounter &C) {
 int some_spurious_ticks(tickscounter &C) {
   int k = 0;
   for(; k<config::kMinAloneTicks; ++k) {
-    time::delay(2*one_minute());
+    Time::delay(2*one_minute());
     C.tick();
-    time::delay(one_minute());
+    Time::delay(one_minute());
   }
   return k;
 }
@@ -465,21 +465,21 @@ int tickscounter::test() {
   const int K1=NTICKS-2;
   assert(C.total()==T);
   for(int k = 0; k<K1; ++k) {
-    time::delay(one_minute()*2);
+    Time::delay(one_minute()*2);
     T+=some_real_ticks(C);
     assert(C.total()==T);
   }
   C.print();
   
   for(int k = 0; k<10; ++k) {
-    time::delay(one_minute()*2);
+    Time::delay(one_minute()*2);
     some_spurious_ticks(C);
     assert(C.total()==T);
   }
  
   const int K2=5;
   for(int k = 0; k<K2; ++k) {
-    time::delay(one_minute()*2);
+    Time::delay(one_minute()*2);
     T+=some_real_ticks(C);
   }
   assert(T>(K1+K2));

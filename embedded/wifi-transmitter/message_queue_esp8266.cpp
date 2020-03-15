@@ -8,32 +8,32 @@ class message_queue_impl {
   QueueHandle_t queue;
 public:
   message_queue_impl() {
-    queue = xQueueCreate(10, sizeof(message));
+    queue = xQueueCreate(10, sizeof(received::message));
   }
   virtual ~message_queue_impl() {};
-  void push(const message &m) {
+  void push(const received::message &m) {
     xQueueSend(queue, (void*) &m,(TickType_t) 0 );
   }
-  message wait(bool *ok) const {
+  received::message wait(bool *ok) const {
     *ok=false;
-    message ret;
+    received::message ret;
     /* Block for 500ms. */
     const TickType_t timeout = 500 / portTICK_PERIOD_MS;
     if(xQueueReceive(queue,&ret,timeout) == pdPASS ) {
       *ok=true;
       return ret;
     }
-    return message();
+    return received::message();
   }
 };
 
 message_queue::message_queue():impl(new message_queue_impl) {
 }
 
-void message_queue::push(const message &m) {
+void message_queue::push(const received::message &m) {
   return impl->push(m);
 }
 
-message message_queue::wait(bool *ok) {
+received::message message_queue::wait(bool *ok) {
   return impl->wait(ok);
 }

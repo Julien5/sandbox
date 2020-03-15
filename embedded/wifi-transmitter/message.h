@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <stdint.h>
-#include "platform.h"
+#include "common/platform.h"
 
 namespace received {
   struct message {
