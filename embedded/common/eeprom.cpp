@@ -73,7 +73,7 @@ namespace x86 {
 }
 eeprom::eeprom(){
   // eeprom mock is volatile !
-  for(int k=0; k<sizeof(x86::mem)/sizeof(char);++k)
+  for(int k=0; k<int(sizeof(x86::mem)/sizeof(char));++k)
     x86::write(0,0);
 }
 using namespace x86;

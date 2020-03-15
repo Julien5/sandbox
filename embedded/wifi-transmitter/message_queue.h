@@ -9,6 +9,6 @@ class message_queue {
   std::shared_ptr<message_queue_impl> impl;
 public:
   message_queue();
-  void push(const message &m);
-  message wait(bool *ok);
+  void push(const received::message &m);
+  received::message wait(bool *ok);
 };
