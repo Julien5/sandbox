@@ -2,7 +2,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 #include "message.h"
-#include "debug.h"
+#include "common/debug.h"
 
 class message_queue_impl {
   QueueHandle_t queue;

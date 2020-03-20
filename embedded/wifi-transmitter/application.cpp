@@ -10,7 +10,7 @@
 
 #include <string.h>
 
-std::unique_ptr<serial> S =nullptr;
+std::unique_ptr<serial> S = nullptr;
 std::unique_ptr<wifi::wifi> W = nullptr;
 
 void application::setup() {
@@ -54,6 +54,7 @@ void application::loop_arduino() {
 
 int k=0;
 void application::loop_serial() {
+  return;
   DBG("serial loop\n");
   received::message m;
 
@@ -75,7 +76,15 @@ void application::loop_serial() {
   Time::delay(200);
 }
 
+class wcallback : public wifi::callback {
+  void operator()(uint8_t * data, size_t length) {
+    DBG("receiving %d bytes\n",length);
+  }
+};
+
 void application::loop_wifi() {
+
+  /*
   bool ok=false;
   received::message rx=global::queue.wait(&ok);
   if (!ok) {
@@ -92,8 +101,13 @@ void application::loop_wifi() {
 
   if (cmd.command == 'P')
     W->post(cmd.url,cmd.data,cmd.Ldata,0);
-  
+  */
+  assert(W);
+  wcallback w;
+  W->get("http://example.com/xx",&w);
+  TRACE();
   Time::delay(5000);
+  TRACE();
 }
 
 
