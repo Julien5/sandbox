@@ -54,6 +54,7 @@ void application::loop_arduino() {
 
 int k=0;
 void application::loop_serial() {
+  Time::delay(200);
   return;
   DBG("serial loop\n");
   received::message m;
@@ -104,7 +105,9 @@ void application::loop_wifi() {
   */
   assert(W);
   wcallback w;
-  W->get("http://example.com/xx",&w);
+  const uint8_t data[] = {0xff,0xff,0xff};
+  // W->get("http://192.168.178.22:8000/foo/test",&w);
+  W->post("http://192.168.178.22:8000/foo/test",0,0,&w);
   TRACE();
   Time::delay(5000);
   TRACE();

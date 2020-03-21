@@ -105,7 +105,7 @@ int create_socket(const char * url) {
  
   xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT,
 		      false, true, portMAX_DELAY);
-  ESP_LOGI(TAG, "Connected to AP");
+  TRACE();
 
   UrlReader urlReader(url);
   struct addrinfo *res;
@@ -117,7 +117,7 @@ int create_socket(const char * url) {
   }
 
   struct in_addr *addr = &((struct sockaddr_in *)res->ai_addr)->sin_addr;
-  ESP_LOGI(TAG, "DNS lookup succeeded. IP=%s", inet_ntoa(*addr));
+  DBG("DNS lookup succeeded. IP=%s\n", inet_ntoa(*addr));
 
   int s = socket(res->ai_family, res->ai_socktype, 0);
   if(s < 0) {
@@ -146,7 +146,7 @@ int write_complete(int s, uint8_t* data, size_t length) {
   uint8_t * addr = data;
   while(remain > 0) {
     int n=write(s,addr,remain);
-    DBG("n:%d\n",n);
+    DBG("sent %d bytes\n",n);
     if (n<0) {
       DBG("failed writing: errno=%d\r\n", errno);
       return -1;
@@ -154,6 +154,7 @@ int write_complete(int s, uint8_t* data, size_t length) {
     remain -= n;
     addr += n;      
   }
+  TRACE();
   return 0;
 }
 
@@ -201,11 +202,16 @@ int process_http_request(const char * WEB_URL,
     bzero(recv_buf, sizeof(recv_buf));
     int r = read(s, recv_buf, sizeof(recv_buf)-1);
     DBG("r:%d\n",r);
-    if (cb)
+    if (cb && r>0)
       (*cb)((uint8_t*)recv_buf,r);
     if (r<=0) {
       DBG("done reading from socket. Last read return=%d errno=%d\r\n", r, errno);
-      break;
+      if (errno == EWOULDBLOCK) {
+	// wait a little and retry
+	vTaskDelay(100 / portTICK_PERIOD_MS);
+      } else {
+	break;
+      }
     }
   } 
   close(s);
@@ -242,7 +248,8 @@ int post(const char * WEB_URL, const uint8_t * data, size_t data_length,wifi::ca
 	   "User-Agent: esp-idf/1.0 esp8266\r\n"
 	   "Accept: */*\r\n"
 	   "Content-Length: %d\r\n"
-	   "Content-Type: application/x-www-form-urlencoded",
+	   "Content-Type: application/octet-stream\r\n"
+	   "\r\n",
 	   urlReader.path,
 	   urlReader.host,
 	   data_length
