@@ -107,7 +107,7 @@ void application::loop_wifi() {
   wcallback w;
   const uint8_t data[] = {0xff,0xff,0xff};
   // W->get("http://192.168.178.22:8000/foo/test",&w);
-  W->post("http://192.168.178.22:8000/foo/test",0,0,&w);
+  W->post("http://192.168.178.22:8000/foo/test",data,sizeof(data),&w);
   TRACE();
   Time::delay(5000);
   TRACE();
