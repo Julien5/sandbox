@@ -1,5 +1,6 @@
 #include "message.h"
 #include "application.h"
+#include "crc.h"
 
 #include <chrono>
 #include <thread>
@@ -29,9 +30,10 @@ void wifi() {
   }
 }
 
-int main(int argc, char ** argv) {
+int main(int, char **) {
   received::test();
-  
+  crc::test();
+  return 0;
   application::setup();
   
   std::thread arduino_thread(arduino);

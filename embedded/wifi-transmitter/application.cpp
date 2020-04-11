@@ -31,7 +31,7 @@ void application::loop_arduino() {
   const char * url = "http://foo.bar/xx";
   const char * data = nullptr;
   const uint16_t Ldata = 0;
-  //                G   http......    0 + Ldata + data
+  //                G   http......    0 + Ldata + data + CRC
   uint16_t Ltotal = 1 + strlen(url) + 1 + sizeof(Ldata) + Ldata;
 
 
@@ -78,7 +78,7 @@ void application::loop_serial() {
 }
 
 class wcallback : public wifi::callback {
-  void operator()(uint8_t * data, size_t length) {
+  void operator()(uint8_t *, size_t length) {
     DBG("receiving %d bytes\n",length);
   }
 };

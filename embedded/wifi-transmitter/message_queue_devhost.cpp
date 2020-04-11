@@ -14,8 +14,9 @@ public:
     const std::lock_guard<std::mutex> lock(mtx);
     queue.push(m);
   }
-  received::message wait(bool *ok) const {
+  received::message wait(bool *ok) {
     const std::lock_guard<std::mutex> lock(mtx);
+    *ok=false;
     if (queue.empty())
       return received::message();
     *ok=true;

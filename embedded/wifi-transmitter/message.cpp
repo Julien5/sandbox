@@ -57,7 +57,8 @@ namespace received {
   void test() {
     wifi_command cmd1;
     cmd1.command = 'G';
-    cmd1.url = "http://foo.bar/blah";
+    const char* kUrl = "http://foo.bar/blah";
+    cmd1.url = (char*) kUrl;
     uint8_t block[16]={0};
     block[0]=0xFF;
     block[1]=0x11;
