@@ -2,6 +2,7 @@
 #include "freertos/FreeRTOS.h"
 #include "driver/uart.h"
 #include "common/debug.h"
+#include "crc.h"
 
 #define BUF_SIZE 1024
 #define PORT UART_NUM_0
@@ -29,12 +30,16 @@ size_t serial::read(uint8_t *buffer, size_t buffer_size, uint16_t timeout) {
 #ifdef DISABLE_SERIAL
   return 0;
 #endif
-  return uart_read_bytes(PORT, buffer, buffer_size, timeout / portTICK_RATE_MS);
+  size_t ret=uart_read_bytes(PORT, buffer, buffer_size, timeout / portTICK_RATE_MS);
+  crc::CRC8(&rx_crc8,buffer,ret);
+  return ret;
 }
 
 size_t serial::write(uint8_t *buffer, size_t buffer_size) {
 #ifdef DISABLE_SERIAL
   return 0;
 #endif
-  return uart_write_bytes(PORT, (const char *) buffer, buffer_size);
+  size_t ret=uart_write_bytes(PORT, (const char *) buffer, buffer_size);
+  crc::CRC8(&tx_crc8,buffer,buffer_size);
+  return ret;
 }

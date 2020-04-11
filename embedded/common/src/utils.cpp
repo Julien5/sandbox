@@ -1,4 +1,5 @@
 #include "common/utils.h"
+#include <stdint.h>
 
 #if defined(DEVHOST)
 namespace utils {

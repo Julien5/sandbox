@@ -7,7 +7,7 @@ namespace wifi {
   wifi::~wifi() {
   }
 
-  int wifi::get(const char* req , callback * r) {
+  int wifi::get(const char* req, callback * r) {
     return 0;
   }
   
