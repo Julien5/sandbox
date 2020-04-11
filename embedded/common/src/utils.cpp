@@ -29,7 +29,7 @@ long long fixed_atoll(char *s) {
 
 #if !defined(ARDUINO)
 #include <stdio.h>
-void utils::dump(const unsigned char *data_buffer, const unsigned int length) {
+void utils::dump(const uint8_t *data_buffer, const size_t length) {
   unsigned char byte;
   unsigned int i, j;
   for(i=0; i < length; i++) {
@@ -52,7 +52,7 @@ void utils::dump(const unsigned char *data_buffer, const unsigned int length) {
 }
 #else
 #include "common/debug.h"
-void utils::dump(const unsigned char *data_buffer, const unsigned int length) {
+void utils::dump(const uint8_t *data_buffer, const size_t length) {
   DBG("not implemented\n");
 }
 #endif

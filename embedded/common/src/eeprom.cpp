@@ -183,7 +183,7 @@ int eeprom::test() {
   if (L<0)
     return 1;
   DBG("L=%d\n",L);
-  DBG((char*)read_buffer);
+  DBG("%s\n",(char*)read_buffer);
   if (strcmp(data,(char*)read_buffer)!=0)
     return 1;
 
