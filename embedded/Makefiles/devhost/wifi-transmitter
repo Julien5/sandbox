@@ -1,0 +1,4 @@
+XNAME:=wifi-transmitter
+XINCLUDE += -I$(DIREMBEDDED)/$(XNAME)/
+XLIBS += -L/tmp/build/devhost/$(XNAME)/ -l$(XNAME)
+

@@ -1,198 +1,36 @@
 #include "application.h"
+
 #include "common/debug.h"
 #include "common/time.h"
 #include "common/serial.h"
+#include "common/wifi.h"
 
-#include "sdcard.h"
-#include "stdint.h"
-
-#include <string.h>
-#ifdef ARDUINO
-#include "Arduino.h"
-uint16_t analogread() {
-  return analogRead(0);
-}
-#endif
-
-#ifdef DEVHOST
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <vector>
-namespace devhost {
-  std::string read_file(const std::string &fileName)
-  {
-    std::ifstream ifs(fileName.c_str(), std::ios::in | std::ios::ate);
-    std::ifstream::pos_type s = ifs.tellg();
-    ifs.seekg(0, std::ios::beg);
-    std::vector<char> bytes(s);
-    ifs.read(bytes.data(), s);
-    return std::string(bytes.data(), s);
-  }
-
-  std::vector<std::string> split(const std::string &s, const std::string &sep) {
-    size_t beg=0;
-    size_t end=0;
-    std::vector<std::string> ret;
-    while(true) {
-      end=s.find(sep,beg);
-      if (end==std::string::npos)
-	break;
-      auto part=s.substr(beg,end-beg);
-      ret.push_back(part);
-      beg=end+1;
-      end=0;    
-    } 
-    return ret;
-  }
-
-  std::vector<std::string> lines(const std::string &s) {
-    auto ret=split(s,"\n");
-    return ret;
-  }
-
-  std::vector<uint16_t> numbers(const std::vector<std::string> &lines) {
-    std::vector<uint16_t> ret;
-    for(auto & line : lines) {
-      const auto P=split(line,"\t");
-      ret.push_back(std::stoi(P[1]));
-    }
-    return ret;
-  }
-
-  std::vector<uint16_t> s_numbers;
-  size_t counter=0;
-  void get_data() {
-    std::string s=read_file("sd-data/23/hex/data.csv");
-    s_numbers=numbers(lines(s));
-  }
-}
-
-uint16_t analogread() {
-  using namespace devhost;
-  if (s_numbers.empty()) {
-    get_data();
-  }
-  assert(!s_numbers.empty());
-  return s_numbers[(counter++) % s_numbers.size()];
-  
-}
-#endif
-
-#include "common/serial.h"
-
-std::unique_ptr<sdcard> sd;
-std::unique_ptr<serial> uart;
+std::unique_ptr<wifi::wifi> W;
 
 void application::setup() {
-#ifdef ARDUINO
-  Serial.begin(9600);
-  while (!Serial) { }
-  Serial.println("@START");
-#endif
-  uart=std::unique_ptr<serial>(new serial);
-  //sd=std::unique_ptr<sdcard>(new sdcard);
-  if (sd) {
-    sd->info();
-    const char * d = "ffff.ggg";
-    sd->write("foo.txt",(uint8_t*)d,strlen(d));
-  }
-    
+  W=std::unique_ptr<wifi::wifi>(new wifi::wifi);
 }
 
-uint16_t data[256] = {0};
-uint16_t indx=0;
-uint16_t counter=0;
-
-class histogram {
-  static constexpr size_t N=8;
-  uint16_t occurences[N]={0};
-  uint8_t values[N]={0};
-public:
-  int8_t index(const uint8_t &v) {
-    for(size_t k=0;k<N;++k) 
-      if (values[k]==v)
-	return k;
-    return -1;
+class wcallback : public wifi::callback {
+  void status(uint8_t s) {
+    DBG("receiving status %d \n",int(s));
   }
-  int8_t Min() const {
-    auto ret = values[0];
-    for(auto v : values) {
-      if (v < ret)
-	ret=v;
-    }
-    return ret;
+  void data_length(uint16_t total_length) {
+    DBG("receiving total %d bytes\n",total_length);
   }
-  int8_t Max() const {
-    auto ret = values[0];
-    for(auto v : values) {
-      if (v > ret)
-	ret=v;
-    }
-    return ret;
+  void data(uint8_t * data, size_t length) {
+    DBG("receiving %d bytes\n",length);
   }
-  void reg(const uint8_t &v) {
-    auto i=index(v);
-    if (i<0) {
-      size_t k=0;
-      for(;k<N;++k)  {
-	if (occurences[k]==0) {
-	  i=k;
-	  break;
-	}
-      }
-      if (k==N) {
-	DBG("not enough bins\r\n");
-	assert(0);
-      }
-    }
-    values[i]=v;
-    occurences[i]++;
-  }
-  void print() {
-    for(int v=Min();v<=Max();++v) {
-      auto i=index(v);
-      if (i<0)
-	continue;
-      DBG("value: %d #=%d\r\n",values[i],occurences[i]);
-    }
+  void crc(bool ok) {
+    DBG("receiving crc %d \n",int(ok));
   }
 };
 
-histogram h;
-
 void application::loop()
 {
-  const char command = 'G';
-  const char * url = "http://foo.bar/xx";
-  const char * nodata = nullptr;
-  const uint16_t Ldata = 0;
-  //                G   http......    0 + Ldata + data
-  uint16_t Ltotal = 1 + strlen(url) + 1 + sizeof(Ldata) + Ldata;
-  uart->begin();
-  uart->write((uint8_t*)&Ltotal,sizeof(Ltotal));
-  uart->write((uint8_t*)&command,sizeof(command));
-  uart->write((uint8_t*)url,strlen(url)+1);
-  uart->write((uint8_t*)&Ldata,sizeof(Ldata));
-  uart->write((uint8_t*)nodata,Ldata);
-  DBG("sent %d bytes\r\n",Ltotal);
-  return;
-
-  
-  int a=analogread();
-  h.reg(a);
-  data[indx++]=a;
-  
-  if (indx>=sizeof(data)/sizeof(uint16_t)) {
-    char filename[13]; // 8.3 => 8+1+3+1 (zero termination) => 13 bytes.
-    sprintf(filename,"%08u.BIN",counter++);
-    DBG("writing %s\r\n",filename);
-    if (sd)
-      sd->write(filename,(uint8_t*)data,sizeof(data));
-    indx=0;
-    DBG("mem:%d\r\n",debug::freeMemory());
-    h.print();
-    // exit(0);
-  }
+  DBG("ok\n");
+  uint8_t data[4]={0};
+  wcallback cb;
+  W->post("http://foo.bar/xx",data,sizeof(data),&cb);
   Time::delay(10);
 }

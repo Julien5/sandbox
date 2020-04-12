@@ -7,7 +7,10 @@ namespace wifi {
   class callback {
   public:
     virtual ~callback(){};
-    virtual void operator()(uint8_t * data, size_t length) = 0;
+    virtual void status(uint8_t s) = 0;
+    virtual void data_length(uint16_t total_length) = 0;
+    virtual void data(uint8_t * data, size_t length) = 0;
+    virtual void crc(bool ok) = 0;
   };
   
   class wifi {

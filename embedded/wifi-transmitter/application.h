@@ -1,10 +1,6 @@
 #pragma once
 
-namespace application {
+namespace transmitter {
   void setup();
-#ifdef DEVHOST
-  void loop_arduino();
-#endif
   void loop_serial();
-  void loop_wifi();
 }

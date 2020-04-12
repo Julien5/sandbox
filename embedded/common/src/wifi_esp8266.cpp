@@ -230,7 +230,9 @@ int get(const char * WEB_URL, wifi::callback *cb)
 	   urlReader.path,
 	   urlReader.host
 	   );
-  return process_http_request(WEB_URL,request,0,0,cb);
+  auto ret=process_http_request(WEB_URL,request,0,0,cb);
+  cb->crc(true);
+  return ret;
 }
 
 int post(const char * WEB_URL, const uint8_t * data, size_t data_length,wifi::callback *cb) {
@@ -254,7 +256,9 @@ int post(const char * WEB_URL, const uint8_t * data, size_t data_length,wifi::ca
 	   urlReader.host,
 	   data_length
 	   );
-  return process_http_request(WEB_URL,request,data,data_length,cb);
+  auto ret=process_http_request(WEB_URL,request,data,data_length,cb);
+  cb->crc(true);
+  return ret;
 }
 
 namespace wifi {

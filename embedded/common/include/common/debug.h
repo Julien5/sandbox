@@ -1,8 +1,8 @@
 #pragma once
 
 #if defined(DEVHOST)
-#include <iostream>
 #include <cassert>
+#include <stdio.h>
 #define DBG(...)				\
   do {						\
     printf("%s:%d: ",__FILE__,__LINE__);	\
@@ -10,12 +10,7 @@
   } while(0)
 #define TRACE()					\
   do {						\
-    static int __counter__ = 0;			\
-    std::cout << __FILE__;			\
-    std::cout << ":";				\
-    std::cout << __LINE__;			\
-    std::cout << ":";				\
-    std::cout << __counter__++ << "\n";		\
+    printf("%s:%d TRACE\n",__FILE__,__LINE__);	\
   } while(0)
 
 #elif defined(ARDUINO)

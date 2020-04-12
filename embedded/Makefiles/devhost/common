@@ -2,11 +2,3 @@ XNAME:=common
 XINCLUDE += -I$(DIREMBEDDED)/$(XNAME)/include
 XLIBS += -L/tmp/build/devhost/$(XNAME)/ -l$(XNAME)
 
-ifndef SRCSDIR
-include ../settings
-include settings
-NAME:=$(XNAME)
-SRCSDIR := $(DIREMBEDDED)/$(NAME)/src
-include build.mk
-endif
-

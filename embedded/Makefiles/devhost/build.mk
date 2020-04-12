@@ -31,3 +31,8 @@ $(OBJS): $(OBJSDIR)/%.o : $(SRCSDIR)/%.cpp
 
 clean: dir
 	find $(OBJSDIR) -type f -delete -print
+
+print:
+	$(info OBJS is $(OBJS))
+	$(info SRCSDIR is $(SRCSDIR))
+	$(info OBJSDIR is $(OBJSDIR))
