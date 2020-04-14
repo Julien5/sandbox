@@ -14,6 +14,7 @@ void application::setup() {
 class wcallback : public wifi::callback {
   void status(uint8_t s) {
     DBG("receiving status %d \n",int(s));
+    assert(s==0);
   }
   void data_length(uint16_t total_length) {
     DBG("receiving total %d bytes\n",total_length);
