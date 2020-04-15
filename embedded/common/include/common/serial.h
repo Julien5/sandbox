@@ -4,7 +4,7 @@
 class serial {
   uint8_t rx_crc8;
   uint8_t tx_crc8;
-  size_t read(uint8_t *buffer, size_t buffer_size, uint16_t timeout);
+  int16_t read(uint8_t *buffer, size_t buffer_size, uint16_t timeout);
   
 public:
   serial();

@@ -11,6 +11,16 @@
 #include "message.h"
 
 std::unique_ptr<serial> S = nullptr;
+#ifdef DEVHOST
+#include "wifi_curl.h"
+#define WIFI wifi_curl
+#else
+#include "common/wifi.h"
+#define WIFI wifi
+#endif
+namespace {
+  std::unique_ptr<wifi::WIFI> W = nullptr;
+}
 
 void transmitter::setup() {
 }
@@ -18,10 +28,38 @@ void transmitter::setup() {
 #include <chrono>
 #include <thread>
 
+
+class serial_callback : public wifi::callback {
+  serial * output;
+public:
+  serial_callback(serial * _s):output(_s){};
+  void status(uint8_t s) {
+    DBG("forwarding status %d \n",int(s));
+    assert(s==0);
+    output->write(&s,sizeof(s));
+  }
+  
+  void data_length(uint16_t total_length) {
+    DBG("forwarding total %d bytes\n",total_length);
+    assert(total_length>0);
+    output->write(reinterpret_cast<uint8_t*>(&total_length),sizeof(total_length));
+  }
+  void data(uint8_t * data, size_t length) {
+    DBG("forwarding %d bytes\n",length);
+    output->write(data,length);
+  }
+  void crc(bool ok) {
+    DBG("forwarding crc %d \n",int(ok));
+    assert(ok);
+  }
+};
+
 int k=0;
 void transmitter::loop_serial() {
   if (!S)
     S=std::unique_ptr<serial>(new serial);
+  if (!W)
+    W=std::unique_ptr<wifi::WIFI>(new wifi::WIFI);
 
   DBG("serial loop\n");
 
@@ -50,17 +88,14 @@ void transmitter::loop_serial() {
   utils::dump(m.data,m.length);
   received::wifi_command cmd = received::read_wifi_command(m);
   /* process cmd */
-  cmd;
-  std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-  
-  /* send result */
-  uint8_t data[16]={0};
-  uint16_t Ldata=sizeof(data);
-  uint8_t status=0;
+  DBG("process %s\n",cmd.url);
   S->begin();
-  S->write(&status,sizeof(status));
-  S->write(reinterpret_cast<uint8_t*>(&Ldata),sizeof(Ldata));
-  S->write(data,sizeof(data));
+  serial_callback cb(S.get());
+  if (cmd.command == 'G')
+    W->get(cmd.url,&cb);
+  if (cmd.command == 'P')
+    W->post(cmd.url,cmd.data,cmd.Ldata,&cb);
+  DBG("end\n");
   S->end();
 }
 

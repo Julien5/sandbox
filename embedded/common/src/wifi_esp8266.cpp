@@ -180,6 +180,7 @@ int process_http_request(const char * WEB_URL,
   if (code != 0) {
     close(s);
     DBG("failed writing: errno=%d\r\n", errno);
+    cb->status(errno);
     return -1;     
   }
   TRACE();
@@ -203,7 +204,7 @@ int process_http_request(const char * WEB_URL,
     int r = read(s, recv_buf, sizeof(recv_buf)-1);
     DBG("r:%d\n",r);
     if (cb && r>0)
-      (*cb)((uint8_t*)recv_buf,r);
+      cb->data((uint8_t*)recv_buf,r);
     if (r<=0) {
       DBG("done reading from socket. Last read return=%d errno=%d\r\n", r, errno);
       if (errno == EWOULDBLOCK) {
@@ -213,7 +214,7 @@ int process_http_request(const char * WEB_URL,
 	break;
       }
     }
-  } 
+  }
   close(s);
   return 0;
 }

@@ -11,16 +11,17 @@ bool serial::begin() {
 }
 
 bool serial::end() {
+  DBG("crc:0x%02x\n",tx_crc8);
   auto n=write((uint8_t*)&tx_crc8,1);
   return n==1;
 }
 bool serial::read_until(uint8_t * addr, const size_t &L) {
-  const uint16_t timeout=10;
+  const uint16_t timeout=100;
   const auto addr0 = addr;
   while((addr-addr0) != int(L)) {
     const auto Lwanted=L-(addr-addr0);
     const auto Lread=read(addr,Lwanted,timeout);
-    if (Lread == 0)
+    if (Lread<0)
       return false;
     addr += Lread;
   }
@@ -52,9 +53,11 @@ bool serial::check_end() {
     if (ok)
       break;
   }
-  if (crc8_received != saved_rx_crc8) {
-    DBG("CRC missmatch: received:0x%02x != computed:0x%02x\n",crc8_received,saved_rx_crc8);
-  }
-  return crc8_received == saved_rx_crc8;
+  DBG("CRC: received:0x%02x ?= computed:0x%02x\n",crc8_received,saved_rx_crc8);
+  auto match = crc8_received == saved_rx_crc8;
+  if (!match) {
+    assert(0);
+  } 
+  return match;
 }
 

@@ -1,12 +1,11 @@
 #include "crc.h"
 #include "common/debug.h"
 // http://www.devcoons.com/crc8/
-void crc::CRC8(uint8_t *init, const uint8_t *data, size_t length) 
+void crc::CRC8(uint8_t *init, const uint8_t * const data, size_t length) 
 {
-  uint8_t extract;
   uint8_t sum;
   for(size_t i=0; i<length; i++) {
-    extract = *data;
+    uint8_t extract = data[i];
     for (uint8_t tempI = 8; tempI; tempI--) {
 	sum = (*init ^ extract) & 0x01;
 	*init >>= 1;
@@ -14,7 +13,6 @@ void crc::CRC8(uint8_t *init, const uint8_t *data, size_t length)
 	  *init ^= 0x8C;
 	extract >>= 1;
     }
-    data++;
   }
 }
 

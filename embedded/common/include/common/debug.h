@@ -3,14 +3,21 @@
 #if defined(DEVHOST)
 #include <cassert>
 #include <stdio.h>
-#define DBG(...)				\
-  do {						\
-    printf("%s:%d: ",__FILE__,__LINE__);	\
-    printf(__VA_ARGS__);			\
+#include <mutex>
+static std::mutex stdout_mtx;
+
+#define DBG(...)						\
+  do {								\
+    std::unique_lock<std::mutex> lock(stdout_mtx);		\
+    printf("%s:%s:%d: ",__FILE__,__FUNCTION__,__LINE__);	\
+    printf(__VA_ARGS__);					\
+    fflush(stdout); \
   } while(0)
-#define TRACE()					\
-  do {						\
-    printf("%s:%d TRACE\n",__FILE__,__LINE__);	\
+#define TRACE()							\
+  do {								\
+    std::unique_lock<std::mutex> lock(stdout_mtx);		\
+    printf("%s:%s:%d TRACE\n",__FILE__,__FUNCTION__,__LINE__);	\
+    fflush(stdout);						\
   } while(0)
 
 #elif defined(ARDUINO)

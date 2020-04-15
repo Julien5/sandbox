@@ -4,6 +4,7 @@
 #include "common/time.h"
 #include "common/serial.h"
 #include "common/wifi.h"
+#include "common/utils.h"
 
 std::unique_ptr<wifi::wifi> W;
 
@@ -21,17 +22,18 @@ class wcallback : public wifi::callback {
   }
   void data(uint8_t * data, size_t length) {
     DBG("receiving %d bytes\n",length);
+    utils::dump(data,length);
   }
   void crc(bool ok) {
     DBG("receiving crc %d \n",int(ok));
+    assert(ok);
   }
 };
 
 void application::loop()
 {
-  DBG("ok\n");
-  uint8_t data[4]={0};
+  DBG("\n\n\n\n -- loop -- \n\n\n\n");
   wcallback cb;
-  W->post("http://foo.bar/xx",data,sizeof(data),&cb);
+  W->get("http://example.com/",&cb);
   Time::delay(10);
 }
