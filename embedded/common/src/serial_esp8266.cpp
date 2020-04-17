@@ -7,7 +7,7 @@
 #define BUF_SIZE 1024
 #define PORT UART_NUM_0
 
-#define DISABLE_SERIAL
+// #define DISABLE_SERIAL
 
 serial::serial() {
 #ifdef DISABLE_SERIAL
@@ -26,11 +26,15 @@ serial::serial() {
   uart_driver_install(PORT, BUF_SIZE * 2, BUF_SIZE * 2, 0, NULL);
 }
 
-size_t serial::read(uint8_t *buffer, size_t buffer_size, uint16_t timeout) {
+int16_t serial::read(uint8_t *buffer, size_t buffer_size, uint16_t timeout) {
 #ifdef DISABLE_SERIAL
   return 0;
 #endif
-  size_t ret=uart_read_bytes(PORT, buffer, buffer_size, timeout / portTICK_RATE_MS);
+  const int16_t ret=uart_read_bytes(PORT, buffer, buffer_size, timeout / portTICK_RATE_MS);
+  if (ret<0) {
+    // timeout
+    return ret;
+  }
   crc::CRC8(&rx_crc8,buffer,ret);
   return ret;
 }

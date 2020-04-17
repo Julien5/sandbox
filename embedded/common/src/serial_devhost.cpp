@@ -4,7 +4,7 @@
 #include <vector>
 #include <cstring>
 #include <condition_variable>	
-
+#include <fstream>
 #include <mutex>
 #include "crc.h"
 
@@ -86,7 +86,13 @@ int16_t serial::read(uint8_t *buffer, size_t buffer_size, uint16_t timeout) {
   return Lread;
 }
 
+void write_file(uint8_t *buffer, size_t buffer_size) {
+    std::fstream f("/tmp/serial.write", std::ios::out | std::ios::binary | std::ios::app);
+    f.write(reinterpret_cast<char*>(buffer),buffer_size);
+}
+
 size_t serial::write(uint8_t *buffer, size_t buffer_size) {
+  write_file(buffer,buffer_size);
   auto & buf=s_map.get(this)==0 ? s_txbuffer : s_rxbuffer;
   DBG("write to %p\n",&buf);
   buf.write(buffer,buffer_size);

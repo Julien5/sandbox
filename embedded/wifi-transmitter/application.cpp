@@ -60,9 +60,19 @@ void transmitter::loop_serial() {
     S=std::unique_ptr<serial>(new serial);
   if (!W)
     W=std::unique_ptr<wifi::WIFI>(new wifi::WIFI);
-
+  
   DBG("serial loop\n");
 
+  /*
+    S->begin();
+    uint8_t d[4]={0x01,0x02,0x03,0x04};
+    S->write(d,sizeof(d));
+    S->end();
+    Time::delay(1000);
+    return;
+  */
+  DBG("waiting for begin");
+    
   debug::turnBuildinLED(true);
   while(!S->wait_for_begin())
     DBG("waiting for begin");

@@ -97,6 +97,7 @@ namespace wifi {
     assert(!data);
     TRACE();
     S->end();
+    assert(0);
     return read_wifi_response(S.get(),r);
   }
   
