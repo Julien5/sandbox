@@ -97,11 +97,10 @@ namespace wifi {
     assert(!data);
     TRACE();
     S->end();
-    assert(0);
     return read_wifi_response(S.get(),r);
   }
   
-  int wifi::post(const char* url, const uint8_t * data, const int Ldata, callback * r) {
+  int wifi::post(const char* url, const uint8_t * data, const uint16_t Ldata, callback * r) {
     const char command = 'P';
     //                G   http......    0 + Ldata         + data...
     const uint16_t Ltotal = 1 + strlen(url) + 1 + sizeof(Ldata) + Ldata;

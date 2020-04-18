@@ -28,7 +28,6 @@ void transmitter::setup() {
 #include <chrono>
 #include <thread>
 
-
 class serial_callback : public wifi::callback {
   serial * output;
 public:
@@ -103,8 +102,10 @@ void transmitter::loop_serial() {
   serial_callback cb(S.get());
   if (cmd.command == 'G')
     W->get(cmd.url,&cb);
-  if (cmd.command == 'P')
+  if (cmd.command == 'P') {
+    DBG("%d\n",cmd.Ldata);
     W->post(cmd.url,cmd.data,cmd.Ldata,&cb);
+  }
   DBG("end\n");
   S->end();
 }

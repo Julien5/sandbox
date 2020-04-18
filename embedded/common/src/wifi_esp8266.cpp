@@ -236,7 +236,7 @@ int get(const char * WEB_URL, wifi::callback *cb)
   return ret;
 }
 
-int post(const char * WEB_URL, const uint8_t * data, size_t data_length,wifi::callback *cb) {
+int post(const char * WEB_URL, const uint8_t * data, size_t data_length, wifi::callback *cb) {
   // > POST /foo/test HTTP/1.1
   // > Host: localhost:8000
   // > User-Agent: curl/7.58.0
@@ -270,7 +270,7 @@ namespace wifi {
   wifi::~wifi() {
   }
  
-  int wifi::post(const char* url, const uint8_t * data, const int Ldata, callback * r) {
+  int wifi::post(const char* url, const uint8_t * data, const uint16_t Ldata, callback * r) {
     //const char * server = "pi";
     //const char * port = "8000";
     // return http_post(server,port,req,data,Ldata);

@@ -24,7 +24,10 @@ namespace received {
     ret.url = (char*) cursor;
     cursor += strlen(ret.url)+1;
     assert(m.length >= (strlen(ret.url)+2) );
-    ret.Ldata = m.length - strlen(ret.url) - 2;
+    DBG("%d\n",m.length);
+    read(cursor,&ret.Ldata);
+    assert(ret.Ldata == (m.length - strlen(ret.url) - 4));
+    cursor += sizeof(ret.Ldata);
     cursor += 2;
     ret.data = cursor;
     return ret;

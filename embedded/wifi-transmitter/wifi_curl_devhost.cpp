@@ -9,12 +9,13 @@
 wifi::wifi_curl::wifi_curl(){};
 wifi::wifi_curl::~wifi_curl(){};
 
-
 int exe(const std::string &method, const char* req, wifi::callback * r,
 	const uint8_t * data = nullptr, const int Ldata = 0) {
   // curl -s -X GET "http://example.com/" --output out
   std::string cmd = "curl -s -X " + method + " ";
   if (data && Ldata) {
+    DBG("%d\n",Ldata);
+    assert(Ldata==4);
     std::ofstream f;
     f.open("data.bin", std::ios::out | std::ios::binary | std::ios::trunc);
     f.write((char*)data,Ldata);
@@ -59,6 +60,6 @@ int wifi::wifi_curl::get(const char* req, callback * r) {
 }
 
 
-int wifi::wifi_curl::post(const char* req, const uint8_t * data, const int Ldata, callback * r) {
+int wifi::wifi_curl::post(const char* req, const uint8_t * data, const uint16_t Ldata, callback * r) {
   return exe("POST",req,r,data,Ldata);
 }

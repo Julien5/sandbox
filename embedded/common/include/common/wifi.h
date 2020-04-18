@@ -19,6 +19,6 @@ namespace wifi {
     ~wifi();
     
     int get(const char* req, callback * r);
-    int post(const char* req, const uint8_t * data, const int Ldata, callback * r);
+    int post(const char* req, const uint8_t * data, const uint16_t Ldata, callback * r);
   };
 }
