@@ -19,6 +19,7 @@
 #include "common/debug.h"
 
 #include "private_ssid_config.h"
+#include "common/utils.h"
 
 static const char *TAG = "wifi_esp8266";
 const int CONNECTED_BIT = BIT0;
@@ -94,7 +95,7 @@ public:
       strncpy(port,end2+1,end1-end2-1);
     }
     strncpy(host,beg,end-beg);
-    DBG("parts: httpy://%s:%s/%s\n",host,port,path);
+    DBG("parts: http://%s:%s/%s\n",host,port,path);
   }
 };
 
@@ -207,6 +208,7 @@ int process_http_request(const char * WEB_URL,
       cb->data((uint8_t*)recv_buf,r);
     if (r<=0) {
       DBG("done reading from socket. Last read return=%d errno=%d\r\n", r, errno);
+      // note: EAGAIN (11) seems to signal end of stream.
       if (errno == EWOULDBLOCK) {
 	// wait a little and retry
 	vTaskDelay(100 / portTICK_PERIOD_MS);
@@ -257,6 +259,7 @@ int post(const char * WEB_URL, const uint8_t * data, size_t data_length, wifi::c
 	   urlReader.host,
 	   data_length
 	   );
+  utils::dump(data,data_length);
   auto ret=process_http_request(WEB_URL,request,data,data_length,cb);
   cb->crc(true);
   return ret;
@@ -274,6 +277,7 @@ namespace wifi {
     //const char * server = "pi";
     //const char * port = "8000";
     // return http_post(server,port,req,data,Ldata);
+    utils::dump(data,Ldata);
     return ::post(url,data,Ldata,r);
   }
   int wifi::get(const char* url, callback * r) {

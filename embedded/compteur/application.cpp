@@ -34,7 +34,7 @@ void application::loop()
 {
   DBG("\n\n\n\n -- loop -- \n\n\n\n");
   wcallback cb;
-  W->get("http://example.com/",&cb);
+  //W->get("http://example.com/",&cb);
   Time::delay(10);
   uint8_t data[4]={0x01,0x02,0x03,0x04};
   W->post("http://postman-echo.com/post",data,sizeof(data),&cb);

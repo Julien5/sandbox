@@ -28,7 +28,6 @@ namespace received {
     read(cursor,&ret.Ldata);
     assert(ret.Ldata == (m.length - strlen(ret.url) - 4));
     cursor += sizeof(ret.Ldata);
-    cursor += 2;
     ret.data = cursor;
     return ret;
   }

@@ -48,7 +48,7 @@ int exe(const std::string &method, const char* req, wifi::callback * r,
   f.close();
   TRACE();
   std::remove("out");
-  if (data && Ldata)
+  if (data && Ldata) 
     std::remove("data.bin");
   r->crc(true);
   TRACE();
