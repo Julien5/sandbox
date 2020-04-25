@@ -18,7 +18,6 @@ namespace tickscounter {
     Clock::ms m_start=0;
     count m_count=0;
     duration m_duration=0;
-    duration m_pmax=0;
     void reset();
     bool empty() const;
     Clock::ms end() const;
@@ -26,12 +25,11 @@ namespace tickscounter {
     void take(bin &other);
     void move(bin &other);
     duration distance(const bin &other) const;
-    duration pmax(const bin &other) const;
     bool operator==(const bin &other) const;
   } __attribute__((packed));
 
   // do not forget to change MAGIC if you change this.
-  constexpr int NTICKS = 3;
+  constexpr int NTICKS = 20;
 
   struct packed {
     typedef int64_t time_since_epoch;

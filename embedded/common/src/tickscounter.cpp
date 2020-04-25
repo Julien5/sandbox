@@ -28,7 +28,7 @@ void bin::tick() {
 }
 
 void bin::reset() {
-  m_start=m_duration=m_count=m_pmax=0;
+  m_start=m_duration=m_count=0;
 }
 
 bool bin::empty() const {
@@ -40,7 +40,6 @@ void bin::take(bin &other) {
     return;
   }
   m_count += other.m_count;
-  m_pmax = pmax(other);
   m_duration = other.end() - m_start;
   other.reset();
 }
@@ -69,10 +68,6 @@ bin::duration bin::distance(const bin &other) const {
     return USHRT_MAX;
   }
   return other.m_start - end();
-}
-
-bin::duration bin::pmax(const bin &other) const {
-  return xMax(xMax(m_pmax,other.m_pmax),distance(other));
 }
 
 uint8_t checksum(uint8_t* data, uint16_t L) {
@@ -159,7 +154,7 @@ int counter::compress_index() {
   for(int k = 0; (k+1)<NTICKS; ++k) {
     const auto & B1=m_packed.m_bins[k];
     const auto & B2=m_packed.m_bins[k+1];
-    const auto p=B1.pmax(B2);
+    const auto p=B1.distance(B2);
     if (p<pmin || k==0) {
       pmin=p;
       indx = k;
@@ -402,13 +397,16 @@ void counter::print() const {
     Clock::ms d=0;
     if ((k+1)<NTICKS)
       d=m_packed.m_bins[k].distance(m_packed.m_bins[k+1]);
-    printf("%02d: %9d->%-9d [%6d] #=%3d pmax=%6d d=%6d\n",
+    float pmax=-1;
+    if (m_packed.m_bins[k].m_duration>0)
+      pmax=1000*float(m_packed.m_bins[k].m_count)/m_packed.m_bins[k].m_duration;
+    printf("%02d: %9d->%-9d [%6d] #=%3d pmax=%2.3f d=%6d\n",
 	   k,
 	   m_packed.m_bins[k].m_start/1000,
 	   m_packed.m_bins[k].end()/1000,
 	   m_packed.m_bins[k].m_duration/1000,
 	   m_packed.m_bins[k].m_count,
-	   m_packed.m_bins[k].m_pmax,
+	   pmax,
 	   d);
   }
 #endif
@@ -459,8 +457,9 @@ int tickscounter::test() {
     C.tick(); Time::delay(1);C.tick();
     Time::delay(10);
     C.tick();Time::delay(1);C.tick();
-    Time::delay(7);
+    Time::delay(9);
     C.tick();Time::delay(1);C.tick();
+    assert(C.total()==6);
     C.print();
   }
   C.reset();
