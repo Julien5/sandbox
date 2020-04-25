@@ -61,13 +61,13 @@ using namespace esp8266;
 namespace x86 {
   static char mem[1024];
   char read(int addr) {
-    if (addr<10)
-      printf("read %d : 0x%02x\n",addr,mem[addr] & 0xff);
+    //if (addr<10)
+    //  printf("read %d : 0x%02x\n",addr,mem[addr] & 0xff);
     return mem[addr];
   }
   void write(int addr, char d) {
-    if (addr<10)
-      printf("write %d : 0x%02x\n",addr,d & 0xff);
+    //if (addr<10)
+    // printf("write %d : 0x%02x\n",addr,d & 0xff);
     mem[addr]=d;
   }
 }

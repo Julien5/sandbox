@@ -18,7 +18,7 @@ libs:
 check:
 	cppcheck --language=c++ --enable=all --template=gcc $(wildcard *.cpp)
 
-print:
+info:
 	$(info INCLUDE is $(INCLUDE))
 	$(info OBJS is $(OBJS))
 	$(info CXXOBJS is $(CXXOBJS))

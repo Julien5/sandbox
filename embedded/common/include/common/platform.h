@@ -13,6 +13,13 @@ T xMin(const T &a, const T &b) {
   return b;
 }
 
+template<typename T>
+T xMax(const T &a, const T &b) {
+  if (a>b)
+    return a;
+  return b;
+}
+
 #if defined(DEVHOST) || defined(ESP8266)
 #include <cstddef>
 typedef std::size_t size_t;
