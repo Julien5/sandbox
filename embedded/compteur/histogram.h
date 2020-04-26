@@ -35,7 +35,7 @@ namespace impl {
 class Histogram {
   Bin bins[NBINS];
   template<typename F>
-  void for_each_valid_bin(F f) {
+  void for_each_valid_bin(F f) const {
     impl::for_each(bins,bins+NBINS,[&](const Bin& bin) {
 	if (bin.count!=0)
 	  f(bin);
@@ -60,28 +60,28 @@ public:
     DBG("failed to insert %d\n",value);
     assert(0);
   }
-  uint16_t size() {
+  uint16_t size() const {
     uint16_t ret=0;
     for_each_valid_bin([&](const Bin& bin) {
 	ret++;
       });
     return ret;
   }
-  uint16_t count() {
+  uint16_t count() const {
     uint16_t ret=0;
     for_each_valid_bin([&](const Bin& bin) {
 	ret+=bin.count;
       });
     return ret;
   }
-  uint16_t min() {
+  uint16_t min() const {
     Bin b;
     for_each_valid_bin([&](const Bin& bin) {
 	b=bin;
       });
     return b.value;
   }
-  uint16_t max() {
+  uint16_t max() const {
     Bin b;
     for_each_valid_bin([&](const Bin& bin) {
 	if (b.value==0)
@@ -89,7 +89,7 @@ public:
       });
     return b.value;
   }
-  size_t threshold(int percent) {
+  size_t threshold(int percent) const {
     const size_t wanted_count = count()*percent/100;
     size_t accumulated_count=0;
     Bin b=bins[0];

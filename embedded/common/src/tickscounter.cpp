@@ -142,7 +142,7 @@ void counter::set_epochtime_at_init(const packed::time_since_epoch T0) {
 }
 
 void counter::reset() {
-  reset_eeprom();
+  // reset_eeprom();
   for(int k = 0; k<NTICKS; ++k)
     m_packed.m_bins[k].reset();
   m_packed.m_transmission_time=0;
@@ -343,12 +343,14 @@ bool counter::save_eeprom_if_necessary() {
   return e.write(data,L) == L;
 }
 
-void tickscounter::reset_eeprom() {
+/*
+  void tickscounter::reset_eeprom() {
   eeprom e;
   const uint8_t zero=0;
   e.write(&zero,1);
   s_total_at_last_save=0;
-}
+  }
+*/
 
 #if !defined(ARDUINO) && !defined(ESP8266)
 
