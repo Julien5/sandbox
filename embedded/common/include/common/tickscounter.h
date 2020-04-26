@@ -102,6 +102,6 @@ namespace tickscounter {
   std::string asJson(const std::string &hex);
 #endif
   
-  static void reset_eeprom();
+  // static void reset_eeprom();
   int test();
 }

@@ -2,11 +2,14 @@
 #include "transmitter.h"
 
 #include "common/tickscounter.h"
+#include "ticksupdater.h"
+#include "histogram.h"
 
 #include <thread>
 
 int main(int argc, char ** argv) {
-  return tickscounter::test();
+  // tickscounter::test();
+  return Histogram::test();
   application::setup();
   std::thread serial_thread(transmitter::run);
   while(1)
