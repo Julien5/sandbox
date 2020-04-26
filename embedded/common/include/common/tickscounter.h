@@ -43,7 +43,9 @@ namespace tickscounter {
     time_since_epoch m_epochtime_at_init=0;
     mutable Clock::ms m_transmission_time=0;
     bool operator==(const packed &other) const;
+#if defined(DEVHOST)
     std::string json() const;
+#endif
   } __attribute__((packed));
 
   struct counter_config {
@@ -97,7 +99,7 @@ namespace tickscounter {
     }
   };
   
-#if !defined(ARDUINO) && !defined(ESP8266)
+#if defined(DEVHOST)
   packed fromHex(const std::string &hex);
   std::string asJson(const std::string &hex);
 #endif

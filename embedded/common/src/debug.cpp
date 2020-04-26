@@ -41,7 +41,7 @@ void debug::turnBuildinLED(bool on) {
   static bool init_done=false;
   if (!init_done) {
     pinMode(LED_BUILTIN, OUTPUT);
-    init_done==true;
+    init_done=true;
   }
   if (on)
     digitalWrite(LED_BUILTIN,HIGH);

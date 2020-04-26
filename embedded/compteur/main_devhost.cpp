@@ -8,8 +8,10 @@
 #include <thread>
 
 int main(int argc, char ** argv) {
-  // tickscounter::test();
-  return Histogram::test();
+  tickscounter::test();
+  Histogram::test();
+  TicksUpdater::test();
+  return 0;
   application::setup();
   std::thread serial_thread(transmitter::run);
   while(1)

@@ -35,4 +35,4 @@ fi
 
 cp -v $D/hex/data.csv data.csv
 gnuplot readirdata.gnuplot
-# xdg-open ir.png 
+xdg-open ir.png 

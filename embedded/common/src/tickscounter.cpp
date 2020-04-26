@@ -72,7 +72,7 @@ bin::duration bin::distance(const bin &other) const {
 
 uint8_t checksum(uint8_t* data, uint16_t L) {
   uint8_t ret=0;
-  for(int k=0; k<L; ++k)
+  for(size_t k=0; k<L; ++k)
     ret+=data[k];
   return ret;
 }
@@ -152,9 +152,9 @@ int counter::compress_index() {
   bin::duration pmin=0;
   int indx=-1;
   for(int k = 0; (k+1)<NTICKS; ++k) {
-    const auto & B1=m_packed.m_bins[k];
-    const auto & B2=m_packed.m_bins[k+1];
-    const auto p=B1.distance(B2);
+    const auto & b1=m_packed.m_bins[k];
+    const auto & b2=m_packed.m_bins[k+1];
+    const auto p=b1.distance(b2);
     if (p<pmin || k==0) {
       pmin=p;
       indx = k;
