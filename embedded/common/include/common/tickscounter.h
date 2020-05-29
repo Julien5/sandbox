@@ -40,15 +40,11 @@ namespace tickscounter {
   } __attribute__((packed));
 
   struct counter_config {
-    // may be quite short, we assume the data are uploaded
-    // during the day.
-    // tickscounter: do not transmit if activity for less than:
-    int kRecentlyActiveSeconds = 20;
     // tickscounter: delete bin if less than kMinAloneTicks ticks (noise_at_index)
     int kMinAloneTicks = 3;
     // tickscounter: if a bin is older than kSecondsUntilAloneTick, then it is checked if it is noise
     // (noise_at_index)
-    int kSecondsUntilAloneTick = kRecentlyActiveSeconds;
+    int kSecondsUntilAloneTick = 20;
   };
   
   class counter {
@@ -74,26 +70,16 @@ namespace tickscounter {
     Clock::ms last_tick_time();
     Clock::ms age();
     bin getbin(const int &k) const;
-    bool recently_active();
     uint8_t bin_count() const;
-    uint8_t *getdata(uint16_t * Lout) const;
-    
-    bool load_eeprom();
-    bool save_eeprom_if_necessary();
+   
     counter_config config() {
       return m_config;
     }
-    packed *get_packed(size_t * L) {
+    const packed *get_packed(size_t * L) const {
       *L=sizeof(m_packed);
       return &m_packed;
     }
   };
   
-#if defined(DEVHOST)
-  packed fromHex(const std::string &hex);
-  std::string asJson(const std::string &hex);
-#endif
-  
-  // static void reset_eeprom();
   int test();
 }

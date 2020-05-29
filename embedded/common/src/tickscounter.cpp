@@ -2,7 +2,6 @@
 #include "common/clock.h"
 #include "common/debug.h"
 #include <limits.h>
-#include "common/eeprom.h"
 #include <string.h>
 #include "common/platform.h"
 #include "common/time.h"
@@ -90,13 +89,6 @@ public:
 #endif
   }
 };
-
-bool counter::load_eeprom() {
-  eeprom e;
-  const auto Ldst=sizeof(this);
-  const auto Lsrc=e.read((uint8_t*)this,Ldst);
-  return (Ldst == Lsrc);
-}
 
 counter::counter(const counter_config c)
   :m_config(c)
@@ -244,11 +236,6 @@ Clock::ms counter::age() {
   return now - last_tick_time();
 }
 
-bool counter::recently_active() {
-  const Clock::ms T=m_config.kRecentlyActiveSeconds*1000L; // 1 min
-  return age() < T;
-}
-
 uint8_t counter::bin_count() const {
   bin::count ret=0;
   for(int k=0; k<NTICKS; ++k)
@@ -293,11 +280,6 @@ void counter::tick() {
 bin counter::getbin(const int &k) const {
   assert(0<=k && k<NTICKS);
   return m_packed.m_bins[k];
-}
-
-uint8_t* counter::getdata(uint16_t * Lout) const {
-  *Lout = sizeof(m_packed);
-  return (uint8_t*)&m_packed; 
 }
 
 bool packed::operator==(const packed &other) const {
@@ -408,9 +390,9 @@ int tickscounter::test() {
   C.print();
   assert(C.total()==T);
 
-#ifndef ARDUINO
-  uint16_t L=0;
-  const uint8_t * data = C.getdata(&L);
+#ifdef DEVHOST
+  size_t L=0;
+  const packed * data = C.get_packed(&L);
   using namespace std;
   std::ofstream file;
   file.open("tickscounter.packed.bin", ios::out | ios::binary);

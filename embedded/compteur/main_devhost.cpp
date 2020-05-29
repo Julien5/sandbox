@@ -2,21 +2,27 @@
 #include "transmitter.h"
 
 #include "common/tickscounter.h"
+#include "common/time.h"
 #include "ticksupdater.h"
 #include "histogram.h"
 
 #include <thread>
 
-int main(int argc, char ** argv) {
+int tests() {
   tickscounter::test();
   histogram::Histogram::test();
-  return 0;
   TicksUpdater::test();
-  
+  return 0;
+}
+
+int main(int argc, char ** argv) {
+  // tests();
   application::setup();
   std::thread serial_thread(transmitter::run);
-  while(1)
+  while(1) {
     application::loop();
+    Time::delay(1);
+  }
   serial_thread.join();
   return 0;
 }

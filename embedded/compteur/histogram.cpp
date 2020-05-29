@@ -1,5 +1,6 @@
 #include "histogram.h"
 #include <stdlib.h>
+#include <cstring>
 
 namespace impl {
   using namespace histogram;
@@ -16,41 +17,61 @@ namespace impl {
   }
   
   // no stl in arduino.
-  template<typename I, typename P>
-  void for_each(I b, I e, P p) {
+  template<typename I, typename F>
+  void for_each(I b, I e, F f) {
     for(I it=b; it!=e; ++it)
-      p(*it);
+      f(*it);
   }
+}
 
-  template<typename F>
-  void for_each_valid_bin(const packed &P, F f) {
-    impl::for_each(P.bins,P.bins+NBINS,[&](const Bin& bin) {
-	if (bin.count!=0)
-	  f(bin);
-      });
-  }
+
+histogram::packed::packed() {
+  memset(bins,0,sizeof(bins));
+}
+
+histogram::Bin * histogram::Histogram::begin() const {
+  return const_cast<histogram::Bin*>(m_packed.bins);
+}
+
+histogram::Bin * histogram::Histogram::end() const {
+  Bin * it = begin();
+  while(it->count != 0 && it<(m_packed.bins+NBINS))
+    ++it;
+  assert(it>=begin());
+  return it;
 }
 
 uint16_t histogram::Histogram::size() const {
-  uint16_t ret=0;
-  impl::for_each_valid_bin(m_packed,[&](const Bin& bin) {
-      ret++;
-    });
-  return ret;
+  return end()-begin();
 }
 
-uint16_t histogram::Histogram::least() {
+uint16_t histogram::Histogram::least() const {
+  if (size()==0)
+    return 0;
+  /* find a 'hole */
+  for(auto it=begin(); (it+1) != end(); ++it) {
+    const Bin &bin(*it);
+    const Bin &next(*(it+1));
+    if ((bin.value - next.value)>1) {
+      Bin b;
+      b.count = 0;
+      b.value = (bin.value + next.value)/2;
+      return b.value;
+    }
+  }
+  
   Bin b=m_packed.bins[0];
-  impl::for_each_valid_bin(m_packed,[&](const Bin& bin) {
-      if (bin.count<b.count)
-	b=bin;
-    });
+  for(auto it = begin(); it != end(); ++it) {
+    const Bin &bin(*it);
+    if (bin.count<b.count)
+      b=bin;
+  }
   return b.value;
 }  
 
 uint16_t histogram::Histogram::count() const {
   uint16_t ret=0;
-  impl::for_each_valid_bin(m_packed,[&](const Bin& bin) {
+  impl::for_each(begin(),end(),[&](const Bin& bin) {
       ret+=bin.count;
     });
   return ret;
@@ -58,7 +79,7 @@ uint16_t histogram::Histogram::count() const {
 
 uint16_t histogram::Histogram::minimum() const {
   Bin b;
-  impl::for_each_valid_bin(m_packed,[&](const Bin& bin) {
+  impl::for_each(begin(),end(),[&](const Bin& bin) {
       b=bin;
     });
   return b.value;
@@ -66,7 +87,7 @@ uint16_t histogram::Histogram::minimum() const {
 
 uint16_t histogram::Histogram::maximum() const {
   Bin b;
-  impl::for_each_valid_bin(m_packed,[&](const Bin& bin) {
+  impl::for_each(begin(),end(),[&](const Bin& bin) {
       if (b.value==0)
 	b=bin;
     });
@@ -77,7 +98,7 @@ uint16_t histogram::Histogram::threshold(int percent) const {
   const size_t wanted_count = count()*percent/100;
   size_t accumulated_count=0;
   Bin b=m_packed.bins[0];
-  impl::for_each_valid_bin(m_packed,[&](const Bin& bin) {
+  impl::for_each(begin(),end(),[&](const Bin& bin) {
       if (accumulated_count<wanted_count) {
 	accumulated_count+=bin.count;
 	b=bin;
@@ -108,11 +129,13 @@ int histogram::Histogram::test() {
   DBG("testing\n");
   {
     Histogram H;
+    DBG("size:%d\n",H.size());
     assert(H.size()==0);
     H.update(2);
     H.update(2);
     H.update(3);
     H.update(1);
+    DBG("count:%d\n",H.count());
     assert(H.count()==4);
     assert(H.size()==3);
     assert(H.minimum()==1);

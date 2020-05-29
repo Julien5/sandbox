@@ -11,11 +11,14 @@ namespace histogram {
   constexpr size_t NBINS=10; 
 
   struct packed {
+    packed();
     Bin bins[NBINS];
   };
   
   class Histogram {
     packed m_packed;
+    Bin * begin() const;
+    Bin * end() const;
   public:
     void print() {
       for(size_t k=0;k<NBINS;++k) {
@@ -29,8 +32,12 @@ namespace histogram {
     uint16_t count() const;
     uint16_t minimum() const;
     uint16_t maximum() const;
+    /*! value K for which count(>K) > percent*count()
+        threshold(0) = maximum()
+	threshold(100) = minimum()
+     */
     uint16_t threshold(int percent) const;
-    uint16_t least();
+    uint16_t least() const;
     const packed *get_packed(size_t * L) const {
       *L=sizeof(m_packed);
       return &m_packed;
