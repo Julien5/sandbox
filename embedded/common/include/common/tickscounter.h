@@ -28,24 +28,15 @@ namespace tickscounter {
     bool operator==(const bin &other) const;
   } __attribute__((packed));
 
-  // do not forget to change MAGIC if you change this.
   constexpr int NTICKS = 20;
 
-  struct packed {
-    typedef int64_t time_since_epoch;
-    typedef int32_t time;
-    
+  struct packed {    
     packed():m_bins{}{};
     packed(const uint8_t *bytes) {
       *this = *(packed*)bytes;
     }
     bin m_bins[NTICKS];  
-    time_since_epoch m_epochtime_at_init=0;
-    mutable Clock::ms m_transmission_time=0;
     bool operator==(const packed &other) const;
-#if defined(DEVHOST)
-    std::string json() const;
-#endif
   } __attribute__((packed));
 
   struct counter_config {
@@ -63,7 +54,6 @@ namespace tickscounter {
   class counter {
     counter_config m_config;
     packed m_packed;
-    void shift_bins(const packed::time_since_epoch t); 
     void tick_first_empty_bin();
     void compress(); 
     int compress_index();
@@ -73,7 +63,6 @@ namespace tickscounter {
   public:
     counter(const counter_config c=counter_config());
     counter(const uint8_t *data):m_packed(data){}
-    void set_epochtime_at_init(const packed::time_since_epoch T0);
   
     void reset();
     void tick();
@@ -94,8 +83,9 @@ namespace tickscounter {
     counter_config config() {
       return m_config;
     }
-    packed get_packed() {
-      return m_packed;
+    packed *get_packed(size_t * L) {
+      *L=sizeof(m_packed);
+      return &m_packed;
     }
   };
   

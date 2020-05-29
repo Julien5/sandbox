@@ -118,34 +118,9 @@ template<> int32_t numeric_max() {
   return INT32_MAX;
 }
 
-
-void counter::shift_bins(const packed::time_since_epoch delta_seconds) {
-  // bin::time max is around 49 days
-  Clock::ms delta = delta_seconds * 1000;
-
-  for(int k=0; k<NTICKS; ++k) {
-    if (m_packed.m_bins[k].empty())
-      continue;
-    m_packed.m_bins[k].m_start -= delta;
-  }
-  // m_transmission time does not make sense if have to shift.
-  // do nothing? or reset it?
-  m_packed.m_transmission_time = 0;
-}
-
-void counter::set_epochtime_at_init(const packed::time_since_epoch T0) {
-  if (m_packed.m_epochtime_at_init!=0) {
-    const packed::time_since_epoch delta = T0 - m_packed.m_epochtime_at_init;
-    shift_bins(delta);
-  }
-  m_packed.m_epochtime_at_init = T0;
-}
-
 void counter::reset() {
-  // reset_eeprom();
   for(int k = 0; k<NTICKS; ++k)
     m_packed.m_bins[k].reset();
-  m_packed.m_transmission_time=0;
 } 
 
 int counter::compress_index() {
@@ -321,69 +296,9 @@ bin counter::getbin(const int &k) const {
 }
 
 uint8_t* counter::getdata(uint16_t * Lout) const {
-  m_packed.m_transmission_time = Clock::millis_since_start();
-  *Lout = sizeof(*this);
-  return (uint8_t*)this; 
+  *Lout = sizeof(m_packed);
+  return (uint8_t*)&m_packed; 
 }
-
-static uint16_t s_total_at_last_save=0;
-bool counter::save_eeprom_if_necessary() {
-  if (empty())
-    return false;
-  if (total()==s_total_at_last_save)
-    return false;
-  if (recently_active())
-    return false;
-  
-  uint16_t L=0;
-  uint8_t* data=getdata(&L);
-  
-  eeprom e;
-  s_total_at_last_save=total();
-  return e.write(data,L) == L;
-}
-
-/*
-  void tickscounter::reset_eeprom() {
-  eeprom e;
-  const uint8_t zero=0;
-  e.write(&zero,1);
-  s_total_at_last_save=0;
-  }
-*/
-
-#if !defined(ARDUINO) && !defined(ESP8266)
-
-#include "common/utils.h"
-packed tickscounter::fromHex(const std::string &hex) {
-  std::vector<uint8_t> bytes=utils::hex_to_bytes(hex);
-  return packed(utils::as_cbytes(bytes));
-}
-std::string packed::json() const {
-  std::string ret;
-  ret+="{\n";
-  std::string bins;
-  for(int k=0; k<NTICKS;++k) {
-    bins+=std::string("{")
-      + "\"start\":"+std::to_string(m_bins[k].m_start)
-      +",\"count\":"+std::to_string(m_bins[k].m_count)
-      +",\"duration\":"+std::to_string(m_bins[k].m_duration)
-      +"}";
-    if ((k+1)<NTICKS && !m_bins[k+1].empty())
-      bins+=",";
-    if (m_bins[k+1].empty())
-      break;
-  }
-  ret+="\"bins\":["+bins+"],";
-  ret+="\"transmit_time\":"+std::to_string(m_transmission_time);
-  ret+="\n}";
-  return ret;
-}
-
-std::string tickscounter::asJson(const std::string &hex) {
-  return fromHex(hex).json();
-}
-#endif
 
 bool packed::operator==(const packed &other) const {
   for(int k=0;k<NTICKS;++k) {
@@ -456,11 +371,11 @@ int tickscounter::test() {
   config.kMinAloneTicks=0;
   counter C(config);
   {
-    C.tick(); Time::delay(1);C.tick();
+    C.tick(); Time::delay(1); C.tick();
     Time::delay(10);
-    C.tick();Time::delay(1);C.tick();
+    C.tick(); Time::delay(1); C.tick();
     Time::delay(9);
-    C.tick();Time::delay(1);C.tick();
+    C.tick(); Time::delay(1); C.tick();
     assert(C.total()==6);
     C.print();
   }
@@ -493,38 +408,15 @@ int tickscounter::test() {
   C.print();
   assert(C.total()==T);
 
+#ifndef ARDUINO
   uint16_t L=0;
   const uint8_t * data = C.getdata(&L);
-
-  counter C2(data);
-  assert(C.get_packed()==C2.get_packed());
-#ifndef ARDUINO
   using namespace std;
   std::ofstream file;
-  file.open("counter.bin", ios::out | ios::binary);
+  file.open("tickscounter.packed.bin", ios::out | ios::binary);
   file.write((char*)data,L);
 #endif
-
-  /*
-  {
-    tickscounter::reset_eeprom();
-    if (!C.save_eeprom_if_necessary())
-      assert(0);
-    C.print();
-    counter B;
-    B.load_eeprom();
-    B.print();
-    assert(C.get_packed()==B.get_packed());
-    some_real_ticks(C);
-    if (!C.save_eeprom_if_necessary())
-      assert(0);
-    counter E;
-    if (!E.load_eeprom())
-      assert(0);
-    assert(C.get_packed()==E.get_packed());
-  }
-  */
-  
+  DBG("ALL GOOD\n");
   return 0;
 }
 
