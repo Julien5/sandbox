@@ -9,9 +9,10 @@
 
 int main(int argc, char ** argv) {
   tickscounter::test();
-  Histogram::test();
-  TicksUpdater::test();
+  histogram::Histogram::test();
   return 0;
+  TicksUpdater::test();
+  
   application::setup();
   std::thread serial_thread(transmitter::run);
   while(1)

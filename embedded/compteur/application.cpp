@@ -6,10 +6,14 @@
 #include "common/wifi.h"
 #include "common/utils.h"
 
+#include "ticksupdater.h"
+
 std::unique_ptr<wifi::wifi> W;
+std::unique_ptr<TicksUpdater> ticksUpdater;
 
 void application::setup() {
   W=std::unique_ptr<wifi::wifi>(new wifi::wifi);
+  ticksUpdater=std::unique_ptr<TicksUpdater>(new TicksUpdater);
 }
 
 class wcallback : public wifi::callback {
@@ -30,13 +34,22 @@ class wcallback : public wifi::callback {
   }
 };
 
-void application::loop()
-{
+void gather_data() {
+  ticksUpdater->update();
+}
+
+void send_data() {
   DBG("\n\n\n\n -- loop -- \n\n\n\n");
   wcallback cb;
-  //W->get("http://example.com/",&cb);
+  W->get("http://example.com/",&cb);
   Time::delay(10);
   uint8_t data[4]={0x01,0x02,0x03,0x04};
   W->post("http://postman-echo.com/post",data,sizeof(data),&cb);
   Time::delay(10);
+}
+
+void application::loop()
+{
+  gather_data();
+  send_data();
 }

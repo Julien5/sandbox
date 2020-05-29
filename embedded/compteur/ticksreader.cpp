@@ -2,6 +2,7 @@
 #include "adc.h"
 #include "common/debug.h"
 #include <math.h>
+
 bool TicksReader::take() {
   const auto a = analog::read();
   DBG("a=%d\n",a);

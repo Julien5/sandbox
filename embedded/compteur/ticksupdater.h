@@ -4,7 +4,7 @@
 #include "histogram.h"
 
 class TicksReader {
-  Histogram H;
+  histogram::Histogram H;
   bool m_last_value=0;
  public:
   bool take();
