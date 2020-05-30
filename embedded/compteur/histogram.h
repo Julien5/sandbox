@@ -19,8 +19,9 @@ namespace histogram {
     packed m_packed;
     Bin * begin() const;
     Bin * end() const;
+    void shrink_if_needed();
   public:
-    void print() {
+    void print() const {
       for(size_t k=0;k<NBINS;++k) {
 	DBG("k=%d count=%d value=%d\n",k,m_packed.bins[k].count,m_packed.bins[k].value);
       }

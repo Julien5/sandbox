@@ -2,15 +2,15 @@
 #include <cassert>
 #include "common/debug.h"
 
-#undef FILE
-
-#ifdef FILE
+#define RECORD
+#ifdef RECORD
 
 #include <string>
 #include <vector>
 #include <iostream>
 #include <fstream>
-namespace file {
+
+namespace record {
   std::string read_file(const std::string &fileName)
   {
     std::ifstream ifs(fileName.c_str(), std::ios::in | std::ios::ate);
@@ -59,7 +59,6 @@ namespace file {
   }
 
   uint16_t generate() {
-    using namespace file;
     if (s_numbers.empty()) {
       get_data();
     }
@@ -67,7 +66,7 @@ namespace file {
     return s_numbers[(counter++) % s_numbers.size()];
   }
 }
-using namespace file;
+using namespace record;
 
 #else
 
@@ -84,21 +83,24 @@ namespace synthetic {
       return 0;
     return 1;
   }
-  uint16_t noise() {
+  int8_t noise() {
     const double n=double(std::rand())/RAND_MAX; // [0,1]
     return inoise(n);
   }
-  constexpr uint16_t c = 4000;
+  
+  constexpr uint16_t c = 5000;
   constexpr uint32_t T = 1000*3.6*1e6/(75*c);
   constexpr uint32_t T1 = 5*T/100;
   constexpr uint16_t m = 33;
   constexpr uint16_t M = 37;
+  
   uint16_t generate() {
     auto t=Clock::millis_since_start();
     assert(T1>=1);
-    if (t%T<=T1)
-      return M+noise();
-    return m+noise();
+    const auto n=noise();
+    uint16_t ret=(t%T) <= T1 ? M+n : m+n;
+    assert((m-1)<=ret && ret<=(M+1));
+    return ret;
   }
 }
 using namespace synthetic;

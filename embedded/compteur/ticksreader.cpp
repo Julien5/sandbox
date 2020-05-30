@@ -13,10 +13,14 @@ bool TicksReader::calibrated(uint16_t * _TL, uint16_t * _TH) const {
     return false;
   if (M==H.least())
     return false;
-  const auto T = H.least();
-  const auto TL = T-1;
-  const auto TH = T+1;
-  // DBG("m=%2d M=%2d TL=%2d TH=%2d least=%2d\n",m,M,TL,TH,H.least());
+  const auto T = H.threshold(20)+1;
+  const auto TH = T;
+  const auto TL = T;
+  DBG("m=%2d M=%2d TL=%2d TH=%2d least=%2d\n",m,M,TL,TH,H.least());
+  if (TH>M)
+    return false;
+  if (TL<m)
+    return false;
   assert(TH>=TL);
   assert(TL>=m);
   assert(TH<=M);

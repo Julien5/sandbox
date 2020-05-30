@@ -24,7 +24,6 @@ namespace impl {
   }
 }
 
-
 histogram::packed::packed() {
   memset(bins,0,sizeof(bins));
 }
@@ -95,6 +94,8 @@ uint16_t histogram::Histogram::maximum() const {
 }
 
 uint16_t histogram::Histogram::threshold(int percent) const {
+  if (count()==0)
+    return 0;
   const size_t wanted_count = count()*percent/100;
   size_t accumulated_count=0;
   Bin b=m_packed.bins[0];
@@ -104,10 +105,20 @@ uint16_t histogram::Histogram::threshold(int percent) const {
 	b=bin;
       }
     });
+  assert(minimum()<=b.value && b.value<=maximum());
   return b.value;
 }
 
+void histogram::Histogram::shrink_if_needed() {
+  const uint16_t max = 0xffff/2;
+  if (count()<=max)
+    return;
+  for(size_t k=0;k<NBINS;++k) 
+    m_packed.bins[k].count/=2;
+}
+
 void histogram::Histogram::update(uint16_t value) {
+  shrink_if_needed();  
   for(size_t k=0;k<NBINS;++k) {
     // could be faster, since the container is sorted.
     if (m_packed.bins[k].value == value || m_packed.bins[k].count==0) {
