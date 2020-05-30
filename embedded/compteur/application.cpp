@@ -53,4 +53,5 @@ void application::loop()
 {
   gather_data();
   send_data();
+  Time::delay(200);
 }

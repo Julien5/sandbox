@@ -88,15 +88,15 @@ namespace synthetic {
     const double n=double(std::rand())/RAND_MAX; // [0,1]
     return inoise(n);
   }
-  constexpr uint16_t c = 1500;
-  constexpr uint32_t T = 3.6*1e6/(75*c);
+  constexpr uint16_t c = 4000;
+  constexpr uint32_t T = 1000*3.6*1e6/(75*c);
   constexpr uint32_t T1 = 5*T/100;
   constexpr uint16_t m = 33;
   constexpr uint16_t M = 37;
   uint16_t generate() {
     auto t=Clock::millis_since_start();
     assert(T1>=1);
-    if (t%T<T1)
+    if (t%T<=T1)
       return M+noise();
     return m+noise();
   }

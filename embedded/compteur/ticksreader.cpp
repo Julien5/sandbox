@@ -16,7 +16,7 @@ bool TicksReader::calibrated(uint16_t * _TL, uint16_t * _TH) const {
   const auto T = H.least();
   const auto TL = T-1;
   const auto TH = T+1;
-  DBG("m=%2d M=%2d TL=%2d TH=%2d least=%2d\n",m,M,TL,TH,H.least());
+  // DBG("m=%2d M=%2d TL=%2d TH=%2d least=%2d\n",m,M,TL,TH,H.least());
   assert(TH>=TL);
   assert(TL>=m);
   assert(TH<=M);
@@ -31,9 +31,7 @@ bool TicksReader::calibrated(uint16_t * _TL, uint16_t * _TH) const {
 
 bool TicksReader::take() {
   const auto a = analog::read();
-  DBG("a=%d\n",a);
   H.update(a);
-  H.print();
   uint16_t TH = 0;
   uint16_t TL = 0;
   assert(TL<=TH);
@@ -41,11 +39,9 @@ bool TicksReader::take() {
     return false;
    /* is the value classificable ? */
   if (TL <= a && a <= TH) {
-    DBG("no classificable %d\n",a);
     return false;
   }
   const auto new_value = a>TH;
-  DBG("classificable %d\n",a);  
   if (new_value==m_last_value)
     return false;
   m_last_value=new_value;

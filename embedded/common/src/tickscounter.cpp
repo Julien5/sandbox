@@ -228,7 +228,6 @@ Clock::ms counter::last_tick_time() {
 }
 
 Clock::ms counter::age() {
-  // to allow wiki_work to run at start.
   if (empty())
     return numeric_max<Clock::ms>();
   const Clock::ms now = Clock::millis_since_start();
