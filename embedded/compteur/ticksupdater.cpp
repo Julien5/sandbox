@@ -31,13 +31,13 @@ bool TicksUpdater::update() {
     const auto bin1=counter.getbin(counter.bin_count()-1);
     //print_bin(bin1);
     //print_bin(bin2);
-    /*
+    
     const auto time_total=bin1.end()-bin0.m_start;
     DBG("seconds:%3d total:%2d count:%2d power:%2.3fkW  current-power:%2.3fkW\n",
 	t/1000,counter.total(),counter.bin_count(),
 	kW(counter.total()-1,time_total),
 	kW(bin1.m_count+bin2.m_count-1,bin1.end()-bin2.m_start));
-    */
+    
   }
   if (reader.take()) {
     counter.tick();

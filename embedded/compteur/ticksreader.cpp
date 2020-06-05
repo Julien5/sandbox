@@ -12,7 +12,7 @@ void print(const histogram::Histogram &H) {
   const auto L = H.argmin(TL,TH+1);
   //  const auto v1 = H.argmax(m,T);
   // const auto v2 = H.argmax(T,M);
-  H.print();
+  // H.print();
   // DBG("m=%2d TL=%2d min=%2d TH=%2d M=%2d\n",m,TL,L,TH,M);
 }
 
@@ -72,6 +72,6 @@ bool TicksReader::take() {
     return false;
   }
   print(H);
-  DBG("change at t=%d with TL=%d TH=%d a=%d\n",Time::since_reset(),TL,TH,a);
+  //DBG("change at t=%d with TL=%d TH=%d a=%d\n",Time::since_reset(),TL,TH,a);
   return true;
 }
