@@ -28,12 +28,21 @@ if [[ ! -f $D/hex/data.csv ]]; then
     echo copy
     cp $D/hex/data /tmp/irdata
     echo convert csv
-    python3 readirdata.py 50
+    if [[ "$D" = "sd-data/22/" ]]; then
+	sampling_period=50; offset=0;
+	
+    elif [[ "$D" = "sd-data/23/" ]]; then
+	sampling_period=10; offset=2000;
+    else
+	echo "invalid param"
+	exit 1
+    fi
+    python3 readirdata.py $sampling_period $offset
     # python3 readirdata.py 10
     head data.csv
     mv -v data.csv $D/hex/data.csv
 fi
 
-cp -v $D/hex/data.csv data.csv
+cp -v $D/hex/data.csv /tmp/data.csv
 gnuplot readirdata.gnuplot
 # xdg-open ir.png 

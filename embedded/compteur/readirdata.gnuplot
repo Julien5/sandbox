@@ -8,8 +8,8 @@ set style line 2 lc rgb 'red' pt 7 ps 0.2 lt 1 lw 2
 set pointintervalbox 3
 set grid;
 set autoscale fix;
-# set xtics 1
+# set xtics 10
 
 #set yrange [30:170]
-# set xrange [0:5]
-plot "/tmp/data.csv" using ($1/60000):2 with lines ls 2
+# set xrange [0:300]
+plot "/tmp/data.csv" using 1 with lines ls 2

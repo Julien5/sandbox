@@ -18,7 +18,10 @@ def write(A,filename):
     f=open(filename,'w');
     f.write("\n".join([stringify(a) for a in A]));
 
-def read_hex(filename,sampling_period_ms):
+period=int(sys.argv[1]);
+offset=int(sys.argv[2]);
+
+def read_hex(filename):
     ret=list();
     t=0;
     for hexline in open(filename,'r').readlines():
@@ -28,10 +31,10 @@ def read_hex(filename,sampling_period_ms):
             c2 = chunks(d4,2);
             assert(len(c2)==2);
             x = int("".join(c2[::-1]), 16)
-            if t%50 == 0:
+            if t%50 == 0 and t>offset:
                 ret.append([t,x]);
-            t+=sampling_period_ms;
+            t+=period;
     return ret;
 
-period=int(sys.argv[1]);
-write(read_hex("/tmp/irdata",period),'data.csv');
+print(sys.argv);
+write(read_hex("/tmp/irdata"),'data.csv');
