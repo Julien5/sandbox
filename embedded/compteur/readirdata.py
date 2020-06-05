@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import sys;
+
 def chunks(data,L):
     ret=list();
     for n in range(int(len(data)/L)):
@@ -16,22 +18,7 @@ def write(A,filename):
     f=open(filename,'w');
     f.write("\n".join([stringify(a) for a in A]));
 
-xprev = None;
-yprev = None;
-def filter(x):
-    global xprev,yprev;
-    if not xprev:
-        xprev = x;
-        yprev = x;
-    #if x < 40:
-    #    x=xprev;
-    alpha=0.5;
-    y=alpha*yprev + (1-alpha)*x;
-    xprev=x;
-    yprev=y;
-    return y;
-
-def read_hex(filename):
+def read_hex(filename,sampling_period_ms):
     ret=list();
     t=0;
     for hexline in open(filename,'r').readlines():
@@ -41,8 +28,10 @@ def read_hex(filename):
             c2 = chunks(d4,2);
             assert(len(c2)==2);
             x = int("".join(c2[::-1]), 16)
-            ret.append([t/1000,x,filter(x)]);
-            t+=50;
+            if t%50 == 0:
+                ret.append([t,x]);
+            t+=sampling_period_ms;
     return ret;
-        
-write(read_hex("/tmp/irdata"),'data.csv');
+
+period=int(sys.argv[1]);
+write(read_hex("/tmp/irdata",period),'data.csv');

@@ -28,11 +28,12 @@ if [[ ! -f $D/hex/data.csv ]]; then
     echo copy
     cp $D/hex/data /tmp/irdata
     echo convert csv
-    python3 readirdata.py 
+    python3 readirdata.py 50
+    # python3 readirdata.py 10
     head data.csv
     mv -v data.csv $D/hex/data.csv
 fi
 
 cp -v $D/hex/data.csv data.csv
 gnuplot readirdata.gnuplot
-xdg-open ir.png 
+# xdg-open ir.png 
