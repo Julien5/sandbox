@@ -12,11 +12,32 @@ tickscounter::counter_config config() {
 TicksUpdater::TicksUpdater():counter(config())
 {}
 
+double kW(const uint32_t ticks, const Clock::ms d) {
+  if (d==0)
+    return 0;
+  const double hours = double(d)*0.001/3600.0f;
+  return (double(ticks)/hours)/75.0f;
+}
+
+void print_bin(const tickscounter::bin &b) {
+  DBG("start:%7d duration:%7d count:%3d\n",b.m_start, b.m_duration,b.m_count);
+}
+
 bool TicksUpdater::update() {
   const auto t = Time::since_reset();
-  const double hours = double(t)*0.001/3600;
-  if (hours>0) {
-    DBG("hours:%2.2f total:%6d power:%2.3fkW\n",hours,counter.total(),counter.total()/hours/75);
+  if ((t/10)%100==0 && counter.bin_count()>2) {
+    const auto bin0=counter.getbin(0);
+    const auto bin2=counter.getbin(counter.bin_count()-2);
+    const auto bin1=counter.getbin(counter.bin_count()-1);
+    //print_bin(bin1);
+    //print_bin(bin2);
+    /*
+    const auto time_total=bin1.end()-bin0.m_start;
+    DBG("seconds:%3d total:%2d count:%2d power:%2.3fkW  current-power:%2.3fkW\n",
+	t/1000,counter.total(),counter.bin_count(),
+	kW(counter.total()-1,time_total),
+	kW(bin1.m_count+bin2.m_count-1,bin1.end()-bin2.m_start));
+    */
   }
   if (reader.take()) {
     counter.tick();
@@ -26,7 +47,7 @@ bool TicksUpdater::update() {
 }
 
 void TicksUpdater::print() {
-  
+  DBG("time:%4d sec total:%d\n",Time::since_reset()/1000,counter.total());
 }
 
 int TicksUpdater::test() {
@@ -34,5 +55,6 @@ int TicksUpdater::test() {
   while(true) {
     if (U.update())
       U.print();
+    Time::delay(200);
   }
 }

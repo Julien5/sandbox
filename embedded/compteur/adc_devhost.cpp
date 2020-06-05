@@ -21,19 +21,19 @@ namespace record {
     return std::string(bytes.data(), s);
   }
 
-  std::vector<std::string> split(const std::string &s, const std::string &sep) {
+  std::vector<std::string> split(const std::string &s, const std::string &sep, bool d=false) {
     size_t beg=0;
     size_t end=0;
     std::vector<std::string> ret;
     while(true) {
       end=s.find(sep,beg);
+      auto part=s.substr(beg,end==std::string::npos ? end : end-beg);
+      ret.push_back(part);
       if (end==std::string::npos)
 	break;
-      auto part=s.substr(beg,end-beg);
-      ret.push_back(part);
       beg=end+1;
       end=0;    
-    } 
+    }
     return ret;
   }
 
@@ -44,9 +44,9 @@ namespace record {
 
   std::vector<uint16_t> numbers(const std::vector<std::string> &lines) {
     std::vector<uint16_t> ret;
-    for(auto & line : lines) {
-      const auto P=split(line,"\t");
-      ret.push_back(std::stoi(P[1]));
+     for(auto & x : lines) {
+       if (!x.empty())
+	 ret.push_back(std::stoi(x));
     }
     return ret;
   }
@@ -54,8 +54,9 @@ namespace record {
   std::vector<uint16_t> s_numbers;
   size_t counter=0;
   void get_data() {
-    std::string s=read_file("cut.csv");
-    s_numbers=numbers(lines(s));
+    std::string s;
+    auto n=numbers(lines(read_file("data.csv")));
+    s_numbers=n;
   }
 
   uint16_t generate() {
@@ -63,7 +64,11 @@ namespace record {
       get_data();
     }
     assert(!s_numbers.empty());
-    return s_numbers[(counter++) % s_numbers.size()];
+    // subsample by 4 (50 ms -> 200 ms sampling period)
+    const auto index=counter++;
+    if (index>=s_numbers.size())
+      exit(0);
+    return s_numbers[index % s_numbers.size()];
   }
 }
 using namespace record;
@@ -89,10 +94,10 @@ namespace synthetic {
   }
   
   constexpr uint16_t c = 5000;
-  constexpr uint32_t T = 1000*3.6*1e6/(75*c);
-  constexpr uint32_t T1 = 5*T/100;
-  constexpr uint16_t m = 33;
-  constexpr uint16_t M = 37;
+  constexpr uint64_t T = 1000*3.6*1e6/(75*c);
+  constexpr uint64_t T1 = 5*T/100;
+  constexpr uint16_t m = 32;
+  constexpr uint16_t M = 38;
   
   uint16_t generate() {
     auto t=Clock::millis_since_start();
@@ -100,6 +105,7 @@ namespace synthetic {
     const auto n=noise();
     uint16_t ret=(t%T) <= T1 ? M+n : m+n;
     assert((m-1)<=ret && ret<=(M+1));
+    //DBG("t=%d T=%d t|T=%d T1=%d ret=%d\n",int(t),int(T),int(t%T),int(T1),ret);
     return ret;
   }
 }

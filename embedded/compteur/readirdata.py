@@ -37,4 +37,4 @@ def read_hex(filename):
     return ret;
 
 print(sys.argv);
-write(read_hex("/tmp/irdata"),'data.csv');
+write(read_hex("/tmp/irdata"),'/tmp/data.csv');

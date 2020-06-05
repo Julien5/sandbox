@@ -12,7 +12,7 @@ std::unique_ptr<wifi::wifi> W;
 std::unique_ptr<TicksUpdater> ticksUpdater;
 
 void application::setup() {
-  W=std::unique_ptr<wifi::wifi>(new wifi::wifi);
+  //  W=std::unique_ptr<wifi::wifi>(new wifi::wifi);
   ticksUpdater=std::unique_ptr<TicksUpdater>(new TicksUpdater);
 }
 

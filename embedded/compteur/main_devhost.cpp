@@ -9,21 +9,21 @@
 #include <thread>
 
 int tests() {
-  tickscounter::test();
-  histogram::Histogram::test();
-  TicksUpdater::test();
+  //tickscounter::test();
+  //histogram::Histogram::test();
+  return TicksUpdater::test();
   return 0;
 }
 
 int main(int argc, char ** argv) {
-  // tests();
+  return tests();
   application::setup();
-  std::thread serial_thread(transmitter::run);
+  //std::thread serial_thread(transmitter::run);
   while(1) {
     application::loop();
     Time::delay(1);
   }
-  serial_thread.join();
+  //serial_thread.join();
   return 0;
 }
 

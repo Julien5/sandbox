@@ -11,5 +11,5 @@ set autoscale fix;
 # set xtics 10
 
 #set yrange [30:170]
-# set xrange [0:300]
-plot "/tmp/data.csv" using 1 with lines ls 2
+set xrange [0:1000]
+plot "data.csv" using 1 with lines ls 2 

@@ -1,6 +1,6 @@
 #include "histogram.h"
 #include <stdlib.h>
-#include <cstring>
+#include <string.h>
 
 namespace impl {
   using namespace histogram;
