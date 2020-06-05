@@ -12,22 +12,22 @@ void print(const histogram::Histogram &H) {
   const auto L = H.argmin(TL,TH+1);
   //  const auto v1 = H.argmax(m,T);
   // const auto v2 = H.argmax(T,M);
-  // H.print();
+  H.print();
   // DBG("m=%2d TL=%2d min=%2d TH=%2d M=%2d\n",m,TL,L,TH,M);
 }
 
 bool TicksReader::calibrated(uint16_t * _TL, uint16_t * _TH) const {
-  *_TL=34;
-  *_TH=37;
-  return true;
   const uint8_t minWidth = 4;
   const auto M=H.maximum();
   const auto m=H.minimum(); 
   if (M-m < minWidth)
     return false;
-  const auto L = H.argmin(H.threshold(30),H.threshold(5)+1);
+  const auto T0 = H.threshold(5);
+  const auto v1 = H.argmax(m,T0-1);
+  const auto v2 = H.argmax(T0,M);
+  const auto L = H.argmin(v1,v2);
   const auto TH=L+1;
-  const auto TL=L;
+  const auto TL=L-1;
   if (TH==TL)
     return false;
   /*
@@ -72,6 +72,6 @@ bool TicksReader::take() {
     return false;
   }
   print(H);
-  //DBG("change at t=%d with T=%d a=%d\n",Time::since_reset(),TH,a);
+  DBG("change at t=%d with TL=%d TH=%d a=%d\n",Time::since_reset(),TL,TH,a);
   return true;
 }
