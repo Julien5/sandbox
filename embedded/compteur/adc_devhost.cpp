@@ -21,7 +21,7 @@ namespace record {
     return std::string(bytes.data(), s);
   }
 
-  std::vector<std::string> split(const std::string &s, const std::string &sep, bool d=false) {
+  std::vector<std::string> split(const std::string &s, const std::string &sep) {
     size_t beg=0;
     size_t end=0;
     std::vector<std::string> ret;
@@ -44,9 +44,11 @@ namespace record {
 
   std::vector<uint16_t> numbers(const std::vector<std::string> &lines) {
     std::vector<uint16_t> ret;
-     for(auto & x : lines) {
-       if (!x.empty())
-	 ret.push_back(std::stoi(x));
+     for(auto & line : lines) {
+       if (!line.empty()) {
+	 const auto P=split(line," ");
+	 ret.push_back(std::stoi(P[1]));
+       }
     }
     return ret;
   }
@@ -55,7 +57,7 @@ namespace record {
   size_t counter=0;
   void get_data() {
     std::string s;
-    auto n=numbers(lines(read_file("data.csv")));
+    auto n=numbers(lines(read_file("/tmp/data.csv")));
     s_numbers=n;
   }
 
