@@ -44,32 +44,8 @@ uint16_t histogram::Histogram::size() const {
   return end()-begin();
 }
 
-uint16_t histogram::Histogram::least() const {
-  if (size()==0)
-    return 0;
-  /* find a 'hole */
-  for(auto it=begin(); (it+1) != end(); ++it) {
-    const Bin &bin(*it);
-    const Bin &next(*(it+1));
-    if ((bin.value - next.value)>1) {
-      Bin b;
-      b.count = 0;
-      b.value = (bin.value + next.value)/2;
-      return b.value;
-    }
-  }
-  
-  Bin b=m_packed.bins[0];
-  for(auto it = begin(); it != end(); ++it) {
-    const Bin &bin(*it);
-    if (bin.count<b.count)
-      b=bin;
-  }
-  return b.value;
-}  
-
-uint16_t histogram::Histogram::count() const {
-  uint16_t ret=0;
+uint32_t histogram::Histogram::count() const {
+  uint32_t ret=0;
   impl::for_each(begin(),end(),[&](const Bin& bin) {
       ret+=bin.count;
     });
@@ -93,6 +69,38 @@ uint16_t histogram::Histogram::maximum() const {
   return b.value;
 }
 
+uint16_t histogram::Histogram::argmax(uint16_t m, uint16_t M) const {
+  Bin ret;
+  assert(ret.value == 0 && ret.count == 0);
+  impl::for_each(begin(),end(),[&](const Bin& bin) {
+      if (m <= bin.value && bin.value <= M)
+	if (ret.count < bin.count)
+	  ret=bin;
+    });
+  return ret.value;
+}
+
+uint16_t histogram::Histogram::argmin(uint16_t m, uint16_t M) const {
+  Bin ret;
+  ret.count=count();
+  ret.value=0;
+  for(auto v=m; v<M; ++v) {
+    const auto c=count(v);
+    if (c<ret.count) {
+      ret.count=c;
+      ret.value=v;
+    }
+  }
+  return ret.value;
+}
+
+uint32_t histogram::Histogram::count(uint16_t v) const {
+  for(auto it = begin(); it!=end(); ++it)
+    if (it->value==v)
+      return it->count;
+  return 0;
+}
+
 uint16_t histogram::Histogram::threshold(int percent) const {
   if (count()==0)
     return 0;
@@ -113,6 +121,7 @@ void histogram::Histogram::shrink_if_needed() {
   const uint16_t max = 0xffff/2;
   if (count()<=max)
     return;
+  DBG("shrinking...\n");
   for(size_t k=0;k<NBINS;++k) 
     m_packed.bins[k].count/=2;
 }
