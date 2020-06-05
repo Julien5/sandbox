@@ -2,7 +2,7 @@
 #include <cassert>
 #include "common/debug.h"
 
-// #define RECORD
+ #define RECORD
 #ifdef RECORD
 
 #include <string>

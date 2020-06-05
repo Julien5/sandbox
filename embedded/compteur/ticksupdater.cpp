@@ -25,7 +25,7 @@ void print_bin(const tickscounter::bin &b) {
 
 bool TicksUpdater::update() {
   const auto t = Time::since_reset();
-  if ((t/10)%100==0 && counter.bin_count()>2) {
+  if (t%10000==0 && counter.bin_count()>2) {
     const auto bin0=counter.getbin(0);
     const auto bin2=counter.getbin(counter.bin_count()-2);
     const auto bin1=counter.getbin(counter.bin_count()-1);
