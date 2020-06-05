@@ -2,9 +2,8 @@
 import sys;
 
 t=0;
-f=open("data.csv",'r');
+f=open("/tmp/data.csv",'r');
 period=int(sys.argv[1]);
-print(period);
 for line in f.readlines():
     e=line.strip();
     if not e:

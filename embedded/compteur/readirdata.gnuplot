@@ -12,4 +12,4 @@ set autoscale fix;
 
 #set yrange [30:170]
 set xrange [0:1000]
-plot "data.csv" using 1 with lines ls 2 
+plot "/tmp/data.csv" using 1 with lines ls 2 

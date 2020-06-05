@@ -33,8 +33,12 @@ find sd-data -name "data.csv" | while read a; do
 done
 
 # concatenate all
-cat sd-data/22/hex/data.csv | cut -f2 > data.csv
-echo >> data.csv
-cat sd-data/23/hex/data.csv | cut -f2 >> data.csv
-python3 add-time-column.py 200
-find . -name "data.csv" -exec ls -lh "{}" \;
+cat sd-data/22/hex/data.csv | cut -f2 > /tmp/data.csv
+echo >> /tmp/data.csv
+cat sd-data/23/hex/data.csv | cut -f2 >> /tmp/data.csv
+python3 add-time-column.py 200 > /tmp/addline
+mv /tmp/addline /tmp/data.csv
+# cleanup 
+# find sd-data -name "data.csv" -print -delete
+ls -lh /tmp/data.csv
+head /tmp/data.csv
