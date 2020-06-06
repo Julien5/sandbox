@@ -4,6 +4,7 @@
 
 namespace histogram {
   struct Bin {
+    Bin();
     uint16_t value=0;
     uint32_t count=0;
   } __attribute__((packed));
@@ -21,11 +22,7 @@ namespace histogram {
     Bin * end() const;
     void shrink_if_needed();
   public:
-    void print() const {
-      for(size_t k=0;k<NBINS;++k) {
-	DBG("k=%2d count=%4d value=%2d\n",k,m_packed.bins[k].count,m_packed.bins[k].value);
-      }
-    }
+    void print() const;
     void update(uint16_t value);
     //! number of non-zero bins
     uint16_t size() const;

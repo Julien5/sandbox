@@ -29,9 +29,6 @@ bool TicksUpdater::update() {
     const auto bin0=counter.getbin(0);
     const auto bin2=counter.getbin(counter.bin_count()-2);
     const auto bin1=counter.getbin(counter.bin_count()-1);
-    //print_bin(bin1);
-    //print_bin(bin2);
-    
     const auto time_total=bin1.end()-bin0.m_start;
     DBG("seconds:%3d total:%2d count:%2d power:%2.3fkW  current-power:%2.3fkW\n",
 	t/1000,counter.total(),counter.bin_count(),

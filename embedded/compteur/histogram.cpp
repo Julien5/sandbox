@@ -24,6 +24,10 @@ namespace impl {
   }
 }
 
+histogram::Bin::Bin() {
+  //DBG("CTOR: value:%d count:%d\r\n",value,count);
+}
+
 histogram::packed::packed() {
   memset(bins,0,sizeof(bins));
 }
@@ -47,9 +51,22 @@ uint16_t histogram::Histogram::size() const {
 uint32_t histogram::Histogram::count() const {
   uint32_t ret=0;
   impl::for_each(begin(),end(),[&](const Bin& bin) {
+      // DBG("count(): value:%d count:%d\r\n",bin.value,bin.count);
       ret+=bin.count;
     });
   return ret;
+}
+
+void histogram::Histogram::print() const {
+  DBG("\r\nvalues: ");
+  for(size_t k=0;k<size();++k) 
+    DBG("[%3d] ",int(m_packed.bins[k].value));
+  DBG("\r\n");
+  DBG("counts: "); 
+  for(size_t k=0;k<size();++k) {
+    DBG("[%3d] ",int(m_packed.bins[k].count));
+  }
+  DBG("\r\n");
 }
 
 uint16_t histogram::Histogram::minimum() const {
@@ -117,28 +134,52 @@ uint16_t histogram::Histogram::threshold(int percent) const {
   return b.value;
 }
 
+size_t index(const histogram::packed &p, uint16_t value) {
+  for(size_t k=0;k<histogram::NBINS;++k) {
+    if (p.bins[k].value == value)
+      return k;
+  }
+  return histogram::NBINS;
+}
+
 void histogram::Histogram::shrink_if_needed() {
   const uint16_t max = 0xffff/2;
   if (count()<=max)
     return;
   DBG("shrinking...\n");
-  for(size_t k=0;k<NBINS;++k) 
+  for(size_t k=0;k<histogram::NBINS;++k) 
     m_packed.bins[k].count/=2;
 }
 
 void histogram::Histogram::update(uint16_t value) {
-  shrink_if_needed();  
-  for(size_t k=0;k<NBINS;++k) {
-    // could be faster, since the container is sorted.
-    if (m_packed.bins[k].value == value || m_packed.bins[k].count==0) {
-      m_packed.bins[k].value = value;
-      m_packed.bins[k].count++;
-      impl::sort(m_packed.bins,m_packed.bins+NBINS);
-      return;
+  // DBG("update:%u\r\n",value);
+  if (size()==histogram::NBINS && index(m_packed,value)==NBINS) {
+    // full and value not found => remove the least.
+    Bin least;
+    least.count=count();
+    least.value=0;
+    for(auto it=begin(); it!=end(); ++it) {
+      if (least.count > it->count)
+	least=*it;
     }
+    auto least_index=index(m_packed,least.value);
+    // DBG("remove least:%u\r\n",least.value);
+    assert(least_index<histogram::NBINS);
+    m_packed.bins[least_index].value=0;
+    m_packed.bins[least_index].count=0;
   }
-  DBG("failed to insert %d\n",value);
-  assert(0);
+  auto k=index(m_packed,value);
+  if (k==histogram::NBINS) {
+    // value not found => use first free index.
+    k=size();
+    assert(m_packed.bins[k].count==0);
+    assert(m_packed.bins[k].value==0);
+    m_packed.bins[k].value = value;
+  }
+  assert(m_packed.bins[k].value==value);
+  m_packed.bins[k].count++;
+  shrink_if_needed();
+  impl::sort(m_packed.bins,m_packed.bins+NBINS);
 }
 
 #ifdef DEVHOST
@@ -155,7 +196,7 @@ int histogram::Histogram::test() {
     H.update(2);
     H.update(3);
     H.update(1);
-    DBG("count:%d\n",H.count());
+    DBG("count:%d\n",int(H.count()));
     assert(H.count()==4);
     assert(H.size()==3);
     assert(H.minimum()==1);

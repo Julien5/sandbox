@@ -29,7 +29,9 @@ bool TicksReader::calibrated(uint16_t * _TL, uint16_t * _TH) const {
 
 bool TicksReader::take() {
   const auto a = analog::read();
+  DBG("time:%4d s analog:%d\r\n",int(Time::since_reset()/1000),int(a));
   H.update(a);
+  H.print();
   uint16_t TH = 0;
   uint16_t TL = 0;
   assert(TL<=TH);

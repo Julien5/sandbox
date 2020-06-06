@@ -12,6 +12,7 @@ std::unique_ptr<wifi::wifi> W;
 std::unique_ptr<TicksUpdater> ticksUpdater;
 
 void application::setup() {
+  debug::init_serial();
   //  W=std::unique_ptr<wifi::wifi>(new wifi::wifi);
   ticksUpdater=std::unique_ptr<TicksUpdater>(new TicksUpdater);
 }
@@ -51,7 +52,9 @@ void send_data() {
 
 void application::loop()
 {
+  debug::turnBuildinLED(false);
   gather_data();
   send_data();
-  Time::delay(200);
+  debug::turnBuildinLED(false);
+  Time::delay(20);
 }

@@ -10,7 +10,7 @@
 
 int tests() {
   //tickscounter::test();
-  //histogram::Histogram::test();
+  return histogram::Histogram::test();
   return TicksUpdater::test();
   return 0;
 }

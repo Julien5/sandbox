@@ -48,9 +48,9 @@ static std::mutex stdout_mtx;
 #define assert(x)				\
   do {						\
     if(!(x)) {					\
-      DBG("assertion failed");			\
-      while(1){};				\
-    }						\
+      DBG("\r\n%s:%d assertion failed\r\n",__FILE__,__LINE__);	\
+      while(1){};						\
+    }								\
   } while(0)
 #else
 #define DBG(...) ((void) 0)			
@@ -75,7 +75,7 @@ static std::mutex stdout_mtx;
 #define assert(x)				\
   do {						\
     if(!(x)) {					\
-      DBG("assertion failed");			\
+      DBG("\r\n%s:%d assertion failed\r\n",__FILE__,__LINE__);	\
       while(1){};				\
     }						\
   } while(0)
