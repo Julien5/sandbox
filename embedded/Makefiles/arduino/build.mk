@@ -29,7 +29,7 @@ elf: dir $(OBJS)
 showsize: elf
 	$(AVRSIZE) --mcu=atmega328p -C --format=avr  $(OBJSDIR)/$(NAME).elf
 
-ARDUINO_PORT:=$(shell find /dev/ -name "ttyACM?")
+ARDUINO_PORT:=$(shell find /dev/ -name "ttyACM?" | head -1)
 
 reset:
 	@$(if $(strip $(ARDUINO_PORT)),,echo could not find arduino port!)

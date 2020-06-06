@@ -2,19 +2,9 @@
 #include "common/debug.h"
 #include "common/time.h"
 
-#ifdef ARDUINO
-#include "Arduino.h"
-void init_serial() {
-  Serial.begin(9600);
-}
-#else
-void init_serial() {
-}
-#endif
-
 
 void application::setup() {
-  init_serial();
+  debug::init_serial();
 }
 
 void application::loop() {

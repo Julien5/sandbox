@@ -91,6 +91,8 @@ static std::mutex stdout_mtx;
 #endif
 
 namespace debug {
+  //! necessary for Serial.print in Arduino
+  void init_serial();
   void turnBuildinLED(bool on);
   int freeMemory();
 }

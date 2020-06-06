@@ -1,6 +1,8 @@
 #include "common/debug.h"
 
 #ifdef DEVHOST
+void debug::init_serial() {
+}
 void debug::turnBuildinLED(bool on) {
 }
 int debug::freeMemory() {
@@ -10,6 +12,12 @@ int debug::freeMemory() {
 
 #ifdef ESP8266
 #include "driver/gpio.h"
+// for arduino. For ESP, i don't remember
+// if it must be filled with anything.
+void debug::init_serial() {
+  // FIXME
+  assert(0);
+}
 void debug::turnBuildinLED(bool on) {
   static bool init_done=false;
   if (!init_done) {
@@ -37,6 +45,9 @@ int debug::freeMemory() {
 
 #ifdef ARDUINO
 #include "Arduino.h"
+void debug::init_serial() {
+  Serial.begin(9600);
+}
 void debug::turnBuildinLED(bool on) {
   static bool init_done=false;
   if (!init_done) {
