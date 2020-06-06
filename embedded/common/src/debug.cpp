@@ -16,7 +16,7 @@ int debug::freeMemory() {
 // if it must be filled with anything.
 void debug::init_serial() {
   // FIXME
-  assert(0);
+  // assert(0);
 }
 void debug::turnBuildinLED(bool on) {
   static bool init_done=false;

@@ -56,5 +56,5 @@ void application::loop()
   gather_data();
   send_data();
   debug::turnBuildinLED(false);
-  Time::delay(20);
+  Time::delay(100);
 }
