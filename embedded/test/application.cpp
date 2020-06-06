@@ -4,13 +4,18 @@
 
 #ifdef ARDUINO
 #include "Arduino.h"
-void application::setup() {
+void init_serial() {
   Serial.begin(9600);
 }
 #else
-void application::setup() {
+void init_serial() {
 }
 #endif
+
+
+void application::setup() {
+  init_serial();
+}
 
 void application::loop() {
   DBG("hi\r\n");
