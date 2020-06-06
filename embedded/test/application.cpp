@@ -1,14 +1,23 @@
 #include "application.h"
-#include "debug.h"
-#include "time.h"
+#include "common/debug.h"
+#include "common/time.h"
+
+#ifdef ARDUINO
+#include "Arduino.h"
+void application::setup() {
+  Serial.begin(9600);
+}
+#else
 void application::setup() {
 }
+#endif
 
 void application::loop() {
+  DBG("hi\r\n");
   debug::turnBuildinLED(true);
-  time::delay(1000);
+  Time::delay(1000);
   debug::turnBuildinLED(false);
-  time::delay(1000);
+  Time::delay(1000);
 }
 
 
