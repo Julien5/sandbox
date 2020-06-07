@@ -28,12 +28,12 @@ class wcallback : public wifi::callback {
   }
   void data_length(uint16_t total_length) {
     DBG("receiving total %d bytes\n",total_length);
+    assert(total_length<10000);
     missing_bytes=total_length;
   }
   void data(uint8_t * data, size_t length) {
-    DBG("missing %d : receiving %d bytes\r\n",int(missing_bytes),length);
+    DBG("length %d missing %d\r\n",int(length),int(missing_bytes));
     missing_bytes-=length;
-    //utils::dump(data,length);      
   }
   void crc(bool ok) {
     DBG("receiving crc %d \n",int(ok));

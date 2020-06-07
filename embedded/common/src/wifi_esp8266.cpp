@@ -1,4 +1,5 @@
 #include "common/wifi.h"
+#include "common/time.h"
 
 #define __ESP_FILE__ __FILE__
 #include <string>
@@ -160,6 +161,12 @@ int write_complete(int s, uint8_t* data, size_t length) {
   return 0;
 }
 
+size_t remain(size_t buffer_size, size_t pos) {
+  if (pos>=buffer_size)
+    return 0;
+  return buffer_size-pos;
+}
+
 int process_http_request(const char * WEB_URL,
 			 const char *request,
 			 const uint8_t * data,
@@ -198,15 +205,19 @@ int process_http_request(const char * WEB_URL,
   } 
 
   /* Read HTTP response */
+  uint8_t buffer[16*1024];
+  memset(buffer,0,sizeof(buffer));
+  size_t buffer_size = 0;
   while(true) {
-   char recv_buf[16];
-    bzero(recv_buf, sizeof(recv_buf));
+    uint8_t recv_buf[16];
+    memset(recv_buf, 0, sizeof(recv_buf));
     int r = read(s, recv_buf, sizeof(recv_buf));
-    DBG("r:%d\n",r);
-    if (cb && r>0) {
-      cb->data((uint8_t*)recv_buf,r);
-    }
-    if (r<=0) {
+    if (r>0) {
+      if (buffer_size+r > sizeof(buffer))
+	return -1; // max size exceeded
+      memcpy(buffer+buffer_size,recv_buf,r);
+      buffer_size += r;
+    } else {
       DBG("done reading from socket. Last read return=%d errno=%d\r\n", r, errno);
       // note: EAGAIN (11) seems to signal end of stream.
       if (errno == EWOULDBLOCK) {
@@ -217,6 +228,22 @@ int process_http_request(const char * WEB_URL,
       }
     }
   }
+  close(s);
+
+  cb->data_length(buffer_size);
+
+   // send chunk-wise so that arduino read buffer does not overflow.
+  if (cb && buffer_size>0) {
+    uint8_t buf[32]={0};
+    size_t pos=0;
+    while(remain(buffer_size,pos)>0) {
+      size_t size_copy = xMin(sizeof(buf),remain(buffer_size,pos));
+      memcpy(buf,buffer+pos,size_copy);
+      cb->data((uint8_t*)buf,size_copy);
+      pos+=size_copy;
+    }
+  }
+  
   cb->crc(true);
   close(s);
   return 0;
