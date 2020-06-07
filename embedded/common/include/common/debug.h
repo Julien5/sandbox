@@ -48,9 +48,12 @@ static std::mutex stdout_mtx;
 #define assert(x)				\
   do {						\
     if(!(x)) {					\
-      DBG("\r\n%s:%d assertion failed\r\n",__FILE__,__LINE__);	\
-      while(1){};						\
-    }								\
+      Serial.print(__FILE__);			\
+      Serial.print(":");			\
+      Serial.print(__LINE__);			\
+      Serial.println(": ASSERT");		\
+      while(1){Serial.flush();};		\
+    }						\
   } while(0)
 #else
 #define DBG(...) ((void) 0)			
@@ -94,5 +97,6 @@ namespace debug {
   //! necessary for Serial.print in Arduino
   void init_serial();
   void turnBuildinLED(bool on);
+  void add_range(const char *, void *, size_t L);
   int freeMemory();
 }
