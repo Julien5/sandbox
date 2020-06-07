@@ -36,8 +36,9 @@ class wcallback : public wifi::callback {
     missing_bytes-=length;
   }
   void crc(bool ok) {
-    DBG("receiving crc %d \n",int(ok));
+    DBG("receiving crc %d\r\n",int(ok));
     assert(ok);
+    /* error, probably to due error on the serial transmission => retry ? */
   }
 };
 
@@ -47,10 +48,8 @@ void gather_data() {
 
 void send_data() {
   wcallback cb;
-  W->get("http://example.com/",&cb);
-  Time::delay(10);
-  exit(0);
-  return;
+  //W->get("http://example.com/",&cb);
+  //Time::delay(10);
   uint8_t data[4]={0x01,0x02,0x03,0x04};
   W->post("http://postman-echo.com/post",data,sizeof(data),&cb);
   Time::delay(10);

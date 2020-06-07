@@ -45,7 +45,7 @@ bool serial::wait_for_begin() {
 bool serial::check_end() {
   // reading modifies rx_crc8
   // so we must save the last value to check it against the transmitted crc.
-  // alternatively, we chould check that the crc is null 
+  // alternatively, we could check that the crc is null 
   uint8_t crc8_received=0;
   auto saved_rx_crc8 = rx_crc8;
   while(true) {
@@ -53,7 +53,7 @@ bool serial::check_end() {
     if (ok)
       break;
   }
-  DBG("CRC: received:0x%02x ?= computed:0x%02x\n",crc8_received,saved_rx_crc8);
+  DBG("CRC: received:0x%02x ?= computed:0x%02x\r\n",crc8_received,saved_rx_crc8);
   auto match = crc8_received == saved_rx_crc8;
   if (!match) {
     assert(0);
