@@ -122,16 +122,21 @@ int create_socket(const char * url) {
   DBG("DNS lookup succeeded. IP=%s\n", inet_ntoa(*addr));
 
   int s = socket(res->ai_family, res->ai_socktype, 0);
+  int code=errno;
   if(s < 0) {
     TRACE();
+    ESP_LOGE(TAG, "... socket create failed errno=%d",code);
     freeaddrinfo(res);
     Time::delay(1000);
+    assert(code!=0);
     return -1;
   }
   TRACE();
 
-  if(connect(s, res->ai_addr, res->ai_addrlen) != 0) {
-    ESP_LOGE(TAG, "... socket connect failed errno=%d", errno);
+  err = connect(s, res->ai_addr, res->ai_addrlen);
+  code=errno;
+  if(err != 0) {
+    ESP_LOGE(TAG, "... socket connect failed errno=%d", code);
     close(s);
     freeaddrinfo(res);
     Time::delay(4000);
