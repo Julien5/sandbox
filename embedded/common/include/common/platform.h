@@ -44,6 +44,9 @@ namespace std {
     T* operator->() const {
       return _ptr;
     }
+    T* get() const {
+      return _ptr;
+    }
     ~unique_ptr() {
       delete _ptr;
     }
