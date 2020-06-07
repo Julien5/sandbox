@@ -11,6 +11,7 @@
 #include "message.h"
 
 std::unique_ptr<serial> S = nullptr;
+
 #ifdef DEVHOST
 #include "wifi_curl.h"
 #define WIFI wifi_curl
@@ -18,6 +19,7 @@ std::unique_ptr<serial> S = nullptr;
 #include "common/wifi.h"
 #define WIFI wifi
 #endif
+
 namespace {
   std::unique_ptr<wifi::WIFI> W = nullptr;
 }
@@ -26,7 +28,6 @@ void transmitter::setup() {
 }
 
 #include <chrono>
-#include <thread>
 
 class serial_callback : public wifi::callback {
   serial * output;
@@ -46,9 +47,11 @@ public:
   void data(uint8_t * data, size_t length) {
     DBG("forwarding %d bytes\n",length);
     output->write(data,length);
+    utils::dump(data,length);
   }
   void crc(bool ok) {
     DBG("forwarding crc %d \n",int(ok));
+    // do it ?
     assert(ok);
   }
 };
