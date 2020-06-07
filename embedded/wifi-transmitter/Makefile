@@ -13,14 +13,7 @@ all: dir $(OBJS) libs lib
 include $(MAKEFILESDIR)/devhost/build.mk
 
 libs:
-	make -C $(MAKEFILESDIR)/devhost -f common lib
+	make -C $(MAKEFILESDIR)/devhost -f common.mk lib
 
 check:
 	cppcheck --language=c++ --enable=all --template=gcc $(wildcard *.cpp)
-
-print:
-	$(info INCLUDE is $(INCLUDE))
-	$(info OBJS is $(OBJS))
-	$(info CXXOBJS is $(CXXOBJS))
-	$(info COBJS is $(COBJS))
-
