@@ -48,10 +48,10 @@ void gather_data() {
 
 void send_data() {
   wcallback cb;
-  auto p=W->get("http://example.com/",&cb);
+  //auto p=W->get("http://example.com/",&cb);
   //Time::delay(10);
-  //uint8_t data[4]={0x01,0x02,0x03,0x04};
-  //auto p=W->post("http://postman-echo.com/post",data,sizeof(data),&cb);
+  uint8_t data[4]={0x01,0x02,0x03,0x04};
+  auto p=W->post("http://192.168.178.22:8000/post/",data,sizeof(data),&cb);
   DBG("p:%d\r\n",int(p));
   Time::delay(10);
 }

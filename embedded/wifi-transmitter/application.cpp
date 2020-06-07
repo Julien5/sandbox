@@ -49,10 +49,9 @@ public:
     output->write(data,length);
   }
   void crc(bool ok) {
-    DBG("forwarding crc %d \n",int(ok));
-    // do it ?
-    assert(ok);
-  }
+    // should not be called.
+    assert(0);
+  }  
 };
 
 int k=0;
@@ -62,16 +61,6 @@ void transmitter::loop_serial() {
   if (!W)
     W=std::unique_ptr<wifi::WIFI>(new wifi::WIFI);
   
-  DBG("serial loop\n");
-
-  /*
-    S->begin();
-    uint8_t d[4]={0x01,0x02,0x03,0x04};
-    S->write(d,sizeof(d));
-    S->end();
-    Time::delay(1000);
-    return;
-  */
   DBG("waiting for begin");
     
   debug::turnBuildinLED(true);
@@ -108,7 +97,8 @@ void transmitter::loop_serial() {
     utils::dump(cmd.data,cmd.Ldata);
     W->post(cmd.url,cmd.data,cmd.Ldata,&cb);
   }
-  DBG("end\n");
+  DBG("end (1)\n");
   S->end();
+  DBG("end (2)\n");
 }
 

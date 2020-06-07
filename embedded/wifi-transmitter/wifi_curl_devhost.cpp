@@ -54,8 +54,8 @@ int exe(const std::string &method, const char* req, wifi::callback * cb,
     memset(recv_buf, 0, sizeof(recv_buf));
     int r=fread(recv_buf, 1, sizeof(recv_buf), f);
     if (r>0) {
-      if (buffer_size+r > sizeof(buffer))
-	return -1; // max size exceeded
+      if (buffer_size+r >= sizeof(buffer))
+	break; // max size exceeded
       memcpy(buffer+buffer_size,recv_buf,r);
       buffer_size += r;
     } else {
@@ -78,12 +78,10 @@ int exe(const std::string &method, const char* req, wifi::callback * cb,
       pos+=size_copy;
     }
   }
-  
-  // std::remove(kDataFile);
+  std::remove(kDataFile);
   TRACE();
   if (data && Ldata) 
     std::remove("data.bin");
-  cb->crc(true);
   TRACE();
   return 0;
 }

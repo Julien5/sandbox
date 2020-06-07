@@ -213,8 +213,8 @@ int process_http_request(const char * WEB_URL,
     memset(recv_buf, 0, sizeof(recv_buf));
     int r = read(s, recv_buf, sizeof(recv_buf));
     if (r>0) {
-      if (buffer_size+r > sizeof(buffer))
-	return -1; // max size exceeded
+      if (buffer_size+r >= sizeof(buffer)) 
+	break; // max size exceeded
       memcpy(buffer+buffer_size,recv_buf,r);
       buffer_size += r;
     } else {
