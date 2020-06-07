@@ -93,8 +93,7 @@ void transmitter::loop_serial() {
   if (cmd.command == 'G')
     W->get(cmd.url,&cb);
   if (cmd.command == 'P') {
-    DBG("%d\n",cmd.Ldata);
-    utils::dump(cmd.data,cmd.Ldata);
+    DBG("Ldata:%d\n",cmd.Ldata);
     W->post(cmd.url,cmd.data,cmd.Ldata,&cb);
   }
   DBG("end (1)\n");

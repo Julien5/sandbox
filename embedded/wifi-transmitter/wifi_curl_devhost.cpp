@@ -27,7 +27,6 @@ int exe(const std::string &method, const char* req, wifi::callback * cb,
   std::string cmd = "curl -i --raw -s -X " + method + " ";
   if (data && Ldata) {
     DBG("%d\n",Ldata);
-    assert(Ldata==4);
     std::ofstream f;
     f.open("data.bin", std::ios::out | std::ios::binary | std::ios::trunc);
     f.write((char*)data,Ldata);
