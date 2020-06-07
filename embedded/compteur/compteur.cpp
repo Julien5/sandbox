@@ -1,4 +1,4 @@
-#include "ticksupdater.h"
+#include "compteur.h"
 #include "common/debug.h"
 #include "common/time.h"
 
@@ -9,7 +9,7 @@ tickscounter::counter_config config() {
   return ret;
 }
 
-TicksUpdater::TicksUpdater():counter(config())
+compteur::compteur():counter(config())
 {}
 
 double kW(const uint32_t ticks, const Clock::ms d) {
@@ -23,7 +23,7 @@ void print_bin(const tickscounter::bin &b) {
   // DBG("start:%7d duration:%7d count:%3d\n",b.m_start, b.m_duration,b.m_count);
 }
 
-bool TicksUpdater::update() {
+bool compteur::update() {
   /*
   const auto t = Time::since_reset();
   if (t%10000==0 && counter.bin_count()>2) {
@@ -45,16 +45,16 @@ bool TicksUpdater::update() {
   return false;
 }
 
-void TicksUpdater::print() {
+void compteur::print() {
   // DBG("time:%4d sec total:%d\n",int(Time::since_reset()/1000),int(counter.total()));
 }
 
-const uint8_t* TicksUpdater::data(size_t *L) const {
+const uint8_t* compteur::data(size_t *L) const {
   return reinterpret_cast<const uint8_t*>(counter.get_packed(L));
 }
 
-int TicksUpdater::test() {
-  TicksUpdater U;
+int compteur::test() {
+  compteur U;
   while(true) {
     if (U.update())
       U.print();

@@ -1,4 +1,4 @@
-#include "ticksupdater.h"
+#include "compteur.h"
 #include "adc.h"
 #include "common/debug.h"
 #include "common/time.h"

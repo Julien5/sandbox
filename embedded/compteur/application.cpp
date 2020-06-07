@@ -5,9 +5,12 @@
 #include "common/wifi.h"
 #include "common/utils.h"
 #include "common/platform.h"
-#include "ticksupdater.h"
+
+#include "application.h"
+#include "compteur.h"
+
 std::unique_ptr<wifi::wifi> W;
-std::unique_ptr<TicksUpdater> ticksUpdater;
+std::unique_ptr<compteur> C;
 
 void application::setup() {
   debug::init_serial();
@@ -16,7 +19,7 @@ void application::setup() {
   W=std::unique_ptr<wifi::wifi>(new wifi::wifi);
   TRACE();
   DBG("memory:%d\r\n",debug::freeMemory());
-  ticksUpdater=std::unique_ptr<TicksUpdater>(new TicksUpdater);
+  C=std::unique_ptr<compteur>(new compteur);
   TRACE();
   DBG("memory:%d\r\n",debug::freeMemory());
 }
@@ -44,14 +47,16 @@ class wcallback : public wifi::callback {
 };
 
 void gather_data() {
-  ticksUpdater->update();
+  C->update();
 }
 
 void send_data() {
   wcallback cb;
   //auto p=W->get("http://example.com/",&cb);
   //Time::delay(10);
-  uint8_t data[4]={0x01,0x02,0x03,0x04};
+  // uint8_t data[4]={0x01,0x02,0x03,0x04};
+  size_t L=0;
+  const uint8_t * data=C->data(&L);
   auto p=W->post("http://192.168.178.22:8000/post/",data,sizeof(data),&cb);
   DBG("p:%d\r\n",int(p));
   Time::delay(10);

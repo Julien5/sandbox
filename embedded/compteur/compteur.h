@@ -12,13 +12,14 @@ class TicksReader {
   bool take();
 };
 
-class TicksUpdater {
+class compteur {
   tickscounter::counter counter;
   TicksReader reader;
 public:
-  TicksUpdater();
+  compteur();
   bool update();
   void print();
+  
   const uint8_t* data(size_t *L) const;
   static int test();
 };
