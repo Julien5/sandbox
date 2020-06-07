@@ -113,7 +113,7 @@ int create_socket(const char * url) {
   int err = getaddrinfo(urlReader.host, urlReader.port, &hints, &res);
   if(err != 0 || res == NULL) {
     DBG("DNS lookup failed err=%d res=%p", err, res);
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    Time::delay(1000);
     return -1;
   }
 
@@ -124,7 +124,7 @@ int create_socket(const char * url) {
   if(s < 0) {
     TRACE();
     freeaddrinfo(res);
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    Time::delay(1000);
     return -1;
   }
   TRACE();
@@ -133,7 +133,7 @@ int create_socket(const char * url) {
     ESP_LOGE(TAG, "... socket connect failed errno=%d", errno);
     close(s);
     freeaddrinfo(res);
-    vTaskDelay(4000 / portTICK_PERIOD_MS);
+    Time::delay(4000);
     return -1;
   }
 
@@ -150,7 +150,8 @@ int write_complete(int s, uint8_t* data, size_t length) {
     DBG("sent %d bytes\n",n);
     if (n<0) {
       DBG("failed writing: errno=%d\r\n", errno);
-      return -1;
+      assert(errno!=0);
+      return errno;
     }
     remain -= n;
     addr += n;      
@@ -173,50 +174,50 @@ int process_http_request(const char * WEB_URL,
   if (code != 0) {
     TRACE();
     close(s);
-    vTaskDelay(4000 / portTICK_PERIOD_MS);
-    return -1;
+    Time::delay(4000);
+    return code;
   }
-  TRACE();
   code=write_complete(s, const_cast<uint8_t*>(data), data_length);
+  cb->status(code);
   if (code != 0) {
     close(s);
-    DBG("failed writing: errno=%d\r\n", errno);
-    cb->status(errno);
-    return -1;     
+    DBG("failed writing: errno=%d\r\n", code);
+    return code;     
   }
-  TRACE();
 
   struct timeval receiving_timeout;
   receiving_timeout.tv_sec = 5;
   receiving_timeout.tv_usec = 0;
-  if (setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &receiving_timeout,
-		 sizeof(receiving_timeout)) < 0) {
+  code=setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &receiving_timeout,sizeof(receiving_timeout));
+  if (code!=0) {
     TRACE();
     close(s);
-    vTaskDelay(4000 / portTICK_PERIOD_MS);
-    return -1;
-  }
-  TRACE();
+    Time::delay(4000);
+    assert(errno!=0);
+    return errno;
+  } 
 
   /* Read HTTP response */
   while(true) {
-    char recv_buf[64];
+   char recv_buf[16];
     bzero(recv_buf, sizeof(recv_buf));
-    int r = read(s, recv_buf, sizeof(recv_buf)-1);
+    int r = read(s, recv_buf, sizeof(recv_buf));
     DBG("r:%d\n",r);
-    if (cb && r>0)
+    if (cb && r>0) {
       cb->data((uint8_t*)recv_buf,r);
+    }
     if (r<=0) {
       DBG("done reading from socket. Last read return=%d errno=%d\r\n", r, errno);
       // note: EAGAIN (11) seems to signal end of stream.
       if (errno == EWOULDBLOCK) {
 	// wait a little and retry
-	vTaskDelay(100 / portTICK_PERIOD_MS);
+	Time::delay(100);
       } else {
 	break;
       }
     }
   }
+  cb->crc(true);
   close(s);
   return 0;
 }

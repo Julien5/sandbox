@@ -47,7 +47,6 @@ public:
   void data(uint8_t * data, size_t length) {
     DBG("forwarding %d bytes\n",length);
     output->write(data,length);
-    utils::dump(data,length);
   }
   void crc(bool ok) {
     DBG("forwarding crc %d \n",int(ok));
@@ -97,7 +96,6 @@ void transmitter::loop_serial() {
     DBG("crc check failed\n");
     return;
   }
-  utils::dump(m.data,m.length);
   received::wifi_command cmd = received::read_wifi_command(m);
   /* process cmd */
   DBG("process %s\n",cmd.url);

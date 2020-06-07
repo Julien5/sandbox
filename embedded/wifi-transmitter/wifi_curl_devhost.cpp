@@ -1,18 +1,30 @@
 #include "wifi_curl.h"
 #include "common/debug.h"
+#include "common/utils.h"
+#include "common/stringawaiter.h"
 #include <cstdlib>
 #include <string>
 #include <fstream>
 #include <vector>
 #include <iterator>
+#include <strings.h>
+#include <string.h>
 
 wifi::wifi_curl::wifi_curl(){};
 wifi::wifi_curl::~wifi_curl(){};
 
-int exe(const std::string &method, const char* req, wifi::callback * r,
+const char *kDataFile="/tmp/wifi.curloutput.internal";
+
+size_t remain(size_t buffer_size, size_t pos) {
+  if (pos>=buffer_size)
+    return 0;
+  return buffer_size-pos;
+}
+
+int exe(const std::string &method, const char* req, wifi::callback * cb,
 	const uint8_t * data = nullptr, const int Ldata = 0) {
   // curl -s -X GET "http://example.com/" --output out
-  std::string cmd = "curl -s -X " + method + " ";
+  std::string cmd = "curl -i --raw -s -X " + method + " ";
   if (data && Ldata) {
     DBG("%d\n",Ldata);
     assert(Ldata==4);
@@ -24,33 +36,54 @@ int exe(const std::string &method, const char* req, wifi::callback * r,
     cmd+=" ";
   }
   cmd += std::string(req);
-  cmd += " --output out";
+  cmd += " --output /tmp/wifi.curloutput.internal";
   DBG("exe: %s\n",cmd.c_str());
   std::system(cmd.c_str());
-  std::ifstream f("out",std::ios::binary);
-  if (!f.is_open()) {
-    TRACE();
-    r->status(1);
-    r->crc(false);
-    return 1;
+  auto f = fopen(kDataFile,"rb");
+  auto code=errno;
+  cb->status(code);
+  if (!f) {
+    return code;
   }
-  TRACE();
-  r->status(0);
-  std::vector<char> out(std::istreambuf_iterator<char>(f), {});
-  DBG("size:%d\n",int(out.size()));
-  r->data_length(out.size());
-  std::string line;
-  while (!out.empty()) {
-    const size_t L = xMin(8U,out.size());
-    r->data(reinterpret_cast<uint8_t*>(out.data()),L);
-    out.erase(out.begin(),out.begin()+L);
+  
+  uint8_t buffer[16*1024];
+  memset(buffer,0,sizeof(buffer));
+  size_t buffer_size = 0;
+  while(true) {
+    uint8_t recv_buf[16];
+    memset(recv_buf, 0, sizeof(recv_buf));
+    int r=fread(recv_buf, 1, sizeof(recv_buf), f);
+    if (r>0) {
+      if (buffer_size+r > sizeof(buffer))
+	return -1; // max size exceeded
+      memcpy(buffer+buffer_size,recv_buf,r);
+      buffer_size += r;
+    } else {
+      DBG("done reading from socket. Last read return=%d errno=%d\r\n", r, errno);
+      break;
+    }
   }
-  f.close();
+  fclose(f);
+
+  cb->data_length(buffer_size);
+
+  // send chunk-wise so that arduino read buffer does not overflow.
+  if (cb && buffer_size>0) {
+    uint8_t buf[32];
+    size_t pos=0;
+    while(remain(buffer_size,pos)>0) {
+      size_t size_copy = xMin(sizeof(buf),remain(buffer_size,pos));
+      memcpy(buf,buffer+pos,size_copy);
+      cb->data((uint8_t*)buf,size_copy);
+      pos+=size_copy;
+    }
+  }
+  
+  // std::remove(kDataFile);
   TRACE();
-  std::remove("out");
   if (data && Ldata) 
     std::remove("data.bin");
-  r->crc(true);
+  cb->crc(true);
   TRACE();
   return 0;
 }

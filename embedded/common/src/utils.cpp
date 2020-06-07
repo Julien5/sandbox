@@ -53,8 +53,25 @@ void utils::dump(const uint8_t *data_buffer, const size_t length) {
 }
 #else
 #include "common/debug.h"
+bool ascii(const uint8_t a) {
+  if ('a' <= a && a <= 'z')
+    return true;
+  if ('A' <= a && a <= 'Z')
+    return true;
+  if ('0' <= a && a <= '9')
+    return true;
+  return false;
+}
 void utils::dump(const uint8_t *data_buffer, const size_t length) {
-  DBG("not implemented\n");
+  DBG("\r\n");
+  for(size_t k = 0; k<length; ++k) {
+    if (ascii(data_buffer[k]))
+      DBG("%2c ",data_buffer[k]);
+    else
+      DBG("%02x ",data_buffer[k]);
+    if (k%8==0) 
+      DBG("\r\n");
+  }
 }
 #endif
 
