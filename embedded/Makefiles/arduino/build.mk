@@ -51,5 +51,12 @@ $(OBJS): $(OBJSDIR)/%.o : $(SRCSDIR)/%.cpp
 clean: dir
 	find $(OBJSDIR) -type f -delete -print
 
+print:
+	$(info MAKEFILESDIR is $(MAKEFILESDIR))	
+	$(info INCLUDE is $(INCLUDE))
+	$(info XINCLUDE is $(XINCLUDE))
+	$(info OBJS is $(OBJS))
+	$(info CXXOBJS is $(CXXOBJS))
+	$(info COBJS is $(COBJS))
 
-.PHONY: clean elf showsize hex lib dir reset flash monitor
+.PHONY: clean elf showsize hex lib dir reset flash monitor print
