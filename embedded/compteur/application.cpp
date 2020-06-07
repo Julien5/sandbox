@@ -23,11 +23,11 @@ void application::setup() {
 class wcallback : public wifi::callback {
   size_t missing_bytes=1256;
   void status(uint8_t s) {
-    DBG("receiving status %d \n",int(s));
+    DBG("receiving status %d\r\n",int(s));
     assert(s==0);
   }
   void data_length(uint16_t total_length) {
-    DBG("receiving total %d bytes\n",total_length);
+    DBG("receiving total %d bytes\r\n",int(total_length));
     assert(total_length<10000);
     missing_bytes=total_length;
   }
@@ -48,10 +48,11 @@ void gather_data() {
 
 void send_data() {
   wcallback cb;
-  //W->get("http://example.com/",&cb);
+  auto p=W->get("http://example.com/",&cb);
   //Time::delay(10);
-  uint8_t data[4]={0x01,0x02,0x03,0x04};
-  W->post("http://postman-echo.com/post",data,sizeof(data),&cb);
+  //uint8_t data[4]={0x01,0x02,0x03,0x04};
+  //auto p=W->post("http://postman-echo.com/post",data,sizeof(data),&cb);
+  DBG("p:%d\r\n",int(p));
   Time::delay(10);
 }
 
