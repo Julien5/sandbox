@@ -19,5 +19,6 @@ public:
   TicksUpdater();
   bool update();
   void print();
+  const uint8_t* data(size_t *L) const;
   static int test();
 };

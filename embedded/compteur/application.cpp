@@ -2,7 +2,6 @@
 
 #include "common/debug.h"
 #include "common/time.h"
-// #include "common/serial.h"
 #include "common/wifi.h"
 #include "common/utils.h"
 
@@ -14,14 +13,17 @@ std::unique_ptr<TicksUpdater> ticksUpdater;
 void application::setup() {
   debug::init_serial();
   TRACE();
+  DBG("memory:%d\r\n",debug::freeMemory());
   W=std::unique_ptr<wifi::wifi>(new wifi::wifi);
   TRACE();
-  // ticksUpdater=std::unique_ptr<TicksUpdater>(new TicksUpdater);
+  DBG("memory:%d\r\n",debug::freeMemory());
+  ticksUpdater=std::unique_ptr<TicksUpdater>(new TicksUpdater);
   TRACE();
+  DBG("memory:%d\r\n",debug::freeMemory());
 }
 
 class wcallback : public wifi::callback {
-  size_t missing_bytes=1256;
+  size_t missing_bytes=0;
   void status(uint8_t s) {
     DBG("receiving status %d\r\n",int(s));
     assert(s==0);
@@ -43,7 +45,7 @@ class wcallback : public wifi::callback {
 };
 
 void gather_data() {
-  //  ticksUpdater->update();
+  ticksUpdater->update();
 }
 
 void send_data() {
@@ -58,12 +60,12 @@ void send_data() {
 
 void application::loop()
 {
+  return;
   DBG("<loop>\r\n");
   debug::turnBuildinLED(false);
-  // gather_data();
+  gather_data();
   send_data();
   debug::turnBuildinLED(false);
   DBG("ok\n");
-  while(1);
-  Time::delay(250);
+  Time::delay(200);
 }

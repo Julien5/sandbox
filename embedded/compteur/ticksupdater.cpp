@@ -20,10 +20,11 @@ double kW(const uint32_t ticks, const Clock::ms d) {
 }
 
 void print_bin(const tickscounter::bin &b) {
-  DBG("start:%7d duration:%7d count:%3d\n",b.m_start, b.m_duration,b.m_count);
+  // DBG("start:%7d duration:%7d count:%3d\n",b.m_start, b.m_duration,b.m_count);
 }
 
 bool TicksUpdater::update() {
+  /*
   const auto t = Time::since_reset();
   if (t%10000==0 && counter.bin_count()>2) {
     const auto bin0=counter.getbin(0);
@@ -36,6 +37,7 @@ bool TicksUpdater::update() {
 	kW(bin1.m_count+bin2.m_count-1,bin1.end()-bin2.m_start));
     
   }
+  */
   if (reader.take()) {
     counter.tick();
     return true;
@@ -44,7 +46,11 @@ bool TicksUpdater::update() {
 }
 
 void TicksUpdater::print() {
-  DBG("time:%4d sec total:%d\n",Time::since_reset()/1000,counter.total());
+  // DBG("time:%4d sec total:%d\n",int(Time::since_reset()/1000),int(counter.total()));
+}
+
+const uint8_t* TicksUpdater::data(size_t *L) const {
+  return reinterpret_cast<const uint8_t*>(counter.get_packed(L));
 }
 
 int TicksUpdater::test() {
