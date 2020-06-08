@@ -30,12 +30,12 @@ namespace std {
   template<typename T>
   class unique_ptr {
   private:
-    T* _ptr;
+    const T* _ptr;
   public:
     unique_ptr() {
       _ptr = 0;
     }
-    unique_ptr(T * t) {
+    unique_ptr(const T * t) {
       _ptr = t;
     }
     explicit operator bool() const {

@@ -9,17 +9,17 @@
 #include "application.h"
 #include "compteur.h"
 
-std::unique_ptr<wifi::wifi> W;
-std::unique_ptr<compteur> C;
+wifi::wifi * W;
+compteur * C;
 
 void application::setup() {
   debug::init_serial();
   TRACE();
   DBG("memory:%d\r\n",debug::freeMemory());
-  W=std::unique_ptr<wifi::wifi>(new wifi::wifi);
+  W=new wifi::wifi;
   TRACE();
   DBG("memory:%d\r\n",debug::freeMemory());
-  C=std::unique_ptr<compteur>(new compteur);
+  C=new compteur;
   TRACE();
   DBG("memory:%d\r\n",debug::freeMemory());
 }
@@ -57,7 +57,7 @@ void send_data() {
   // uint8_t data[4]={0x01,0x02,0x03,0x04};
   size_t L=0;
   const uint8_t * data=C->data(&L);
-  auto p=W->post("http://192.168.178.22:8000/post/",data,sizeof(data),&cb);
+  auto p=W->post("http://192.168.178.22:8000/post/",data,L,&cb);
   DBG("p:%d\r\n",int(p));
   Time::delay(10);
 }

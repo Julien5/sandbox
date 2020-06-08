@@ -10,7 +10,9 @@ tickscounter::counter_config config() {
 }
 
 compteur::compteur():counter(config())
-{}
+{
+  debug::add_range("compteur:",this,sizeof(*this));
+}
 
 double kW(const uint32_t ticks, const Clock::ms d) {
   if (d==0)

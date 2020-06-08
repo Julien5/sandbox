@@ -13,6 +13,7 @@ namespace delme {
 }
 
 serial::serial() {
+  debug::add_range("serial:",this,sizeof(*this));
   SOFT_UART.begin(9600);
 }
 

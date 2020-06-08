@@ -5,6 +5,8 @@
 
 void application::setup() {
   debug::init_serial();
+  char *c = malloc(1);
+  DBG("%d\r\n",int(c));
 }
 
 void application::loop() {

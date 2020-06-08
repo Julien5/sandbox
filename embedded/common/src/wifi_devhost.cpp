@@ -11,6 +11,7 @@ namespace wifi {
   wifi::wifi() {
     assert(!S);
     S=std::unique_ptr<serial>(new serial);
+    debug::add_range("wifi:",this,sizeof(*this));
   }
 
   wifi::~wifi() {

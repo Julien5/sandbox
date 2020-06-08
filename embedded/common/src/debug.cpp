@@ -60,27 +60,13 @@ void debug::turnBuildinLED(bool on) {
     digitalWrite(LED_BUILTIN,LOW);
 }
 
-#ifdef __arm__
-// should use uinstd.h to define sbrk but Due causes a conflict
-extern "C" char* sbrk(int incr);
-#else  // __ARM__
-extern char *__brkval;
-#endif  // __arm__
-
 int debug::freeMemory() {
-  char top;
-#ifdef __arm__
-  return &top - reinterpret_cast<char*>(sbrk(0));
-#elif defined(CORE_TEENSY) || (ARDUINO > 103 && ARDUINO != 151)
-  return &top - __brkval;
-#else  // __arm__
-  return __brkval ? &top - __brkval : &top - __malloc_heap_start;
-#endif  // __arm__
+  return 0;
 }
 
 
 void debug::add_range(const char * text, void *o, size_t L) {
   uint8_t* i = (uint8_t*)o;
-  DBG("%8s %p:%p [%d bytes]\r\n",text,int(i),int(i+L),int(L));
+  DBG("%8s %d:%d [%d]\r\n",text,int(i),int(i+L),int(L));
 }
 #endif
