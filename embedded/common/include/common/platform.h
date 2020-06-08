@@ -1,6 +1,6 @@
 #pragma once
 #include <stdint.h>
-
+#include "common/debug.h"
 /* Note:
  * define abs, max and min macros causes problems with
  * stl headers. 
@@ -38,6 +38,11 @@ namespace std {
     unique_ptr(const T * t) {
       _ptr = t;
     }
+    unique_ptr& operator= (unique_ptr&& x) noexcept {
+      _ptr = x._ptr;
+       x._ptr = nullptr;
+    }
+    unique_ptr& operator= (const unique_ptr&) = delete;
     explicit operator bool() const {
       return _ptr;
     }
@@ -48,7 +53,8 @@ namespace std {
       return _ptr;
     }
     ~unique_ptr() {
-      delete _ptr;
+      if (_ptr)
+	delete _ptr;
     }
   };
 }
