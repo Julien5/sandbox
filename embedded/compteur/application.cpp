@@ -9,17 +9,17 @@
 #include "application.h"
 #include "compteur.h"
 
-wifi::wifi * W;
-compteur * C;
+std::unique_ptr<wifi::wifi> W;
+std::unique_ptr<compteur> C;
 
 void application::setup() {
   debug::init_serial();
   TRACE();
   DBG("memory:%d\r\n",debug::freeMemory());
-  W=new wifi::wifi;
+  W=std::unique_ptr<wifi::wifi>(new wifi::wifi);
   TRACE();
   DBG("memory:%d\r\n",debug::freeMemory());
-  C=new compteur;
+  C=std::unique_ptr<compteur>(new compteur);
   TRACE();
   DBG("memory:%d\r\n",debug::freeMemory());
 }
