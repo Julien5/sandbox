@@ -15,6 +15,7 @@ std::unique_ptr<compteur> C;
 void application::setup() {
   debug::init_serial();
   TRACE();
+  TRACE();
   DBG("memory:%d\r\n",debug::freeMemory());
   W=std::unique_ptr<wifi::wifi>(new wifi::wifi);
   TRACE();
@@ -22,6 +23,7 @@ void application::setup() {
   C=std::unique_ptr<compteur>(new compteur);
   TRACE();
   DBG("memory:%d\r\n",debug::freeMemory());
+  while(1);
 }
 
 class wcallback : public wifi::callback {
