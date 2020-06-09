@@ -63,10 +63,9 @@ void debug::turnBuildinLED(bool on) {
 int debug::freeMemory() {
   return 0;
 }
+#endif
 
-
-void debug::add_range(const char * text, void *o, size_t L) {
+void debug::address_range(const char * text, void *o, size_t L) {
   uint8_t* i = (uint8_t*)o;
   DBG("%8s %d:%d [%d]\r\n",text,int(i),int(i+L),int(L));
 }
-#endif

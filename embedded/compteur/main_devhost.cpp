@@ -4,7 +4,7 @@
 #include "common/tickscounter.h"
 #include "common/time.h"
 #include "common/stringawaiter.h"
-#include "ticksupdater.h"
+#include "compteur.h"
 #include "histogram.h"
 
 #include <thread>
@@ -13,7 +13,7 @@ int tests() {
   //tickscounter::test();
   return common::StringAwaiter::test();
   return histogram::Histogram::test();
-  return TicksUpdater::test();
+  return compteur::test();
   return 0;
 }
 

@@ -2,7 +2,7 @@ include ../settings
 include settings
 include core
 NAME:=$(XNAME)
-SRCSDIR := /usr/share/arduino/hardware/arduino/cores/arduino
+SRCSDIR := $(ARDUINOCOREDIR)
 OBJSDIR := /tmp/build/arduino/$(NAME)
 
 CXXSRCS := $(wildcard $(SRCSDIR)/*.cpp)

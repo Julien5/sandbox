@@ -97,6 +97,6 @@ namespace debug {
   //! necessary for Serial.print in Arduino
   void init_serial();
   void turnBuildinLED(bool on);
-  void add_range(const char *, void *, size_t L);
+  void address_range(const char *, void *, size_t L);
   int freeMemory();
 }
