@@ -7,7 +7,7 @@
 #define BLOCK_LENGTH 32
 
 namespace wifi {
-  std::unique_ptr<serial> S = nullptr;
+  std::unique_ptr<serial> S;
   wifi::wifi() {
     assert(!S);
     S=std::unique_ptr<serial>(new serial);
@@ -39,7 +39,6 @@ namespace wifi {
       r->crc(false);
       return 1;
     }
-    assert(status==0);
     r->status(status);
     
     uint16_t size=0; // FIXME: ntoh
