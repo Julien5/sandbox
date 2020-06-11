@@ -1,6 +1,8 @@
 ARDUINOHOME=/usr/share/arduino/
-ARDUINOCOREDIR=$(ARDUINOHOME)/hardware/arduino/cores/arduino
-#ARDUINOCOREDIR=/home/julien/arduino/arduino-1.8.6/hardware/arduino/avr/cores/arduino
+#ARDUINOCOREDIR=$(ARDUINOHOME)/hardware/arduino/cores/arduino
+# ARDUINOCOREDIR=/opt/arduino/1.0.5/cores/arduino
+ARDUINOCOREDIR=/opt/arduino/ArduinoCore-avr-1.8.2/cores/arduino
+# ARDUINOCOREDIR=/opt/arduino/candidate/cores/arduino
 ARDUINOTOOLSDIR=$(ARDUINOHOME)/hardware/tools
 
 CXX=$(ARDUINOTOOLSDIR)/avr/bin/avr-g++
@@ -8,7 +10,7 @@ CC=$(ARDUINOTOOLSDIR)/avr/bin/avr-gcc
 RM=rm -f
 LIBS=-lc -lm 
 LDFLAGS=-Wl,--gc-sections -fuse-linker-plugin
-DEFINES=-DF_CPU=16000000L -DARDUINO=105 -D__PROG_TYPES_COMPAT__
+DEFINES=-DF_CPU=16000000L -DARDUINO=182 -D__PROG_TYPES_COMPAT__
 CFLAGS=-mmcu=atmega328p -Wall -ffunction-sections -fdata-sections -Os -flto # -MMD
 CXXFLAGS=$(CFLAGS) -fpermissive -fno-exceptions -std=gnu++11 -fno-threadsafe-statics
 
