@@ -28,10 +28,8 @@ static std::mutex stdout_mtx;
  * reduce NDATA
  */
 #include "Arduino.h"
-#include "HardwareSerial.h"
 #define DBG(...)				\
   do {						\
-    printf("%s:%d: ",__FILE__,__LINE__);	\
     char buffer[32];				\
     snprintf(buffer, 32,__VA_ARGS__);		\
     Serial.print(buffer);			\
