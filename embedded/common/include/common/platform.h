@@ -39,8 +39,11 @@ namespace std {
       _ptr = t;
     }
     unique_ptr& operator= (unique_ptr&& x) noexcept {
+      if (_ptr == x._ptr)
+	return *this;
       _ptr = x._ptr;
        x._ptr = nullptr;
+       return *this;
     }
     unique_ptr& operator= (const unique_ptr&) = delete;
     explicit operator bool() const {
