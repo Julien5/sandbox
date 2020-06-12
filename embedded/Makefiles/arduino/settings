@@ -1,5 +1,5 @@
 ARDUINOHOME=/usr/share/arduino
-#ARDUINOCOREDIR=$(ARDUINOHOME)/hardware/arduino/cores/arduino
+# ARDUINOCOREDIR=$(ARDUINOHOME)/hardware/arduino/cores/arduino
 # ARDUINOCOREDIR=/opt/arduino/1.0.5/cores/arduino
 ARDUINOCOREDIR=/opt/arduino/ArduinoCore-avr-1.8.2/cores/arduino
 # ARDUINOCOREDIR=/opt/arduino/candidate/cores/arduino
