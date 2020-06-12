@@ -42,8 +42,8 @@ namespace std {
       if (_ptr == x._ptr)
 	return *this;
       _ptr = x._ptr;
-       x._ptr = nullptr;
-       return *this;
+      x._ptr = nullptr;
+      return *this;
     }
     unique_ptr& operator= (const unique_ptr&) = delete;
     explicit operator bool() const {

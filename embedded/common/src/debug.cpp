@@ -60,9 +60,13 @@ void debug::turnBuildinLED(bool on) {
     digitalWrite(LED_BUILTIN,LOW);
 }
 
+extern char *__brkval;
+ 
 int debug::freeMemory() {
-  return 0;
+  char top;
+  return &top - __brkval;
 }
+
 #endif
 
 void debug::address_range(const char * text, void *o, size_t L) {
