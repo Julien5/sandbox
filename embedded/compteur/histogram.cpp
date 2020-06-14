@@ -58,7 +58,7 @@ uint32_t histogram::Histogram::count() const {
 }
 
 void histogram::Histogram::print() const {
-  DBG("\r\nvalues: ");
+  DBG("values: ");
   for(size_t k=0;k<size();++k) 
     DBG("[%3d] ",int(m_packed.bins[k].value));
   DBG("\r\n");

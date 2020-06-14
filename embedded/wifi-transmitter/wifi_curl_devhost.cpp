@@ -9,6 +9,7 @@
 #include <iterator>
 #include <strings.h>
 #include <string.h>
+#include "common/platform.h"
 
 wifi::wifi_curl::wifi_curl(){};
 wifi::wifi_curl::~wifi_curl(){};

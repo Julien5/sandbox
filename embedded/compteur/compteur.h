@@ -19,6 +19,7 @@ public:
   compteur();
   bool update();
   void print();
+  tickscounter::bin::count total();
   
   const uint8_t* data(size_t *L) const;
   static int test();

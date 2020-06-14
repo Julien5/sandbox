@@ -1,5 +1,6 @@
 #include "common/wifi.h"
 #include "common/time.h"
+#include "common/platform.h"
 
 #define __ESP_FILE__ __FILE__
 #include <string>

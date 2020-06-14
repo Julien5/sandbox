@@ -10,7 +10,9 @@
 #include <thread>
 
 int tests() {
-  //tickscounter::test();
+  DBG("sizeof compteur:%d\n",sizeof(compteur));
+  return 0;
+  return tickscounter::test();
   return common::StringAwaiter::test();
   return histogram::Histogram::test();
   return compteur::test();
@@ -18,7 +20,7 @@ int tests() {
 }
 
 int main(int argc, char ** argv) {
-  // return tests();
+  return tests();
   application::setup();
   std::thread serial_thread(transmitter::run);
   while(1) {

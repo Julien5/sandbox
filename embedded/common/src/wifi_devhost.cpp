@@ -25,11 +25,10 @@ namespace wifi {
 	break;
     }
     uint8_t status=0;
-    // at this point, the request has been read
-    // and is being executed. Network request
-    // my take time.
-    // timeout is set to 100ms.
-    // lets say 20 secs => 200
+    // at this point, the request has been read and is being executed.
+    // Network request are slow.
+    // Timeout is set to 100ms.
+    // lets say 20 secs => 200 trials
     uint8_t trials=200;
     ok=false;
     while (!ok && trials--)
@@ -43,7 +42,7 @@ namespace wifi {
     
     uint16_t size=0; // FIXME: ntoh
     ok=S->read_until(reinterpret_cast<uint8_t*>(&size),sizeof(size));
-    DBG("size:%d\n",int(size));
+
     if (!ok) {
       assert(0);
       r->crc(false);
@@ -56,6 +55,11 @@ namespace wifi {
       uint8_t buffer[BLOCK_LENGTH];
       const size_t L=xMin(sizeof(buffer),size-nread);
       ok=S->read_until(buffer,L);
+#if !defined(NDEBUG)
+      auto free=debug::freeMemory();
+      if (free<500)
+      DBG("memory:%d\r\n",debug::freeMemory());
+#endif
       if (!ok) {
 	DBG("nread:%d\r\n",nread);
 	assert(0);

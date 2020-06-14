@@ -55,6 +55,10 @@ const uint8_t* compteur::data(size_t *L) const {
   return reinterpret_cast<const uint8_t*>(counter.get_packed(L));
 }
 
+tickscounter::bin::count compteur::total() {
+  return counter.total();
+}
+
 int compteur::test() {
   compteur U;
   while(true) {

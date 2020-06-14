@@ -14,35 +14,28 @@ std::unique_ptr<compteur> C;
 
 void application::setup() {
   debug::init_serial();
-  TRACE();
-  TRACE();
-  DBG("memory:%d\r\n",debug::freeMemory());
   W=std::unique_ptr<wifi::wifi>(new wifi::wifi);
-  TRACE();
-  DBG("memory:%d\r\n",debug::freeMemory());
   C=std::unique_ptr<compteur>(new compteur);
-  TRACE();
   DBG("memory:%d\r\n",debug::freeMemory());
-  while(1);
 }
 
 class wcallback : public wifi::callback {
   size_t missing_bytes=0;
   void status(uint8_t s) {
-    DBG("receiving status %d\r\n",int(s));
+    //DBG("receiving status %d\r\n",int(s));
     assert(s==0);
   }
   void data_length(uint16_t total_length) {
-    DBG("receiving total %d bytes\r\n",int(total_length));
+    //DBG("receiving total %d bytes\r\n",int(total_length));
     assert(total_length<10000);
     missing_bytes=total_length;
   }
   void data(uint8_t * data, size_t length) {
-    DBG("length %d missing %d\r\n",int(length),int(missing_bytes));
+    //DBG("length %d missing %d\r\n",int(length),int(missing_bytes));
     missing_bytes-=length;
   }
   void crc(bool ok) {
-    DBG("receiving crc %d\r\n",int(ok));
+    //DBG("receiving crc %d\r\n",int(ok));
     assert(ok);
     /* error, probably to due error on the serial transmission => retry ? */
   }
@@ -53,6 +46,8 @@ void gather_data() {
 }
 
 void send_data() {
+  if (C->total()<1)
+    return;
   wcallback cb;
   //auto p=W->get("http://example.com/",&cb);
   //Time::delay(10);
@@ -60,19 +55,17 @@ void send_data() {
   size_t L=0;
   const uint8_t * data=C->data(&L);
   auto p=W->post("http://192.168.178.22:8000/post/",data,L,&cb);
-  DBG("p:%d\r\n",int(p));
+  if (p!=0)
+    DBG("post result:%d\r\n",int(p)); // TODO error handling.
   Time::delay(10);
 }
 
 void application::loop()
 {
-  DBG("<loop>\r\n");
   debug::turnBuildinLED(false);
   gather_data();
   send_data();
   debug::turnBuildinLED(false);
-  DBG("ok\n");
+  DBG("\r\n");
   Time::delay(200);
-  TRACE();
-  DBG("memory:%d\r\n",debug::freeMemory());
 }

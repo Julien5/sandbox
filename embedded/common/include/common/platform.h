@@ -49,11 +49,14 @@ namespace std {
     explicit operator bool() const {
       return _ptr;
     }
-    T* operator->() const {
-      return _ptr;
+    T * operator->() {
+      return const_cast<T*>(_ptr);
+    }
+    T * operator->() const {
+      return get();
     }
     T* get() const {
-      return _ptr;
+      return const_cast<T*>(_ptr);
     }
     ~unique_ptr() {
       if (_ptr)
