@@ -1,12 +1,14 @@
 #include "application.h"
 
-extern "C" {
+extern "C"
+{
   void setup()
   {
     application::setup();
   }
 
-  void loop() {
+  void loop()
+  {
     application::loop();
   }
 }
@@ -15,18 +17,22 @@ extern "C" {
 #include <vector>
 #include <string>
 #include <algorithm>
-std::vector<std::string> args(int argc, char ** argv) {
-  return std::vector<std::string>(argv,argv+argc);
+std::vector<std::string>
+args(int argc, char** argv)
+{
+  return std::vector<std::string>(argv, argv + argc);
 }
 #include "test_devhost.h"
-int main(int argc, char ** argv) {
-  auto A=args(argc,argv);
-  if (std::find(A.begin(),A.end(),std::string("test"))!=A.end()) {
+int
+main(int argc, char** argv)
+{
+  auto A = args(argc, argv);
+  if (std::find(A.begin(), A.end(), std::string("test")) != A.end()) {
     return test::run();
   }
-  
+
   setup();
-  while(true) {
+  while (true) {
     loop();
   }
   return 0;
@@ -34,7 +40,8 @@ int main(int argc, char ** argv) {
 #endif
 
 #ifdef ESP8266
-extern "C" {
+extern "C"
+{
   void user_init(void)
   {
   }

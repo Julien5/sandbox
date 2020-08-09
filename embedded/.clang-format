@@ -1,0 +1,11 @@
+---
+# LLVM, Google, Chromium, Mozilla, WebKit.
+BasedOnStyle: Mozilla
+ColumnLimit: 0
+IndentWidth: 2
+NamespaceIndentation: All
+FixNamespaceComments: false
+SortIncludes: false
+...
+
+

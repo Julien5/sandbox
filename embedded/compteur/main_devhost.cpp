@@ -9,8 +9,10 @@
 
 #include <thread>
 
-int tests() {
-  DBG("sizeof compteur:%d\n",sizeof(compteur));
+int
+tests()
+{
+  DBG("sizeof compteur:%d\n", sizeof(compteur));
   return 0;
   return tickscounter::test();
   return common::StringAwaiter::test();
@@ -19,15 +21,16 @@ int tests() {
   return 0;
 }
 
-int main(int argc, char ** argv) {
+int
+main(int argc, char** argv)
+{
   return tests();
   application::setup();
   std::thread serial_thread(transmitter::run);
-  while(1) {
+  while (1) {
     application::loop();
     Time::delay(1);
   }
   serial_thread.join();
   return 0;
 }
-

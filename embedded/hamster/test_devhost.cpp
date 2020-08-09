@@ -13,17 +13,21 @@
 
 #include "application.h"
 
-int display_exit_code(int exitcode) {
-  if (exitcode!=0)
+int
+display_exit_code(int exitcode)
+{
+  if (exitcode != 0)
     std::cout << "bad.\n";
   else
     std::cout << "good.\n";
-  if (exitcode!=0)
+  if (exitcode != 0)
     exit(exitcode);
   return exitcode;
 }
 
-int test::run() {
+int
+test::run()
+{
   std::cout << "test\n";
   display_exit_code(eeprom::test());
   display_exit_code(parse::test());
@@ -33,4 +37,3 @@ int test::run() {
   display_exit_code(ui::test());
   return 0;
 }
-

@@ -15,88 +15,100 @@
    * -1 if (1)
    * k>0 iff (2) and k is the first index of substr not contained in buffer.
    */
-const int firstdiff(const char * buffer, const char * substr, int startbuffer, int startindex) {
-  assert(startbuffer<int(strlen(buffer)));
-  assert(startindex<int(strlen(substr)));
-  if (startindex!=0 && startbuffer!=0) {
+const int
+firstdiff(const char* buffer, const char* substr, int startbuffer, int startindex)
+{
+  assert(startbuffer < int(strlen(buffer)));
+  assert(startindex < int(strlen(substr)));
+  if (startindex != 0 && startbuffer != 0) {
     // startindex not null
     // => startbuffer must be zero (otherwise retry from zero);
     return 0;
   }
   int l = 0;
-  while(   buffer[startbuffer+l] != 0
-	&& substr[startindex+l] != 0
-	&& buffer[startbuffer+l]==substr[startindex+l]) {
+  while (buffer[startbuffer + l] != 0 && substr[startindex + l] != 0 && buffer[startbuffer + l] == substr[startindex + l]) {
     l++;
   }
-  if (substr[startindex+l]==0) // end of substr => all found
+  if (substr[startindex + l] == 0) // end of substr => all found
     return -1;
-  if (buffer[startbuffer+l]==0) // end of buffer => part found
-    return startindex+l;
+  if (buffer[startbuffer + l] == 0) // end of buffer => part found
+    return startindex + l;
   return 0; // nothing found.
 }
 
 /* This function scans buffer for substr (starting at startindex).
    Return value => see above.
 */
-int find(const char * buffer, const char * substr, int startindex=0) {
+int
+find(const char* buffer, const char* substr, int startindex = 0)
+{
   const int Ls = strlen(substr);
   const int Lb = strlen(buffer);
-  int p=0;
-  int k=0;
-  while(p<Lb && startindex<Ls && (k=firstdiff(buffer, substr, p, startindex))==0)
+  int p = 0;
+  int k = 0;
+  while (p < Lb && startindex < Ls && (k = firstdiff(buffer, substr, p, startindex)) == 0)
     p++;
   return k;
 }
 
-bool parse::StringAwaiter::read(const char * buffer) {
-  first_not_found=find(buffer,m_wanted,first_not_found);
-  if (first_not_found==-1) {
-    first_not_found=0;
+bool
+parse::StringAwaiter::read(const char* buffer)
+{
+  first_not_found = find(buffer, m_wanted, first_not_found);
+  if (first_not_found == -1) {
+    first_not_found = 0;
     return true;
   }
   return false;
 }
 
-const char * parse::StringAwaiter::wanted() const {
+const char*
+parse::StringAwaiter::wanted() const
+{
   return m_wanted;
 }
 
-void parse::MessageParser::reset() {
+void
+parse::MessageParser::reset()
+{
   state = 0;
-  memset(message,0,sizeof(message));
+  memset(message, 0, sizeof(message));
 }
 
-void parse::MessageParser::read(char* buffer) {
+void
+parse::MessageParser::read(char* buffer)
+{
   if (state == 2)
     return;
-  
-  char *begin=buffer;
-  char *end=buffer+strlen(buffer);
- 
+
+  char* begin = buffer;
+  char* end = buffer + strlen(buffer);
+
   if (state == 0 && startAwaiter.read(buffer)) {
-    state=1;
-    begin=strstr(buffer,startAwaiter.wanted());
+    state = 1;
+    begin = strstr(buffer, startAwaiter.wanted());
     assert(begin);
     begin += strlen(startAwaiter.wanted());
   }
 
   if (state == 1 && endAwaiter.read(buffer)) {
-    state=2;
-    end=strstr(buffer,endAwaiter.wanted());
+    state = 2;
+    end = strstr(buffer, endAwaiter.wanted());
     assert(end);
   }
-  if (state==0) 
+  if (state == 0)
     return;
 
-  strncat(message,begin,end-begin);
+  strncat(message, begin, end - begin);
 
-  if (state==2) {
-    message[sizeof(message)-1]=0;
+  if (state == 2) {
+    message[sizeof(message) - 1] = 0;
   }
 }
 
-int message_test() {
+int
+message_test()
+{
   parse::MessageParser m;
   m.read("blahahahaah ");
   assert(!m.get());
@@ -108,27 +120,29 @@ int message_test() {
   assert(m.get());
   DBG(m.get());
   return 0;
- }
+}
 
-int parse_test() {  
+int
+parse_test()
+{
   using namespace parse;
   {
-    assert(firstdiff("aabbcc","ab",0,0)==0);
-    assert(firstdiff("aabbcc","ab",1,0)==-1);
-    assert(firstdiff("aabbcc","ab",2,0)==0);
-    assert(find("aabbcc","ab")==-1);
-    assert(find("aabbcc","ccc")==2);
-    assert(find("cx","ccc",2)==-1);
-    assert(find("cx","ccc")==0);
+    assert(firstdiff("aabbcc", "ab", 0, 0) == 0);
+    assert(firstdiff("aabbcc", "ab", 1, 0) == -1);
+    assert(firstdiff("aabbcc", "ab", 2, 0) == 0);
+    assert(find("aabbcc", "ab") == -1);
+    assert(find("aabbcc", "ccc") == 2);
+    assert(find("cx", "ccc", 2) == -1);
+    assert(find("cx", "ccc") == 0);
   }
-  
+
   {
-    assert(find("aabbcc","ab")==-1);
-    assert(find("aabbcc","ccc")==2);
-    assert(find("cx","ccc",2)==-1);
-    assert(find("cx","ccc")==0);
+    assert(find("aabbcc", "ab") == -1);
+    assert(find("aabbcc", "ccc") == 2);
+    assert(find("cx", "ccc", 2) == -1);
+    assert(find("cx", "ccc") == 0);
   }
-  
+
   {
     StringAwaiter a("OK");
     assert(a.read("OK"));
@@ -139,14 +153,14 @@ int parse_test() {
     assert(!a.read("buuuO"));
     assert(!a.read("xKO"));
   }
-  
+
   {
     StringAwaiter a("1234567890");
     assert(!a.read("---12"));
     assert(!a.read("3456"));
-    assert(a.read("7890ssss"));  
+    assert(a.read("7890ssss"));
   }
-  
+
   {
     DBG("*******");
     StringAwaiter a("OK");
@@ -180,42 +194,48 @@ int parse_test() {
 }
 
 char pmessage[16];
-bool pget(char ** m) {
-  snprintf(pmessage,16,"%u for %02d:%02d",1,2,3);
+bool
+pget(char** m)
+{
+  snprintf(pmessage, 16, "%u for %02d:%02d", 1, 2, 3);
   DBG(pmessage);
-  *m=pmessage;
+  *m = pmessage;
   DBG(*m);
   assert(*m);
   return true;
 }
 #include <string.h>
 #include <stdlib.h>
-int smoke() {
-  char * m=0;
+int
+smoke()
+{
+  char* m = 0;
   if (!pget(&m))
-      return 0;
+    return 0;
   DBG(m);
   assert(m);
   assert(strlen(m));
-  printf("XX[%-.16s]\n","A23456789B123456XXXXXXXX");
-  printf("XX[%-16.16s]\n","A234567");
-  printf("XX%-.2d\n",456);
+  printf("XX[%-.16s]\n", "A23456789B123456XXXXXXXX");
+  printf("XX[%-16.16s]\n", "A234567");
+  printf("XX%-.2d\n", 456);
   return 0;
 }
 
-int parse::test() {
-  int ret=0;
-  ret=parse_test();
-  if (ret!=0)
+int
+parse::test()
+{
+  int ret = 0;
+  ret = parse_test();
+  if (ret != 0)
     return ret;
 
-  ret=message_test();
-  if (ret!=0)
+  ret = message_test();
+  if (ret != 0)
     return ret;
 
-  ret=smoke();
-  if (ret!=0)
+  ret = smoke();
+  if (ret != 0)
     return ret;
-  
+
   return ret;
 }

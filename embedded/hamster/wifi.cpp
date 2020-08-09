@@ -5,35 +5,47 @@
 #include "clock.h"
 #include "debug.h"
 
-bool wifi::mock::enabled() const {
+bool
+wifi::mock::enabled() const
+{
   return true;
 }
 
-bool wifi::mock::reset() {
+bool
+wifi::mock::reset()
+{
   return true;
 }
 
-bool wifi::mock::join() {
+bool
+wifi::mock::join()
+{
   return true;
 }
 
-bool wifi::mock::get(const char * req, char** response) {
-  if (strstr(req,"utime")!=NULL) {
+bool
+wifi::mock::get(const char* req, char** response)
+{
+  if (strstr(req, "utime") != NULL) {
     *response = "123456789";
   }
-  if (strstr(req,"sunw")!=NULL) {
+  if (strstr(req, "sunw") != NULL) {
     *response = "50000";
   }
-  if (strstr(req,"message")!=NULL) {
+  if (strstr(req, "message") != NULL) {
     *response = "hello";
   }
   return true;
 }
 
-int wifi::mock::post(const char * req, const uint8_t * data, const int Ldata, char** response) {
+int
+wifi::mock::post(const char* req, const uint8_t* data, const int Ldata, char** response)
+{
   return 0;
 }
 
-int wifi::interface::test_upload() {
-  return post("test_upload",0,0,0);
+int
+wifi::interface::test_upload()
+{
+  return post("test_upload", 0, 0, 0);
 }
