@@ -1,12 +1,12 @@
-include ../settings
-include settings
-include common
-
 NAME:=common
+MAKEFILESDIR := ../../Makefiles
+SRCSDIR := .
+
+include $(MAKEFILESDIR)/settings
+include $(MAKEFILESDIR)/devhost/settings
+include $(MAKEFILESDIR)/devhost/common
 
 all: lib
 
-SRCSDIR := $(DIREMBEDDED)/$(NAME)/src
-
-include build.mk
+include $(MAKEFILESDIR)/devhost/build.mk
 
