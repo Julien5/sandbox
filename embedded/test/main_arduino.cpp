@@ -1,14 +1,11 @@
 #include "application.h"
 
-extern "C"
-{
-  void setup()
-  {
+extern "C" {
+void setup() {
     application::setup();
-  }
+}
 
-  void loop()
-  {
+void loop() {
     application::loop();
-  }
+}
 }

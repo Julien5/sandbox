@@ -3,39 +3,32 @@
 #include "common/time.h"
 
 tickscounter::counter_config
-config()
-{
-  tickscounter::counter_config ret;
-  ret.kMinAloneTicks = 0;
-  ret.kSecondsUntilAloneTick = 3;
-  return ret;
+config() {
+    tickscounter::counter_config ret;
+    ret.kMinAloneTicks = 0;
+    ret.kSecondsUntilAloneTick = 3;
+    return ret;
 }
 
 compteur::compteur()
-  : counter(config())
-{
-  debug::address_range("compteur:", this, sizeof(*this));
+    : counter(config()) {
+    debug::address_range("compteur:", this, sizeof(*this));
 }
 
 double
-kW(const uint32_t ticks, const Clock::ms d)
-{
-  if (d == 0)
-    return 0;
-  const double hours = double(d) * 0.001 / 3600.0f;
-  return (double(ticks) / hours) / 75.0f;
+kW(const uint32_t ticks, const Clock::ms d) {
+    if (d == 0)
+        return 0;
+    const double hours = double(d) * 0.001 / 3600.0f;
+    return (double(ticks) / hours) / 75.0f;
 }
 
-void
-print_bin(const tickscounter::bin& b)
-{
-  // DBG("start:%7d duration:%7d count:%3d\n",b.m_start, b.m_duration,b.m_count);
+void print_bin(const tickscounter::bin &b) {
+    // DBG("start:%7d duration:%7d count:%3d\n",b.m_start, b.m_duration,b.m_count);
 }
 
-bool
-compteur::update()
-{
-  /*
+bool compteur::update() {
+    /*
   const auto t = Time::since_reset();
   if (t%10000==0 && counter.bin_count()>2) {
     const auto bin0=counter.getbin(0);
@@ -49,38 +42,32 @@ compteur::update()
     
   }
   */
-  if (reader.take()) {
-    counter.tick();
-    return true;
-  }
-  return false;
+    if (reader.take()) {
+        counter.tick();
+        return true;
+    }
+    return false;
 }
 
-void
-compteur::print()
-{
-  // DBG("time:%4d sec total:%d\n",int(Time::since_reset()/1000),int(counter.total()));
+void compteur::print() {
+    // DBG("time:%4d sec total:%d\n",int(Time::since_reset()/1000),int(counter.total()));
 }
 
-const uint8_t*
-compteur::data(size_t* L) const
-{
-  return reinterpret_cast<const uint8_t*>(counter.get_packed(L));
+const uint8_t *
+compteur::data(size_t *L) const {
+    return reinterpret_cast<const uint8_t *>(counter.get_packed(L));
 }
 
 tickscounter::bin::count
-compteur::total()
-{
-  return counter.total();
+compteur::total() {
+    return counter.total();
 }
 
-int
-compteur::test()
-{
-  compteur U;
-  while (true) {
-    if (U.update())
-      U.print();
-    Time::delay(200);
-  }
+int compteur::test() {
+    compteur U;
+    while (true) {
+        if (U.update())
+            U.print();
+        Time::delay(200);
+    }
 }

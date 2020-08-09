@@ -1,8 +1,8 @@
 ---
 # LLVM, Google, Chromium, Mozilla, WebKit.
-BasedOnStyle: Mozilla
+BasedOnStyle: LLVM
 ColumnLimit: 0
-IndentWidth: 2
+IndentWidth: 4
 NamespaceIndentation: All
 FixNamespaceComments: false
 SortIncludes: false
