@@ -1,7 +1,7 @@
 #include "Arduino.h"
 
 namespace analog {
-    uint16_t read() {
+    u16 read() {
         return analogRead(0);
     }
 };

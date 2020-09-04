@@ -41,7 +41,7 @@ namespace comm {
         return ESPRX.readBytes(buffer, length);
     }
 
-    int write(const uint8_t *buffer, int length = -1) {
+    int write(const u8 *buffer, int length = -1) {
         if (length >= 0)
             return ESPTX.write((const char *)buffer, length);
         return ESPTX.write((const char *)buffer);
@@ -202,7 +202,7 @@ void wifi::esp8266::disable() {
 
 namespace command {
     bool RST() {
-        uint8_t ret = sendCommandAndWaitForResponse(ATRST, short_timeout);
+        u8 ret = sendCommandAndWaitForResponse(ATRST, short_timeout);
         return ret == options::wait_for_ok || ret == options::wait_for_connected;
     }
 };
@@ -324,7 +324,7 @@ bool wifi::esp8266::get(const char *req, char **response) {
     return true;
 }
 
-int wifi::esp8266::post(const char *req, const uint8_t *data, const int Ldata, char **response) {
+int wifi::esp8266::post(const char *req, const u8 *data, const int Ldata, char **response) {
     //while (!ping()) {
     //  DBGTXLN("server unreachable");
     //  delay(1000);

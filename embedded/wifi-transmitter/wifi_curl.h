@@ -8,6 +8,6 @@ public:
   ~wifi_curl();
     
   int get(const char* req, callback * r);
-  int post(const char* req, const uint8_t * data, const uint16_t Ldata, callback * r);
+  int post(const char* req, const u8 * data, const u16 Ldata, callback * r);
 };
 }

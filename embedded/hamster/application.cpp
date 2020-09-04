@@ -30,7 +30,7 @@ void reset() {
 #endif
 }
 
-void turnLED(uint8_t pin, uint8_t mode) {
+void turnLED(u8 pin, u8 mode) {
 #ifdef ARDUINO
     pinMode(pin, OUTPUT);
     digitalWrite(pin, mode);
@@ -71,7 +71,7 @@ namespace get {
         strncpy(buffer, internal, 16);
         return true;
     }
-    bool seconds_until_next_wifi(wifi::interface &esp, uint32_t *buffer) {
+    bool seconds_until_next_wifi(wifi::interface &esp, u32 *buffer) {
         char *internal = 0;
         if (!esp.get("sunw", &internal)) {
             return false;
@@ -90,8 +90,8 @@ void update_display_wifi(wifi::interface &esp) {
 }
 
 char try_upload_statistics(wifi::interface &esp) {
-    uint16_t length = 0;
-    uint8_t *data = counter.getdata(&length);
+    u16 length = 0;
+    u8 *data = counter.getdata(&length);
     int ret = esp.post("tickscounter", data, length, 0);
     if (ret != 0) {
         char msg[16];
@@ -138,7 +138,7 @@ bool time_approaches_overflow() {
     return millis() > ULONG_MAX / 2;
 }
 
-uint32_t millis_next_upload = 0;
+u32 millis_next_upload = 0;
 bool wifi_work() {
     // if upload time has not come, or hamster just did run
     // do not upload (TODO: enable upload and counter at the
@@ -182,7 +182,7 @@ bool wifi_work() {
     if (!upload_statistics(esp))
         return false;
 
-    uint32_t secs_until_next_wifi = 0;
+    u32 secs_until_next_wifi = 0;
     if (get::seconds_until_next_wifi(esp, &secs_until_next_wifi))
         millis_next_upload = millis() + 1000L * secs_until_next_wifi;
     else

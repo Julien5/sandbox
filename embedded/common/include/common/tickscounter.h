@@ -11,7 +11,7 @@
 namespace tickscounter {
   struct bin {
     
-    typedef uint16_t count;
+    typedef u16 count;
     typedef Clock::ms duration;
 
     bin();
@@ -32,7 +32,7 @@ namespace tickscounter {
 
   struct packed {    
     packed():m_bins{}{};
-    packed(const uint8_t *bytes) {
+    packed(const u8 *bytes) {
       *this = *(packed*)bytes;
     }
     bin m_bins[NTICKS];  
@@ -58,7 +58,7 @@ namespace tickscounter {
     
   public:
     counter(const counter_config c=counter_config());
-    counter(const uint8_t *data):m_packed(data){}
+    counter(const u8 *data):m_packed(data){}
   
     void reset();
     void tick();
@@ -70,7 +70,7 @@ namespace tickscounter {
     Clock::ms last_tick_time();
     Clock::ms age();
     bin getbin(const int &k) const;
-    uint8_t bin_count() const;
+    u8 bin_count() const;
    
     counter_config config() {
       return m_config;

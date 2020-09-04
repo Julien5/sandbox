@@ -24,9 +24,9 @@ extern "C" {
 namespace esp8266 {
     bool dirty = true;
     bool bad = false;
-    uint32_t cache[1024] = {0};
+    u32 cache[1024] = {0};
     // from esp-open-rtos/tests/cases/08_spiflash.c
-    constexpr uint32_t base_addr = 0xF8000;
+    constexpr u32 base_addr = 0xF8000;
     char read(int addr) {
         if (bad)
             DBG("bad read");
@@ -81,40 +81,40 @@ using namespace x86;
 
 #define MAGIC 0xaa
 namespace impl {
-    typedef uint16_t eeprom_address;
-    uint8_t checksum(uint8_t const *d, const int &L) {
-        uint8_t r = 0;
+    typedef u16 eeprom_address;
+    u8 checksum(u8 const *d, const int &L) {
+        u8 r = 0;
         for (int k = 0; k < L; ++k) {
             r += d[k];
         }
         return r;
     }
-    // [magic number, uint16_t length, data, uint8_t checksum on data]
-    bool eeprom_check(uint16_t *length, int *indx) {
+    // [magic number, u16 length, data, u8 checksum on data]
+    bool eeprom_check(u16 *length, int *indx) {
         int index = 0;
-        uint8_t should_be_magic = read(index++);
+        u8 should_be_magic = read(index++);
         if (should_be_magic != MAGIC) {
             DBG("first byte is not magic");
             return false;
         }
         if (length)
             *length = 0;
-        uint16_t L = 0;
+        u16 L = 0;
         {
             char L_[2] = {};
             L_[0] = read(index++);
             L_[1] = read(index++);
-            L = *(uint16_t *)(&L_);
+            L = *(u16 *)(&L_);
             if (indx)
                 *indx = index;
         }
         DBG("length=%d\n", (int)L);
-        uint8_t checksum = 0;
+        u8 checksum = 0;
         for (int k = 0; k < L; ++k, ++index) {
-            uint8_t d = read(index);
+            u8 d = read(index);
             checksum += d;
         }
-        uint8_t checksum_saved = read(index++);
+        u8 checksum_saved = read(index++);
         if (checksum != checksum_saved) {
             DBG("checkum failed");
             return false;
@@ -124,7 +124,7 @@ namespace impl {
         return true;
     }
     eeprom::length Read(const eeprom::ram_address &dst, const eeprom::length &L) {
-        uint16_t ret = 0;
+        u16 ret = 0;
         int index = 0;
         DBG("check eeprom");
         if (!eeprom_check(&ret, &index))
@@ -178,7 +178,7 @@ int eeprom::test() {
     DBG("sizeof(data)=%d\n", Ldata);
 
     e.write((ram_address)data, Ldata);
-    uint8_t read_buffer[32] = {0};
+    u8 read_buffer[32] = {0};
     DBG("sizeof(read_buffer)=%d\n", sizeof(read_buffer));
     length L = e.read(read_buffer, sizeof(read_buffer));
     if (L < 0)

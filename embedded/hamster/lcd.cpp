@@ -11,7 +11,7 @@
 #include <iomanip>
 class LiquidCrystal {
   public:
-    typedef uint8_t pin;
+    typedef u8 pin;
     LiquidCrystal(pin p1, pin p2, pin p3, pin p4, pin p5, pin p6){};
     void begin(int n, int m){};
     void setCursor(int n, int m){};
@@ -24,7 +24,7 @@ class LiquidCrystal {
 #else
 class LiquidCrystal {
   public:
-    typedef uint8_t pin;
+    typedef u8 pin;
     LiquidCrystal(pin p1, pin p2, pin p3, pin p4, pin p5, pin p6){};
     void begin(int n, int m){};
     void setCursor(int n, int m){};

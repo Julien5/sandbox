@@ -21,16 +21,16 @@ void application::setup() {
 
 class wcallback : public wifi::callback {
     size_t missing_bytes = 0;
-    void status(uint8_t s) {
+    void status(u8 s) {
         //DBG("receiving status %d\r\n",int(s));
         assert(s == 0);
     }
-    void data_length(uint16_t total_length) {
+    void data_length(u16 total_length) {
         //DBG("receiving total %d bytes\r\n",int(total_length));
         assert(total_length < 10000);
         missing_bytes = total_length;
     }
-    void data(uint8_t *data, size_t length) {
+    void data(u8 *data, size_t length) {
         //DBG("length %d missing %d\r\n",int(length),int(missing_bytes));
         missing_bytes -= length;
     }
@@ -51,9 +51,9 @@ void send_data() {
     wcallback cb;
     //auto p=W->get("http://example.com/",&cb);
     //Time::delay(10);
-    // uint8_t data[4]={0x01,0x02,0x03,0x04};
+    // u8 data[4]={0x01,0x02,0x03,0x04};
     size_t L = 0;
-    const uint8_t *data = C->data(&L);
+    const u8 *data = C->data(&L);
     auto p = W->post("http://192.168.178.22:8000/post/", data, L, &cb);
     if (p != 0)
         DBG("post result:%d\r\n", int(p)); // TODO error handling.

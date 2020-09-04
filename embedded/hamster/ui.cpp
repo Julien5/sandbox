@@ -19,7 +19,7 @@ char FMT[][5] = {
     "%8li",
 };
 
-void ui::format(int32_t n, char *buffer, size_t L) {
+void ui::format(i32 n, char *buffer, size_t L) {
     L = xMin(L, size_t(8));
 
     // maxlength = L
@@ -46,7 +46,7 @@ void ui::format(int32_t n, char *buffer, size_t L) {
     snprintf(buffer, L, "%lie%d", n, E);
 }
 
-void ui::format_seconds(int32_t secs, char *buffer, size_t L) {
+void ui::format_seconds(i32 secs, char *buffer, size_t L) {
     if (L < 2) {
         snprintf(buffer, L, "E%li", secs);
         return;

@@ -17,8 +17,8 @@ serial::serial() {
     SOFT_UART.begin(9600);
 }
 
-int16_t
-serial::read(uint8_t *buffer, size_t buffer_size, uint16_t timeout) {
+i16
+serial::read(u8 *buffer, size_t buffer_size, u16 timeout) {
     SOFT_UART.setTimeout(timeout);
     size_t ret = SOFT_UART.readBytes((char *)buffer, buffer_size);
     crc::CRC8(&rx_crc8, buffer, ret);
@@ -26,7 +26,7 @@ serial::read(uint8_t *buffer, size_t buffer_size, uint16_t timeout) {
 }
 
 size_t
-serial::write(uint8_t *buffer, size_t buffer_size) {
+serial::write(u8 *buffer, size_t buffer_size) {
     size_t ret = SOFT_UART.write(buffer, buffer_size);
     assert(ret <= buffer_size);
     crc::CRC8(&tx_crc8, buffer, ret);

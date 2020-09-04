@@ -1,6 +1,7 @@
 #pragma once
-#include <stdint.h>
+
+#include "common/rusttypes.h"
 
 namespace analog {
-  uint16_t read();
+    u16 read();
 };

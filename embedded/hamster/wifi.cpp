@@ -30,7 +30,7 @@ bool wifi::mock::get(const char *req, char **response) {
     return true;
 }
 
-int wifi::mock::post(const char *req, const uint8_t *data, const int Ldata, char **response) {
+int wifi::mock::post(const char *req, const u8 *data, const int Ldata, char **response) {
     return 0;
 }
 

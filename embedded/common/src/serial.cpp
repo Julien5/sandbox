@@ -1,25 +1,31 @@
 #include "common/serial.h"
 #include "common/debug.h"
 #include "common/utils.h"
+#include "common/time.h"
 
-const uint8_t kBegin = 0xFF;
+const u8 kBegin = 0xFF;
 
 bool serial::begin() {
     tx_crc8 = 0x00;
-    auto n = write((uint8_t *)&kBegin, 1);
+    auto n = write((u8 *)&kBegin, 1);
     return n == 1;
 }
 
 bool serial::end() {
-    auto n = write((uint8_t *)&tx_crc8, 1);
+    auto n = write((u8 *)&tx_crc8, 1);
     return n == 1;
 }
-bool serial::read_until(uint8_t *addr, const size_t &L) {
-    const uint16_t timeout = 100;
+
+bool serial::read_until(u8 *addr, const size_t &L, const u16 &timeout) {
     const auto addr0 = addr;
+    u32 t0 = Time::since_reset();
     while ((addr - addr0) != int(L)) {
         const auto Lwanted = L - (addr - addr0);
-        const auto Lread = read(addr, Lwanted, timeout);
+        const u16 timeout_local = 100;
+        const auto Lread = read(addr, Lwanted, timeout_local);
+        const auto elapsed = Time::since_reset() - t0;
+        if (timeout > 0 && elapsed > timeout)
+            return false;
         if (Lread < 0)
             return false;
         addr += Lread;
@@ -30,7 +36,7 @@ bool serial::read_until(uint8_t *addr, const size_t &L) {
 bool serial::wait_for_begin() {
     while (true) {
         rx_crc8 = 0x00;
-        uint8_t begin = 0;
+        u8 begin = 0;
         bool ok = read_until(&begin, sizeof(begin));
         if (!ok)
             continue;
@@ -45,10 +51,10 @@ bool serial::check_end() {
     // reading modifies rx_crc8
     // so we must save the last value to check it against the transmitted crc.
     // alternatively, we could check that the crc is null
-    uint8_t crc8_received = 0;
+    u8 crc8_received = 0;
     auto saved_rx_crc8 = rx_crc8;
     while (true) {
-        bool ok = read_until(reinterpret_cast<uint8_t *>(&crc8_received), sizeof(crc8_received));
+        bool ok = read_until(reinterpret_cast<u8 *>(&crc8_received), sizeof(crc8_received));
         if (ok)
             break;
     }

@@ -23,7 +23,7 @@ remain(size_t buffer_size, size_t pos) {
     return buffer_size - pos;
 }
 
-int exe(const std::string &method, const char *req, wifi::callback *cb, const uint8_t *data = nullptr, const int Ldata = 0) {
+int exe(const std::string &method, const char *req, wifi::callback *cb, const u8 *data = nullptr, const int Ldata = 0) {
     // curl -s -X GET "http://example.com/" --output out
     std::string cmd = "curl -i --raw -s -X " + method + " ";
     if (data && Ldata) {
@@ -46,11 +46,11 @@ int exe(const std::string &method, const char *req, wifi::callback *cb, const ui
         return code;
     }
 
-    uint8_t buffer[16 * 1024];
+    u8 buffer[16 * 1024];
     memset(buffer, 0, sizeof(buffer));
     size_t buffer_size = 0;
     while (true) {
-        uint8_t recv_buf[16];
+        u8 recv_buf[16];
         memset(recv_buf, 0, sizeof(recv_buf));
         int r = fread(recv_buf, 1, sizeof(recv_buf), f);
         if (r > 0) {
@@ -69,12 +69,12 @@ int exe(const std::string &method, const char *req, wifi::callback *cb, const ui
 
     // send chunk-wise so that arduino read buffer does not overflow.
     if (cb && buffer_size > 0) {
-        uint8_t buf[32];
+        u8 buf[32];
         size_t pos = 0;
         while (remain(buffer_size, pos) > 0) {
             size_t size_copy = xMin(sizeof(buf), remain(buffer_size, pos));
             memcpy(buf, buffer + pos, size_copy);
-            cb->data((uint8_t *)buf, size_copy);
+            cb->data((u8 *)buf, size_copy);
             pos += size_copy;
         }
     }
@@ -90,6 +90,6 @@ int wifi::wifi_curl::get(const char *req, callback *r) {
     return exe("GET", req, r);
 }
 
-int wifi::wifi_curl::post(const char *req, const uint8_t *data, const uint16_t Ldata, callback *r) {
+int wifi::wifi_curl::post(const char *req, const u8 *data, const u16 Ldata, callback *r) {
     return exe("POST", req, r, data, Ldata);
 }

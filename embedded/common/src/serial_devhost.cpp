@@ -9,12 +9,12 @@
 #include "crc.h"
 
 struct serial_buffer {
-    std::vector<uint8_t> data;
+    std::vector<u8> data;
     std::mutex mtx;
     std::condition_variable cond_var;
 
   public:
-    int16_t read(uint8_t *buffer, size_t buffer_size, uint16_t timeout) {
+    i16 read(u8 *buffer, size_t buffer_size, u16 timeout) {
         std::unique_lock<std::mutex> lock(mtx);
         if (data.empty()) {
             cond_var.wait_for(lock, std::chrono::milliseconds(timeout));
@@ -28,7 +28,7 @@ struct serial_buffer {
         data.erase(data.begin(), data.begin() + Lread);
         return Lread;
     }
-    size_t write(uint8_t *buffer, size_t buffer_size) {
+    size_t write(u8 *buffer, size_t buffer_size) {
         const std::unique_lock<std::mutex> lock(mtx);
         for (size_t i = 0; i < buffer_size; ++i)
             data.push_back(buffer[i]);
@@ -69,8 +69,8 @@ serial::serial() {
     s_map.record(this);
 }
 
-int16_t
-serial::read(uint8_t *buffer, size_t buffer_size, uint16_t timeout) {
+i16
+serial::read(u8 *buffer, size_t buffer_size, u16 timeout) {
     auto &buf = s_map.get(this) == 0 ? s_rxbuffer : s_txbuffer;
     const auto Lread = buf.read(buffer, buffer_size, timeout);
     if (Lread < 0) {
@@ -80,13 +80,13 @@ serial::read(uint8_t *buffer, size_t buffer_size, uint16_t timeout) {
     return Lread;
 }
 
-void write_file(uint8_t *buffer, size_t buffer_size) {
+void write_file(u8 *buffer, size_t buffer_size) {
     std::fstream f("/tmp/serial.write", std::ios::out | std::ios::binary | std::ios::app);
     f.write(reinterpret_cast<char *>(buffer), buffer_size);
 }
 
 size_t
-serial::write(uint8_t *buffer, size_t buffer_size) {
+serial::write(u8 *buffer, size_t buffer_size) {
     write_file(buffer, buffer_size);
     auto &buf = s_map.get(this) == 0 ? s_txbuffer : s_rxbuffer;
     buf.write(buffer, buffer_size);

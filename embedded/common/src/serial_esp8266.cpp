@@ -25,12 +25,12 @@ serial::serial() {
     uart_driver_install(PORT, BUF_SIZE * 2, BUF_SIZE * 2, 0, NULL);
 }
 
-int16_t
-serial::read(uint8_t *buffer, size_t buffer_size, uint16_t timeout) {
+i16
+serial::read(u8 *buffer, size_t buffer_size, u16 timeout) {
 #ifdef DISABLE_SERIAL
     return 0;
 #endif
-    const int16_t ret = uart_read_bytes(PORT, buffer, buffer_size, timeout / portTICK_RATE_MS);
+    const i16 ret = uart_read_bytes(PORT, buffer, buffer_size, timeout / portTICK_RATE_MS);
     if (ret < 0) {
         // timeout
         return ret;
@@ -40,7 +40,7 @@ serial::read(uint8_t *buffer, size_t buffer_size, uint16_t timeout) {
 }
 
 size_t
-serial::write(uint8_t *buffer, size_t buffer_size) {
+serial::write(u8 *buffer, size_t buffer_size) {
 #ifdef DISABLE_SERIAL
     return 0;
 #endif

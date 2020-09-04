@@ -1,11 +1,11 @@
 #pragma once
 
-#include <stdint.h>
+#include "rusttypes.h"
 
 namespace Time {
-  // set with an external time source.
-  void set_current_epoch(uint64_t ms);
-  uint64_t since_epoch();
-  uint32_t since_reset();
-  void delay(uint32_t d);
+    // set with an external time source.
+    void set_current_epoch(u64 ms);
+    u64 since_epoch();
+    u32 since_reset();
+    void delay(u32 d);
 };

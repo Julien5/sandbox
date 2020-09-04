@@ -1,6 +1,6 @@
 #include "common/wifi.h"
 #include "common/time.h"
-#include "common/platform.h"
+#include "common/rusttypes.h"
 
 #define __ESP_FILE__ __FILE__
 #include <string>
@@ -147,9 +147,9 @@ int create_socket(const char *url) {
     return s;
 }
 
-int write_complete(int s, uint8_t *data, size_t length) {
+int write_complete(int s, u8 *data, size_t length) {
     int remain = length;
-    uint8_t *addr = data;
+    u8 *addr = data;
     while (remain > 0) {
         int n = write(s, addr, remain);
         DBG("sent %d bytes\n", n);
@@ -174,21 +174,21 @@ remain(size_t buffer_size, size_t pos) {
 
 int process_http_request(const char *WEB_URL,
                          const char *request,
-                         const uint8_t *data,
+                         const u8 *data,
                          size_t data_length,
                          wifi::callback *cb) {
     int s = create_socket(WEB_URL);
     UrlReader urlReader(WEB_URL);
     DBG("request:\n%s\n", request);
 
-    auto code = write_complete(s, (uint8_t *)request, strlen(request));
+    auto code = write_complete(s, (u8 *)request, strlen(request));
     if (code != 0) {
         TRACE();
         close(s);
         Time::delay(4000);
         return code;
     }
-    code = write_complete(s, const_cast<uint8_t *>(data), data_length);
+    code = write_complete(s, const_cast<u8 *>(data), data_length);
     cb->status(code);
     if (code != 0) {
         close(s);
@@ -209,11 +209,11 @@ int process_http_request(const char *WEB_URL,
     }
 
     /* Read HTTP response */
-    uint8_t buffer[16 * 1024];
+    u8 buffer[16 * 1024];
     memset(buffer, 0, sizeof(buffer));
     size_t buffer_size = 0;
     while (true) {
-        uint8_t recv_buf[16];
+        u8 recv_buf[16];
         memset(recv_buf, 0, sizeof(recv_buf));
         int r = read(s, recv_buf, sizeof(recv_buf));
         if (r > 0) {
@@ -238,12 +238,12 @@ int process_http_request(const char *WEB_URL,
 
     // send chunk-wise so that arduino read buffer does not overflow.
     if (cb && buffer_size > 0) {
-        uint8_t buf[32] = {0};
+        u8 buf[32] = {0};
         size_t pos = 0;
         while (remain(buffer_size, pos) > 0) {
             size_t size_copy = xMin(sizeof(buf), remain(buffer_size, pos));
             memcpy(buf, buffer + pos, size_copy);
-            cb->data((uint8_t *)buf, size_copy);
+            cb->data((u8 *)buf, size_copy);
             pos += size_copy;
         }
     }
@@ -263,7 +263,7 @@ int get(const char *WEB_URL, wifi::callback *cb) {
     return process_http_request(WEB_URL, request, 0, 0, cb);
 }
 
-int post(const char *WEB_URL, const uint8_t *data, size_t data_length, wifi::callback *cb) {
+int post(const char *WEB_URL, const u8 *data, size_t data_length, wifi::callback *cb) {
     // > POST /foo/test HTTP/1.1
     // > Host: localhost:8000
     // > User-Agent: curl/7.58.0
@@ -294,7 +294,7 @@ namespace wifi {
     wifi::~wifi() {
     }
 
-    int wifi::post(const char *url, const uint8_t *data, const uint16_t Ldata, callback *r) {
+    int wifi::post(const char *url, const u8 *data, const u16 Ldata, callback *r) {
         //const char * server = "pi";
         //const char * port = "8000";
         // return http_post(server,port,req,data,Ldata);

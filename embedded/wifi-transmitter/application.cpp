@@ -35,18 +35,18 @@ class serial_callback : public wifi::callback {
   public:
     serial_callback(serial *_s)
         : output(_s){};
-    void status(uint8_t s) {
+    void status(u8 s) {
         DBG("forwarding status %d \n", int(s));
         assert(s == 0);
         output->write(&s, sizeof(s));
     }
 
-    void data_length(uint16_t total_length) {
+    void data_length(u16 total_length) {
         DBG("forwarding total %d bytes\n", total_length);
         assert(total_length > 0);
-        output->write(reinterpret_cast<uint8_t *>(&total_length), sizeof(total_length));
+        output->write(reinterpret_cast<u8 *>(&total_length), sizeof(total_length));
     }
-    void data(uint8_t *data, size_t length) {
+    void data(u8 *data, size_t length) {
         DBG("forwarding %d bytes\n", length);
         output->write(data, length);
     }
@@ -71,7 +71,7 @@ void transmitter::loop_serial() {
 
     bool ok = false;
     received::message m;
-    ok = S->read_until(reinterpret_cast<uint8_t *>(&m.length), sizeof(m.length));
+    ok = S->read_until(reinterpret_cast<u8 *>(&m.length), sizeof(m.length));
     DBG("read serial: %d\n", m.length);
     if (!ok) {
         DBG("nothing to read.\n");

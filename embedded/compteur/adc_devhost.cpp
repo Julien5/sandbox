@@ -41,8 +41,8 @@ namespace record {
         return ret;
     }
 
-    std::vector<uint16_t> numbers(const std::vector<std::string> &lines) {
-        std::vector<uint16_t> ret;
+    std::vector<u16> numbers(const std::vector<std::string> &lines) {
+        std::vector<u16> ret;
         for (auto &line : lines) {
             if (!line.empty()) {
                 const auto P = split(line, " ");
@@ -52,7 +52,7 @@ namespace record {
         return ret;
     }
 
-    std::vector<uint16_t> s_numbers;
+    std::vector<u16> s_numbers;
     size_t counter = 0;
     void get_data() {
         std::string s;
@@ -60,7 +60,7 @@ namespace record {
         s_numbers = n;
     }
 
-    uint16_t generate() {
+    u16 generate() {
         if (s_numbers.empty()) {
             get_data();
         }
@@ -79,7 +79,7 @@ using namespace record;
 #include "common/clock.h"
 #include <cstdlib>
 namespace synthetic {
-    int8_t inoise(double x) {
+    i8 inoise(double x) {
         const auto b1 = double(1) / 3;
         const auto b2 = 2 * b1;
         if (x < b1)
@@ -88,22 +88,22 @@ namespace synthetic {
             return 0;
         return 1;
     }
-    int8_t noise() {
+    i8 noise() {
         const double n = double(std::rand()) / RAND_MAX; // [0,1]
         return inoise(n);
     }
 
-    constexpr uint16_t c = 5000;
-    constexpr uint64_t T = 1000 * 3.6 * 1e6 / (75 * c);
-    constexpr uint64_t T1 = 5 * T / 100;
-    constexpr uint16_t m = 32;
-    constexpr uint16_t M = 38;
+    constexpr u16 c = 5000;
+    constexpr u64 T = 1000 * 3.6 * 1e6 / (75 * c);
+    constexpr u64 T1 = 5 * T / 100;
+    constexpr u16 m = 32;
+    constexpr u16 M = 38;
 
-    uint16_t generate() {
+    u16 generate() {
         auto t = Clock::millis_since_start();
         assert(T1 >= 1);
         const auto n = noise();
-        uint16_t ret = (t % T) <= T1 ? M + n : m + n;
+        u16 ret = (t % T) <= T1 ? M + n : m + n;
         assert((m - 1) <= ret && ret <= (M + 1));
         //DBG("t=%d T=%d t|T=%d T1=%d ret=%d\n",int(t),int(T),int(t%T),int(T1),ret);
         return ret;
@@ -113,7 +113,7 @@ using namespace synthetic;
 
 #endif
 
-uint16_t
+u16
 analog::read() {
     return generate();
 }

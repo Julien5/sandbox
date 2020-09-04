@@ -4,8 +4,8 @@
 #include "common/time.h"
 #include <math.h>
 
-bool TicksReader::calibrated(uint16_t *_TL, uint16_t *_TH) const {
-    const uint8_t minWidth = 4;
+bool TicksReader::calibrated(u16 *_TL, u16 *_TH) const {
+    const u8 minWidth = 4;
     const auto M = H.maximum();
     const auto m = H.minimum();
     if (M - m < minWidth)
@@ -32,8 +32,8 @@ bool TicksReader::take() {
     DBG("time:%4d s analog:%d\r\n", int(Time::since_reset() / 1000), int(a));
     H.update(a);
     H.print();
-    uint16_t TH = 0;
-    uint16_t TL = 0;
+    u16 TH = 0;
+    u16 TL = 0;
     assert(TL <= TH);
     if (!calibrated(&TL, &TH)) {
         return false;

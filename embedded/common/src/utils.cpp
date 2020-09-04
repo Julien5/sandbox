@@ -1,22 +1,22 @@
 #include "common/utils.h"
-#include <stdint.h>
+#include "common/rusttypes.h"
 
 #if defined(DEVHOST)
 namespace utils {
-    std::vector<uint8_t> hex_to_bytes(const std::string &hex) {
-        std::vector<uint8_t> bytes;
+    std::vector<u8> hex_to_bytes(const std::string &hex) {
+        std::vector<u8> bytes;
         for (unsigned int i = 0; i < hex.length(); i += 2) {
             std::string byteString = hex.substr(i, 2);
-            uint8_t byte = (uint8_t)strtol(byteString.c_str(), NULL, 16);
+            u8 byte = (u8)strtol(byteString.c_str(), NULL, 16);
             bytes.push_back(byte);
         }
         return bytes;
     }
 
-    uint8_t *as_cbytes(std::vector<uint8_t> &bytes, int *L) {
+    u8 *as_cbytes(std::vector<u8> &bytes, int *L) {
         if (L)
             *L = bytes.size();
-        return reinterpret_cast<uint8_t *>(&bytes[0]);
+        return reinterpret_cast<u8 *>(&bytes[0]);
     }
 };
 #endif
@@ -31,7 +31,7 @@ fixed_atoll(char *s) {
 
 #if !defined(ARDUINO)
 #include <stdio.h>
-void utils::dump(const uint8_t *data_buffer, const size_t length) {
+void utils::dump(const u8 *data_buffer, const size_t length) {
     unsigned char byte;
     unsigned int i, j;
     for (i = 0; i < length; i++) {
@@ -54,7 +54,7 @@ void utils::dump(const uint8_t *data_buffer, const size_t length) {
 }
 #else
 #include "common/debug.h"
-bool ascii(const uint8_t a) {
+bool ascii(const u8 a) {
     if ('a' <= a && a <= 'z')
         return true;
     if ('A' <= a && a <= 'Z')
@@ -63,7 +63,7 @@ bool ascii(const uint8_t a) {
         return true;
     return false;
 }
-void utils::dump(const uint8_t *data_buffer, const size_t length) {
+void utils::dump(const u8 *data_buffer, const size_t length) {
     DBG("\r\n");
     for (size_t k = 0; k < length; ++k) {
         if (ascii(data_buffer[k]))

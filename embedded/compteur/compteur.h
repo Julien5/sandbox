@@ -6,7 +6,7 @@
 class TicksReader {
   histogram::Histogram H;
   bool m_last_value=0;
-  bool calibrated(uint16_t * TL, uint16_t * TH) const;
+  bool calibrated(u16 * TL, u16 * TH) const;
  public:
   // returns 1 if the adc just got high.
   bool take();
@@ -21,6 +21,6 @@ public:
   void print();
   tickscounter::bin::count total();
   
-  const uint8_t* data(size_t *L) const;
+  const u8* data(size_t *L) const;
   static int test();
 };

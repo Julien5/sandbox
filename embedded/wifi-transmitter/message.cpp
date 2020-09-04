@@ -9,8 +9,8 @@ namespace received {
     }
 
     template <typename T>
-    void read(const uint8_t *data, T *ret) {
-        uint8_t *ret_addr = reinterpret_cast<uint8_t *>(ret);
+    void read(const u8 *data, T *ret) {
+        u8 *ret_addr = reinterpret_cast<u8 *>(ret);
         for (size_t i = 0; i < sizeof(T); ++i) {
             ret_addr[i] = data[i];
         }
@@ -18,7 +18,7 @@ namespace received {
 
     wifi_command read_wifi_command(const message &m) {
         wifi_command ret;
-        uint8_t *cursor = const_cast<uint8_t *>(m.data);
+        u8 *cursor = const_cast<u8 *>(m.data);
         read(cursor, &ret.command);
         cursor += sizeof(ret.command);
         ret.url = (char *)cursor;

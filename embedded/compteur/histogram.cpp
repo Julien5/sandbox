@@ -46,14 +46,14 @@ histogram::Histogram::end() const {
     return it;
 }
 
-uint16_t
+u16
 histogram::Histogram::size() const {
     return end() - begin();
 }
 
-uint32_t
+u32
 histogram::Histogram::count() const {
-    uint32_t ret = 0;
+    u32 ret = 0;
     impl::for_each(begin(), end(), [&](const Bin &bin) {
         // DBG("count(): value:%d count:%d\r\n",bin.value,bin.count);
         ret += bin.count;
@@ -73,7 +73,7 @@ void histogram::Histogram::print() const {
     DBG("\r\n");
 }
 
-uint16_t
+u16
 histogram::Histogram::minimum() const {
     Bin b;
     impl::for_each(begin(), end(), [&](const Bin &bin) {
@@ -82,7 +82,7 @@ histogram::Histogram::minimum() const {
     return b.value;
 }
 
-uint16_t
+u16
 histogram::Histogram::maximum() const {
     Bin b;
     impl::for_each(begin(), end(), [&](const Bin &bin) {
@@ -92,8 +92,8 @@ histogram::Histogram::maximum() const {
     return b.value;
 }
 
-uint16_t
-histogram::Histogram::argmax(uint16_t m, uint16_t M) const {
+u16
+histogram::Histogram::argmax(u16 m, u16 M) const {
     Bin ret;
     assert(ret.value == 0 && ret.count == 0);
     impl::for_each(begin(), end(), [&](const Bin &bin) {
@@ -104,8 +104,8 @@ histogram::Histogram::argmax(uint16_t m, uint16_t M) const {
     return ret.value;
 }
 
-uint16_t
-histogram::Histogram::argmin(uint16_t m, uint16_t M) const {
+u16
+histogram::Histogram::argmin(u16 m, u16 M) const {
     Bin ret;
     ret.count = count();
     ret.value = 0;
@@ -119,15 +119,15 @@ histogram::Histogram::argmin(uint16_t m, uint16_t M) const {
     return ret.value;
 }
 
-uint32_t
-histogram::Histogram::count(uint16_t v) const {
+u32
+histogram::Histogram::count(u16 v) const {
     for (auto it = begin(); it != end(); ++it)
         if (it->value == v)
             return it->count;
     return 0;
 }
 
-uint16_t
+u16
 histogram::Histogram::threshold(int percent) const {
     if (count() == 0)
         return 0;
@@ -145,7 +145,7 @@ histogram::Histogram::threshold(int percent) const {
 }
 
 size_t
-index(const histogram::packed &p, uint16_t value) {
+index(const histogram::packed &p, u16 value) {
     for (size_t k = 0; k < histogram::NBINS; ++k) {
         if (p.bins[k].value == value)
             return k;
@@ -154,7 +154,7 @@ index(const histogram::packed &p, uint16_t value) {
 }
 
 void histogram::Histogram::shrink_if_needed() {
-    const uint16_t max = 0xffff / 2;
+    const u16 max = 0xffff / 2;
     if (count() <= max)
         return;
     DBG("shrinking...\n");
@@ -162,7 +162,7 @@ void histogram::Histogram::shrink_if_needed() {
         m_packed.bins[k].count /= 2;
 }
 
-void histogram::Histogram::update(uint16_t value) {
+void histogram::Histogram::update(u16 value) {
     // DBG("update:%u\r\n",value);
     if (size() == histogram::NBINS && index(m_packed, value) == NBINS) {
         // full and value not found => remove the least.

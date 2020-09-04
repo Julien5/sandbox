@@ -1,5 +1,5 @@
 #include "common/debug.h"
-
+#include "common/rusttypes.h"
 #ifdef DEVHOST
 void debug::init_serial() {
 }
@@ -96,6 +96,6 @@ int debug::freeMemory() {
 #endif
 
 void debug::address_range(const char *text, void *o, size_t L) {
-    uint8_t *i = (uint8_t *)o;
+    u8 *i = (u8 *)o;
     DBG("%8s %d:%d [%d]\r\n", text, int(i), int(i + L), int(L));
 }

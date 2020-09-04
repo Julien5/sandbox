@@ -71,9 +71,9 @@ bin::distance(const bin &other) const {
     return other.m_start - end();
 }
 
-uint8_t
-checksum(uint8_t *data, uint16_t L) {
-    uint8_t ret = 0;
+u8
+checksum(u8 *data, u16 L) {
+    u8 ret = 0;
     for (size_t k = 0; k < L; ++k)
         ret += data[k];
     return ret;
@@ -102,19 +102,19 @@ X numeric_max() {
 }
 
 template <>
-uint32_t
+u32
 numeric_max() {
     return UINT32_MAX;
 }
 
 template <>
-uint16_t
+u16
 numeric_max() {
     return UINT16_MAX;
 }
 
 template <>
-int32_t
+i32
 numeric_max() {
     return INT32_MAX;
 }
@@ -247,7 +247,7 @@ counter::age() {
     return now - last_tick_time();
 }
 
-uint8_t
+u8
 counter::bin_count() const {
     bin::count ret = 0;
     for (int k = 0; k < NTICKS; ++k)
@@ -324,7 +324,7 @@ void counter::print() const {
 #endif
 }
 
-uint32_t
+u32
 one_minute() {
     return 1000L * 60;
 }

@@ -1,11 +1,11 @@
 #pragma once
 
-#include <stdint.h>
+#include "common/rusttypes.h"
 
 namespace Clock {
-  using ms = uint32_t;
-  using mn = uint16_t;
-  ms millis_since_start();
-  mn minutes_since_start();
-  int test();
+    using ms = u32;
+    using mn = u16;
+    ms millis_since_start();
+    mn minutes_since_start();
+    int test();
 }

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <stdint.h>
+#include "common/rusttypes.h"
 class sleep {
-public:
-  void deep_sleep(const uint32_t &ms);
+  public:
+    void deep_sleep(const u32 &ms);
 };

@@ -16,7 +16,7 @@ compteur::compteur()
 }
 
 double
-kW(const uint32_t ticks, const Clock::ms d) {
+kW(const u32 ticks, const Clock::ms d) {
     if (d == 0)
         return 0;
     const double hours = double(d) * 0.001 / 3600.0f;
@@ -53,9 +53,9 @@ void compteur::print() {
     // DBG("time:%4d sec total:%d\n",int(Time::since_reset()/1000),int(counter.total()));
 }
 
-const uint8_t *
+const u8 *
 compteur::data(size_t *L) const {
-    return reinterpret_cast<const uint8_t *>(counter.get_packed(L));
+    return reinterpret_cast<const u8 *>(counter.get_packed(L));
 }
 
 tickscounter::bin::count
