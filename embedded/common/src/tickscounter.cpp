@@ -12,8 +12,7 @@ bin::bin() {
     reset();
 }
 
-Clock::ms
-bin::end() const {
+Clock::ms bin::end() const {
     return m_start + m_duration;
 }
 
@@ -59,8 +58,7 @@ bool bin::operator==(const bin &other) const {
     return true;
 }
 
-bin::duration
-bin::distance(const bin &other) const {
+bin::duration bin::distance(const bin &other) const {
     if (empty() || other.empty())
         return 0;
     // DBG("start:%d end:%d start:%d end:%d\n",m_start,end(),other.m_start,other.end());
@@ -71,8 +69,7 @@ bin::distance(const bin &other) const {
     return other.m_start - end();
 }
 
-u8
-checksum(u8 *data, u16 L) {
+u8 checksum(u8 *data, u16 L) {
     u8 ret = 0;
     for (size_t k = 0; k < L; ++k)
         ret += data[k];
@@ -102,20 +99,17 @@ X numeric_max() {
 }
 
 template <>
-u32
-numeric_max() {
+u32 numeric_max() {
     return UINT32_MAX;
 }
 
 template <>
-u16
-numeric_max() {
+u16 numeric_max() {
     return UINT16_MAX;
 }
 
 template <>
-i32
-numeric_max() {
+i32 numeric_max() {
     return INT32_MAX;
 }
 
@@ -247,8 +241,7 @@ counter::age() {
     return now - last_tick_time();
 }
 
-u8
-counter::bin_count() const {
+u8 counter::bin_count() const {
     bin::count ret = 0;
     for (int k = 0; k < NTICKS; ++k)
         if (!m_packed.m_bins[k].empty())
@@ -324,8 +317,7 @@ void counter::print() const {
 #endif
 }
 
-u32
-one_minute() {
+u32 one_minute() {
     return 1000L * 60;
 }
 

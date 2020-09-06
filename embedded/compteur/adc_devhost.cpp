@@ -113,7 +113,6 @@ using namespace synthetic;
 
 #endif
 
-u16
-analog::read() {
+u16 analog::read() {
     return generate();
 }

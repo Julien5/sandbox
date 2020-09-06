@@ -46,13 +46,11 @@ histogram::Histogram::end() const {
     return it;
 }
 
-u16
-histogram::Histogram::size() const {
+u16 histogram::Histogram::size() const {
     return end() - begin();
 }
 
-u32
-histogram::Histogram::count() const {
+u32 histogram::Histogram::count() const {
     u32 ret = 0;
     impl::for_each(begin(), end(), [&](const Bin &bin) {
         // DBG("count(): value:%d count:%d\r\n",bin.value,bin.count);
@@ -73,8 +71,7 @@ void histogram::Histogram::print() const {
     DBG("\r\n");
 }
 
-u16
-histogram::Histogram::minimum() const {
+u16 histogram::Histogram::minimum() const {
     Bin b;
     impl::for_each(begin(), end(), [&](const Bin &bin) {
         b = bin;
@@ -82,8 +79,7 @@ histogram::Histogram::minimum() const {
     return b.value;
 }
 
-u16
-histogram::Histogram::maximum() const {
+u16 histogram::Histogram::maximum() const {
     Bin b;
     impl::for_each(begin(), end(), [&](const Bin &bin) {
         if (b.value == 0)
@@ -92,8 +88,7 @@ histogram::Histogram::maximum() const {
     return b.value;
 }
 
-u16
-histogram::Histogram::argmax(u16 m, u16 M) const {
+u16 histogram::Histogram::argmax(u16 m, u16 M) const {
     Bin ret;
     assert(ret.value == 0 && ret.count == 0);
     impl::for_each(begin(), end(), [&](const Bin &bin) {
@@ -104,8 +99,7 @@ histogram::Histogram::argmax(u16 m, u16 M) const {
     return ret.value;
 }
 
-u16
-histogram::Histogram::argmin(u16 m, u16 M) const {
+u16 histogram::Histogram::argmin(u16 m, u16 M) const {
     Bin ret;
     ret.count = count();
     ret.value = 0;
@@ -119,16 +113,14 @@ histogram::Histogram::argmin(u16 m, u16 M) const {
     return ret.value;
 }
 
-u32
-histogram::Histogram::count(u16 v) const {
+u32 histogram::Histogram::count(u16 v) const {
     for (auto it = begin(); it != end(); ++it)
         if (it->value == v)
             return it->count;
     return 0;
 }
 
-u16
-histogram::Histogram::threshold(int percent) const {
+u16 histogram::Histogram::threshold(int percent) const {
     if (count() == 0)
         return 0;
     const size_t wanted_count = count() * percent / 100;

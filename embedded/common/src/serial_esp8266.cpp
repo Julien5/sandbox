@@ -25,8 +25,7 @@ serial::serial() {
     uart_driver_install(PORT, BUF_SIZE * 2, BUF_SIZE * 2, 0, NULL);
 }
 
-i16
-serial::read(u8 *buffer, size_t buffer_size, u16 timeout) {
+i16 serial::read(u8 *buffer, size_t buffer_size, u16 timeout) {
 #ifdef DISABLE_SERIAL
     return 0;
 #endif
