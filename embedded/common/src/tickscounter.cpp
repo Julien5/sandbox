@@ -401,7 +401,7 @@ int tickscounter::test() {
     C.print();
     assert(C.total() == T);
 
-#ifdef DEVHOST
+#ifdef PC
     size_t L = 0;
     const packed *data = C.get_packed(&L);
     using namespace std;

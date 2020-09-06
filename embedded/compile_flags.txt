@@ -1,4 +1,4 @@
--DDEVHOST
+-DPC
 -xc++
 -I/home/julien/projects/sandbox/embedded/common/include
 -I/home/julien/projects/sandbox/embedded/wifi-transmitter

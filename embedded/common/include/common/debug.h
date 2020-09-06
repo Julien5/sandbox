@@ -1,6 +1,6 @@
 #pragma once
 
-#if defined(DEVHOST)
+#if defined(PC)
 #include <cassert>
 #include <stdio.h>
 #include <mutex>

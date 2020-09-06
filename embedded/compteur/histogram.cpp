@@ -185,7 +185,7 @@ void histogram::Histogram::update(u16 value) {
     impl::sort(m_packed.bins, m_packed.bins + NBINS);
 }
 
-#ifdef DEVHOST
+#ifdef PC
 #include <fstream>
 #endif
 
@@ -216,7 +216,7 @@ int histogram::Histogram::test() {
         assert(H.minimum() == 0);
         assert(H.maximum() == 9);
         assert(H.threshold(50) == 4);
-#ifdef DEVHOST
+#ifdef PC
         size_t L = 0;
         const packed *data = H.get_packed(&L);
         using namespace std;

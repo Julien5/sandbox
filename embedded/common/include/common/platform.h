@@ -20,7 +20,7 @@ T xMax(const T &a, const T &b) {
     return b;
 }
 
-#if defined(DEVHOST) || defined(ESP8266)
+#if defined(PC) || defined(ESP8266)
 #include <cstddef>
 typedef std::size_t size_t;
 #endif

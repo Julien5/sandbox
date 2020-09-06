@@ -1,7 +1,7 @@
 #include "common/utils.h"
 #include "common/rusttypes.h"
 
-#if defined(DEVHOST)
+#if defined(PC)
 namespace utils {
     std::vector<u8> hex_to_bytes(const std::string &hex) {
         std::vector<u8> bytes;

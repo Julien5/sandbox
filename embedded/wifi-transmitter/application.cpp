@@ -12,7 +12,7 @@
 
 std::unique_ptr<serial> S = nullptr;
 
-#ifdef DEVHOST
+#ifdef PC
 #include "wifi_curl.h"
 #define WIFI wifi_curl
 #else

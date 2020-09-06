@@ -3,15 +3,15 @@ MAKEFILESDIR := ../Makefiles
 SRCSDIR := .
 
 include $(MAKEFILESDIR)/settings
-include $(MAKEFILESDIR)/devhost/settings
-include $(MAKEFILESDIR)/devhost/common
+include $(MAKEFILESDIR)/pc/settings
+include $(MAKEFILESDIR)/pc/common
 
 all: dir $(OBJS) libs exe
 
-include $(MAKEFILESDIR)/devhost/build.mk
+include $(MAKEFILESDIR)/pc/build.mk
 
 libs:
-	make -C $(MAKEFILESDIR)/devhost -f common lib
+	make -C $(MAKEFILESDIR)/pc -f common lib
 
 check:
 	cppcheck --language=c++ --enable=all --template=gcc $(wildcard *.cpp)

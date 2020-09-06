@@ -2,7 +2,7 @@
 #include "common/debug.h"
 #include "common/time.h"
 
-#if defined(DEVHOST)
+#if defined(PC)
 void sleep::deep_sleep(const u32 &ms) {
     DBG("deep sleep (=> delay)\n");
     Time::delay(ms);

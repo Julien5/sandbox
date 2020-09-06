@@ -35,7 +35,7 @@ namespace nstring {
     const char* c_str() const { return s; }
     
     
-#if defined(DEVHOST)
+#if defined(PC)
     friend std::ostream& operator<<(std::ostream& os, STR s)
     {
       return os.write(s.c_str(), s.size());

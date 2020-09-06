@@ -1,6 +1,6 @@
 #pragma once
 
-#if defined(DEVHOST)
+#if defined(PC)
 // min and max are defined in Arduino.h
 #include <vector>
 #include <string>

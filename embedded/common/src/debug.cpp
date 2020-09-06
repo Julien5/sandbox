@@ -1,6 +1,6 @@
 #include "common/debug.h"
 #include "common/rusttypes.h"
-#ifdef DEVHOST
+#ifdef PC
 void debug::init_serial() {
 }
 void debug::turnBuildinLED(bool on) {

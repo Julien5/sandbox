@@ -1,4 +1,4 @@
 XNAME:=common
 XINCLUDE += -I$(DIREMBEDDED)/$(XNAME)/include
-XLIBS += -L/tmp/build/devhost/$(XNAME)/ -l$(XNAME)
+XLIBS += -L/tmp/build/pc/$(XNAME)/ -l$(XNAME)
 

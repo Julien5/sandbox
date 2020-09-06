@@ -57,7 +57,7 @@ eeprom::eeprom() {
 using namespace esp8266;
 #endif
 
-#ifdef DEVHOST
+#ifdef PC
 namespace x86 {
     static char mem[1024];
     char read(int addr) {

@@ -6,7 +6,7 @@
 #ifdef ARDUINO
 #include "Arduino.h"
 #include <LiquidCrystal.h>
-#elif defined(DEVHOST)
+#elif defined(PC)
 #include <iostream>
 #include <iomanip>
 class LiquidCrystal {

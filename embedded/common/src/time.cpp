@@ -13,7 +13,7 @@ u64 Time::since_epoch() {
     return Time::epoch_offset + since_reset();
 }
 
-#if defined(DEVHOST)
+#if defined(PC)
 #include <atomic>
 typedef u32 test_ms;
 std::atomic<test_ms> test_t(0);
