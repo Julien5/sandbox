@@ -15,8 +15,7 @@ compteur::compteur()
     debug::address_range("compteur:", this, sizeof(*this));
 }
 
-double
-kW(const u32 ticks, const Clock::ms d) {
+double kW(const u32 ticks, const Clock::ms d) {
     if (d == 0)
         return 0;
     const double hours = double(d) * 0.001 / 3600.0f;

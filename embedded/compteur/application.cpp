@@ -22,20 +22,21 @@ void application::setup() {
 class wcallback : public wifi::callback {
     size_t missing_bytes = 0;
     void status(u8 s) {
-        //DBG("receiving status %d\r\n",int(s));
+        DBG("receiving status %d\r\n", int(s));
         assert(s == 0);
+        DBG("memory:%d\r\n", debug::freeMemory());
     }
     void data_length(u16 total_length) {
-        //DBG("receiving total %d bytes\r\n",int(total_length));
+        DBG("receiving total %d bytes\r\n", int(total_length));
         assert(total_length < 10000);
         missing_bytes = total_length;
     }
     void data(u8 *data, size_t length) {
-        //DBG("length %d missing %d\r\n",int(length),int(missing_bytes));
+        DBG("length %d missing %d\r\n", int(length), int(missing_bytes));
         missing_bytes -= length;
     }
     void crc(bool ok) {
-        //DBG("receiving crc %d\r\n",int(ok));
+        DBG("receiving crc %d\r\n", int(ok));
         assert(ok);
         /* error, probably to due error on the serial transmission => retry ? */
     }
@@ -46,8 +47,8 @@ void gather_data() {
 }
 
 void send_data() {
-    if (C->total() < 1)
-        return;
+    //if (C->total() < 1)
+    //     return;
     wcallback cb;
     //auto p=W->get("http://example.com/",&cb);
     //Time::delay(10);
