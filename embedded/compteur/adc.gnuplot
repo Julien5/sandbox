@@ -8,6 +8,7 @@ set style line 2 lc rgb 'red' pt 7 ps 0.2 lt 1 lw 2
 set pointintervalbox 3
 set grid;
 set autoscale fix;
-set xtics 50;
-set yrange [195:210]
+set xtics 240;
+set ytics 1;
+set yrange [195:220]
 plot "/tmp/adc.csv" with lines

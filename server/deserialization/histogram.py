@@ -47,14 +47,17 @@ def readhistogram(bytes):
         ret.append(bin(value,count));
     return Histogram(ret);
 
+
 def main():
-    f=open("histogram.packed.bin",'rb');
-    bytes=f.read();
-    pos=0;
-    index=0;
-    H=readhistogram(bytes);
-    print(str(H));
-    print("count:",H.count());
+    #b=open("histogram.packed.bin",'rb').read();
+    b=open("histogram.packed.hex",'rb').read().decode("utf-8");
+    for h in b.split("\n"):
+        b=bytes.fromhex(h);
+        pos=0;
+        index=0;
+        H=readhistogram(b);
+        print(str(H));
+        print("count:",H.count());
 
 if __name__ == "__main__":
     main();

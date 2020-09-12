@@ -39,7 +39,7 @@ bool TicksReader::take() {
     }
     m_last_adc_value[m_adc_index] = a;
     m_adc_index++;
-    DBG("time:%4d s analog:%d\r\n", int(Time::since_reset() / 1000), int(a));
+    DBG("time:%4d ms analog:%d\r\n", int(Time::since_reset()), int(a));
     // H.print();
     u16 TH = 0;
     u16 TL = 0;
