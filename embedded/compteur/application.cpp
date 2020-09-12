@@ -1,5 +1,5 @@
 #include "application.h"
-
+#define NDEBUG
 #include "common/debug.h"
 #include "common/time.h"
 #include "common/wifi.h"
@@ -32,8 +32,8 @@ class wcallback : public wifi::callback {
         missing_bytes = total_length;
     }
     void data(u8 *data, size_t length) {
-        DBG("length %d missing %d\r\n", int(length), int(missing_bytes));
         missing_bytes -= length;
+        DBG("length %d missing %d\r\n", int(length), int(missing_bytes));
     }
     void crc(bool ok) {
         DBG("receiving crc %d\r\n", int(ok));
@@ -47,18 +47,27 @@ void gather_data() {
 }
 
 void send_data() {
-    //if (C->total() < 1)
-    //     return;
     wcallback cb;
     //auto p=W->get("http://example.com/",&cb);
     //Time::delay(10);
     // u8 data[4]={0x01,0x02,0x03,0x04};
-    size_t L = 0;
-    const u8 *data = C->data(&L);
-    auto p = W->post("http://192.168.178.22:8000/post/", data, L, &cb);
-    if (p != 0)
-        DBG("post result:%d\r\n", int(p)); // TODO error handling.
-    Time::delay(10);
+    if (C->total() > 100) {
+        usize L = 0;
+        const u8 *data = C->data(&L);
+        auto p = W->post("http://192.168.178.22:8000/post/compteur", data, L, &cb);
+        if (p != 0)
+            DBG("post result:%d\r\n", int(p)); // TODO error handling.
+        Time::delay(10);
+    }
+    return;
+    {
+        usize L = 0;
+        const auto *data = C->histogram_data(&L);
+        auto p = W->post("http://192.168.178.22:8000/post/histogram", data, L, &cb);
+        if (p != 0)
+            DBG("post result:%d\r\n", int(p)); // TODO error handling.
+        Time::delay(10);
+    }
 }
 
 void application::loop() {
@@ -66,6 +75,5 @@ void application::loop() {
     gather_data();
     send_data();
     debug::turnBuildinLED(false);
-    DBG("\r\n");
     Time::delay(200);
 }

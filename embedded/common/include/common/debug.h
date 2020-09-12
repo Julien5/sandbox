@@ -1,6 +1,15 @@
 #pragma once
 
+#include "common/rusttypes.h"
+
+#if defined(NDEBUG)
+#define DBG(...) ((void)0)
+#define TRACE() ((void)0)
+#define assert(ignore) ((void)0)
+#else
+
 #if defined(PC)
+
 #include <cassert>
 #include <stdio.h>
 #include <mutex>
@@ -23,7 +32,6 @@ static std::mutex stdout_mtx;
 
 #elif defined(ARDUINO)
 
-#if !defined(NDEBUG)
 /*
  * note: in debug mode, DBGTX takes memory.
  * reduce NDATA
@@ -56,15 +64,9 @@ static std::mutex stdout_mtx;
             };                          \
         }                               \
     } while (0)
-#else
-#define DBG(...) ((void)0)
-#define TRACE() ((void)0)
-#define assert(ignore)
-#endif
 
 #elif defined(ESP8266)
 
-#if !defined(NDEBUG)
 #include <stdio.h>
 #define DBG(...)                               \
     do {                                       \
@@ -86,15 +88,7 @@ static std::mutex stdout_mtx;
     } while (0)
 #endif
 #endif
-
-#else
-
-#define DBG(X) ((void)0)
-#define TRACE() ((void)0)
-#define assert(ignore)
-
 #endif
-
 namespace debug {
     //! necessary for Serial.print in Arduino
     void init_serial();

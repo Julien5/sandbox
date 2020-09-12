@@ -23,11 +23,15 @@ remain(size_t buffer_size, size_t pos) {
     return buffer_size - pos;
 }
 
+bool file_exists(const char *fileName) {
+    std::ifstream infile(fileName);
+    return infile.good();
+}
+
 int exe(const std::string &method, const char *req, wifi::callback *cb, const u8 *data = nullptr, const int Ldata = 0) {
     // curl -s -X GET "http://example.com/" --output out
     std::string cmd = "curl -i --raw -s -X " + method + " ";
     if (data && Ldata) {
-        DBG("%d\n", Ldata);
         std::ofstream f;
         f.open("data.bin", std::ios::out | std::ios::binary | std::ios::trunc);
         f.write((char *)data, Ldata);
@@ -38,7 +42,8 @@ int exe(const std::string &method, const char *req, wifi::callback *cb, const u8
     cmd += std::string(req);
     cmd += " --output /tmp/wifi.curloutput.internal";
     DBG("exe: %s\n", cmd.c_str());
-    std::system(cmd.c_str());
+    if (!file_exists(kDataFile))
+        std::system(cmd.c_str());
     auto f = fopen(kDataFile, "rb");
     auto code = errno;
     cb->status(code);
@@ -59,7 +64,7 @@ int exe(const std::string &method, const char *req, wifi::callback *cb, const u8
             memcpy(buffer + buffer_size, recv_buf, r);
             buffer_size += r;
         } else {
-            DBG("done reading from socket. Last read return=%d errno=%d\r\n", r, errno);
+            // DBG("done reading from socket. Last read return=%d errno=%d\r\n", r, errno);
             break;
         }
     }
@@ -78,11 +83,9 @@ int exe(const std::string &method, const char *req, wifi::callback *cb, const u8
             pos += size_copy;
         }
     }
-    std::remove(kDataFile);
-    TRACE();
+    //std::remove(kDataFile);
     if (data && Ldata)
         std::remove("data.bin");
-    TRACE();
     return 0;
 }
 

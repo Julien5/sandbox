@@ -27,20 +27,18 @@ void print_bin(const tickscounter::bin &b) {
 }
 
 bool compteur::update() {
-    /*
-  const auto t = Time::since_reset();
-  if (t%10000==0 && counter.bin_count()>2) {
-    const auto bin0=counter.getbin(0);
-    const auto bin2=counter.getbin(counter.bin_count()-2);
-    const auto bin1=counter.getbin(counter.bin_count()-1);
-    const auto time_total=bin1.end()-bin0.m_start;
-    DBG("seconds:%3d total:%2d count:%2d power:%2.3fkW  current-power:%2.3fkW\n",
-	t/1000,counter.total(),counter.bin_count(),
-	kW(counter.total()-1,time_total),
-	kW(bin1.m_count+bin2.m_count-1,bin1.end()-bin2.m_start));
-    
-  }
-  */
+    const auto t = Time::since_reset();
+    if (t % 100 == 0 && counter.bin_count() > 2) {
+        const auto bin0 = counter.getbin(0);
+        const auto bin2 = counter.getbin(counter.bin_count() - 2);
+        const auto bin1 = counter.getbin(counter.bin_count() - 1);
+        const auto time_total = bin1.end() - bin0.m_start;
+        DBG("seconds:%3d total:%2d count:%2d power:%2.3fkW  current-power:%2.3fkW\n",
+            t / 1000, counter.total(), counter.bin_count(),
+            kW(counter.total() - 1, time_total),
+            kW(bin1.m_count + bin2.m_count - 1, bin1.end() - bin2.m_start));
+    }
+
     if (reader.take()) {
         counter.tick();
         return true;
@@ -52,13 +50,15 @@ void compteur::print() {
     // DBG("time:%4d sec total:%d\n",int(Time::since_reset()/1000),int(counter.total()));
 }
 
-const u8 *
-compteur::data(size_t *L) const {
+const u8 *compteur::data(size_t *L) const {
     return reinterpret_cast<const u8 *>(counter.get_packed(L));
 }
 
-tickscounter::bin::count
-compteur::total() {
+const u8 *compteur::histogram_data(usize *L) const {
+    return reader.histogram_data(L);
+}
+
+tickscounter::bin::count compteur::total() {
     return counter.total();
 }
 

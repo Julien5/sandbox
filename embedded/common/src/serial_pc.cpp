@@ -28,7 +28,7 @@ struct serial_buffer {
         data.erase(data.begin(), data.begin() + Lread);
         return Lread;
     }
-    size_t write(u8 *buffer, size_t buffer_size) {
+    usize write(u8 *buffer, size_t buffer_size) {
         const std::unique_lock<std::mutex> lock(mtx);
         for (size_t i = 0; i < buffer_size; ++i)
             data.push_back(buffer[i]);

@@ -31,10 +31,11 @@ namespace histogram {
         u32 count() const;
         u16 minimum() const;
         u16 maximum() const;
-        /*! value K for which count(>K) > percent*count()
-        threshold(0) = maximum()
-	threshold(100) = minimum()
-     */
+        /*! 
+		  value K for which count(>K) > percent*count()
+		  threshold(0) = maximum()
+		  threshold(100) = minimum()
+		*/
         u16 threshold(int percent) const;
         const packed *get_packed(size_t *L) const {
             *L = sizeof(m_packed);

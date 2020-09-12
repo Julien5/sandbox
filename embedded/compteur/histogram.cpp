@@ -1,4 +1,5 @@
 #include "histogram.h"
+#include "common/debug.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -32,13 +33,11 @@ histogram::packed::packed() {
     memset(bins, 0, sizeof(bins));
 }
 
-histogram::Bin *
-histogram::Histogram::begin() const {
+histogram::Bin *histogram::Histogram::begin() const {
     return const_cast<histogram::Bin *>(m_packed.bins);
 }
 
-histogram::Bin *
-histogram::Histogram::end() const {
+histogram::Bin *histogram::Histogram::end() const {
     Bin *it = begin();
     while (it->count != 0 && it < (m_packed.bins + NBINS))
         ++it;

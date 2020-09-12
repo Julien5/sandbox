@@ -5,18 +5,18 @@ set -e
 function process {
     D="$1"
     find $D/ -iname "*.bin" | sort | while read a; do
-	xxd $a | cut -f2 -d: | cut -b1-40 | tr -d " " | tr -d "\n"; echo;
+		xxd $a | cut -f2 -d: | cut -b1-40 | tr -d " " | tr -d "\n"; echo;
     done | tr "[:lower:]" "[:upper:]" > /tmp/irdata 
     if [[ "$D" = "sd-data/22/" ]]; then
-	sampling_period=50; offset=0;
-	
+		sampling_period=50; offset=0;
     elif [[ "$D" = "sd-data/23/" ]]; then
-	sampling_period=10; offset=2000;
+		sampling_period=10; offset=2000;
     else
-	echo "invalid param"
-	exit 1
+		echo "invalid param"
+		exit 1
     fi
     python3 readirdata.py $sampling_period $offset
+	mkdir -p $D/hex
     mv -v /tmp/data.csv $D/hex/data.csv
 }
 

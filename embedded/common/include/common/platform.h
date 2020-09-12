@@ -1,6 +1,6 @@
 #pragma once
 #include <stdint.h>
-#include "common/debug.h"
+
 /* Note:
  * define abs, max and min macros causes problems with
  * stl headers. 

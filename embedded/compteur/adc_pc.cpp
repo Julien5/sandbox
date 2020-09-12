@@ -2,7 +2,7 @@
 #include <cassert>
 #include "common/debug.h"
 
-//#define RECORD
+#define RECORD
 #ifdef RECORD
 
 #include <string>
@@ -66,9 +66,9 @@ namespace record {
         }
         assert(!s_numbers.empty());
         // subsample by 4 (50 ms -> 200 ms sampling period)
-        const auto index = counter++;
+        auto index = counter++;
         if (index >= s_numbers.size())
-            exit(0);
+            counter = 0;
         return s_numbers[index % s_numbers.size()];
     }
 }
