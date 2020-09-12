@@ -29,7 +29,8 @@ bool TicksReader::calibrated(u16 *_TL, u16 *_TH) const {
 
 bool TicksReader::take() {
     const auto a = analog::read();
-    //DBG("time:%4d s analog:%d\r\n", int(Time::since_reset() / 1000), int(a));
+    m_last_adc_value = a;
+    DBG("time:%4d s analog:%d\r\n", int(Time::since_reset() / 1000), int(a));
     H.update(a);
     // H.print();
     u16 TH = 0;
@@ -55,4 +56,9 @@ bool TicksReader::take() {
 
 const u8 *TicksReader::histogram_data(usize *L) const {
     return (u8 *)H.get_packed(L);
+}
+
+const u8 *TicksReader::adc_data(usize *L) const {
+    *L = 2;
+    return (u8 *)(&m_last_adc_value);
 }

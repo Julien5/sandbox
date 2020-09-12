@@ -26,7 +26,7 @@ namespace wifi {
         }
         u8 status = 0;
         // at this point, the request has been read and is being executed.
-        // Network request are slow.
+        // Network requests are slow.
         // Timeout is set to 100ms.
         // lets say 20 secs => 200 trials
         u8 trials = 200;
@@ -56,9 +56,7 @@ namespace wifi {
             const size_t L = xMin(sizeof(buffer), size - nread);
             ok = S->read_until(buffer, L);
 #if !defined(NDEBUG)
-            auto free = debug::freeMemory();
-            if (free < 500)
-                DBG("memory:%d\r\n", debug::freeMemory());
+            DBG("memory:%d\r\n", debug::freeMemory());
 #endif
             if (!ok) {
                 DBG("nread:%d\r\n", nread);

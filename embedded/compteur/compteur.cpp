@@ -15,6 +15,10 @@ compteur::compteur()
     debug::address_range("compteur:", this, sizeof(*this));
 }
 
+TicksReader *compteur::ticksReader() {
+    return &reader;
+}
+
 double kW(const u32 ticks, const Clock::ms d) {
     if (d == 0)
         return 0;
@@ -52,10 +56,6 @@ void compteur::print() {
 
 const u8 *compteur::data(size_t *L) const {
     return reinterpret_cast<const u8 *>(counter.get_packed(L));
-}
-
-const u8 *compteur::histogram_data(usize *L) const {
-    return reader.histogram_data(L);
 }
 
 tickscounter::bin::count compteur::total() {

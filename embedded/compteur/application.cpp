@@ -1,5 +1,4 @@
 #include "application.h"
-#define NDEBUG
 #include "common/debug.h"
 #include "common/time.h"
 #include "common/wifi.h"
@@ -48,10 +47,7 @@ void gather_data() {
 
 void send_data() {
     wcallback cb;
-    //auto p=W->get("http://example.com/",&cb);
-    //Time::delay(10);
-    // u8 data[4]={0x01,0x02,0x03,0x04};
-    if (C->total() > 100) {
+    if (C->total() > 10) {
         usize L = 0;
         const u8 *data = C->data(&L);
         auto p = W->post("http://192.168.178.22:8000/post/compteur", data, L, &cb);
@@ -59,10 +55,17 @@ void send_data() {
             DBG("post result:%d\r\n", int(p)); // TODO error handling.
         Time::delay(10);
     }
-    return;
     {
         usize L = 0;
-        const auto *data = C->histogram_data(&L);
+        const auto *data = C->ticksReader()->adc_data(&L);
+        auto p = W->post("http://192.168.178.22:8000/post/adc", data, L, &cb);
+        if (p != 0)
+            DBG("post result:%d\r\n", int(p)); // TODO error handling.
+        Time::delay(10);
+    }
+    {
+        usize L = 0;
+        const auto *data = C->ticksReader()->histogram_data(&L);
         auto p = W->post("http://192.168.178.22:8000/post/histogram", data, L, &cb);
         if (p != 0)
             DBG("post result:%d\r\n", int(p)); // TODO error handling.
@@ -71,9 +74,11 @@ void send_data() {
 }
 
 void application::loop() {
+    TRACE();
     debug::turnBuildinLED(false);
     gather_data();
     send_data();
     debug::turnBuildinLED(false);
+    TRACE();
     Time::delay(200);
 }

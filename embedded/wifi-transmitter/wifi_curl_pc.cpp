@@ -42,8 +42,7 @@ int exe(const std::string &method, const char *req, wifi::callback *cb, const u8
     cmd += std::string(req);
     cmd += " --output /tmp/wifi.curloutput.internal";
     DBG("exe: %s\n", cmd.c_str());
-    if (!file_exists(kDataFile))
-        std::system(cmd.c_str());
+    std::system(cmd.c_str());
     auto f = fopen(kDataFile, "rb");
     auto code = errno;
     cb->status(code);
