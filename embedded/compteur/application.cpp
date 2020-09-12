@@ -50,10 +50,12 @@ void send_data() {
     if (C->total() > 10) {
         usize L = 0;
         const u8 *data = C->data(&L);
-        auto p = W->post("http://192.168.178.22:8000/post/compteur", data, L, &cb);
-        if (p != 0)
-            DBG("post result:%d\r\n", int(p)); // TODO error handling.
-        Time::delay(10);
+        if (data) {
+            auto p = W->post("http://192.168.178.22:8000/post/compteur", data, L, &cb);
+            if (p != 0)
+                DBG("post result:%d\r\n", int(p)); // TODO error handling.
+            Time::delay(10);
+        }
     }
     {
         usize L = 0;

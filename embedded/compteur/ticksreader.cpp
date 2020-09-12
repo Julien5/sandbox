@@ -7,7 +7,6 @@
 #include <string.h>
 
 bool TicksReader::calibrated(u16 *_TL, u16 *_TH) const {
-    /*
     const u8 minWidth = 4;
     const auto M = H.maximum();
     const auto m = H.minimum();
@@ -27,12 +26,12 @@ bool TicksReader::calibrated(u16 *_TL, u16 *_TH) const {
     const auto TL = v - 1;
     *_TL = TL;
     *_TH = TH;
-	*/
     return true;
 }
 
 bool TicksReader::take() {
     const auto a = analog::read();
+    H.update(a);
     constexpr auto size_adc = sizeof(m_last_adc_value) / sizeof(m_last_adc_value[0]);
     if (m_adc_index >= size_adc) {
         memset((u8 *)m_last_adc_value, 0, sizeof(m_last_adc_value));
@@ -41,8 +40,6 @@ bool TicksReader::take() {
     m_last_adc_value[m_adc_index] = a;
     m_adc_index++;
     DBG("time:%4d s analog:%d\r\n", int(Time::since_reset() / 1000), int(a));
-    /*
-    // H.update(a);
     // H.print();
     u16 TH = 0;
     u16 TL = 0;
@@ -51,7 +48,7 @@ bool TicksReader::take() {
         return false;
     }
     //DBG("TL=[%3d] TH=[%3d]\r\n", TL, TH);
-    // is the value classificable ? 
+    // is the value classificable ?
     if (TL < a && a < TH) {
         return false;
     }
@@ -62,16 +59,15 @@ bool TicksReader::take() {
     if (new_value == 0) {
         return false;
     }
-	
+
     return true;
-	*/
-    return false;
 }
 
 const u8 *TicksReader::histogram_data(usize *L) const {
-    *L = 0;
-    return 0;
-    // return (u8 *)H.get_packed(L);
+    constexpr auto size_adc = sizeof(m_last_adc_value) / sizeof(m_last_adc_value[0]);
+    if (m_adc_index < size_adc)
+        return 0;
+    return (u8 *)H.get_packed(L);
 }
 
 const u8 *TicksReader::adc_data(usize *L) const {

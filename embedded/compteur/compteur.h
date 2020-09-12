@@ -4,7 +4,7 @@
 #include "histogram.h"
 
 class TicksReader {
-    //histogram::Histogram H;
+    histogram::Histogram H;
     bool m_last_value = 0;
     bool calibrated(u16 *TL, u16 *TH) const;
     u16 m_last_adc_value[128] = {0};
