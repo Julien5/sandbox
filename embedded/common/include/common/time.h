@@ -3,7 +3,7 @@
 #include "common/rusttypes.h"
 
 namespace common {
-    namespace Time {
+    namespace time {
         // set with an external time source.
         void set_current_epoch(u64 ms);
         u64 since_epoch();

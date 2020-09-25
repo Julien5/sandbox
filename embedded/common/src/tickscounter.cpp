@@ -333,7 +333,7 @@ int some_real_ticks(counter &C) {
     int k = 0;
     for (; k < 10; ++k) {
         C.tick();
-        common::Time::delay(1200L + jitter(k));
+        common::time::delay(1200L + jitter(k));
     }
     return k;
 }
@@ -341,9 +341,9 @@ int some_real_ticks(counter &C) {
 int some_spurious_ticks(counter &C, const int minAloneTicks) {
     int k = 0;
     for (; k < minAloneTicks; ++k) {
-        common::Time::delay(2 * one_minute());
+        common::time::delay(2 * one_minute());
         C.tick();
-        common::Time::delay(one_minute());
+        common::time::delay(one_minute());
     }
     return k;
 }
@@ -359,15 +359,15 @@ int tickscounter::test() {
     counter C(config);
     {
         C.tick();
-        common::Time::delay(1);
+        common::time::delay(1);
         C.tick();
-        common::Time::delay(10);
+        common::time::delay(10);
         C.tick();
-        common::Time::delay(1);
+        common::time::delay(1);
         C.tick();
-        common::Time::delay(9);
+        common::time::delay(9);
         C.tick();
-        common::Time::delay(1);
+        common::time::delay(1);
         C.tick();
         assert(C.total() == 6);
         C.print();
@@ -378,7 +378,7 @@ int tickscounter::test() {
     const int K1 = 3;
     assert(C.total() == T);
     for (int k = 0; k < K1; ++k) {
-        common::Time::delay(one_minute() * 2);
+        common::time::delay(one_minute() * 2);
         T += some_real_ticks(C);
         assert(C.total() == T);
     }
@@ -387,14 +387,14 @@ int tickscounter::test() {
     DBG("T=%d\n", T);
 
     for (int k = 0; k < 10; ++k) {
-        common::Time::delay(one_minute() * 2);
+        common::time::delay(one_minute() * 2);
         some_spurious_ticks(C, C.config().kMinAloneTicks);
         assert(C.total() == T);
     }
 
     const int K2 = 5;
     for (int k = 0; k < K2; ++k) {
-        common::Time::delay(one_minute() * 2);
+        common::time::delay(one_minute() * 2);
         T += some_real_ticks(C);
     }
     assert(T >= (K1 + K2));

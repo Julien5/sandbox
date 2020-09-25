@@ -13,7 +13,7 @@ void application::setup() {
 void application::loop() {
     DBG("hi\r\n");
     debug::turnBuildinLED(true);
-    common::Time::delay(1000);
+    common::time::delay(1000);
     debug::turnBuildinLED(false);
-    common::Time::delay(1000);
+    common::time::delay(1000);
 }

@@ -5,7 +5,7 @@
 
 namespace Clock {
     ms millis_since_start() {
-        return common::Time::since_reset();
+        return common::time::since_reset();
     }
 
     mn minutes_since_start() {
@@ -14,7 +14,7 @@ namespace Clock {
 
     int test() {
         assert(millis_since_start() == 0);
-        common::Time::delay(1000);
+        common::time::delay(1000);
         assert(millis_since_start() == 1000);
         return 0;
     }
