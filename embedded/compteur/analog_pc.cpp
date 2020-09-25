@@ -1,8 +1,9 @@
-#include "adc.h"
+#include "analog.h"
 #include <cassert>
 #include "common/debug.h"
 
 #define RECORD
+
 #ifdef RECORD
 
 #include <string>
@@ -110,7 +111,6 @@ namespace synthetic {
     }
 }
 using namespace synthetic;
-
 #endif
 
 u16 analog::read() {

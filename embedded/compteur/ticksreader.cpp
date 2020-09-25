@@ -1,8 +1,7 @@
 #include "compteur.h"
-#include "adc.h"
 #include "common/debug.h"
 #include "common/time.h"
-
+#include "analog.h"
 #include <math.h>
 #include <string.h>
 
@@ -29,8 +28,16 @@ bool TicksReader::calibrated(u16 *_TL, u16 *_TH) const {
     return true;
 }
 
+u16 analog_read() {
+#ifdef PC
+    return analog().read();
+#else
+    return common::analog().read();
+#endif
+}
+
 bool TicksReader::take() {
-    const auto a = analog::read();
+    const auto a = analog_read();
     DBG("time:%d s analog value:%d\r\n", int(common::time::since_reset() / 1000), int(a));
     H.update(a);
     constexpr auto size_adc = sizeof(m_last_adc_value) / sizeof(m_last_adc_value[0]);
