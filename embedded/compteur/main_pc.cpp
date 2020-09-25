@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
     std::thread serial_thread(transmitter::run);
     while (1) {
         application::loop();
-        Time::delay(1);
+        common::Time::delay(1);
     }
     serial_thread.join();
     return 0;

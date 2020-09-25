@@ -5,3 +5,4 @@ XLIBS += -L/tmp/build/arduino/$(XNAME)/ -l$(XNAME)
 include $(MAKEFILESDIR)/arduino/LowPower
 include $(MAKEFILESDIR)/arduino/EEPROM
 include $(MAKEFILESDIR)/arduino/AltSoftSerial
+include $(MAKEFILESDIR)/arduino/LiquidCrystal

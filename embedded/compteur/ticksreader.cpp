@@ -31,7 +31,8 @@ bool TicksReader::calibrated(u16 *_TL, u16 *_TH) const {
 
 bool TicksReader::take() {
     const auto a = analog::read();
-    DBG("time:%d s analog value:%d\r\n", int(Time::since_reset() / 1000), int(a));
+    DBG("time:%d s analog value:%d\r\n", int(common::Time::since_reset() / 1000), int(a));
+
     H.update(a);
     constexpr auto size_adc = sizeof(m_last_adc_value) / sizeof(m_last_adc_value[0]);
     if (m_adc_index >= size_adc) {

@@ -31,7 +31,7 @@ void print_bin(const tickscounter::bin &b) {
 }
 
 bool compteur::update() {
-    const auto t = Time::since_reset();
+    const auto t = common::Time::since_reset();
     if (t % 100 == 0 && counter.bin_count() > 2) {
         const auto bin0 = counter.getbin(0);
         const auto bin2 = counter.getbin(counter.bin_count() - 2);
@@ -68,6 +68,6 @@ int compteur::test() {
     while (true) {
         if (U.update())
             U.print();
-        Time::delay(200);
+        common::Time::delay(200);
     }
 }

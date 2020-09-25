@@ -4,14 +4,16 @@
 
 void application::setup() {
     debug::init_serial();
+#ifdef ARDUINO
     char *c = malloc(1);
     DBG("%d\r\n", int(c));
+#endif
 }
 
 void application::loop() {
     DBG("hi\r\n");
     debug::turnBuildinLED(true);
-    Time::delay(1000);
+    common::Time::delay(1000);
     debug::turnBuildinLED(false);
-    Time::delay(1000);
+    common::Time::delay(1000);
 }

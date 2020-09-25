@@ -54,7 +54,7 @@ void send_data() {
             auto p = W->post("http://192.168.178.22:8000/post/compteur", data, L, &cb);
             if (p != 0)
                 DBG("post result:%d\r\n", int(p)); // TODO error handling.
-            Time::delay(10);
+            common::Time::delay(10);
         }
     }
     {
@@ -64,7 +64,7 @@ void send_data() {
             auto p = W->post("http://192.168.178.22:8000/post/adc", data, L, &cb);
             if (p != 0)
                 DBG("post result:%d\r\n", int(p)); // TODO error handling.
-            Time::delay(10);
+            common::Time::delay(10);
         }
     }
     {
@@ -74,7 +74,7 @@ void send_data() {
             auto p = W->post("http://192.168.178.22:8000/post/histogram", data, L, &cb);
             if (p != 0)
                 DBG("post result:%d\r\n", int(p)); // TODO error handling.
-            Time::delay(10);
+            common::Time::delay(10);
         }
     }
 }
@@ -85,6 +85,6 @@ void application::loop() {
     gather_data();
     send_data();
     debug::turnBuildinLED(false);
-    //Time::delay(100);
-    Time::delay(40 + 16 + 2); // adjusted to effectively get 100ms sampling rate
+    DBG("\r\n");
+    common::Time::delay(40 + 16 + 2); // adjusted to effectively get 100ms sampling rate
 }

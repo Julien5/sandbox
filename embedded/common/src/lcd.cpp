@@ -1,7 +1,8 @@
-#include "lcd.h"
-#include "freememory.h"
-#include "debug.h"
-#include "platform.h"
+#include "common/lcd.h"
+#include "common/debug.h"
+#include "common/platform.h"
+#include "common/rusttypes.h"
+#include "common/time.h"
 
 #ifdef ARDUINO
 #include "Arduino.h"
@@ -18,7 +19,7 @@ class LiquidCrystal {
     void print(const std::string &s) {
         std::cout << "LCD: ";
         std::cout << std::setw(10);
-        std::cout << millis() << " [" << s << "]\n";
+        std::cout << common::Time::since_reset() << " [" << s << "]\n";
     };
 };
 #else
@@ -43,7 +44,7 @@ void display::LCD::init() {
         char msg[17] = {0};
         snprintf(msg, 17, "INIT LCD: %d", d);
         print(msg);
-        delay(50);
+        common::Time::delay(50);
     }
 }
 
