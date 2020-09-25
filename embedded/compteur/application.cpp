@@ -80,10 +80,11 @@ void send_data() {
 }
 
 void application::loop() {
-    DBG("time: %d ms\r\n", Time::since_reset());
+    //DBG("time: %u ms\r\n", Time::since_reset());
     debug::turnBuildinLED(true);
     gather_data();
     send_data();
     debug::turnBuildinLED(false);
+    //Time::delay(100);
     Time::delay(40 + 16 + 2); // adjusted to effectively get 100ms sampling rate
 }

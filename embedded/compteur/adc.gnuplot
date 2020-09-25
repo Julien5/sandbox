@@ -10,5 +10,5 @@ set grid;
 set autoscale fix;
 set xtics 240;
 set ytics 1;
-set yrange [195:220]
+# set yrange [195:220]
 plot "/tmp/adc.csv" with lines

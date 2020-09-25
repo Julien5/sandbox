@@ -9,7 +9,7 @@ namespace histogram {
         u32 count = 0;
     } __attribute__((packed));
 
-    constexpr size_t NBINS = 10;
+    constexpr size_t NBINS = 20;
 
     struct packed {
         packed();

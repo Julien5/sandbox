@@ -156,7 +156,7 @@ void histogram::Histogram::shrink_if_needed() {
 void histogram::Histogram::update(u16 value) {
     // DBG("update:%u\r\n",value);
     if (size() == histogram::NBINS && index(m_packed, value) == NBINS) {
-        // full and value not found => remove the least.
+        // full and value not found => remove the least and TODO: add to its next toward the middle.
         Bin least;
         least.count = count();
         least.value = 0;
