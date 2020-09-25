@@ -35,10 +35,10 @@ class LiquidCrystal {
 
 LiquidCrystal disp(7, 5, 6, 10, 11, 12);
 
-display::LCD::LCD() {
+common::LCD::LCD() {
 }
 
-void display::LCD::init() {
+void common::LCD::init() {
     disp.begin(16, 2);
     for (int d = 0; d < 3; ++d) {
         char msg[17] = {0};
@@ -50,7 +50,7 @@ void display::LCD::init() {
 
 int min_free_memory = 2048;
 int last_memory = 4096;
-void display::LCD::print(const char *msg1, const char *msg2) {
+void common::LCD::print(const char *msg1, const char *msg2) {
     if (msg1) {
         char m1[17] = {0};
         snprintf(m1, 17, "%-16.16s", msg1);
@@ -65,6 +65,6 @@ void display::LCD::print(const char *msg1, const char *msg2) {
     }
 }
 
-void display::LCD::print(const char *msg1) {
+void common::LCD::print(const char *msg1) {
     return print(msg1, 0);
 }
