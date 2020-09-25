@@ -58,7 +58,7 @@ void send_data() {
     auto p = W->post("http://192.168.178.22:8000/post/", data, L, &cb);
     if (p != 0)
         DBG("post result:%d\r\n", int(p)); // TODO error handling.
-    Time::delay(10);
+    common::Time::delay(10);
 }
 
 void application::loop() {
@@ -67,5 +67,5 @@ void application::loop() {
     send_data();
     debug::turnBuildinLED(false);
     DBG("\r\n");
-    Time::delay(200);
+    common::Time::delay(200);
 }

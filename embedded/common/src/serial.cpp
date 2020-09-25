@@ -18,12 +18,12 @@ bool serial::end() {
 
 bool serial::read_until(u8 *addr, const size_t &L, const u16 &timeout) {
     const auto addr0 = addr;
-    u32 t0 = Time::since_reset();
+    u32 t0 = common::Time::since_reset();
     while ((addr - addr0) != int(L)) {
         const auto Lwanted = L - (addr - addr0);
         const u16 timeout_local = 100;
         const auto Lread = read(addr, Lwanted, timeout_local);
-        const auto elapsed = Time::since_reset() - t0;
+        const auto elapsed = common::Time::since_reset() - t0;
         if (timeout > 0 && elapsed > timeout)
             return false;
         if (Lread < 0)

@@ -67,6 +67,6 @@ int compteur::test() {
     while (true) {
         if (U.update())
             U.print();
-        Time::delay(200);
+        common::Time::delay(200);
     }
 }
