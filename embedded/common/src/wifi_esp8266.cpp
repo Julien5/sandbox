@@ -113,7 +113,7 @@ int create_socket(const char *url) {
     int err = getaddrinfo(urlReader.host, urlReader.port, &hints, &res);
     if (err != 0 || res == NULL) {
         DBG("DNS lookup failed err=%d res=%p", err, res);
-        common::Time::delay(1000);
+        common::time::delay(1000);
         return -1;
     }
 
@@ -126,7 +126,7 @@ int create_socket(const char *url) {
         TRACE();
         ESP_LOGE(TAG, "... socket create failed errno=%d", code);
         freeaddrinfo(res);
-        common::Time::delay(1000);
+        common::time::delay(1000);
         assert(code != 0);
         return -1;
     }
@@ -138,7 +138,7 @@ int create_socket(const char *url) {
         ESP_LOGE(TAG, "... socket connect failed errno=%d", code);
         close(s);
         freeaddrinfo(res);
-        common::Time::delay(4000);
+        common::time::delay(4000);
         return -1;
     }
 
@@ -185,7 +185,7 @@ int process_http_request(const char *WEB_URL,
     if (code != 0) {
         TRACE();
         close(s);
-        common::Time::delay(4000);
+        common::time::delay(4000);
         return code;
     }
     code = write_complete(s, const_cast<u8 *>(data), data_length);
@@ -203,7 +203,7 @@ int process_http_request(const char *WEB_URL,
     if (code != 0) {
         TRACE();
         close(s);
-        common::Time::delay(4000);
+        common::time::delay(4000);
         assert(errno != 0);
         return errno;
     }
@@ -226,7 +226,7 @@ int process_http_request(const char *WEB_URL,
             // note: EAGAIN (11) seems to signal end of stream.
             if (errno == EWOULDBLOCK) {
                 // wait a little and retry
-                common::Time::delay(100);
+                common::time::delay(100);
             } else {
                 break;
             }

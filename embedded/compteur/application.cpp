@@ -47,6 +47,7 @@ void gather_data() {
 
 void send_data() {
     wcallback cb;
+
     if (C->total() > 10) {
         usize L = 0;
         const u8 *data = C->data(&L);
@@ -54,7 +55,7 @@ void send_data() {
             auto p = W->post("http://192.168.178.22:8000/post/compteur", data, L, &cb);
             if (p != 0)
                 DBG("post result:%d\r\n", int(p)); // TODO error handling.
-            common::Time::delay(10);
+            common::time::delay(10);
         }
     }
     {
@@ -64,7 +65,7 @@ void send_data() {
             auto p = W->post("http://192.168.178.22:8000/post/adc", data, L, &cb);
             if (p != 0)
                 DBG("post result:%d\r\n", int(p)); // TODO error handling.
-            common::Time::delay(10);
+            common::time::delay(10);
         }
     }
     {
@@ -74,17 +75,17 @@ void send_data() {
             auto p = W->post("http://192.168.178.22:8000/post/histogram", data, L, &cb);
             if (p != 0)
                 DBG("post result:%d\r\n", int(p)); // TODO error handling.
-            common::Time::delay(10);
+            common::time::delay(10);
         }
     }
 }
 
 void application::loop() {
-    //DBG("time: %u ms\r\n", Time::since_reset());
+    //DBG("time: %u ms\r\n", time::since_reset());
     debug::turnBuildinLED(true);
     gather_data();
     send_data();
     debug::turnBuildinLED(false);
     DBG("\r\n");
-    common::Time::delay(40 + 16 + 2); // adjusted to effectively get 100ms sampling rate
+    common::time::delay(40 + 16 + 2); // adjusted to effectively get 100ms sampling rate
 }

@@ -5,7 +5,7 @@
 #if defined(PC)
 void sleep::deep_sleep(const u32 &ms) {
     DBG("deep sleep (=> delay)\n");
-    common::Time::delay(ms);
+    common::time::delay(ms);
 }
 #endif
 
@@ -27,6 +27,6 @@ void sleep::deep_sleep(const u32 &ms) {
     esp_deep_sleep_set_rf_option(0);
     /* Now just wait for the RTC to kill the CPU core */
     esp_deep_sleep(ms * 1000);
-    common::Time::delay(1000);
+    common::time::delay(1000);
 }
 #endif

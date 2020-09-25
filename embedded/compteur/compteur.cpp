@@ -31,7 +31,7 @@ void print_bin(const tickscounter::bin &b) {
 }
 
 bool compteur::update() {
-    const auto t = common::Time::since_reset();
+    const auto t = common::time::since_reset();
     if (t % 100 == 0 && counter.bin_count() > 2) {
         const auto bin0 = counter.getbin(0);
         const auto bin2 = counter.getbin(counter.bin_count() - 2);
@@ -51,7 +51,7 @@ bool compteur::update() {
 }
 
 void compteur::print() {
-    // DBG("time:%4d sec total:%d\n",int(Time::since_reset()/1000),int(counter.total()));
+    // DBG("time:%4d sec total:%d\n",int(time::since_reset()/1000),int(counter.total()));
 }
 
 const u8 *compteur::data(size_t *L) const {
@@ -68,6 +68,6 @@ int compteur::test() {
     while (true) {
         if (U.update())
             U.print();
-        common::Time::delay(200);
+        common::time::delay(200);
     }
 }
