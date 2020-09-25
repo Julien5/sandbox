@@ -2,15 +2,24 @@
 #include "common/debug.h"
 #include "common/time.h"
 #include "common/lcd.h"
+#include "analog.h"
 
 common::LCD lcd;
+
+u16 analog_read() {
+#ifdef PC
+    return analog().read();
+#else
+    return common::analog().read();
+#endif
+}
+
 void display() {
-    for (int d = 0; d < 3; ++d) {
-        char msg[17] = {0};
-        snprintf(msg, 17, "INIT LCD: %d", d);
-        lcd.print(msg);
-        common::time::delay(200);
-    }
+    const auto a = analog_read();
+    char msg[17] = {0};
+    snprintf(msg, 17, "value: %4d", a);
+    DBG("a=%d\r\n", a);
+    lcd.print(msg);
 }
 
 void application::setup() {
@@ -20,10 +29,8 @@ void application::setup() {
 }
 
 void application::loop() {
-    DBG("hi\r\n");
     debug::turnBuildinLED(true);
-    common::time::delay(1000);
     display();
     debug::turnBuildinLED(false);
-    common::time::delay(1000);
+    common::time::delay(250);
 }
