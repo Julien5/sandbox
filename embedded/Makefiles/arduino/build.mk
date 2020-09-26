@@ -44,6 +44,7 @@ flash: hex reset showsize
 	-U flash:w:$(OBJSDIR)/$(NAME).hex:i
 
 monitor:
+	rm -f screenlog.*
 	screen -L $(ARDUINO_PORT) 9600
 
 $(OBJS): $(OBJSDIR)/%.o : $(SRCSDIR)/%.cpp
