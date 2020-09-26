@@ -81,11 +81,12 @@ void send_data() {
 }
 
 void application::loop() {
-    //DBG("time: %u ms\r\n", time::since_reset());
+    u32 t0 = common::time::since_reset();
+    DBG("time: %u ms\r\n", t0);
     debug::turnBuildinLED(true);
     gather_data();
     send_data();
     debug::turnBuildinLED(false);
-    DBG("\r\n");
-    common::time::delay(40 + 16 + 2); // adjusted to effectively get 100ms sampling rate
+    u32 t1 = common::time::since_reset();
+    common::time::delay(100 - (t1 - t0)); // adjusted to effectively get 100ms sampling rate
 }

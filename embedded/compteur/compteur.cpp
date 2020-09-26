@@ -55,7 +55,6 @@ void compteur::print() {
 }
 
 const u8 *compteur::data(size_t *L) const {
-    return 0;
     return reinterpret_cast<const u8 *>(counter.get_packed(L));
 }
 
