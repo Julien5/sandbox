@@ -39,6 +39,10 @@ namespace wifi {
             return 1;
         }
         r->status(status);
+        if (status != 0) {
+            return 4;
+        }
+
         TRACE();
         u16 size = 0; // FIXME: ntoh
         const auto timeout = 5000;
