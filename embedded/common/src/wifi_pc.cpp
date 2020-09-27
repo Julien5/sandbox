@@ -19,11 +19,13 @@ namespace wifi {
 
     int read_wifi_response(serial *S, callback *r) {
         bool ok = false;
+        TRACE();
         while (true) { // FIXME: timeout.
             ok = S->wait_for_begin();
             if (ok)
                 break;
         }
+        TRACE();
         u8 status = 0;
         // at this point, the request has been read and is being executed.
         // Network requests are slow.
@@ -42,8 +44,8 @@ namespace wifi {
         if (status != 0) {
             return 4;
         }
-
         TRACE();
+
         u16 size = 0; // FIXME: ntoh
         const auto timeout = 5000;
         ok = S->read_until(reinterpret_cast<u8 *>(&size), sizeof(size), timeout);
@@ -54,8 +56,8 @@ namespace wifi {
             return 2;
         }
         r->data_length(size);
-        TRACE();
         size_t nread = 0;
+        TRACE();
         while (nread < size) {
             u8 buffer[BLOCK_LENGTH];
             const size_t L = xMin(sizeof(buffer), size - nread);
@@ -76,6 +78,7 @@ namespace wifi {
         ok = S->check_end();
         assert(ok);
         r->crc(ok);
+        TRACE();
         return 0;
     }
 
@@ -102,14 +105,11 @@ namespace wifi {
         const u16 Ltotal = 1 + strlen(url) + 1 + sizeof(Ldata) + Ldata;
         TRACE();
         S->begin();
-        TRACE();
         S->write((u8 *)&Ltotal, sizeof(Ltotal));
-        TRACE();
         S->write((u8 *)&command, sizeof(command));
         S->write((u8 *)url, strlen(url) + 1);
         S->write((u8 *)&Ldata, sizeof(Ldata));
         S->write((u8 *)data, Ldata);
-        TRACE();
         S->end();
         TRACE();
         return read_wifi_response(S.get(), r);

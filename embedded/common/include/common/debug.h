@@ -41,10 +41,6 @@ static std::mutex stdout_mtx;
     do {                                   \
         char buffer[32];                   \
         snprintf(buffer, 32, __VA_ARGS__); \
-        Serial.print(__FILE__);            \
-        Serial.print(":");                 \
-        Serial.print(__LINE__);            \
-        Serial.print(":");                 \
         Serial.print(buffer);              \
         Serial.flush();                    \
     } while (0)

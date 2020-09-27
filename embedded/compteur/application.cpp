@@ -48,21 +48,25 @@ void gather_data() {
 
 void send_data() {
     wcallback cb;
-
+    TRACE();
     {
         usize L = 0;
         const auto *data = C->ticksReader()->adc_data(&L);
         if (data) {
+            DBG("data[0]=%#08x\n", data[0]);
             auto p = W->post("http://192.168.178.22:8000/post/adc", data, L, &cb);
             if (p != 0)
                 DBG("post result:%d\r\n", int(p)); // TODO error handling.
         } else
             return;
     }
+    TRACE();
     debug::turnBuildinLED(true);
     if (C->total() > 10) {
         usize L = 0;
+        TRACE();
         const u8 *data = C->data(&L);
+        TRACE();
         if (data) {
             auto p = W->post("http://192.168.178.22:8000/post/compteur", data, L, &cb);
             if (p != 0)
@@ -70,6 +74,7 @@ void send_data() {
             common::time::delay(10);
         }
     }
+    TRACE();
     {
         usize L = 0;
         const auto *data = C->ticksReader()->histogram_data(&L);
@@ -79,6 +84,7 @@ void send_data() {
                 DBG("post result:%d\r\n", int(p)); // TODO error handling.
         }
     }
+    TRACE();
     {
         usize L = 0;
         const auto *data = status::instance.data(&L);
@@ -89,12 +95,12 @@ void send_data() {
                 DBG("post result:%d\r\n", int(p)); // TODO error handling.
         }
     }
+    TRACE();
     debug::turnBuildinLED(false);
 }
 
 void application::loop() {
     u32 t0 = common::time::since_reset();
-    //DBG("time: %u ms\r\n", t0);
     gather_data();
     send_data();
     u32 t1 = common::time::since_reset();

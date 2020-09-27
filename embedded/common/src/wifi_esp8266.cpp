@@ -226,12 +226,10 @@ int process_http_request(const char *WEB_URL,
             DBG("done reading from socket. Last read return=%d errno=%d\r\n", r, errno);
             // note: EAGAIN (11) seems to signal end of stream.
             if (errno == EWOULDBLOCK) {
-                // wait a little and retry
-                DBG("retry.");
-                common::time::delay(100);
-            } else {
-                break;
+                cb->status(errno);
+                // TODO: wait a little and retry until timeout.
             }
+            break;
         }
     }
     close(s);
