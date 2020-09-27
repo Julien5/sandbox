@@ -100,7 +100,8 @@ struct UrlReader {
     }
 };
 
-int create_socket(const char *url) {
+int create_socket(const char *url, u8 *errcode) {
+    *errcode = 0;
     struct addrinfo hints = {};
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
@@ -113,7 +114,6 @@ int create_socket(const char *url) {
     int err = getaddrinfo(urlReader.host, urlReader.port, &hints, &res);
     if (err != 0 || res == NULL) {
         DBG("DNS lookup failed err=%d res=%p", err, res);
-        common::time::delay(1000);
         return -1;
     }
 
@@ -121,24 +121,22 @@ int create_socket(const char *url) {
     DBG("DNS lookup succeeded. IP=%s\n", inet_ntoa(*addr));
 
     int s = socket(res->ai_family, res->ai_socktype, 0);
-    int code = errno;
+    *errcode = errno;
     if (s < 0) {
         TRACE();
-        ESP_LOGE(TAG, "... socket create failed errno=%d", code);
+        ESP_LOGE(TAG, "... socket create failed errno=%d", *errcode);
         freeaddrinfo(res);
-        common::time::delay(1000);
-        assert(code != 0);
+        assert(*errcode != 0);
         return -1;
     }
     TRACE();
 
     err = connect(s, res->ai_addr, res->ai_addrlen);
-    code = errno;
+    *errcode = errno;
     if (err != 0) {
-        ESP_LOGE(TAG, "... socket connect failed errno=%d", code);
+        ESP_LOGE(TAG, "... socket connect failed errno=%d", *errcode);
         close(s);
         freeaddrinfo(res);
-        common::time::delay(4000);
         return -1;
     }
 
@@ -177,7 +175,12 @@ int process_http_request(const char *WEB_URL,
                          const u8 *data,
                          size_t data_length,
                          wifi::callback *cb) {
-    int s = create_socket(WEB_URL);
+    u8 errcode = 0;
+    int s = create_socket(WEB_URL, &errcode);
+    if (s < 0) {
+        cb->status(errcode);
+        return s;
+    }
     UrlReader urlReader(WEB_URL);
     DBG("request:\n%s\n", request);
 
@@ -185,7 +188,6 @@ int process_http_request(const char *WEB_URL,
     if (code != 0) {
         TRACE();
         close(s);
-        common::time::delay(4000);
         return code;
     }
     code = write_complete(s, const_cast<u8 *>(data), data_length);
@@ -203,7 +205,6 @@ int process_http_request(const char *WEB_URL,
     if (code != 0) {
         TRACE();
         close(s);
-        common::time::delay(4000);
         assert(errno != 0);
         return errno;
     }
@@ -226,6 +227,7 @@ int process_http_request(const char *WEB_URL,
             // note: EAGAIN (11) seems to signal end of stream.
             if (errno == EWOULDBLOCK) {
                 // wait a little and retry
+                DBG("retry.");
                 common::time::delay(100);
             } else {
                 break;

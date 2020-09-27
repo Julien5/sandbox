@@ -7,6 +7,7 @@
 
 #include "application.h"
 #include "compteur.h"
+#include "status.h"
 
 std::unique_ptr<wifi::wifi> W;
 std::unique_ptr<compteur> C;
@@ -22,7 +23,7 @@ class wcallback : public wifi::callback {
     size_t missing_bytes = 0;
     void status(u8 s) {
         DBG("receiving status %d\r\n", int(s));
-        assert(s == 0);
+        //assert(s == 0);
         DBG("memory:%d\r\n", debug::freeMemory());
     }
     void data_length(u16 total_length) {
@@ -36,7 +37,7 @@ class wcallback : public wifi::callback {
     }
     void crc(bool ok) {
         DBG("receiving crc %d\r\n", int(ok));
-        assert(ok);
+        // assert(ok);
         /* error, probably to due error on the serial transmission => retry ? */
     }
 };
@@ -48,6 +49,17 @@ void gather_data() {
 void send_data() {
     wcallback cb;
 
+    {
+        usize L = 0;
+        const auto *data = C->ticksReader()->adc_data(&L);
+        if (data) {
+            auto p = W->post("http://192.168.178.22:8000/post/adc", data, L, &cb);
+            if (p != 0)
+                DBG("post result:%d\r\n", int(p)); // TODO error handling.
+        } else
+            return;
+    }
+    debug::turnBuildinLED(true);
     if (C->total() > 10) {
         usize L = 0;
         const u8 *data = C->data(&L);
@@ -60,33 +72,32 @@ void send_data() {
     }
     {
         usize L = 0;
-        const auto *data = C->ticksReader()->adc_data(&L);
-        if (data) {
-            auto p = W->post("http://192.168.178.22:8000/post/adc", data, L, &cb);
-            if (p != 0)
-                DBG("post result:%d\r\n", int(p)); // TODO error handling.
-            common::time::delay(10);
-        }
-    }
-    {
-        usize L = 0;
         const auto *data = C->ticksReader()->histogram_data(&L);
         if (data) {
             auto p = W->post("http://192.168.178.22:8000/post/histogram", data, L, &cb);
             if (p != 0)
                 DBG("post result:%d\r\n", int(p)); // TODO error handling.
-            common::time::delay(10);
         }
     }
+    {
+        usize L = 0;
+        const auto *data = status::instance.data(&L);
+        DBG("data:%d %d", data[0], data[1]);
+        if (data) {
+            auto p = W->post("http://192.168.178.22:8000/post/status", data, L, &cb);
+            if (p != 0)
+                DBG("post result:%d\r\n", int(p)); // TODO error handling.
+        }
+    }
+    debug::turnBuildinLED(false);
 }
 
 void application::loop() {
     u32 t0 = common::time::since_reset();
-    DBG("time: %u ms\r\n", t0);
-    debug::turnBuildinLED(true);
+    //DBG("time: %u ms\r\n", t0);
     gather_data();
     send_data();
-    debug::turnBuildinLED(false);
     u32 t1 = common::time::since_reset();
-    common::time::delay(100 - (t1 - t0)); // adjusted to effectively get 100ms sampling rate
+    if ((t1 - t0) < 100)
+        common::time::delay(100 - (t1 - t0)); // adjusted to effectively get 100ms sampling rate
 }

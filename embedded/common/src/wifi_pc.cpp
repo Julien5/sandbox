@@ -39,17 +39,18 @@ namespace wifi {
             return 1;
         }
         r->status(status);
-
+        TRACE();
         u16 size = 0; // FIXME: ntoh
-        ok = S->read_until(reinterpret_cast<u8 *>(&size), sizeof(size));
+        const auto timeout = 5000;
+        ok = S->read_until(reinterpret_cast<u8 *>(&size), sizeof(size), timeout);
 
         if (!ok) {
-            assert(0);
+            //assert(0);
             r->crc(false);
             return 2;
         }
         r->data_length(size);
-
+        TRACE();
         size_t nread = 0;
         while (nread < size) {
             u8 buffer[BLOCK_LENGTH];
@@ -67,6 +68,7 @@ namespace wifi {
             r->data(buffer, L);
             nread += L;
         }
+        TRACE();
         ok = S->check_end();
         assert(ok);
         r->crc(ok);
@@ -94,13 +96,18 @@ namespace wifi {
         const char command = 'P';
         //                G   http......    0 + Ldata         + data...
         const u16 Ltotal = 1 + strlen(url) + 1 + sizeof(Ldata) + Ldata;
+        TRACE();
         S->begin();
+        TRACE();
         S->write((u8 *)&Ltotal, sizeof(Ltotal));
+        TRACE();
         S->write((u8 *)&command, sizeof(command));
         S->write((u8 *)url, strlen(url) + 1);
         S->write((u8 *)&Ldata, sizeof(Ldata));
         S->write((u8 *)data, Ldata);
+        TRACE();
         S->end();
+        TRACE();
         return read_wifi_response(S.get(), r);
     }
 }

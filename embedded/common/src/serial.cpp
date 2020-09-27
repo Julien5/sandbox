@@ -62,7 +62,7 @@ bool serial::check_end() {
         DBG("CRC: 0x%02x != 0x%02x\r\n", crc8_received, saved_rx_crc8);
     auto match = crc8_received == saved_rx_crc8;
     if (!match) {
-        assert(0);
+        // assert(0);
     }
     return match;
 }

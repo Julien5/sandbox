@@ -24,8 +24,7 @@ i16 serial::read(u8 *buffer, size_t buffer_size, u16 timeout) {
     return ret;
 }
 
-size_t
-serial::write(u8 *buffer, size_t buffer_size) {
+size_t serial::write(u8 *buffer, size_t buffer_size) {
     size_t ret = SOFT_UART.write(buffer, buffer_size);
     assert(ret <= buffer_size);
     crc::CRC8(&tx_crc8, buffer, ret);

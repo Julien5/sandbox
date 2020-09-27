@@ -37,10 +37,8 @@ class serial_callback : public wifi::callback {
         : output(_s){};
     void status(u8 s) {
         DBG("forwarding status %d \n", int(s));
-        assert(s == 0);
         output->write(&s, sizeof(s));
     }
-
     void data_length(u16 total_length) {
         DBG("forwarding total %d bytes\n", total_length);
         assert(total_length > 0);
@@ -58,6 +56,7 @@ class serial_callback : public wifi::callback {
 
 int k = 0;
 void transmitter::loop_serial() {
+    TRACE();
     if (!S)
         S = std::unique_ptr<serial>(new serial);
     if (!W)
@@ -66,8 +65,9 @@ void transmitter::loop_serial() {
     DBG("waiting for begin");
 
     debug::turnBuildinLED(true);
+    TRACE();
     while (!S->wait_for_begin())
-        DBG("waiting for begin");
+        TRACE();
 
     bool ok = false;
     received::message m;
@@ -98,7 +98,7 @@ void transmitter::loop_serial() {
         DBG("Ldata:%d\n", cmd.Ldata);
         W->post(cmd.url, cmd.data, cmd.Ldata, &cb);
     }
-    DBG("end (1)\n");
+    TRACE();
     S->end();
-    DBG("end (2)\n");
+    TRACE();
 }
