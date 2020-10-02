@@ -18,33 +18,23 @@ bool serial::end() {
 
 bool serial::read_until(u8 *addr, const size_t &L, const u16 &timeout) {
     const auto addr0 = addr;
-    u32 t0 = common::time::since_reset();
     while ((addr - addr0) != int(L)) {
         const auto Lwanted = L - (addr - addr0);
-        const u16 timeout_local = 100;
-        const auto Lread = read(addr, Lwanted, timeout_local);
-        const auto elapsed = common::time::since_reset() - t0;
-        if (timeout > 0 && elapsed > timeout)
-            return false;
-        if (Lread < 0)
+        const auto Lread = read(addr, Lwanted, timeout);
+        if (Lread < 0) // timeout
             return false;
         addr += Lread;
     }
     return true;
 }
 
-bool serial::wait_for_begin() {
-    while (true) {
-        rx_crc8 = 0x00;
-        u8 begin = 0;
-        bool ok = read_until(&begin, sizeof(begin));
-        if (!ok)
-            continue;
-        if (begin == kBegin)
-            break;
-        // DBG("waiting for begin (received 0x%02x)\n",begin);
-    }
-    return true;
+bool serial::wait_for_begin(const u16 &timeout) {
+    rx_crc8 = 0x00;
+    u8 begin = 0;
+    bool ok = read_until(&begin, sizeof(begin), timeout);
+    if (!ok)
+        return false;
+    return (begin == kBegin);
 }
 
 bool serial::check_end() {
@@ -54,7 +44,7 @@ bool serial::check_end() {
     u8 crc8_received = 0;
     auto saved_rx_crc8 = rx_crc8;
     while (true) {
-        bool ok = read_until(reinterpret_cast<u8 *>(&crc8_received), sizeof(crc8_received));
+        bool ok = read_until(reinterpret_cast<u8 *>(&crc8_received), sizeof(crc8_received), 10);
         if (ok)
             break;
     }

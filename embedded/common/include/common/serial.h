@@ -14,8 +14,9 @@ class serial {
     bool begin();
     bool end();
 
-    // used by receiver
-    bool read_until(u8 *addr, const size_t &L, const u16 &timeout = 0);
-    bool wait_for_begin();
+    // loops until L bytes are read.
+    // timeout is passed to read() in the loop.
+    bool read_until(u8 *addr, const size_t &L, const u16 &timeout);
+    bool wait_for_begin(const u16 &timeout);
     bool check_end();
 };

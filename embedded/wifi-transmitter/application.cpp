@@ -66,18 +66,18 @@ void transmitter::loop_serial() {
 
     debug::turnBuildinLED(true);
     TRACE();
-    while (!S->wait_for_begin())
+    while (!S->wait_for_begin(1000))
         TRACE();
 
     bool ok = false;
     received::message m;
-    ok = S->read_until(reinterpret_cast<u8 *>(&m.length), sizeof(m.length));
+    ok = S->read_until(reinterpret_cast<u8 *>(&m.length), sizeof(m.length), 10);
     DBG("read serial: %d\n", m.length);
     if (!ok) {
         DBG("nothing to read.\n");
         return;
     }
-    ok = S->read_until(m.data, m.length);
+    ok = S->read_until(m.data, m.length, 10);
     if (!ok) {
         DBG("failed to read data\n");
         return;
@@ -90,6 +90,7 @@ void transmitter::loop_serial() {
     received::wifi_command cmd = received::read_wifi_command(m);
     /* process cmd */
     DBG("process %s\n", cmd.url);
+
     S->begin();
     serial_callback cb(S.get());
     if (cmd.command == 'G')

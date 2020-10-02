@@ -1,3 +1,4 @@
+#include "common/time.h"
 #include "common/wifi.h"
 #include "common/serial.h"
 #include "common/debug.h"
@@ -20,56 +21,49 @@ namespace wifi {
     int read_wifi_response(serial *S, callback *r) {
         bool ok = false;
         TRACE();
-        while (true) { // FIXME: timeout.
-            ok = S->wait_for_begin();
-            if (ok)
-                break;
-        }
-        TRACE();
-        u8 status = 0;
-        // at this point, the request has been read and is being executed.
+        // at this point, the request has been read, which is fast
+        if (!S->wait_for_begin(250))
+            return 1;
+
+        // at this point, 3 things happen on the peer:
+        // 1. the connection to the URL is being established, request
+        // 2. send request
+        // 3. receive response
         // Network requests are slow.
-        // Timeout is set to 100ms.
-        // lets say 20 secs => 200 trials
-        u8 trials = 200;
-        ok = false;
-        while (!ok && trials--)
-            ok = S->read_until(&status, sizeof(status));
+        // If all goes well, status=0 is sent.
+        u8 status = 0;
+        ok = S->read_until(&status, sizeof(status), 3000);
         if (!ok) {
             assert(0);
-            r->crc(false);
-            return 1;
+            return 2;
         }
         r->status(status);
         if (status != 0) {
+            return 3;
+        }
+
+        // now we prepare receiving the data: first the size, then the data.
+        // the timeout is short since the data are complete on the peer.
+        u16 size = 0;
+        ok = S->read_until(reinterpret_cast<u8 *>(&size), sizeof(size), 10);
+        if (!ok) {
             return 4;
         }
-        TRACE();
-
-        u16 size = 0; // FIXME: ntoh
-        const auto timeout = 5000;
-        ok = S->read_until(reinterpret_cast<u8 *>(&size), sizeof(size), timeout);
-
-        if (!ok) {
-            //assert(0);
-            r->crc(false);
-            return 2;
-        }
         r->data_length(size);
+
         size_t nread = 0;
         TRACE();
         while (nread < size) {
             u8 buffer[BLOCK_LENGTH];
             const size_t L = xMin(sizeof(buffer), size - nread);
-            ok = S->read_until(buffer, L);
+            auto ok = S->read_until(buffer, L, 10);
 #if !defined(NDEBUG)
             DBG("memory:%d\r\n", debug::freeMemory());
 #endif
             if (!ok) {
                 DBG("nread:%d\r\n", nread);
                 assert(0);
-                r->crc(false);
-                return 3;
+                return 5;
             }
             r->data(buffer, L);
             nread += L;
@@ -77,7 +71,6 @@ namespace wifi {
         TRACE();
         ok = S->check_end();
         assert(ok);
-        r->crc(ok);
         TRACE();
         return 0;
     }

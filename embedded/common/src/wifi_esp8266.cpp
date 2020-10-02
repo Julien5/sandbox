@@ -178,6 +178,7 @@ int process_http_request(const char *WEB_URL,
     u8 errcode = 0;
     int s = create_socket(WEB_URL, &errcode);
     if (s < 0) {
+        TRACE();
         cb->status(errcode);
         return s;
     }
@@ -187,12 +188,13 @@ int process_http_request(const char *WEB_URL,
     auto code = write_complete(s, (u8 *)request, strlen(request));
     if (code != 0) {
         TRACE();
+        cb->status(code);
         close(s);
         return code;
     }
     code = write_complete(s, const_cast<u8 *>(data), data_length);
-    cb->status(code);
     if (code != 0) {
+        cb->status(code);
         close(s);
         DBG("failed writing: errno=%d\r\n", code);
         return code;
@@ -204,6 +206,7 @@ int process_http_request(const char *WEB_URL,
     code = setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &receiving_timeout, sizeof(receiving_timeout));
     if (code != 0) {
         TRACE();
+        cb->status(errno);
         close(s);
         assert(errno != 0);
         return errno;
@@ -226,7 +229,6 @@ int process_http_request(const char *WEB_URL,
             DBG("done reading from socket. Last read return=%d errno=%d\r\n", r, errno);
             // note: EAGAIN (11) seems to signal end of stream.
             if (errno == EWOULDBLOCK) {
-                cb->status(errno);
                 // TODO: wait a little and retry until timeout.
             }
             break;
@@ -234,6 +236,7 @@ int process_http_request(const char *WEB_URL,
     }
     close(s);
 
+    cb->status(0);
     cb->data_length(buffer_size);
 
     // send chunk-wise so that arduino read buffer does not overflow.

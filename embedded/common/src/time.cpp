@@ -16,6 +16,10 @@ u64 common::time::since_epoch() {
     return common::time::epoch_offset + since_reset();
 }
 
+u32 common::time::elapsed_since(const u32 t0) {
+    return common::time::since_reset() - t0;
+}
+
 #if defined(PC)
 #include <atomic>
 typedef u32 test_ms;

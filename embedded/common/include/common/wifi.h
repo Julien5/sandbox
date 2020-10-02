@@ -10,7 +10,6 @@ namespace wifi {
         virtual void status(u8 s) = 0;
         virtual void data_length(u16 total_length) = 0;
         virtual void data(u8 *data, size_t length) = 0;
-        virtual void crc(bool ok) = 0;
     };
 
     class wifi {
