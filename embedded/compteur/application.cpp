@@ -43,7 +43,7 @@ void on_error(const int code) {
     DBG("post result:%d\r\n", int(code)); // TODO error handling.
     if (code == 0)
         return;
-    common::time::delay(5000);
+    common::time::delay(500);
 }
 
 void send_data() {

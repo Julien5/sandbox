@@ -22,8 +22,9 @@ namespace wifi {
         bool ok = false;
         TRACE();
         // at this point, the request has been read, which is fast
-        if (!S->wait_for_begin(2500))
+        if (!S->wait_for_begin(100))
             return 1;
+        common::time::delay(100);
 
         // at this point, 3 things happen on the peer:
         // 1. the connection to the URL is being established, request
@@ -32,7 +33,8 @@ namespace wifi {
         // Network requests are slow.
         // If all goes well, status=0 is sent.
         u8 status = 0;
-        ok = S->read_until(&status, sizeof(status), 3000);
+        ok = S->read_until(&status, sizeof(status), 5000);
+        common::time::delay(100);
         if (!ok) {
             return 2;
         }
@@ -45,6 +47,7 @@ namespace wifi {
         // the timeout is short since the data are complete on the peer.
         u16 size = 0;
         ok = S->read_until(reinterpret_cast<u8 *>(&size), sizeof(size), 10);
+        common::time::delay(100);
         if (!ok) {
             return 4;
         }
@@ -57,6 +60,7 @@ namespace wifi {
             const size_t L = xMin(sizeof(buffer), size - nread);
             TRACE();
             auto ok = S->read_until(buffer, L, 10);
+            common::time::delay(100);
             TRACE();
 #if !defined(NDEBUG)
             DBG("memory:%d\r\n", debug::freeMemory());
@@ -70,6 +74,7 @@ namespace wifi {
         }
         TRACE();
         ok = S->check_end();
+        common::time::delay(100);
         TRACE();
         return ok ? 0 : 6;
     }
@@ -104,7 +109,7 @@ namespace wifi {
         S->write((u8 *)data, Ldata);
         S->end();
         TRACE();
-        common::time::delay(500);
+        common::time::delay(100);
         int ret = read_wifi_response(S.get(), r);
         return ret;
     }
