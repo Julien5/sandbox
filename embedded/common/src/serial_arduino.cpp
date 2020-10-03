@@ -1,5 +1,6 @@
 #include "common/serial.h"
 #include "common/debug.h"
+#include "common/time.h"
 #include "crc.h"
 
 #include "AltSoftSerial.h"
@@ -23,8 +24,10 @@ void serial::reset() {
 }
 
 i16 serial::read(u8 *buffer, size_t buffer_size, u16 timeout) {
-    SOFT_UART.setTimeout(timeout);
+    auto soft_uart_timeout = xMax(timeout, u16(100));
+    SOFT_UART.setTimeout(soft_uart_timeout);
     size_t ret = SOFT_UART.readBytes((char *)buffer, buffer_size);
+    common::time::delay(100);
     crc::CRC8(&rx_crc8, buffer, ret);
     return ret;
 }
