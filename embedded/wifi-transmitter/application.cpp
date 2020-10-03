@@ -41,16 +41,11 @@ class serial_callback : public wifi::callback {
     }
     void data_length(u16 total_length) {
         DBG("forwarding total %d bytes\n", total_length);
-        assert(total_length > 0);
         output->write(reinterpret_cast<u8 *>(&total_length), sizeof(total_length));
     }
     void data(u8 *data, size_t length) {
         DBG("forwarding %d bytes\n", length);
         output->write(data, length);
-    }
-    void crc(bool ok) {
-        // should not be called.
-        assert(0);
     }
 };
 
@@ -77,7 +72,7 @@ void transmitter::loop_serial() {
         DBG("nothing to read.\n");
         return;
     }
-    ok = S->read_until(m.data, m.length, 10);
+    ok = S->read_until(m.data, m.length, 100);
     if (!ok) {
         DBG("failed to read data\n");
         return;

@@ -13,6 +13,7 @@ class serial {
     size_t write(u8 *buffer, size_t buffer_size);
     bool begin();
     bool end();
+    void reset();
 
     // loops until L bytes are read.
     // timeout is passed to read() in the loop.

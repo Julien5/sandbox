@@ -23,27 +23,27 @@ class wcallback : public wifi::callback {
     size_t missing_bytes = 0;
     void status(u8 s) {
         DBG("receiving status %d\r\n", int(s));
-        //assert(s == 0);
         DBG("memory:%d\r\n", debug::freeMemory());
     }
     void data_length(u16 total_length) {
         DBG("receiving total %d bytes\r\n", int(total_length));
-        assert(total_length < 10000);
         missing_bytes = total_length;
     }
     void data(u8 *data, size_t length) {
         missing_bytes -= length;
         DBG("length %d missing %d\r\n", int(length), int(missing_bytes));
     }
-    void crc(bool ok) {
-        DBG("receiving crc %d\r\n", int(ok));
-        // assert(ok);
-        /* error, probably to due error on the serial transmission => retry ? */
-    }
 };
 
 void gather_data() {
     C->update();
+}
+
+void on_error(const int code) {
+    DBG("post result:%d\r\n", int(code)); // TODO error handling.
+    if (code == 0)
+        return;
+    common::time::delay(5000);
 }
 
 void send_data() {
@@ -55,8 +55,7 @@ void send_data() {
         if (data) {
             DBG("data[0]=%#08x\n", data[0]);
             auto p = W->post("http://192.168.178.22:8000/post/adc", data, L, &cb);
-            if (p != 0)
-                DBG("post result:%d\r\n", int(p)); // TODO error handling.
+            on_error(p);
         } else
             return;
     }
@@ -69,9 +68,7 @@ void send_data() {
         TRACE();
         if (data) {
             auto p = W->post("http://192.168.178.22:8000/post/compteur", data, L, &cb);
-            if (p != 0)
-                DBG("post result:%d\r\n", int(p)); // TODO error handling.
-            common::time::delay(10);
+            on_error(p);
         }
     }
     TRACE();
@@ -80,8 +77,7 @@ void send_data() {
         const auto *data = C->ticksReader()->histogram_data(&L);
         if (data) {
             auto p = W->post("http://192.168.178.22:8000/post/histogram", data, L, &cb);
-            if (p != 0)
-                DBG("post result:%d\r\n", int(p)); // TODO error handling.
+            on_error(p);
         }
     }
     TRACE();
@@ -91,8 +87,7 @@ void send_data() {
         DBG("data:%d %d", data[0], data[1]);
         if (data) {
             auto p = W->post("http://192.168.178.22:8000/post/status", data, L, &cb);
-            if (p != 0)
-                DBG("post result:%d\r\n", int(p)); // TODO error handling.
+            on_error(p);
         }
     }
     TRACE();

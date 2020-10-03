@@ -22,7 +22,7 @@ namespace wifi {
         bool ok = false;
         TRACE();
         // at this point, the request has been read, which is fast
-        if (!S->wait_for_begin(250))
+        if (!S->wait_for_begin(2500))
             return 1;
 
         // at this point, 3 things happen on the peer:
@@ -34,7 +34,6 @@ namespace wifi {
         u8 status = 0;
         ok = S->read_until(&status, sizeof(status), 3000);
         if (!ok) {
-            assert(0);
             return 2;
         }
         r->status(status);
@@ -56,13 +55,14 @@ namespace wifi {
         while (nread < size) {
             u8 buffer[BLOCK_LENGTH];
             const size_t L = xMin(sizeof(buffer), size - nread);
+            TRACE();
             auto ok = S->read_until(buffer, L, 10);
+            TRACE();
 #if !defined(NDEBUG)
             DBG("memory:%d\r\n", debug::freeMemory());
 #endif
             if (!ok) {
                 DBG("nread:%d\r\n", nread);
-                assert(0);
                 return 5;
             }
             r->data(buffer, L);
@@ -70,9 +70,8 @@ namespace wifi {
         }
         TRACE();
         ok = S->check_end();
-        assert(ok);
         TRACE();
-        return 0;
+        return ok ? 0 : 6;
     }
 
     int wifi::get(const char *url, callback *r) {
@@ -105,6 +104,8 @@ namespace wifi {
         S->write((u8 *)data, Ldata);
         S->end();
         TRACE();
-        return read_wifi_response(S.get(), r);
+        common::time::delay(500);
+        int ret = read_wifi_response(S.get(), r);
+        return ret;
     }
 }
