@@ -51,13 +51,10 @@ namespace wifi {
         r->data_length(size);
 
         size_t nread = 0;
-        TRACE();
         while (nread < size) {
             u8 buffer[BLOCK_LENGTH];
             const size_t L = xMin(sizeof(buffer), size - nread);
-            TRACE();
             auto ok = S->read_until(buffer, L, 10);
-            TRACE();
 #if !defined(NDEBUG)
             DBG("memory:%d\r\n", debug::freeMemory());
 #endif
@@ -68,9 +65,7 @@ namespace wifi {
             r->data(buffer, L);
             nread += L;
         }
-        TRACE();
         ok = S->check_end();
-        TRACE();
         return ok ? 0 : 6;
     }
 

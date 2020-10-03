@@ -46,32 +46,38 @@ void on_error(const int code) {
     common::time::delay(500);
 }
 
+class LEDRAI {
+  public:
+    LEDRAI() {
+        debug::turnBuildinLED(true);
+    }
+    ~LEDRAI() {
+        debug::turnBuildinLED(false);
+    }
+};
+
 void send_data() {
+    LEDRAI ledrai;
     wcallback cb;
-    TRACE();
     {
         usize L = 0;
         const auto *data = C->ticksReader()->adc_data(&L);
         if (data) {
-            DBG("data[0]=%#08x\n", data[0]);
             auto p = W->post("http://192.168.178.22:8000/post/adc", data, L, &cb);
             on_error(p);
         } else
             return;
     }
-    TRACE();
-    debug::turnBuildinLED(true);
-    if (C->total() > 10) {
+
+    if (C->total() > 0) {
         usize L = 0;
-        TRACE();
         const u8 *data = C->data(&L);
-        TRACE();
         if (data) {
             auto p = W->post("http://192.168.178.22:8000/post/compteur", data, L, &cb);
             on_error(p);
         }
     }
-    TRACE();
+
     {
         usize L = 0;
         const auto *data = C->ticksReader()->histogram_data(&L);
@@ -80,7 +86,7 @@ void send_data() {
             on_error(p);
         }
     }
-    TRACE();
+
     {
         usize L = 0;
         const auto *data = status::instance.data(&L);
@@ -90,8 +96,6 @@ void send_data() {
             on_error(p);
         }
     }
-    TRACE();
-    debug::turnBuildinLED(false);
 }
 
 void application::loop() {
