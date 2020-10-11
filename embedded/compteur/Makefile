@@ -1,5 +1,4 @@
 NAME:=compteur
-MAKEFILESDIR := ../Makefiles
 SRCSDIR := .
 
 include $(MAKEFILESDIR)/settings
