@@ -3,6 +3,8 @@
 #include "common/utils.h"
 #include "common/time.h"
 
+using namespace common;
+
 const u8 kBegin = 0xFF;
 
 bool serial::begin() {

@@ -8,17 +8,17 @@
 #define BLOCK_LENGTH 32
 
 namespace wifi {
-    std::unique_ptr<serial> S;
+    std::unique_ptr<common::serial> S;
     wifi::wifi() {
         assert(!S);
-        S = std::unique_ptr<serial>(new serial);
+        S = std::unique_ptr<common::serial>(new common::serial);
         debug::address_range("wifi:", this, sizeof(*this));
     }
 
     wifi::~wifi() {
     }
 
-    int read_wifi_response(serial *S, callback *r) {
+    int read_wifi_response(common::serial *S, callback *r) {
         bool ok = false;
         TRACE();
         // at this point, the request has been read, which is fast

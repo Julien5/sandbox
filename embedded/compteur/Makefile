@@ -1,3 +1,5 @@
+include ../Makefiles/settings
+
 NAME:=compteur
 SRCSDIR := .
 

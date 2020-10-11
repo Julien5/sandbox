@@ -1,6 +1,7 @@
 #include "application.h"
 #include "common/debug.h"
 #include "common/time.h"
+#include "common/serial.h"
 
 void application::setup() {
     debug::init_serial();
@@ -15,5 +16,6 @@ void application::loop() {
     debug::turnBuildinLED(true);
     common::time::delay(1000);
     debug::turnBuildinLED(false);
-    common::time::delay(1000);
+
+    common::time::delay(100);
 }

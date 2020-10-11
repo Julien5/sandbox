@@ -9,7 +9,7 @@
 
 // #define DISABLE_SERIAL
 
-serial::serial() {
+common::serial::serial() {
 #ifdef DISABLE_SERIAL
     return;
 #endif
@@ -25,7 +25,7 @@ serial::serial() {
     uart_driver_install(PORT, BUF_SIZE * 2, BUF_SIZE * 2, 0, NULL);
 }
 
-i16 serial::read(u8 *buffer, size_t buffer_size, u16 timeout) {
+i16 common::serial::read(u8 *buffer, size_t buffer_size, u16 timeout) {
 #ifdef DISABLE_SERIAL
     return 0;
 #endif
@@ -38,12 +38,11 @@ i16 serial::read(u8 *buffer, size_t buffer_size, u16 timeout) {
     return ret;
 }
 
-size_t
-serial::write(u8 *buffer, size_t buffer_size) {
+usize common::serial::write(u8 *buffer, size_t buffer_size) {
 #ifdef DISABLE_SERIAL
     return 0;
 #endif
-    size_t ret = uart_write_bytes(PORT, (const char *)buffer, buffer_size);
+    usize ret = uart_write_bytes(PORT, (const char *)buffer, buffer_size);
     crc::CRC8(&tx_crc8, buffer, buffer_size);
     return ret;
 }

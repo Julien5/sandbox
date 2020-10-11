@@ -10,7 +10,7 @@
 
 #include "message.h"
 
-std::unique_ptr<serial> S = nullptr;
+std::unique_ptr<common::serial> S = nullptr;
 
 #ifdef PC
 #include "wifi_curl.h"
@@ -30,10 +30,10 @@ void transmitter::setup() {
 #include <chrono>
 
 class serial_callback : public wifi::callback {
-    serial *output;
+    common::serial *output;
 
   public:
-    serial_callback(serial *_s)
+    serial_callback(common::serial *_s)
         : output(_s){};
     void status(u8 s) {
         DBG("forwarding status %d \n", int(s));
@@ -53,7 +53,7 @@ int k = 0;
 void transmitter::loop_serial() {
     TRACE();
     if (!S)
-        S = std::unique_ptr<serial>(new serial);
+        S = std::unique_ptr<common::serial>(new common::serial);
     if (!W)
         W = std::unique_ptr<wifi::WIFI>(new wifi::WIFI);
 

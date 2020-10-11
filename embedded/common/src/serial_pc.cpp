@@ -46,14 +46,14 @@ namespace {
 
 struct G {
     std::mutex mtx;
-    std::map<serial *, int> m;
+    std::map<common::serial *, int> m;
     static int counter;
-    int get(serial *s) {
+    int get(common::serial *s) {
         std::unique_lock<std::mutex> lock(mtx);
         auto ret = m[s];
         return ret;
     }
-    void record(serial *s) {
+    void record(common::serial *s) {
         std::unique_lock<std::mutex> lock(mtx);
         m[s] = counter++;
     }
@@ -65,11 +65,11 @@ namespace {
 
 int G::counter = 0;
 
-serial::serial() {
+common::serial::serial() {
     s_map.record(this);
 }
 
-i16 serial::read(u8 *buffer, size_t buffer_size, u16 timeout) {
+i16 common::serial::read(u8 *buffer, size_t buffer_size, u16 timeout) {
     auto &buf = s_map.get(this) == 0 ? s_rxbuffer : s_txbuffer;
     const auto Lread = buf.read(buffer, buffer_size, timeout);
     if (Lread < 0) {
@@ -84,8 +84,7 @@ void write_file(u8 *buffer, size_t buffer_size) {
     f.write(reinterpret_cast<char *>(buffer), buffer_size);
 }
 
-size_t
-serial::write(u8 *buffer, size_t buffer_size) {
+size_t common::serial::write(u8 *buffer, size_t buffer_size) {
     write_file(buffer, buffer_size);
     auto &buf = s_map.get(this) == 0 ? s_txbuffer : s_rxbuffer;
     buf.write(buffer, buffer_size);
