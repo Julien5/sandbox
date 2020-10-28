@@ -181,7 +181,7 @@ int parse_test() {
 
 char pmessage[16];
 bool pget(char **m) {
-    snprintf(pmessage, 16, "%u for %02d:%02d", 1, 2, 3);
+    snprintf(pmessage, sizeof(pmessage), "%u for %02d:%02d", 1, 2, 3);
     DBG(pmessage);
     *m = pmessage;
     DBG(*m);

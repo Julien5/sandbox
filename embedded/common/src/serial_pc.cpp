@@ -69,7 +69,7 @@ common::serial::serial() {
     s_map.record(this);
 }
 
-i16 common::serial::read(u8 *buffer, size_t buffer_size, u16 timeout) {
+usize common::serial::read(u8 *buffer, usize buffer_size, u16 timeout) {
     auto &buf = s_map.get(this) == 0 ? s_rxbuffer : s_txbuffer;
     const auto Lread = buf.read(buffer, buffer_size, timeout);
     if (Lread < 0) {

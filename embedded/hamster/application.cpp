@@ -85,7 +85,7 @@ namespace get {
 void update_display_wifi(wifi::interface &esp) {
     char line2[17] = {0};
     if (!get::message(esp, line2))
-        snprintf(line2, 17, "%s", "(no message)");
+        snprintf(line2, sizeof(line2), "%s", "(no message)");
     display::lcd.print(0, line2);
 }
 
@@ -95,7 +95,7 @@ char try_upload_statistics(wifi::interface &esp) {
     int ret = esp.post("tickscounter", data, length, 0);
     if (ret != 0) {
         char msg[16];
-        snprintf(msg, 16, "post error: %d", ret);
+        snprintf(msg, sizeof(msg), "post error: %d", ret);
         display::lcd.print(msg);
         delay(200);
         return 1;
@@ -125,7 +125,7 @@ int test_upload(wifi::interface &esp) {
     int d = esp.test_upload();
     if (d != 0) {
         char msg[16];
-        snprintf(msg, 16, "test error: %d", d);
+        snprintf(msg, sizeof(msg), "test error: %d", d);
         display::lcd.print(msg);
         return false;
     } else {
@@ -222,9 +222,9 @@ void update_display_local() {
         char f3[5] = {0};
         ui::format(int(b.m_count), f3, sizeof(f3));
         DBG(int(b.m_count));
-        snprintf(line1, 17, "%s.%s.%s.%2d", f1, f2, f3, int(bin_indx + 1));
+        snprintf(line1, sizeof(line1), "%s.%s.%s.%2d", f1, f2, f3, int(bin_indx + 1));
     } else
-        snprintf(line1, 17, "no ticks");
+        snprintf(line1, sizeof(line1), "no ticks");
     display::lcd.print(line1, 0);
 
     bin_indx++;

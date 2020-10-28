@@ -42,7 +42,7 @@ void common::LCD::init() {
     disp.begin(16, 2);
     for (int d = 0; d < 3; ++d) {
         char msg[17] = {0};
-        snprintf(msg, 17, "INIT LCD: %d", d);
+        snprintf(msg, sizeof(msg), "INIT LCD: %d", d);
         print(msg);
         common::time::delay(50);
     }
@@ -53,13 +53,13 @@ int last_memory = 4096;
 void common::LCD::print(const char *msg1, const char *msg2) {
     if (msg1) {
         char m1[17] = {0};
-        snprintf(m1, 17, "%-16.16s", msg1);
+        snprintf(m1, sizeof(m1), "%-16.16s", msg1);
         disp.setCursor(0, 0);
         disp.print(m1);
     }
     if (msg2) {
         char m2[17] = {0};
-        snprintf(m2, 17, "%-16.16s", msg2);
+        snprintf(m2, sizeof(m2), "%-16.16s", msg2);
         disp.setCursor(0, 1);
         disp.print(m2);
     }

@@ -257,10 +257,10 @@ int process_http_request(const char *WEB_URL,
 int get(const char *WEB_URL, wifi::callback *cb) {
     UrlReader urlReader(WEB_URL);
     char request[256] = {0};
-    snprintf(request, 256, "GET %s HTTP/1.0\r\n"
-                           "Host: %s\n"
-                           "User-Agent: esp-idf/1.0 esp8266\r\n"
-                           "\r\n",
+    snprintf(request, sizeof(request), "GET %s HTTP/1.0\r\n"
+                                       "Host: %s\n"
+                                       "User-Agent: esp-idf/1.0 esp8266\r\n"
+                                       "\r\n",
              urlReader.path,
              urlReader.host);
     return process_http_request(WEB_URL, request, 0, 0, cb);
@@ -275,13 +275,13 @@ int post(const char *WEB_URL, const u8 *data, size_t data_length, wifi::callback
     // > Content-Type: application/x-www-form-urlencoded
     UrlReader urlReader(WEB_URL);
     char request[256] = {0};
-    snprintf(request, 256, "POST %s HTTP/1.1\r\n"
-                           "Host: %s\n"
-                           "User-Agent: esp-idf/1.0 esp8266\r\n"
-                           "Accept: */*\r\n"
-                           "Content-Length: %d\r\n"
-                           "Content-Type: application/octet-stream\r\n"
-                           "\r\n",
+    snprintf(request, sizeof(request), "POST %s HTTP/1.1\r\n"
+                                       "Host: %s\n"
+                                       "User-Agent: esp-idf/1.0 esp8266\r\n"
+                                       "Accept: */*\r\n"
+                                       "Content-Length: %d\r\n"
+                                       "Content-Type: application/octet-stream\r\n"
+                                       "\r\n",
              urlReader.path,
              urlReader.host,
              data_length);

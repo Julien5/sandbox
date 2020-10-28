@@ -302,10 +302,10 @@ bool wifi::esp8266::get(const char *req, char **response) {
         return false;
 
     char request[128] = {0};
-    snprintf(request, 128, "GET /%s HTTP/1.1\r\n\r\n", req);
+    snprintf(request, sizeof(request), "GET /%s HTTP/1.1\r\n\r\n", req);
 
     char cipsend[32] = {0};
-    snprintf(cipsend, 32, "AT+CIPSEND=%d", strlen(request) + 2);
+    snprintf(cipsend, sizeof(cipsend), "AT+CIPSEND=%d", strlen(request) + 2);
 
     const char ok = sendCommandAndWaitForResponse(cipsend, short_timeout);
     if ((ok & options::wait_for_ok) == 0)
@@ -334,15 +334,15 @@ int wifi::esp8266::post(const char *req, const u8 *data, const int Ldata, char *
         return 1;
 
     char contentlength[32] = {0};
-    snprintf(contentlength, 32, "Content-Length: %d", Ldata);
+    snprintf(contentlength, sizeof(contentlength), "Content-Length: %d", Ldata);
 
     char request[128] = {0};
-    snprintf(request, 128, "POST %s HTTP/1.1\r\n"
-                           "%s\n"
-                           "%s\n"
-                           "%s\n"
-                           "%s\n"
-                           "\n",
+    snprintf(request, sizeof(request), "POST %s HTTP/1.1\r\n"
+                                       "%s\n"
+                                       "%s\n"
+                                       "%s\n"
+                                       "%s\n"
+                                       "\n",
              req,
              "Host: pi.fritz.box",
              "Accept: */*",
@@ -355,7 +355,7 @@ int wifi::esp8266::post(const char *req, const u8 *data, const int Ldata, char *
     const int Lr = k;
 
     char cipsend[32] = {0};
-    snprintf(cipsend, 32, "AT+CIPSEND=%d", Lr + 2);
+    snprintf(cipsend, sizeof(cipsend), "AT+CIPSEND=%d", Lr + 2);
 
     unsigned char ok = 0;
     char trials = 1;

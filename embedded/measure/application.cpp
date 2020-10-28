@@ -17,7 +17,7 @@ u16 analog_read() {
 void display() {
     const auto a = analog_read();
     char msg[17] = {0};
-    snprintf(msg, 17, "value: %4d", a);
+    snprintf(msg, sizeof(msg), "value: %4d", a);
     DBG("a=%d\r\n", a);
     lcd.print(msg);
 }
