@@ -7,6 +7,18 @@
 
 AltSoftSerial SOFT_UART;
 
+/*
+Board	Transmit Pin	Receive Pin	Unusable PWM
+Teensy 3.5 / 3.6	21	20	22
+Teensy 3.0 / 3.1 / 3.2	21	20	22
+Teensy 2.0	9	10	(none)
+Teensy++ 2.0	25	4	26, 27
+Arduino Uno, Duemilanove,
+LilyPad, Mini (& other ATMEGA328)	9	8	10
+
+=> TX = 9, RX = 8
+ */
+
 namespace delme {
     int available() {
         return SOFT_UART.available();

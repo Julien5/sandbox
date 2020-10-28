@@ -25,7 +25,7 @@ common::serial::serial() {
     uart_driver_install(PORT, BUF_SIZE * 2, BUF_SIZE * 2, 0, NULL);
 }
 
-i16 common::serial::read(u8 *buffer, size_t buffer_size, u16 timeout) {
+usize common::serial::read(u8 *buffer, usize buffer_size, u16 timeout) {
 #ifdef DISABLE_SERIAL
     return 0;
 #endif
@@ -38,7 +38,7 @@ i16 common::serial::read(u8 *buffer, size_t buffer_size, u16 timeout) {
     return ret;
 }
 
-usize common::serial::write(u8 *buffer, size_t buffer_size) {
+usize common::serial::write(u8 *buffer, usize buffer_size) {
 #ifdef DISABLE_SERIAL
     return 0;
 #endif

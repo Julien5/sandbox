@@ -25,12 +25,18 @@ const char prefix[] = "<arduino>";
 #endif
 
 void application::loop() {
-    TRACE();
+    // TRACE();
     u8 recv[256] = {0};
+    common::time::delay(50);
     debug::turnBuildinLED(true);
-    const usize Lr = S->read(recv, sizeof(recv), 1000);
+    DBG("reading ... ");
+    const usize Lr = S->read(recv, sizeof(recv), 100);
+    DBG("'%s' Lr=%d\r\n", (char *)recv, int(Lr));
     u8 send[512] = {0};
-    snprintf((char *)send, xMin(Lr, sizeof(send)), "%s[%d]%s", prefix, (int)Lr, (char *)recv);
+    snprintf((char *)send, sizeof(send), "%s[%d]%s", prefix, (int)Lr, (char *)recv);
+    // DBG("writing '%s'... ", send);
+    // const auto Lw = S->write(send, sizeof(send));
+    // DBG("Lw=%d\r\n", int(Lw));
     debug::turnBuildinLED(false);
     common::time::delay(100);
 }
