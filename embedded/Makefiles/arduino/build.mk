@@ -30,11 +30,11 @@ showsize: elf
 	$(AVRSIZE) --mcu=atmega328p -C --format=avr  $(OBJSDIR)/$(NAME).elf
 
 #  uno: ttyACM? 115200
-ARDUINO_PORT:=/dev/ttyACM0
-ARDUINO_BAUD:=115200
+#ARDUINO_PORT:=/dev/ttyACM0
+#ARDUINO_BAUD:=115200
 # nano: ttyUSB? 57600
-#ARDUINO_PORT:=/dev/ttyUSB0
-#ARDUINO_BAUD:=57600
+ARDUINO_PORT:=/dev/ttyUSB0
+ARDUINO_BAUD:=57600
 
 reset:
 	@$(if $(strip $(ARDUINO_PORT)),,echo could not find arduino port!)

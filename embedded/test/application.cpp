@@ -6,9 +6,10 @@
 std::unique_ptr<common::serial> S;
 
 void application::setup() {
-    S = std::unique_ptr<common::serial>(new common::serial);
     debug::init_serial();
-    DBG("test");
+    TRACE();
+    S = std::unique_ptr<common::serial>(new common::serial);
+    TRACE();
 #ifdef ARDUINO
     char *c = malloc(1);
     DBG("%d\r\n", int(c));
@@ -24,8 +25,7 @@ const char prefix[] = "<arduino>";
 #endif
 
 void application::loop() {
-    DBG("hi\r\n");
-    return;
+    TRACE();
     u8 recv[256] = {0};
     debug::turnBuildinLED(true);
     const usize Lr = S->read(recv, sizeof(recv), 1000);
