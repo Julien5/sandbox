@@ -37,7 +37,7 @@ flash: elf
 	0x8000 /tmp/build/esp8266/core//partitions_singleapp.bin
 
 monitor:
-	python /opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/tools/idf_monitor.py --baud 74880 --port "/dev/ttyUSB1" --toolchain-prefix "xtensa-lx106-elf-" --make "make" $(OBJSDIR)/$(NAME).elf
+	python /opt/esp8266/esp8266-toolchain-espressif/ESP8266_RTOS_SDK/tools/idf_monitor.py --baud 74880 --port "/dev/ttyUSB2" --toolchain-prefix "xtensa-lx106-elf-" --make "make" $(OBJSDIR)/$(NAME).elf
 
 $(OBJS): $(OBJSDIR)/%.o : $(SRCSDIR)/%.cpp
 	$(CXX) $(DEFINES) $(CXXFLAGS) $(XINCLUDE) $(INCLUDE) -c -o $@ $(shell realpath --relative-to=. $<)
