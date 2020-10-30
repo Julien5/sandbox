@@ -37,8 +37,8 @@ void common::serial::reset() {
 
 usize common::serial::read(u8 *buffer, usize buffer_size, u16 timeout) {
     auto soft_uart_timeout = xMax(timeout, u16(100));
-//#define CHANNEL SOFT_UART
-#define CHANNEL Serial
+#define CHANNEL SOFT_UART
+    //#define CHANNEL Serial
     CHANNEL.setTimeout(timeout);
     // SOFT_UART.setTimeout(soft_uart_timeout);
     usize ret = CHANNEL.readBytes((char *)buffer, buffer_size);

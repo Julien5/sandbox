@@ -44,6 +44,7 @@ void write() {
     DBG("writing '%s'... ", send);
     const auto Lw = S->write(send, sizeof(send));
     DBG("Lw=%d\r\n", int(Lw));
+    // the send frequency should be (much) lower than the read frequency.
     common::time::delay(1000);
 }
 
