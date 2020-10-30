@@ -30,7 +30,8 @@ void read() {
     u8 recv[256] = {0};
     while (true) {
         usize Lr = S->read(recv, sizeof(recv), 200);
-        if (strlen((char *)recv) || Lr) {
+        // we cannot rely on Lr.
+        if (strlen((char *)recv)) {
             DBG("'%s' Lr=%d\r\n", (char *)recv, int(Lr));
             break;
         }
