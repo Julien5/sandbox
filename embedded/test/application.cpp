@@ -29,7 +29,7 @@ void read() {
     DBG("reading ... ");
     u8 recv[256] = {0};
     while (true) {
-        usize Lr = S->read(recv, sizeof(recv), 100);
+        usize Lr = S->read(recv, sizeof(recv), 200);
         if (strlen((char *)recv) || Lr) {
             DBG("'%s' Lr=%d\r\n", (char *)recv, int(Lr));
             break;
@@ -44,7 +44,7 @@ void write() {
     DBG("writing '%s'... ", send);
     const auto Lw = S->write(send, sizeof(send));
     DBG("Lw=%d\r\n", int(Lw));
-    common::time::delay(100);
+    common::time::delay(1000);
 }
 
 void application::loop() {
