@@ -11,10 +11,11 @@ class TicksReader {
     u8 m_adc_index = 0;
 
   public:
+    TicksReader();
     // returns 1 if the adc just got high.
     bool take();
     const u8 *histogram_data(usize *L) const;
-    const u8 *adc_data(usize *L) const;
+    const u8 *adc_data(usize *L = 0) const;
 };
 
 class compteur {

@@ -12,8 +12,17 @@
 std::unique_ptr<wifi::wifi> W;
 std::unique_ptr<compteur> C;
 
+const int espEnablePin = 3;
+void enableEsp(bool enable) {
+#if defined(ARDUINO)
+    digitalWrite(espEnablePin, enable ? 1 : 0);
+#endif
+}
 void application::setup() {
     debug::init_serial();
+#if defined(ARDUINO)
+    pinMode(espEnablePin, OUTPUT);
+#endif
     W = std::unique_ptr<wifi::wifi>(new wifi::wifi);
     C = std::unique_ptr<compteur>(new compteur);
     DBG("memory:%d\r\n", debug::freeMemory());
@@ -56,7 +65,27 @@ class LEDRAI {
     }
 };
 
+class EspStarter {
+  public:
+    EspStarter() {
+        enableEsp(false);
+        common::time::delay(40);
+        enableEsp(true);
+        common::time::delay(400);
+        TRACE();
+    }
+    ~EspStarter() {
+        common::time::delay(400);
+        enableEsp(false);
+        //common::time::delay(1000);
+        TRACE();
+    }
+};
+
 void send_data() {
+    if (!C->ticksReader()->adc_data())
+        return;
+    EspStarter espStarter;
     LEDRAI ledrai;
     wcallback cb;
     {

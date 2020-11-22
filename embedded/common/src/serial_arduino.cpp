@@ -2,10 +2,13 @@
 #include "common/debug.h"
 #include "common/time.h"
 #include "crc.h"
-
+#include "common/utils.h"
 #include "AltSoftSerial.h"
 
 AltSoftSerial SOFT_UART;
+
+#define RXCHANNEL Serial
+//#define RXCHANNEL SOFT_UART
 
 /*
 Board	Transmit Pin	Receive Pin	Unusable PWM
@@ -21,7 +24,7 @@ LilyPad, Mini (& other ATMEGA328)	9	8	10
 
 namespace delme {
     int available() {
-        return SOFT_UART.available();
+        return RXCHANNEL.available();
     }
 }
 
@@ -37,12 +40,14 @@ void common::serial::reset() {
 
 usize common::serial::read(u8 *buffer, usize buffer_size, u16 timeout) {
     auto soft_uart_timeout = xMax(timeout, u16(100));
-#define CHANNEL SOFT_UART
-    //#define CHANNEL Serial
-    CHANNEL.setTimeout(timeout);
-    // SOFT_UART.setTimeout(soft_uart_timeout);
-    usize ret = CHANNEL.readBytes((char *)buffer, buffer_size);
-    common::time::delay(100);
+    //#define CHANNEL SOFT_UART
+    //DBG("(available:%d\r\n", int(RXCHANNEL.available()));
+    RXCHANNEL.setTimeout(timeout);
+    usize ret = RXCHANNEL.readBytes((char *)buffer, buffer_size);
+    if (ret > 0)
+        utils::dump(buffer, buffer_size);
+    //DBG("ret:%d \r\n", int(ret));
+    //common::time::delay(100);
     crc::CRC8(&rx_crc8, buffer, ret);
     return ret;
 }

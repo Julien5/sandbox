@@ -50,9 +50,12 @@ u16 analog_read() {
 #endif
 }
 
+TicksReader::TicksReader() {
+}
+
 bool TicksReader::take() {
     const auto a = analog_read();
-    // DBG("time:%d s analog value:%d\r\n", int(common::time::since_reset() / 1000), int(a));
+    DBG("time:%d s analog value:%d\r\n", int(common::time::since_reset() / 1000), int(a));
     H.update(a);
     constexpr auto size_adc = sizeof(m_last_adc_value) / sizeof(m_last_adc_value[0]);
     if (m_adc_index >= size_adc) {
@@ -97,6 +100,7 @@ const u8 *TicksReader::adc_data(usize *L) const {
     constexpr auto size_adc = sizeof(m_last_adc_value) / sizeof(m_last_adc_value[0]);
     if (m_adc_index < size_adc)
         return 0;
-    *L = sizeof(m_last_adc_value);
+    if (L)
+        *L = sizeof(m_last_adc_value);
     return (u8 *)(&m_last_adc_value);
 }

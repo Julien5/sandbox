@@ -22,9 +22,9 @@ namespace wifi {
         bool ok = false;
         TRACE();
         // at this point, the request has been read, which is fast
-        if (!S->wait_for_begin(100))
+        if (!S->wait_for_begin(5000))
             return 1;
-
+        TRACE();
         // at this point, 3 things happen on the peer:
         // 1. the connection to the URL is being established, request
         // 2. send request
