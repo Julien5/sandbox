@@ -64,21 +64,29 @@ class LEDRAI {
         debug::turnBuildinLED(false);
     }
 };
-
+#include "common/serial.h"
 class EspStarter {
   public:
     EspStarter() {
+        DBG("START ESP (1)\r\n");
         enableEsp(false);
         common::time::delay(40);
         enableEsp(true);
-        common::time::delay(400);
-        TRACE();
+        common::time::delay(1000);
+        DBG("START ESP (done)\r\n");
+#ifdef ARDUINO
+        while (Serial.available()) {
+            Serial.read();
+            TRACE();
+        }
+#endif
     }
     ~EspStarter() {
-        common::time::delay(400);
+        DBG("STOP ESP (1)\r\n");
+        common::time::delay(2000);
         enableEsp(false);
         //common::time::delay(1000);
-        TRACE();
+        DBG("STOP ESP (done)\r\n");
     }
 };
 
@@ -92,11 +100,13 @@ void send_data() {
         usize L = 0;
         const auto *data = C->ticksReader()->adc_data(&L);
         if (data) {
-            auto p = W->post("http://192.168.178.22:8000/post/adc", data, L, &cb);
+            //auto p = W->post("http://192.168.178.22:8000/post/adc", data, L, &cb);
+            auto p = W->post("https://httpbin.org/post/", data, L, &cb);
             on_error(p);
         } else
             return;
     }
+    return;
 
     if (C->total() > 0) {
         usize L = 0;

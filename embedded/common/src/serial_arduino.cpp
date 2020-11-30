@@ -31,6 +31,7 @@ namespace delme {
 common::serial::serial() {
     debug::address_range("serial:", this, sizeof(*this));
     SOFT_UART.begin(9600);
+    RXCHANNEL.begin(9600);
 }
 
 void common::serial::reset() {
@@ -44,9 +45,10 @@ usize common::serial::read(u8 *buffer, usize buffer_size, u16 timeout) {
     //DBG("(available:%d\r\n", int(RXCHANNEL.available()));
     RXCHANNEL.setTimeout(timeout);
     usize ret = RXCHANNEL.readBytes((char *)buffer, buffer_size);
+    DBG("rx=%d\r\n", int(ret));
     if (ret > 0)
-        utils::dump(buffer, buffer_size);
-    //DBG("ret:%d \r\n", int(ret));
+        utils::dump(buffer, ret);
+
     //common::time::delay(100);
     crc::CRC8(&rx_crc8, buffer, ret);
     return ret;

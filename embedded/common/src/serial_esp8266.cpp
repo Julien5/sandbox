@@ -3,7 +3,7 @@
 #include "driver/uart.h"
 #include "common/debug.h"
 #include "crc.h"
-
+#include "common/utils.h"
 #define BUF_SIZE 1024
 #define PORT UART_NUM_0
 
@@ -43,6 +43,9 @@ usize common::serial::write(u8 *buffer, usize buffer_size) {
     return 0;
 #endif
     usize ret = uart_write_bytes(PORT, (const char *)buffer, buffer_size);
+    DBG("write ret:%d \r\n", int(ret));
+    if (ret > 0)
+        utils::dump(buffer, buffer_size);
     crc::CRC8(&tx_crc8, buffer, buffer_size);
     return ret;
 }

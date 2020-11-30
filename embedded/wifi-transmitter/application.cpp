@@ -36,8 +36,12 @@ class serial_callback : public wifi::callback {
     serial_callback(common::serial *_s)
         : output(_s){};
     void status(u8 s) {
-        DBG("forwarding status %d \n", int(s));
-        output->write(&s, sizeof(s));
+        DBG("(1) forwarding status %d \n", int(s));
+        common::time::delay(2500);
+        DBG("(2) forwarding status ... \n");
+        auto ret = output->write(&s, sizeof(s));
+        DBG("(3) forwarding status ret:%d \n", int(ret));
+        //common::time::delay(250);
     }
     void data_length(u16 total_length) {
         DBG("forwarding total %d bytes\n", total_length);
@@ -85,6 +89,14 @@ void transmitter::loop_serial() {
     received::wifi_command cmd = received::read_wifi_command(m);
     /* process cmd */
     DBG("process %s\n", cmd.url);
+
+    /*
+u8 F[2] = {0xde, 0xad};
+    while (true) {
+        S->write(&F[0], sizeof(F));
+        common::time::delay(1000);
+		}
+*/
 
     S->begin();
     serial_callback cb(S.get());

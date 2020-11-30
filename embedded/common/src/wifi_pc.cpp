@@ -19,10 +19,18 @@ namespace wifi {
     }
 
     int read_wifi_response(common::serial *S, callback *r) {
+        /*
+for (int k = 0; k < 8; ++k) {
+            u8 d = 0;
+            S->read(&d, 1, 100);
+        }
+
+        return 55;
+		*/
         bool ok = false;
         TRACE();
         // at this point, the request has been read, which is fast
-        if (!S->wait_for_begin(5000))
+        if (!S->wait_for_begin(10000))
             return 1;
         TRACE();
         // at this point, 3 things happen on the peer:
@@ -32,7 +40,7 @@ namespace wifi {
         // Network requests are slow.
         // If all goes well, status=0 is sent.
         u8 status = 0;
-        ok = S->read_until(&status, sizeof(status), 5000);
+        ok = S->read_until(&status, sizeof(status), 50000);
         if (!ok) {
             return 2;
         }
@@ -42,6 +50,7 @@ namespace wifi {
         }
 
         // now we prepare receiving the data: first the size, then the data.
+
         // the timeout is short since the data are complete on the peer.
         u16 size = 0;
         ok = S->read_until(reinterpret_cast<u8 *>(&size), sizeof(size), 10);
@@ -49,15 +58,14 @@ namespace wifi {
             return 4;
         }
         r->data_length(size);
+        DBG("size:%d\r\n", int(size));
 
         size_t nread = 0;
         while (nread < size) {
             u8 buffer[BLOCK_LENGTH];
             const size_t L = xMin(sizeof(buffer), size - nread);
-            auto ok = S->read_until(buffer, L, 10);
-#if !defined(NDEBUG)
-            DBG("memory:%d\r\n", debug::freeMemory());
-#endif
+            DBG("L:%d\r\n", int(L));
+            auto ok = S->read_until(buffer, L, 1000);
             if (!ok) {
                 DBG("nread:%d\r\n", nread);
                 return 5;

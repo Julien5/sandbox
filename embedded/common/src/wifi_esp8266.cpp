@@ -248,6 +248,7 @@ int process_http_request(const char *WEB_URL,
             memcpy(buf, buffer + pos, size_copy);
             cb->data((u8 *)buf, size_copy);
             pos += size_copy;
+            common::time::delay(1000);
         }
     }
 
