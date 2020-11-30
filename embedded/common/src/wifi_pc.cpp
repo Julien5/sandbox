@@ -19,20 +19,11 @@ namespace wifi {
     }
 
     int read_wifi_response(common::serial *S, callback *r) {
-        /*
-for (int k = 0; k < 8; ++k) {
-            u8 d = 0;
-            S->read(&d, 1, 100);
-        }
-
-        return 55;
-		*/
         bool ok = false;
-        TRACE();
         // at this point, the request has been read, which is fast
-        if (!S->wait_for_begin(10000))
+        if (!S->wait_for_begin(100))
             return 1;
-        TRACE();
+
         // at this point, 3 things happen on the peer:
         // 1. the connection to the URL is being established, request
         // 2. send request
@@ -40,7 +31,7 @@ for (int k = 0; k < 8; ++k) {
         // Network requests are slow.
         // If all goes well, status=0 is sent.
         u8 status = 0;
-        ok = S->read_until(&status, sizeof(status), 50000);
+        ok = S->read_until(&status, sizeof(status), 30000);
         if (!ok) {
             return 2;
         }
@@ -65,7 +56,7 @@ for (int k = 0; k < 8; ++k) {
             u8 buffer[BLOCK_LENGTH];
             const size_t L = xMin(sizeof(buffer), size - nread);
             DBG("L:%d\r\n", int(L));
-            auto ok = S->read_until(buffer, L, 1000);
+            auto ok = S->read_until(buffer, L, 100);
             if (!ok) {
                 DBG("nread:%d\r\n", nread);
                 return 5;

@@ -68,12 +68,9 @@ class LEDRAI {
 class EspStarter {
   public:
     EspStarter() {
-        DBG("START ESP (1)\r\n");
-        enableEsp(false);
-        common::time::delay(40);
         enableEsp(true);
+        // some time for startup
         common::time::delay(1000);
-        DBG("START ESP (done)\r\n");
 #ifdef ARDUINO
         while (Serial.available()) {
             Serial.read();
@@ -82,11 +79,7 @@ class EspStarter {
 #endif
     }
     ~EspStarter() {
-        DBG("STOP ESP (1)\r\n");
-        common::time::delay(2000);
         enableEsp(false);
-        //common::time::delay(1000);
-        DBG("STOP ESP (done)\r\n");
     }
 };
 
@@ -100,13 +93,11 @@ void send_data() {
         usize L = 0;
         const auto *data = C->ticksReader()->adc_data(&L);
         if (data) {
-            //auto p = W->post("http://192.168.178.22:8000/post/adc", data, L, &cb);
-            auto p = W->post("https://httpbin.org/post/", data, L, &cb);
+            auto p = W->post("http://192.168.178.22:8000/post/adc", data, L, &cb);
             on_error(p);
         } else
             return;
     }
-    return;
 
     if (C->total() > 0) {
         usize L = 0;
@@ -139,7 +130,9 @@ void send_data() {
 
 void application::loop() {
     u32 t0 = common::time::since_reset();
+    //TRACE();
     gather_data();
+    //TRACE();
     send_data();
     u32 t1 = common::time::since_reset();
     if ((t1 - t0) < 100)

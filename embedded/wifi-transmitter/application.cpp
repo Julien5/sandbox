@@ -89,15 +89,6 @@ void transmitter::loop_serial() {
     received::wifi_command cmd = received::read_wifi_command(m);
     /* process cmd */
     DBG("process %s\n", cmd.url);
-
-    /*
-u8 F[2] = {0xde, 0xad};
-    while (true) {
-        S->write(&F[0], sizeof(F));
-        common::time::delay(1000);
-		}
-*/
-
     S->begin();
     serial_callback cb(S.get());
     if (cmd.command == 'G')

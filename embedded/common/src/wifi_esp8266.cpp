@@ -194,6 +194,7 @@ int process_http_request(const char *WEB_URL,
     }
     code = write_complete(s, const_cast<u8 *>(data), data_length);
     if (code != 0) {
+        TRACE();
         cb->status(code);
         close(s);
         DBG("failed writing: errno=%d\r\n", code);
@@ -248,7 +249,7 @@ int process_http_request(const char *WEB_URL,
             memcpy(buf, buffer + pos, size_copy);
             cb->data((u8 *)buf, size_copy);
             pos += size_copy;
-            common::time::delay(1000);
+            common::time::delay(100);
         }
     }
 
