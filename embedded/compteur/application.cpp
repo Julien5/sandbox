@@ -80,6 +80,8 @@ class EspStarter {
     }
     ~EspStarter() {
         enableEsp(false);
+        // to pass transient states in the adc circuit
+        common::time::delay(100);
     }
 };
 
@@ -98,6 +100,7 @@ void send_data() {
         } else
             return;
     }
+    return;
 
     if (C->total() > 0) {
         usize L = 0;
