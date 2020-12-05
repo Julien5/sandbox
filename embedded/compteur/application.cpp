@@ -100,7 +100,6 @@ void send_data() {
         } else
             return;
     }
-    return;
 
     if (C->total() > 0) {
         usize L = 0;
