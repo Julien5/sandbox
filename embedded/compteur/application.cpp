@@ -1,4 +1,4 @@
-#include "application.h"
+eeeeeee #include "application.h"
 #include "common/debug.h"
 #include "common/time.h"
 #include "common/wifi.h"
@@ -9,7 +9,8 @@
 #include "compteur.h"
 #include "status.h"
 
-std::unique_ptr<wifi::wifi> W;
+    std::unique_ptr<wifi::wifi>
+        W;
 std::unique_ptr<compteur> C;
 
 const int espEnablePin = 3;
@@ -135,7 +136,7 @@ void application::loop() {
     //TRACE();
     gather_data();
     //TRACE();
-    send_data();
+    //send_data();
     u32 t1 = common::time::since_reset();
     if ((t1 - t0) < 100)
         common::time::delay(100 - (t1 - t0)); // adjusted to effectively get 100ms sampling rate

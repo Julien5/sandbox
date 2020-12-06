@@ -13,7 +13,7 @@ set ytics 1;
 #set yrange [185:250]
 d=2000
 set xrange [0+d:3000+d]
-plot  "/tmp/adc.csv" with lines, \
+plot  "/tmp/analog_input.csv" using 0:2 with lines, \
 	  "/tmp/status.csv" using 0:1 with lines lw 2 lc rgb "black", \
 	  '' 				using 0:2 with lines lw 2 lc rgb "red", \
 	  '' 				using 0:3 with lines lw 2 lc rgb "red", \

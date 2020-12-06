@@ -70,6 +70,7 @@ bool TicksReader::take() {
     assert(TL <= TH);
     auto c = calibrated(&TL, &TH);
     status::instance.set(status::index::calibrated, u8(c));
+    status::instance.dump();
     if (!c) {
         return false;
     }

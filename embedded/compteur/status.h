@@ -26,6 +26,7 @@ namespace status {
         const u8 *data(usize *L) const;
         u8 get(const usize &indx);
         void set(const usize &indx, const u8 &value);
+        void dump();
     };
     extern Data instance;
 };

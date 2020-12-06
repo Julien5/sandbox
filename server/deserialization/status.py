@@ -22,7 +22,7 @@ class Status:
 		return "%02d %02d %02d %02d" % (self.m,self.TL,self.TH,self.M)
 
 def main():
-	b=open("status.packed.hex",'rb').read().decode("utf-8");
+	b=open("/tmp/status.packed.hex",'rb').read().decode("utf-8");
 	for h in b.split("\n"):
 		b=bytes.fromhex(h);
 		s=Status(b)

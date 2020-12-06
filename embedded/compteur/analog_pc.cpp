@@ -57,7 +57,7 @@ namespace record {
     size_t counter = 0;
     void get_data() {
         std::string s;
-        auto n = numbers(lines(read_file("/tmp/data.csv")));
+        auto n = numbers(lines(read_file("/tmp/analog_input.csv")));
         s_numbers = n;
     }
 
@@ -69,7 +69,7 @@ namespace record {
         // subsample by 4 (50 ms -> 200 ms sampling period)
         auto index = counter++;
         if (index >= s_numbers.size())
-            counter = 0;
+            exit(0);
         return s_numbers[index % s_numbers.size()];
     }
 }

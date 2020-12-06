@@ -25,3 +25,7 @@ const u8 *status::Data::data(usize *L) const {
     *L = sizeof(D);
     return (u8 *)(&D);
 }
+
+void status::Data::dump() {
+    DBG("status %02d %02d %02d %02d\r\n", D[status::index::m], D[status::index::TL], D[status::index::TH], D[status::index::M]);
+}
