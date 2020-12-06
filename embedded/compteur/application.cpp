@@ -1,4 +1,4 @@
-eeeeeee #include "application.h"
+#include "application.h"
 #include "common/debug.h"
 #include "common/time.h"
 #include "common/wifi.h"
@@ -9,8 +9,8 @@ eeeeeee #include "application.h"
 #include "compteur.h"
 #include "status.h"
 
-    std::unique_ptr<wifi::wifi>
-        W;
+std::unique_ptr<wifi::wifi>
+    W;
 std::unique_ptr<compteur> C;
 
 const int espEnablePin = 3;
