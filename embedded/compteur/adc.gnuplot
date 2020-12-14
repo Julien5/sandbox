@@ -11,8 +11,9 @@ set autoscale fix;
 set xtics 64;
 set ytics 1;
 #set yrange [185:250]
-d=2000
-set xrange [0+d:3000+d]
+W=3000;
+d=128+2*W
+set xrange [d:d+W]
 plot  "/tmp/analog_input.csv" using 0:2 with lines, \
 	  "/tmp/status.csv" using 0:1 with lines lw 2 lc rgb "black", \
 	  '' 				using 0:2 with lines lw 2 lc rgb "red", \

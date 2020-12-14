@@ -12,15 +12,16 @@
 
 int tests() {
     DBG("sizeof compteur:%d\n", sizeof(compteur));
-    return 0;
+    return histogram::Histogram::test();
     return tickscounter::test();
     return common::StringAwaiter::test();
-    return histogram::Histogram::test();
     return compteur::test();
     return 0;
 }
 
 int main(int argc, char **argv) {
+    //return tests();
+
     application::setup();
     std::thread serial_thread(transmitter::run);
     while (1) {

@@ -3,18 +3,19 @@
 #include "common/rusttypes.h"
 
 namespace histogram {
-    struct Bin {
-        Bin();
-        u16 value = 0;
-        u32 count = 0;
-    } __attribute__((packed));
+    constexpr size_t NBINS = 10;
 
-    constexpr size_t NBINS = 20;
+    typedef u32 Bin;
 
     struct packed {
         packed();
         Bin bins[NBINS];
-    };
+        u16 min;
+        u16 max;
+        usize index(const u16 &value) const;
+        u16 value(const usize &index) const;
+        u32 count(const usize &index) const;
+    } __attribute__((packed));
 
     class Histogram {
         packed m_packed;
@@ -25,14 +26,12 @@ namespace histogram {
       public:
         void print() const;
         void update(u16 value);
-        //! number of non-zero bins
-        u16 size() const;
-        //! number of update() calls.
+        usize size() const;
+        //! number of update() calls - 1 (first sets min/max)
         u32 count() const;
         u16 minimum() const;
         u16 maximum() const;
         /*! 
-		  value K for which count(>K) > percent*count()
 		  threshold(0) = maximum()
 		  threshold(100) = minimum()
 		*/
