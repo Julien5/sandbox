@@ -10,8 +10,8 @@ namespace histogram {
     struct packed {
         packed();
         Bin bins[NBINS];
-        u16 min;
-        u16 max;
+        float m_min;
+        float m_max;
         usize index(const u16 &value) const;
         u16 value(const usize &index) const;
         u32 count(const usize &index) const;

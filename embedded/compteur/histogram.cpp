@@ -16,14 +16,14 @@ namespace impl {
 }
 
 u16 histogram::packed::value(const usize &index) const {
-    return min + (max - min) * float(index) / (NBINS - 1);
+    return m_min + (m_max - m_min) * float(index) / (NBINS - 1);
 }
 
 usize histogram::packed::index(const u16 &value) const {
-    if (min == max) {
+    if (m_min == m_max) {
         return 0;
     }
-    return (NBINS - 1) * (value - min) / (max - min);
+    return (NBINS - 1) * (value - m_min) / (m_max - m_min);
 }
 
 u32 histogram::packed::count(const usize &index) const {
@@ -42,8 +42,8 @@ usize histogram::Histogram::size() const {
     return end() - begin();
 }
 
-histogram::packed::packed() : min(0xffff), max(0) {
-    DBG("min:%d\r\n", int(min));
+histogram::packed::packed() : m_min(0xffff), m_max(0) {
+    DBG("m_min:%d\r\n", int(m_min));
     memset(bins, 0, sizeof(bins));
 }
 
@@ -73,11 +73,11 @@ void histogram::Histogram::print() const {
 }
 
 u16 histogram::Histogram::minimum() const {
-    return m_packed.min;
+    return m_packed.m_min;
 }
 
 u16 histogram::Histogram::maximum() const {
-    return m_packed.max;
+    return m_packed.m_max;
 }
 
 u16 histogram::Histogram::argmax(u16 m, u16 M) const {
@@ -105,38 +105,25 @@ u32 histogram::Histogram::count(u16 v) const {
 }
 
 u16 histogram::Histogram::threshold(int percent) const {
-    TRACE();
     if (count() == 0)
         return 0;
     assert(size() > 0);
-    TRACE();
-
     const float wanted_count = count() * float(percent) / 100;
-    TRACE();
-    DBG("percent:%d,wanted:%f\r\n", percent, wanted_count);
     isize Gn = 0;
     isize n = size() - 1;
-    /*
-    for (index = size() - 1; (index >= 0) && (float(accumulated_count) < wanted_count); index--) {
-
-        DBG("acc:%d,index=%d cond=%d\r\n", int(accumulated_count), index, float(accumulated_count) < wanted_count);
-		}*/
-    DBG("acc:%d,wanted=%d\r\n", int(Gn), int(wanted_count));
     while (n >= 0) {
         Gn += m_packed.count(n);
-        DBG("G(%d):%d wanted:%d\r\n", n, int(Gn), int(wanted_count));
         if (Gn >= wanted_count)
             break;
         n--;
     }
-    DBG("G(%d):%d\r\n", n, int(Gn));
     assert(minimum() <= m_packed.value(n) && m_packed.value(n) <= maximum());
     return m_packed.value(n);
 }
 
 void histogram::Histogram::shrink_if_needed() {
-    const u16 max = 0xffff / 2;
-    if (count() <= max)
+    const u16 kmax = 0xffff / 2;
+    if (count() <= kmax)
         return;
     DBG("shrinking...\n");
     for (usize k = 0; k < size(); ++k)
@@ -145,9 +132,20 @@ void histogram::Histogram::shrink_if_needed() {
 
 void histogram::Histogram::update(u16 value) {
     DBG("update:%u\r\n", value);
-    // fixme
-    m_packed.min = xMin(value, m_packed.min);
-    m_packed.max = xMax(value, m_packed.max);
+    float alpha = 0.998;
+    if (m_packed.m_max == 0) {
+        alpha = 0;
+    }
+
+    m_packed.m_min = xMin(float(value), m_packed.m_min);
+    m_packed.m_max = xMax(float(value), m_packed.m_max);
+
+    if (value > m_packed.m_min) {
+        m_packed.m_min = alpha * m_packed.m_min + (1 - alpha) * value;
+    } else if (value < m_packed.m_max) {
+        m_packed.m_max = alpha * m_packed.m_max + (1 - alpha) * value;
+    }
+    DBG("max:%f\n", m_packed.m_max);
     const usize k = m_packed.index(value);
     if (k == size())
         return;
