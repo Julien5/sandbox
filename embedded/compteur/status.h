@@ -18,14 +18,14 @@ namespace status {
         static Data get();
 
       public:
-        u8 D[16];
+        u16 D[16];
 
       public:
         Data();
 
         const u8 *data(usize *L) const;
-        u8 get(const usize &indx);
-        void set(const usize &indx, const u8 &value);
+        u16 get(const usize &indx);
+        void set(const usize &indx, const u16 &value);
         void dump();
     };
     extern Data instance;

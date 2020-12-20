@@ -10,13 +10,14 @@ bool TicksReader::calibrated(u16 *_TL, u16 *_TH) const {
     const u8 minWidth = 4;
     const auto M = H.maximum();
     const auto m = H.minimum();
+    assert(M != 0);
     status::instance.set(status::index::M, M);
     status::instance.set(status::index::m, m);
     status::instance.set(status::index::line, __LINE__);
     if (M - m < minWidth)
         return false;
     status::instance.set(status::index::line, __LINE__);
-    const auto T0 = H.threshold(5);
+    const auto T0 = H.threshold(20);
     status::instance.set(status::index::T0, T0);
     if (T0 == m || T0 == M)
         return false;
@@ -29,6 +30,7 @@ bool TicksReader::calibrated(u16 *_TL, u16 *_TH) const {
         return false;
     status::instance.set(status::index::line, __LINE__);
     const auto v = H.argmin(v1, v2);
+    H.print();
     status::instance.set(status::index::v, v);
     if (v == v1 || v == v2)
         return false;

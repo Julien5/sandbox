@@ -147,7 +147,10 @@ void histogram::Histogram::update(u16 value) {
     } else if (value < m_packed.m_max) {
         m_packed.m_max = alpha * m_packed.m_max + (1 - alpha) * value;
     }
-    DBG("max:%f\n", m_packed.m_max);
+
+    if ((maximum() - minimum()) < 15)
+        return;
+
     const usize k = m_packed.index(value);
     if (k == size())
         return;

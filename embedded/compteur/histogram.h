@@ -3,7 +3,7 @@
 #include "common/rusttypes.h"
 
 namespace histogram {
-    constexpr size_t NBINS = 10;
+    constexpr size_t NBINS = 7;
 
     typedef u32 Bin;
 

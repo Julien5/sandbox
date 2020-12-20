@@ -13,11 +13,15 @@ status::Data status::Data::get() {
     return s_status;
 }
 
-u8 status::Data::get(const usize &index) {
+u16 status::Data::get(const usize &index) {
     return D[index];
 };
 
-void status::Data::set(const usize &indx, const u8 &value) {
+void status::Data::set(const usize &indx, const u16 &value) {
+    if (indx == status::index::M) {
+        //DBG("M:%d\n", value);
+        assert(value != 0);
+    }
     D[indx] = value;
 };
 
@@ -27,5 +31,6 @@ const u8 *status::Data::data(usize *L) const {
 }
 
 void status::Data::dump() {
-    DBG("status %02d %02d %02d %02d\r\n", D[status::index::m], D[status::index::TL], D[status::index::TH], D[status::index::M]);
+    assert(D[status::index::M] != 0);
+    DBG("status %d %d %d %d %d\r\n", D[status::index::m], D[status::index::TL], D[status::index::TH], int(D[status::index::M]), D[status::index::line]);
 }
