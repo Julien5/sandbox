@@ -3,8 +3,6 @@ set output 'histogram.png'
 
 set lmargin at screen 0.0
 set rmargin at screen 1
-set bmargin at screen 0.25
-set tmargin at screen 0.85
 
 unset key
 set tic scale 0

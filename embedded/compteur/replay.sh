@@ -18,11 +18,8 @@ make
 
 grep status /tmp/compteur.out | cut -f3-6 -d" " > /tmp/status.csv
 
-gnuplot adc.gnuplot;
-killall feh || true
-feh adc.png &
 
 cat /tmp/compteur.out | grep histogra | grep print:60 | cut -f5 -d":" > /tmp/histogram.out
 python3 histogramify.py /tmp/histogram.out > /tmp/histogram.dat;
-gnuplot histogram.gnuplot
-feh histogram.png &
+gnuplot graphs.gnuplot
+feh /tmp/graphs.png &

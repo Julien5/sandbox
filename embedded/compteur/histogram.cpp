@@ -57,8 +57,10 @@ u32 histogram::Histogram::count() const {
 
 void histogram::Histogram::print() const {
 #ifdef PC
+    DBG("histogram:");
     for (size_t k = 0; k < size(); ++k)
-        DBG("%3d:H[%3d]=%3d\n", int(k), int(m_packed.value(k)), int(m_packed.count(k)));
+        printf("%3d ", int(m_packed.count(k)));
+    printf("\n");
 #else
     DBG("values: ");
     for (size_t k = 0; k < size(); ++k)
