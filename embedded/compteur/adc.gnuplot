@@ -8,11 +8,11 @@ set style line 2 lc rgb 'red' pt 7 ps 0.2 lt 1 lw 2
 #set pointintervalbox 3
 set grid;
 set autoscale fix;
-set xtics 64;
+#set xtics 64;
 set ytics 1;
-#set yrange [185:250]
-W=3000;
-d=128+2*W
+set yrange [185:250]
+W=5000;
+d=128;
 set xrange [d:d+W]
 plot  "/tmp/analog_input.csv" using 0:2 with lines, \
 	  "/tmp/status.csv" using 0:1 with lines lw 2 lc rgb "black", \
