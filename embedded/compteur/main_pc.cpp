@@ -12,6 +12,7 @@
 
 int tests() {
     DBG("sizeof compteur:%d\n", sizeof(compteur));
+    return TicksReader::test();
     return histogram::Histogram::test();
     return tickscounter::test();
     return common::StringAwaiter::test();

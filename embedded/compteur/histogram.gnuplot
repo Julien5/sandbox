@@ -9,7 +9,7 @@ set tic scale 0
 
 # Color runs from white to green
 #set palette rgbformula -7,2,-7
-set cbrange [0:0.1]
+set cbrange [0:0.5]
 unset cbtics
 unset yrange
 unset colorbox

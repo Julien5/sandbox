@@ -2,11 +2,13 @@
 #include "common/debug.h"
 #include "common/time.h"
 #include "analog.h"
+#include "histogram.h"
 #include "status.h"
 #include <math.h>
 #include <string.h>
 
-bool TicksReader::calibrated(u16 *_TL, u16 *_TH) const {
+bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
+    H.print();
     const u8 minWidth = 4;
     const auto M = H.maximum();
     const auto m = H.minimum();
@@ -14,29 +16,34 @@ bool TicksReader::calibrated(u16 *_TL, u16 *_TH) const {
     status::instance.set(status::index::M, M);
     status::instance.set(status::index::m, m);
     status::instance.set(status::index::line, __LINE__);
+    DBG("m:%d M:%d\n", int(m), int(M));
     if (M - m < minWidth)
         return false;
     status::instance.set(status::index::line, __LINE__);
-    const auto T0 = H.threshold(20);
+    const auto T0 = H.threshold(10);
     status::instance.set(status::index::T0, T0);
-    if (T0 == m || T0 == M)
+    DBG("T0:%d\n", int(T0));
+    if (T0 == m || T0 == M) {
         return false;
+    }
     status::instance.set(status::index::line, __LINE__);
     const auto v1 = H.argmax(m, T0 - 1);
-    const auto v2 = H.argmax(T0, M);
+    const auto v2 = H.argmax(T0 + 1, M);
     status::instance.set(status::index::v1, v1);
     status::instance.set(status::index::v2, v2);
+    DBG("v1:%d v2:%d\n", int(v1), int(v2));
     if (v1 == v2)
         return false;
     status::instance.set(status::index::line, __LINE__);
     const auto v = H.argmin(v1, v2);
-    H.print();
+    DBG("v:%d \n", int(v));
     status::instance.set(status::index::v, v);
-    if (v == v1 || v == v2)
-        return false;
+    //    if (v == v1 || v == v2)
+    //  return false;
     status::instance.set(status::index::line, __LINE__);
     const auto TH = v + 1;
     const auto TL = v - 1;
+    DBG("TL:%d TH:%d\n", int(TL), int(TH));
     status::instance.set(status::index::TH, TH);
     status::instance.set(status::index::TL, TL);
     *_TL = TL;
@@ -70,7 +77,7 @@ bool TicksReader::take() {
     u16 TH = 0;
     u16 TL = 0;
     assert(TL <= TH);
-    auto c = calibrated(&TL, &TH);
+    auto c = calibrated(H, &TL, &TH);
     status::instance.set(status::index::calibrated, u8(c));
     status::instance.dump();
     if (!c) {
@@ -106,4 +113,29 @@ const u8 *TicksReader::adc_data(usize *L) const {
     if (L)
         *L = sizeof(m_last_adc_value);
     return (u8 *)(&m_last_adc_value);
+}
+
+histogram::Histogram make_histogram() {
+    histogram::packed p;
+    u32 k = 0;
+    p.m_min = 100;
+    //auto B={570, 725, 342, 42, 5, 37, 8};
+    auto B = {142, 130, 187, 243, 180, 128, 62, 59, 10, 28, 12, 36, 20, 43, 14, 39};
+    for (auto b : B) {
+        p.bins[k++] = b;
+    }
+    p.m_max = p.m_min + sizeof(p.bins) / sizeof(p.bins[0]);
+    return histogram::Histogram(p);
+}
+
+int TicksReader::test() {
+    auto H = make_histogram();
+    H.print();
+    u16 TH = 0;
+    u16 TL = 0;
+    assert(TL <= TH);
+    auto c = calibrated(H, &TL, &TH);
+    DBG("c=%d\n", int(c));
+    status::instance.dump();
+    return 0;
 }
