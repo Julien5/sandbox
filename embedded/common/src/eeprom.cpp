@@ -166,7 +166,7 @@ eeprom::write(const eeprom::const_ram_address &src, const eeprom::length &L) {
 }
 
 void eeprom::reset() {
-    ::write(0, 0);
+    write(0, 0);
 }
 
 #include <string.h>
@@ -194,7 +194,7 @@ int eeprom::test() {
         return 1;
 
     DBG("test corruption");
-    ::write(4, 0xba);
+    esp8266::write(4, 0xba);
     L = e.read(read_buffer, sizeof(read_buffer));
     if (L >= 0)
         return 1;

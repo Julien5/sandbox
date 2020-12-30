@@ -45,6 +45,11 @@ INCLUDE := \
 -I$(IDF_PATH)/components/lwip/include/lwip/apps/ \
 -I$(IDF_PATH)/components/tcpip_adapter/include/ \
 -I$(IDF_PATH)/components/esp_common/include/ \
+-I$(IDF_PATH)/components/esp_event/include/ \
+-I$(IDF_PATH)/components/vfs/include/ \
+-I$(IDF_PATH)/components/lwip/include/apps/sntp/ \
+-I$(IDF_PATH)/components/lwip/include/apps/ \
+-I$(IDF_PATH)/components/newlib/platform_include \
 -I/tmp/build/esp8266/core/include \
 -I. 
 endif
