@@ -1,7 +1,7 @@
 #include "common/debug.h"
 #include "common/rusttypes.h"
-#include <cstdint>
 #ifdef PC
+#include <cstdint>
 void debug::init_serial() {
 }
 void debug::turnBuildinLED(bool on) {

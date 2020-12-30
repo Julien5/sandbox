@@ -13,7 +13,7 @@ namespace utils {
 #endif
 
 namespace utils {
-    void dump(const rusttypes::u8 *data_buffer, const size_t length);
+    void dump(const u8 *data_buffer, const size_t length);
 }
 
 long long fixed_atoll(char *s);
