@@ -1,12 +1,12 @@
-ARDUINOHOME=/usr/share/arduino
+# ARDUINOHOME=/usr/share/arduino
 # ARDUINOCOREDIR=$(ARDUINOHOME)/hardware/arduino/cores/arduino
 # ARDUINOCOREDIR=/opt/arduino/1.0.5/cores/arduino
 ARDUINOCOREDIR=/opt/arduino/ArduinoCore-avr-1.8.2/cores/arduino
 # ARDUINOCOREDIR=/opt/arduino/candidate/cores/arduino
-ARDUINOTOOLSDIR=$(ARDUINOHOME)/hardware/tools
+# ARDUINOTOOLSDIR=$(ARDUINOHOME)/hardware/tools
 
-CXX=$(ARDUINOTOOLSDIR)/avr/bin/avr-g++
-CC=$(ARDUINOTOOLSDIR)/avr/bin/avr-gcc
+CXX=avr-g++
+CC=avr-gcc
 RM=rm -f
 LIBS=-lc -lm 
 LDFLAGS=-Wl,--gc-sections -fuse-linker-plugin
@@ -14,13 +14,13 @@ DEFINES=-DF_CPU=16000000L -DARDUINO=182 -D__PROG_TYPES_COMPAT__
 CFLAGS=-mmcu=atmega328p -Wall -ffunction-sections -fdata-sections -Os -flto # -MMD
 CXXFLAGS=$(CFLAGS) -fpermissive -fno-exceptions -std=gnu++11 -fno-threadsafe-statics
 
-AR=$(ARDUINOTOOLSDIR)/avr/bin/avr-gcc-ar
-OBJCOPY=$(ARDUINOTOOLSDIR)/avr/bin/avr-objcopy
-AVRSIZE=$(ARDUINOTOOLSDIR)/avr/bin/avr-size
-AVRDUDE=$(ARDUINOTOOLSDIR)/avrdude
+AR=avr-gcc-ar
+OBJCOPY=avr-objcopy
+AVRSIZE=avr-size
+AVRDUDE=avrdude
 
 ifndef INCLUDE
-INCLUDE := -I$(ARDUINOCOREDIR) -I$(ARDUINOHOME)/hardware/arduino/variants/standard
+INCLUDE := -I$(ARDUINOCOREDIR) -I$(ARDUINOCOREDIR)/../../variants/standard
 endif
 
 ifndef XINCLUDE

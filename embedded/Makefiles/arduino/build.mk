@@ -1,5 +1,5 @@
 ifndef SRCSDIR
-SRCSDIR := /usr/share/arduino/libraries/$(NAME)
+SRCSDIR := /opt/arduino/libraries/$(NAME)
 endif
 OBJSDIR := /tmp/build/arduino/$(NAME)
 

@@ -1,4 +1,4 @@
 XNAME:=LiquidCrystal
-XINCLUDE += -I/usr/share/arduino/libraries/$(XNAME)
+XINCLUDE += -I/opt/arduino/libraries/$(XNAME)/src
 XLIBS += -L/tmp/build/arduino/$(XNAME)/ -l$(XNAME)
 
