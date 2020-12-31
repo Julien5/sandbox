@@ -38,11 +38,11 @@ ARDUINO_BAUD:=57600
 
 reset:
 	@$(if $(strip $(ARDUINO_PORT)),,echo could not find arduino port!)
-	/usr/bin/ard-reset-arduino $(ARDUINO_PORT)
+	/opt/arduino/tools/ard-reset-arduino $(ARDUINO_PORT)
 
 flash: hex reset showsize
 	$(AVRDUDE) -q -V -p atmega328p \
-	-C /usr/share/arduino/hardware/tools/avrdude.conf \
+	-C /etc/avrdude.conf \
 	-D -c arduino -b $(ARDUINO_BAUD) -P $(ARDUINO_PORT) \
 	-U flash:w:$(OBJSDIR)/$(NAME).hex:i
 

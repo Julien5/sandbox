@@ -11,7 +11,7 @@
 #include <thread>
 
 int tests() {
-    DBG("sizeof compteur:%d\n", sizeof(compteur));
+    DBG("sizeof compteur:%d\n", int(sizeof(compteur)));
     return TicksReader::test();
     return histogram::Histogram::test();
     return tickscounter::test();

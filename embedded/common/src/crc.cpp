@@ -35,7 +35,7 @@ int crc::test() {
         assert(a != b);
         u8 c = 0xFF;
         CRC8(&c, data, sizeof(data));
-        DBG("j=%02d, mini=0x%02x, a=0x%02x, b=0x%02x => crc: 0x%02x vs 0x%02x, OK=%d\n", j, mini, a, b, c, orig, int(c != orig));
+        DBG("j=%02d, mini=0x%02x, a=0x%02x, b=0x%02x => crc: 0x%02x vs 0x%02x, OK=%d\n", int(j), mini, a, b, c, orig, int(c != orig));
         if (c == orig)
             return 1;
     }

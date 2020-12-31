@@ -100,7 +100,7 @@ bool TicksReader::take() {
 
 const u8 *TicksReader::histogram_data(usize *L) const {
     constexpr auto size_adc = sizeof(m_last_adc_value) / sizeof(m_last_adc_value[0]);
-    DBG("m_adc_index:%d size:%d\r\n", m_adc_index, size_adc);
+    DBG("m_adc_index:%d size:%d\r\n", m_adc_index, int(size_adc));
     if (m_adc_index < size_adc)
         return 0;
     return (u8 *)H.get_packed(L);
