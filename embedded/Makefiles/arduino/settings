@@ -1,8 +1,7 @@
 # ARDUINOHOME=/usr/share/arduino
 # ARDUINOCOREDIR=$(ARDUINOHOME)/hardware/arduino/cores/arduino
 # ARDUINOCOREDIR=/opt/arduino/1.0.5/cores/arduino
-ARDUINOCOREDIR=/opt/arduino/ArduinoCore-avr-1.8.2/cores/arduino
-# ARDUINOCOREDIR=/opt/arduino/candidate/cores/arduino
+ARDUINOCOREDIR=/opt/arduino/ArduinoCore-avr-1.8.2
 # ARDUINOTOOLSDIR=$(ARDUINOHOME)/hardware/tools
 
 CXX=avr-g++
@@ -20,7 +19,7 @@ AVRSIZE=avr-size
 AVRDUDE=avrdude
 
 ifndef INCLUDE
-INCLUDE := -I$(ARDUINOCOREDIR) -I$(ARDUINOCOREDIR)/../../variants/standard
+INCLUDE := -I$(ARDUINOCOREDIR)/cores/arduino -I$(ARDUINOCOREDIR)/variants/standard
 endif
 
 ifndef XINCLUDE

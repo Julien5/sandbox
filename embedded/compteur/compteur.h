@@ -15,7 +15,9 @@ class TicksReader {
     bool take();
     const u8 *histogram_data(usize *L) const;
     const u8 *adc_data(usize *L = 0) const;
+#ifdef PC
     static int test();
+#endif
 };
 
 class compteur {

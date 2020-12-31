@@ -115,7 +115,9 @@ const u8 *TicksReader::adc_data(usize *L) const {
     return (u8 *)(&m_last_adc_value);
 }
 
+#ifdef PC
 histogram::Histogram make_histogram() {
+
     histogram::packed p;
     u32 k = 0;
     p.m_min = 100;
@@ -139,3 +141,4 @@ int TicksReader::test() {
     status::instance.dump();
     return 0;
 }
+#endif

@@ -1,8 +1,8 @@
 include ../settings
 include settings
 include AltSoftSerial
- 
+
 NAME:=$(XNAME)
-SRCSDIR := $(DIR3RDPARTY)/$(NAME)
+SRCSDIR := /opt/arduino/libraries/$(NAME)
 include build.mk
 
