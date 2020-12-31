@@ -83,27 +83,37 @@ u16 histogram::Histogram::maximum() const {
 }
 
 u16 histogram::Histogram::argmax(u16 m, u16 M) const {
-    Bin ret = 0;
-    for (usize k = 0; k < size(); ++k) {
-        if (m <= m_packed.value(k) && m_packed.value(k) <= M)
-            if (m_packed.count(k) > ret)
-                ret = m_packed.value(k);
+    usize imax = NBINS;
+    u32 max = 0;
+    for (usize index = 0; index < size(); ++index) {
+        if (m <= m_packed.value(index) && m_packed.value(index) <= M)
+            if (m_packed.count(index) > max) {
+                imax = index;
+                max = m_packed.count(index);
+            }
     }
-    return ret;
+    return m_packed.value(imax);
 }
 
 u16 histogram::Histogram::argmin(u16 m, u16 M) const {
-    Bin ret = count();
-    for (usize k = 0; k < size(); ++k) {
-        if (m <= m_packed.value(k) && m_packed.value(k) <= M)
-            if (m_packed.count(k) < ret)
-                ret = m_packed.value(k);
+    usize imin = NBINS;
+    u32 min = count();
+    for (usize index = 0; index < size(); ++index) {
+        if (m <= m_packed.value(index) && m_packed.value(index) <= M)
+            if (m_packed.count(index) < min) {
+                min = m_packed.count(index);
+                imin = index;
+            }
     }
-    return ret;
+    return m_packed.value(imin);
 }
 
-u32 histogram::Histogram::count(u16 v) const {
-    return m_packed.value(v);
+u16 histogram::Histogram::value(u16 index) const {
+    return m_packed.value(index);
+}
+
+u32 histogram::Histogram::count(u16 index) const {
+    return m_packed.count(index);
 }
 
 u16 histogram::Histogram::threshold(int percent) const {
@@ -134,7 +144,7 @@ void histogram::Histogram::shrink_if_needed() {
 
 void histogram::Histogram::update(u16 value) {
     DBG("update:%u\r\n", value);
-    float alpha = 0.998;
+    float alpha = 0.999;
     if (m_packed.m_max == 0) {
         alpha = 0;
     }

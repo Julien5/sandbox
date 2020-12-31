@@ -20,7 +20,7 @@ bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
     if (M - m < minWidth)
         return false;
     status::instance.set(status::index::line, __LINE__);
-    const auto T0 = H.threshold(10);
+    const auto T0 = H.threshold(20);
     status::instance.set(status::index::T0, T0);
     DBG("T0:%d\n", int(T0));
     if (T0 == m || T0 == M) {
@@ -28,7 +28,12 @@ bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
     }
     status::instance.set(status::index::line, __LINE__);
     const auto v1 = H.argmax(m, T0 - 1);
-    const auto v2 = H.argmax(T0 + 1, M);
+    auto bound = T0 + 2;
+    auto v2 = H.argmax(bound, M);
+    if (v2 == bound) {
+        bound = u16(0.3 * m + 0.7 * M);
+        v2 = H.argmax(bound, M);
+    }
     status::instance.set(status::index::v1, v1);
     status::instance.set(status::index::v2, v2);
     DBG("v1:%d v2:%d\n", int(v1), int(v2));
@@ -38,11 +43,11 @@ bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
     const auto v = H.argmin(v1, v2);
     DBG("v:%d \n", int(v));
     status::instance.set(status::index::v, v);
-    //    if (v == v1 || v == v2)
-    //  return false;
+    if (v == v1 || v == v2)
+        return false;
     status::instance.set(status::index::line, __LINE__);
-    const auto TH = v + 1;
-    const auto TL = v - 1;
+    const auto TH = v + 2;
+    const auto TL = v - 2;
     DBG("TL:%d TH:%d\n", int(TL), int(TH));
     status::instance.set(status::index::TH, TH);
     status::instance.set(status::index::TL, TL);
@@ -126,18 +131,24 @@ histogram::Histogram make_histogram() {
     for (auto b : B) {
         p.bins[k++] = b;
     }
-    p.m_max = p.m_min + sizeof(p.bins) / sizeof(p.bins[0]);
+    p.m_max = p.m_min + sizeof(p.bins) / sizeof(p.bins[0]) - 1;
     return histogram::Histogram(p);
 }
 
 int TicksReader::test() {
     auto H = make_histogram();
     H.print();
+    DBG("argmax=%d\n", int(H.argmax(111 + 1, 115)));
+    //return 0;
     u16 TH = 0;
     u16 TL = 0;
     assert(TL <= TH);
     auto c = calibrated(H, &TL, &TH);
     DBG("c=%d\n", int(c));
+    for (int k = 0; k < int(histogram::NBINS); ++k) {
+        DBG("H[%d]=%d\n", int(H.value(k)), int(H.count(k)));
+    }
+
     status::instance.dump();
     return 0;
 }

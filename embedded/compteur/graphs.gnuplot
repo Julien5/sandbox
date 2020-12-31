@@ -3,11 +3,9 @@ set output '/tmp/graphs.png'
 set multiplot layout 2,1
 # plot "data.csv" with lines linestyle 1
 
-
 set lmargin at screen 0.0
 set rmargin at screen 1
-
-
+set key off
 set style line 1 lc rgb '#0060ad' lt 1 lw 2 pt 7 pi -1 ps 1.5
 set style line 2 lc rgb 'red' pt 7 ps 0.2 lt 1 lw 2
 #set pointintervalbox 3
@@ -15,8 +13,8 @@ set grid;
 set autoscale fix;
 #set xtics 64;
 set ytics 1;
-set yrange [185:250]
-W=15000;
+set yrange [190:260]
+W=17000;
 d=128;
 set xrange [d:d+W]
 plot  "/tmp/analog_input.csv" using 0:2 with lines, \

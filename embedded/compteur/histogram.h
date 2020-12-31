@@ -42,7 +42,8 @@ namespace histogram {
             *L = sizeof(m_packed);
             return &m_packed;
         }
-        u32 count(u16 v) const;
+        u16 value(u16 index) const;
+        u32 count(u16 index) const;
         u16 argmax(u16 m, u16 M) const;
         u16 argmin(u16 m, u16 M) const;
         static int test();
