@@ -1,4 +1,4 @@
 XNAME:=LiquidCrystal
-XINCLUDE += -I/opt/arduino/libraries/$(XNAME)/src
+XINCLUDE += -I$(DIR3RDPARTY)/$(XNAME)/src
 XLIBS += -L/tmp/build/arduino/$(XNAME)/ -l$(XNAME)
 

@@ -2,7 +2,7 @@ include ../settings
 include settings
 include LowPower
 NAME:=$(XNAME)
-SRCSDIR := /opt/arduino/libraries/$(NAME)
+SRCSDIR := $(DIR3RDPARTY)/$(NAME)
 include build.mk
 
 

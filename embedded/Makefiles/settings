@@ -1,6 +1,5 @@
 DIRROOT:=/home/julien/projects/sandbox
 DIREMBEDDED:=$(DIRROOT)/embedded
-DIR3RDPARTY:=$(shell realpath $(DIRROOT)/../3rdparty)
 MAKEFILESDIR:=$(DIREMBEDDED)/Makefiles
 # check that both are equal.
 

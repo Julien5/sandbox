@@ -2,5 +2,5 @@ include ../settings
 include settings
 include LiquidCrystal
 NAME:=$(XNAME)
-SRCSDIR := /usr/share/arduino/libraries/$(NAME)
+SRCSDIR := $(DIR3RDPARTY)/$(NAME)
 include build.mk
