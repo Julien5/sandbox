@@ -7,6 +7,10 @@
 #include <math.h>
 #include <string.h>
 
+u16 bound(u16 T, u16 k) {
+    return T + k;
+}
+
 bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
     H.print();
     const u8 minWidth = 4;
@@ -28,12 +32,20 @@ bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
     }
     status::instance.set(status::index::line, __LINE__);
     const auto v1 = H.argmax(m, T0 - 1);
+    int k = 2;
+    auto v2 = H.argmax(bound(T0, k), M);
+    while (v2 == bound(T0, k) && (T0 + k) < M) {
+        k++;
+        v2 = H.argmax(bound(T0, k), M);
+    }
+    DBG("k=%d T0+k=%d b2=%d\n", k, T0 + k, u16(0.3 * m + 0.7 * M));
+    /*
     auto bound = T0 + 2;
     auto v2 = H.argmax(bound, M);
     if (v2 == bound) {
         bound = u16(0.3 * m + 0.7 * M);
         v2 = H.argmax(bound, M);
-    }
+	*/
     status::instance.set(status::index::v1, v1);
     status::instance.set(status::index::v2, v2);
     DBG("v1:%d v2:%d\n", int(v1), int(v2));

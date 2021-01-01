@@ -18,7 +18,6 @@ make
 
 grep status /tmp/compteur.out | cut -f3-6 -d" " > /tmp/status.csv
 
-
 cat /tmp/compteur.out | grep histogra | grep print | cut -f5 -d":" > /tmp/histogram.out
 python3 histogramify.py /tmp/histogram.out > /tmp/histogram.dat;
 gnuplot graphs.gnuplot
