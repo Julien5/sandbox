@@ -32,5 +32,5 @@ const u8 *status::Data::data(usize *L) const {
 
 void status::Data::dump() {
     assert(D[status::index::M] != 0);
-    DBG("status %d %d %d %d %d\r\n", D[status::index::m], D[status::index::TL], D[status::index::TH], int(D[status::index::M]), D[status::index::line]);
+    DBG("status: %d %d %d %d %d\r\n", D[status::index::m], D[status::index::TL], D[status::index::TH], int(D[status::index::M]), D[status::index::line]);
 }

@@ -32,6 +32,7 @@ bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
     }
     status::instance.set(status::index::line, __LINE__);
     const auto v1 = H.argmax(m, T0 - 1);
+#ifdef SEARCH
     int k = 2;
     auto v2 = H.argmax(bound(T0, k), M);
     while (v2 == bound(T0, k) && (T0 + k) < M) {
@@ -39,13 +40,14 @@ bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
         v2 = H.argmax(bound(T0, k), M);
     }
     DBG("k=%d T0+k=%d b2=%d\n", k, T0 + k, u16(0.3 * m + 0.7 * M));
-    /*
+#else
     auto bound = T0 + 2;
     auto v2 = H.argmax(bound, M);
     if (v2 == bound) {
         bound = u16(0.3 * m + 0.7 * M);
         v2 = H.argmax(bound, M);
-	*/
+    }
+#endif
     status::instance.set(status::index::v1, v1);
     status::instance.set(status::index::v2, v2);
     DBG("v1:%d v2:%d\n", int(v1), int(v2));
@@ -67,8 +69,10 @@ bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
     *_TH = TH;
     return true;
 }
-
+#include <math.h>
+static int t = 0;
 u16 analog_read() {
+    //    return 100 + 10 * sin(float(t++) / 30);
 #ifdef PC
     return analog().read();
 #else

@@ -60,8 +60,13 @@ void histogram::Histogram::print() const {
     DBG("histogram:");
     for (size_t k = 0; k < size(); ++k)
         printf("%3d ", int(m_packed.count(k)));
-    printf("\n");
+    printf("\r\n");
 #else
+    DBG("histogram:");
+    for (size_t k = 0; k < size(); ++k)
+        DBG("%3d ", int(m_packed.count(k)));
+    DBG("\r\n");
+    return;
     DBG("values: ");
     for (size_t k = 0; k < size(); ++k)
         DBG("[%3d] ", int(m_packed.value(k)));
@@ -163,7 +168,6 @@ void histogram::Histogram::update(u16 value) {
         return;
     m_packed.bins[k]++;
     shrink_if_needed();
-    print();
 }
 
 #ifdef PC

@@ -13,8 +13,8 @@ set grid;
 set autoscale fix;
 #set xtics 64;
 set ytics 1;
-set yrange [190:260]
-W=17000;
+#set yrange [190:260]
+W=5000;
 d=128;
 set xrange [d:d+W]
 plot  "/tmp/analog_input.csv" using 0:2 with lines, \
