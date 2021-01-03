@@ -2,8 +2,7 @@
 #include "common/debug.h"
 #include "common/time.h"
 
-tickscounter::counter_config
-config() {
+tickscounter::counter_config config() {
     tickscounter::counter_config ret;
     ret.kMinAloneTicks = 0;
     ret.kSecondsUntilAloneTick = 3;

@@ -80,7 +80,16 @@ u16 analog_read() {
 #endif
 }
 
+void flush_adc() {
+    auto t0 = common::time::since_reset();
+    while (common::time::elapsed_since(t0) < 250) {
+        analog_read();
+        common::time::delay(1);
+    }
+}
+
 TicksReader::TicksReader() {
+    flush_adc();
 }
 
 bool TicksReader::take() {
