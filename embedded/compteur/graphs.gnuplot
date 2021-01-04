@@ -13,7 +13,7 @@ set grid;
 set autoscale fix;
 #set xtics 64;
 set ytics 1;
-set yrange [150:200]
+set yrange [140:180]
 W=5000;
 d=128;
 set xrange [d:d+W]

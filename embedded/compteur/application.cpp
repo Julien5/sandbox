@@ -88,24 +88,16 @@ class EspStarter {
 void send_data() {
     if (!C->ticksReader()->adc_data())
         return;
+
     EspStarter espStarter;
     LEDRAI ledrai;
     wcallback cb;
-    {
-        usize L = 0;
-        const auto *data = C->ticksReader()->adc_data(&L);
-        if (data) {
-            auto p = W->post("http://192.168.178.22:8000/post/adc", data, L, &cb);
-            on_error(p);
-        } else
-            return;
-    }
 
     if (C->total() > 0) {
         usize L = 0;
         const u8 *data = C->data(&L);
         if (data) {
-            auto p = W->post("http://192.168.178.22:8000/post/compteur", data, L, &cb);
+            auto p = W->post("http://thinkpad.fritz.box:8000/post/compteur", data, L, &cb);
             on_error(p);
         }
     }
@@ -114,7 +106,7 @@ void send_data() {
         usize L = 0;
         const auto *data = C->ticksReader()->histogram_data(&L);
         if (data) {
-            auto p = W->post("http://192.168.178.22:8000/post/histogram", data, L, &cb);
+            auto p = W->post("http://thinkpad.fritz.box:8000/post/histogram", data, L, &cb);
             on_error(p);
         }
     }
@@ -124,7 +116,7 @@ void send_data() {
         const auto *data = status::instance.data(&L);
         DBG("data:%d %d", data[0], data[1]);
         if (data) {
-            auto p = W->post("http://192.168.178.22:8000/post/status", data, L, &cb);
+            auto p = W->post("http://thinkpad.fritz.box:8000/post/status", data, L, &cb);
             on_error(p);
         }
     }
@@ -134,8 +126,7 @@ void application::loop() {
     u32 t0 = common::time::since_reset();
     //TRACE();
     gather_data();
-    //TRACE();
-    //send_data();
+    send_data();
     u32 t1 = common::time::since_reset();
     if ((t1 - t0) < 100)
         common::time::delay(100 - (t1 - t0)); // adjusted to effectively get 100ms sampling rate

@@ -9,7 +9,7 @@ function reduce() {
 	mv /tmp/reduce $1
 }
 
-grep status screenlog.0 | cut -f2-5 -d" " > /tmp/status.csv
+grep status screenlog.0 | grep -v receiving | cut -f2-5 -d" " > /tmp/status.csv
 
 grep update screenlog.0 | cut -f2 -d: > /tmp/data.csv
 python3 add-time-column.py 200 > /tmp/addline
