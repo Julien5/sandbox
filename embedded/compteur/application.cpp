@@ -86,7 +86,7 @@ class EspStarter {
 };
 
 void send_data() {
-    static auto last_send_time = 0;
+    static u32 last_send_time = 0;
     const auto since_last_send_time = common::time::elapsed_since(last_send_time);
     if (since_last_send_time < (60ul * 1000))
         return;
