@@ -11,7 +11,7 @@ function reduce() {
 
 grep status screenlog.0 | grep -v receiving | cut -f2-5 -d" " > /tmp/status.csv
 
-grep update screenlog.0 | cut -f2 -d: > /tmp/data.csv
+grep "analog value" screenlog.0 | cut -f3 -d: > /tmp/data.csv
 python3 add-time-column.py 200 > /tmp/addline
 mv /tmp/addline /tmp/analog_input.csv
 

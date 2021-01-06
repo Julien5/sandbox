@@ -86,14 +86,16 @@ class EspStarter {
 };
 
 void send_data() {
-    if (!C->ticksReader()->adc_data())
+    static auto last_send_time = 0;
+    const auto since_last_send_time = common::time::elapsed_since(last_send_time);
+    if (since_last_send_time < (60ul * 1000))
         return;
-
+    last_send_time = common::time::since_reset();
     EspStarter espStarter;
     LEDRAI ledrai;
     wcallback cb;
 
-    if (C->total() > 0) {
+    {
         usize L = 0;
         const u8 *data = C->data(&L);
         if (data) {

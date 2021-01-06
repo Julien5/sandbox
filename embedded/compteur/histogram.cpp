@@ -148,7 +148,7 @@ void histogram::Histogram::shrink_if_needed() {
 }
 
 void histogram::Histogram::update(u16 value) {
-    DBG("update:%u\r\n", value);
+    //DBG("update:%u\r\n", value);
     float alpha = 0.999;
     if (m_packed.m_max == 0) {
         alpha = 0;

@@ -20,13 +20,13 @@ bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
     status::instance.set(status::index::M, M);
     status::instance.set(status::index::m, m);
     status::instance.set(status::index::line, __LINE__);
-    DBG("m:%d M:%d\n", int(m), int(M));
+    //DBG("m:%d M:%d\n", int(m), int(M));
     if (M - m < minWidth)
         return false;
     status::instance.set(status::index::line, __LINE__);
     const auto T0 = H.threshold(20);
     status::instance.set(status::index::T0, T0);
-    DBG("T0:%d\n", int(T0));
+    //DBG("T0:%d\n", int(T0));
     if (T0 == m || T0 == M) {
         return false;
     }
@@ -39,7 +39,7 @@ bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
         k++;
         v2 = H.argmax(bound(T0, k), M);
     }
-    DBG("k=%d T0+k=%d b2=%d\n", k, T0 + k, u16(0.3 * m + 0.7 * M));
+    //DBG("k=%d T0+k=%d b2=%d\n", k, T0 + k, u16(0.3 * m + 0.7 * M));
 #else
     auto bound = T0 + 2;
     auto v2 = H.argmax(bound, M);
@@ -50,19 +50,19 @@ bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
 #endif
     status::instance.set(status::index::v1, v1);
     status::instance.set(status::index::v2, v2);
-    DBG("v1:%d v2:%d\n", int(v1), int(v2));
+    //DBG("v1:%d v2:%d\n", int(v1), int(v2));
     if (v1 == v2)
         return false;
     status::instance.set(status::index::line, __LINE__);
     const auto v = H.argmin(v1, v2);
-    DBG("v:%d \n", int(v));
+    //DBG("v:%d \n", int(v));
     status::instance.set(status::index::v, v);
     if (v == v1 || v == v2)
         return false;
     status::instance.set(status::index::line, __LINE__);
     const auto TH = v + 2;
     const auto TL = v - 2;
-    DBG("TL:%d TH:%d\n", int(TL), int(TH));
+    //DBG("TL:%d TH:%d\n", int(TL), int(TH));
     status::instance.set(status::index::TH, TH);
     status::instance.set(status::index::TL, TL);
     *_TL = TL;
