@@ -1,19 +1,31 @@
 #!/bin/bash
 
 set -e
+set -x 
 SERVER=pi
-rm -vf /tmp/*.zip
-zip -r /tmp/server.zip *.sh *.py html
-scp /tmp/server.zip julien@$SERVER:/tmp/
-pushd ../esp-01/hello
-make clean
-pushd swig
-make clean
-popd
-zip -r /tmp/swig.zip *
-scp /tmp/swig.zip  julien@$SERVER:/tmp/
-popd
-ssh julien@$SERVER "if [ ! -d /opt/hamster-server ]; then echo please mkdir -p /opt/hamster-server/ \(+chmod\) on $SERVER; fi"
-scp julien@$SERVER:/opt/hamster-server/sqlite.db backup/sqlite.$(date +%Y-%m-%d-%H.%M.%S).db
-scp install_server.sh julien@$SERVER:/tmp/
-ssh julien@$SERVER "/tmp/install_server.sh"
+
+if [[ $(hostname) = "$SERVER" ]]; then
+	echo i am on the server
+	pwd
+	cd /tmp
+	if [[ ! -f server.tar ]]; then
+	   echo could not find server.tar
+	   exit 1;
+	fi
+	mkdir -p /opt/{backup,hamster-server}
+	tar zcvf /opt/backup/hamster-server.$(date "+%d.%m.%Y.%H.%M.%S").tgz /opt/hamster-server
+	pushd /opt/hamster-server
+	find . -type f -not -name "*.db" -and -not -name "pid" -delete -print
+	find . -type d -empty -print -delete 
+	tar xvf /tmp/server.tar
+	./start_server.sh
+	cat pid
+	popd
+	df -h --type=ext4
+else
+	tar cvf /tmp/server.tar $(find . -name "*.py") start_server.sh
+	scp deploy.sh julien@$SERVER:/tmp/
+	scp /tmp/server.tar julien@$SERVER:/tmp/
+	ssh julien@$SERVER "/tmp/deploy.sh"
+fi
+echo bye

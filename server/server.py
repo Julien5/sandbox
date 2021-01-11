@@ -9,9 +9,7 @@ import time;
 import cgi;
 import binascii;
 import data;
-import html;
 import sys;
-import webdir;
 import mail;
 
 def log(msg):
