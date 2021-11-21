@@ -3,13 +3,12 @@ set output 'ir.png'
 
 # plot "data.csv" with lines linestyle 1
 
-set style line 1 lc rgb '#0060ad' lt 1 lw 2 pt 7 pi -1 ps 1.5
-set style line 2 lc rgb 'red' pt 7 ps 0.2 lt 1 lw 2
+set style line 1 lc rgb '#0060ad' lt 1 lw 1 pt 8 pi -1 ps 1.5
 set pointintervalbox 3
 set grid;
-set autoscale fix;
+# set autoscale fix;
 # set xtics 10
 
-#set yrange [30:170]
+set yrange [80:120]
 #set xrange [0:1500]
-plot "/tmp/data.csv" using ($1/1000):2 with lines ls 2 
+plot "value.0" with lines ls 1

@@ -12,11 +12,11 @@ u16 bound(u16 T, u16 k) {
 }
 
 bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
-    H.print();
+    //H.print();
     const u8 minWidth = 4;
     const auto M = H.maximum();
     const auto m = H.minimum();
-    assert(M != 0);
+    //assert(M != 0);
     status::instance.set(status::index::M, M);
     status::instance.set(status::index::m, m);
     status::instance.set(status::index::line, __LINE__);
@@ -109,7 +109,7 @@ bool TicksReader::take() {
     assert(TL <= TH);
     auto c = calibrated(H, &TL, &TH);
     status::instance.set(status::index::calibrated, u8(c));
-    status::instance.dump();
+    //status::instance.dump();
     if (!c) {
         return false;
     }
