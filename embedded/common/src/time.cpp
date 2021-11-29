@@ -27,6 +27,9 @@ std::atomic<test_ms> test_t(0);
 u32 common::time::since_reset() {
     return test_t.load();
 }
+u64 common::time::micros_since_reset() {
+    return 1000 * test_t.load();
+}
 void common::time::delay(test_ms d) {
     test_t += d;
 }
@@ -37,17 +40,22 @@ void common::time::delay(test_ms d) {
 u32 common::time::since_reset() {
     return millis();
 }
-
+u64 common::time::micros_since_reset() {
+    return micros();
+}
 void common::time::delay(u32 d) {
     return ::delay(d);
 }
 #endif
 
 #if defined(ESP8266)
-extern "C" u32
-esp_get_time(void);
+extern "C" u32 esp_get_time(void);
+
 u32 common::time::since_reset() {
     return esp_get_time() / 1000;
+}
+u64 common::time::micros_since_reset() {
+    return esp_get_time();
 }
 #include "FreeRTOS.h"
 #include "task.h"

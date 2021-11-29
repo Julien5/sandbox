@@ -9,6 +9,6 @@ set grid;
 # set autoscale fix;
 # set xtics 10
 
-set yrange [80:120]
+#set yrange [200:350]
 #set xrange [0:1500]
 plot "value.0" with lines ls 1
