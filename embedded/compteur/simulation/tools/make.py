@@ -50,34 +50,50 @@ def red_mark_width():
 def number_of_rotation_per_kWh():
 	return 100;
 
+g_offset=dict();
+def offset(filename):
+	global g_offset;
+	if not filename in g_offset:
+		g_offset[filename]=0;
+	g_offset[filename]=g_offset[filename]+1;
+	return g_offset[filename];
+
 def getwhiteblocks(duration_s):
-	values=adcvalues("simulation/data/real_white.txt")
+	filename="simulation/data/real_white.txt";
+	values=adcvalues(filename);
 	ret=list();
 	count=round(duration_s*number_of_blocks_per_second());
 	assert(count>0);
 	for c in range(count):
-		ret.append(values[c % len(values)]);
-		
+		ret.append(values[offset(filename) % len(values)]);
 	return ret;
 
 def getredblocks(duration_s):
-	values=adcvalues("simulation/data/real_red_1.txt")
+	filename="simulation/data/real_red_1.txt";
+	values=adcvalues(filename)
 	ret=list();
 	count=round(duration_s*number_of_blocks_per_second());
 	assert(count>0);
 	for c in range(count):
-		ret.append(values[c % len(values)]);
+		ret.append(values[offset(filename) % len(values)]);
 	return ret;
 
 # assuming 100 us per adc shot (10kSPS)
 # and R=100U/kWh and W=1/20 mark width
 
+def readarg(name,default):
+	A=dict();
+	for arg in sys.argv:
+		if "=" in arg:
+			key=arg.split("=")[0];
+			if key == name:
+				return int(arg.split("=")[1]);
+	return default;		
+
 def main():
 	args=sys.argv;
 	
-	power=1000; # 1 kWk
-	if len(args)>1:
-		power=int(sys.argv[1]);
+	power=readarg("power",1000); # 1 kWk
 
 	duration_s=float(1000/power)*float(100/number_of_rotation_per_kWh())*36;
 	duration_red=red_mark_width()*duration_s;
@@ -85,11 +101,13 @@ def main():
 	
 	if os.path.exists("output"):
 		os.remove("output");
-		
-	WB=getwhiteblocks(duration_white);		
-	writelines(WB,'output');
-	RB=getredblocks(duration_red);
-	writelines(RB,'output');
+
+	repetitions=readarg("repetitions",1); # 1 kWk
+	for k in range(repetitions):
+		WB=getwhiteblocks(duration_white);		
+		writelines(WB,'output');
+		RB=getredblocks(duration_red);
+		writelines(RB,'output');
 	
 if __name__ == '__main__': 
 	main();
