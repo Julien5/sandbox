@@ -163,7 +163,7 @@ void histogram::Histogram::update(u16 value) {
         m_packed.m_max = alpha * m_packed.m_max + (1 - alpha) * value;
     }
 
-    const usize k = m_packed.index(value);
+    const auto k = m_packed.index(value);
     if (k == size())
         return;
     m_packed.bins[k]++;
