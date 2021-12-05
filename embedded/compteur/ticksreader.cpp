@@ -1,7 +1,7 @@
 #include "compteur.h"
 #include "common/debug.h"
 #include "common/time.h"
-#include "analog.h"
+#include "common/analog.h"
 #include "histogram.h"
 #include "status.h"
 #include <math.h>
