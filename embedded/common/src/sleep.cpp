@@ -3,16 +3,16 @@
 #include "common/time.h"
 
 #if defined(PC)
-void sleep::deep_sleep(const u32 &ms) {
+void sleep::deep_sleep(const common::time::ms &d) {
     DBG("deep sleep (=> delay)\n");
-    common::time::delay(ms);
+    common::time::delay(d);
 }
 #endif
 
 #if defined(ARDUINO)
 #include "LowPower.h"
-void sleep::deep_sleep(const u32 &ms) {
-    LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF);
+void sleep::deep_sleep(const common::time::ms &delay) {
+    LowPower.powerDown(SLEEP_15MS, ADC_OFF, BOD_OFF);
 }
 #endif
 

@@ -175,15 +175,15 @@ int eeprom::test() {
     const char *data = "hello";
 
     const size_t Ldata = strlen(data) + 1;
-    DBG("sizeof(data)=%d\n", Ldata);
+    DBG("sizeof(data)=%d\n", int(Ldata));
 
     e.write((ram_address)data, Ldata);
     u8 read_buffer[32] = {0};
-    DBG("sizeof(read_buffer)=%d\n", sizeof(read_buffer));
+    DBG("sizeof(read_buffer)=%d\n", int(sizeof(read_buffer)));
     length L = e.read(read_buffer, sizeof(read_buffer));
     if (L < 0)
         return 1;
-    DBG("L=%d\n", L);
+    DBG("L=%d\n", int(L));
     DBG("%s\n", (char *)read_buffer);
     if (strcmp(data, (char *)read_buffer) != 0)
         return 1;

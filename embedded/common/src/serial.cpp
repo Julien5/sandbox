@@ -37,7 +37,7 @@ bool serial::wait_for_begin(const u16 &timeout) {
     auto t0 = time::since_reset();
     while (begin != kBegin) {
         auto t1 = time::since_reset();
-        if ((t1 - t0) > timeout) {
+        if (t1.since(t0).value() > timeout) {
             //     TRACE();
             return false;
         }

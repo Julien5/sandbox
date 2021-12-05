@@ -1,7 +1,8 @@
 #pragma once
 
-#include "common/rusttypes.h"
+#include "common/time.h"
+
 class sleep {
   public:
-    void deep_sleep(const u32 &ms);
+    void deep_sleep(const common::time::ms &delay);
 };

@@ -19,7 +19,7 @@ class LiquidCrystal {
     void print(const std::string &s) {
         std::cout << "LCD: ";
         std::cout << std::setw(10);
-        std::cout << common::time::since_reset() << " [" << s << "]\n";
+        std::cout << common::time::since_reset().value() << " [" << s << "]\n";
     };
 };
 #else
@@ -44,7 +44,7 @@ void common::LCD::init() {
         char msg[17] = {0};
         snprintf(msg, sizeof(msg), "INIT LCD: %d", d);
         print(msg);
-        common::time::delay(50);
+        common::time::delay(common::time::ms(50));
     }
 }
 

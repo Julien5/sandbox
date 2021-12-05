@@ -77,9 +77,9 @@ u16 analog_read() {
 
 void flush_adc() {
     auto t0 = common::time::since_reset();
-    while (common::time::elapsed_since(t0) < 250) {
+    while (common::time::elapsed_since(t0).value() < 250) {
         analog_read();
-        common::time::delay(1);
+        common::time::delay(common::time::ms(1));
     }
 }
 
@@ -89,7 +89,7 @@ TicksReader::TicksReader() {
 
 bool TicksReader::take() {
     const auto a = analog_read();
-    DBG("time:%d s analog value:%d\r\n", int(common::time::since_reset() / 1000), int(a));
+    DBG("time:%d s analog value:%d\r\n", int(common::time::since_reset().value() / 1000), int(a));
     H.update(a);
     constexpr auto size_adc = sizeof(m_last_adc_value) / sizeof(m_last_adc_value[0]);
     if (m_adc_index >= size_adc) {

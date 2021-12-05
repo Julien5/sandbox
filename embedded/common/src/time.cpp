@@ -2,60 +2,95 @@
 #include "common/debug.h"
 
 using namespace common;
+
 namespace common {
     namespace time {
-        u64 epoch_offset;
+        ms epoch_offset(0);
     }
 }
 
-void common::time::set_current_epoch(u64 ms) {
-    common::time::epoch_offset = ms;
+common::time::ms::ms() : m_value(0) {}
+common::time::ms::ms(u64 v) : m_value(v){};
+common::time::ms::ms(const us &v) : m_value(v.value() / 1000){};
+common::time::ms::operator us() const {
+    return us(value() * 1000);
+}
+u64 common::time::ms::value() const {
+    return m_value;
+}
+void common::time::ms::add(const ms &other) {
+    m_value += other.value();
 }
 
-u64 common::time::since_epoch() {
-    return common::time::epoch_offset + since_reset();
+common::time::ms common::time::ms::since(const ms &older) const {
+    return ms(value() - older.value());
 }
 
-u32 common::time::elapsed_since(const u32 t0) {
-    return common::time::since_reset() - t0;
+common::time::us::us() : m_value(0) {}
+common::time::us::us(u64 v) : m_value(v){};
+common::time::us::us(const ms &v) : m_value(1000 * v.value()){};
+common::time::us::operator ms() const {
+    return us(value() / 1000);
+}
+u64 common::time::us::value() const {
+    return m_value;
+}
+void common::time::us::add(const us &other) {
+    m_value += other.value();
+}
+common::time::us common::time::us::since(const us &older) const {
+    return us(value() - older.value());
+}
+
+void common::time::set_current_epoch(const ms &time) {
+    common::time::epoch_offset = time;
+}
+
+common::time::ms common::time::since_epoch() {
+    return ms(common::time::epoch_offset.value() + since_reset().value());
+}
+
+common::time::ms common::time::elapsed_since(const ms &t0) {
+    return ms(common::time::since_reset().value() - t0.value());
 }
 
 #if defined(PC)
-#include <atomic>
-typedef u32 test_ms;
-std::atomic<test_ms> test_t(0);
-u32 common::time::since_reset() {
-    return test_t.load();
+common::time::us test_t(common::time::us(0));
+common::time::ms common::time::since_reset() {
+    return test_t;
 }
-u64 common::time::micros_since_reset() {
-    return 1000 * test_t.load();
+common::time::us common::time::since_reset_us() {
+    return test_t;
 }
-void common::time::delay(test_ms d) {
-    test_t += d;
+void common::time::delay(const ms &delay) {
+    test_t.add(delay);
+}
+void common::time::simulate(const us &delay) {
+    test_t.add(delay);
 }
 #endif
 
 #if defined(ARDUINO)
 #include "Arduino.h"
-u32 common::time::since_reset() {
-    return millis();
+common::time::ms common::time::since_reset() {
+    return ms(millis());
 }
-u64 common::time::micros_since_reset() {
-    return micros();
+common::time::us common::time::since_reset_us() {
+    return us(micros());
 }
-void common::time::delay(u32 d) {
-    return ::delay(d);
+void common::time::delay(const ms &delay) {
+    return ::delay(delay.value());
 }
 #endif
 
 #if defined(ESP8266)
 extern "C" u32 esp_get_time(void);
 
-u32 common::time::since_reset() {
-    return esp_get_time() / 1000;
+common::time::ms common::time::since_reset() {
+    return ms(esp_get_time() / 1000);
 }
-u64 common::time::micros_since_reset() {
-    return esp_get_time();
+common::time::us common::time::since_reset_us() {
+    return us(esp_get_time());
 }
 #include "FreeRTOS.h"
 #include "task.h"
