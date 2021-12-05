@@ -72,12 +72,7 @@ bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
 #include <math.h>
 static int t = 0;
 u16 analog_read() {
-    //    return 100 + 10 * sin(float(t++) / 30);
-#ifdef PC
-    return analog().read();
-#else
     return common::analog().read();
-#endif
 }
 
 void flush_adc() {
