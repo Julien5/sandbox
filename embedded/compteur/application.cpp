@@ -34,8 +34,8 @@ void application::setup() {
     DBG(".");
 #ifdef ARDUINO
     pinMode(espEnablePin, OUTPUT);
-    analog = std::unique_ptr<common::analog>(new common::analog());
 #endif
+    analog = std::unique_ptr<common::analog>(new common::analog());
     switchLED(false);
 }
 
@@ -65,7 +65,8 @@ class IntermittentRead {
     }
     bool old() const {
         const auto age = common::time::since_reset_us().since(last_measure_time);
-        return age.value() > 200;
+        // DBG("since reset:%d,age:%d\r\n", int(common::time::since_reset_us().value()), int(common::time::ms(age).value()));
+        return common::time::ms(age).value() > 200;
     }
     void reset() {
         for (int i = 0; i < T; ++i)
@@ -99,11 +100,9 @@ void application::loop() {
     }
     A.tick();
     if (A.old()) {
-        DBG("time on:%d\r\n", int(stop_on.since(start_on).value()));
-        //DBG("time:%d s analog value:%d\r\n", int(0), int(A.average()));
-        for (size_t k = 0; k < A.T; ++k)
-            DBG("%d ", int(A.value(k)));
-        DBG("\r\n");
+        DBG("time:%d s analog value:%d\r\n", int(0), int(A.average()));
+        //for (size_t k = 0; k < A.T; ++k)
+        //    DBG("%d ", int(A.value(k)));
         A.reset();
         assert(!A.done());
         switchLED(true);

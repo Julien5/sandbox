@@ -30,7 +30,7 @@ common::time::us::us() : m_value(0) {}
 common::time::us::us(u64 v) : m_value(v){};
 common::time::us::us(const ms &v) : m_value(1000 * v.value()){};
 common::time::us::operator ms() const {
-    return us(value() / 1000);
+    return ms(value() / 1000);
 }
 u64 common::time::us::value() const {
     return m_value;
@@ -63,6 +63,7 @@ common::time::us common::time::since_reset_us() {
     return test_t;
 }
 void common::time::delay(const ms &delay) {
+    assert(0);
     test_t.add(delay);
 }
 void common::time::simulate(const us &delay) {
@@ -80,6 +81,9 @@ common::time::us common::time::since_reset_us() {
 }
 void common::time::delay(const ms &delay) {
     return ::delay(delay.value());
+}
+void common::time::simulate(const us &delay) {
+    // nothing to do (there is no simulation on arduino)
 }
 #endif
 
