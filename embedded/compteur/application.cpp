@@ -37,10 +37,12 @@ void application::setup() {
     switchLED(false);
 }
 
-const int T0 = 4;
-const int T = 10;
-
 class IntermittentRead {
+  public:
+    static const int T0 = 4;
+    static const int T = 10;
+
+  private:
     size_t k = 0;
     u64 last_measure_time = 0;
     int A[T] = {0};
@@ -97,7 +99,7 @@ void application::loop() {
     if (A.old()) {
         DBG("time on:%d\r\n", int(stop_on - start_on));
         //DBG("time:%d s analog value:%d\r\n", int(0), int(A.average()));
-        for (size_t k = 0; k < T; ++k)
+        for (size_t k = 0; k < A.T; ++k)
             DBG("%d ", int(A.value(k)));
         DBG("\r\n");
         A.reset();
