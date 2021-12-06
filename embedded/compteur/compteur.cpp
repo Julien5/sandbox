@@ -30,8 +30,8 @@ void print_bin(const tickscounter::bin &b) {
 }
 
 bool compteur::update() {
-    const auto t = common::time::since_reset();
 #ifdef NODEF
+    const auto t = common::time::since_reset();
     if (t % 100 == 0 && counter.bin_count() > 2) {
         const auto bin0 = counter.getbin(0);
         const auto bin2 = counter.getbin(counter.bin_count() - 2);
@@ -43,8 +43,7 @@ bool compteur::update() {
             kW(bin1.m_count + bin2.m_count - 1, bin1.end() - bin2.m_start));
     }
 #endif
-
-    if (reader.take()) {
+    if (reader.tick()) {
         counter.tick();
         return true;
     }

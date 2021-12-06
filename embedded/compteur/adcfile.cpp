@@ -34,17 +34,13 @@ namespace {
         auto ret = split(s, "\n");
         return ret;
     }
+}
 
-    std::vector<u16> numbers(const std::vector<std::string> &lines) {
-        std::vector<u16> ret;
-        for (auto &line : lines) {
-            if (!line.empty()) {
-                const auto P = split(line, " ");
-                ret.push_back(std::stoi(P[1]));
-            }
-        }
-        return ret;
-    }
+adcfile *adcfile::instance() {
+    static adcfile *inst = nullptr;
+    if (!inst)
+        inst = new adcfile();
+    return inst;
 }
 
 adcfile::adcfile() {

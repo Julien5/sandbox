@@ -57,9 +57,13 @@ u32 histogram::Histogram::count() const {
 
 void histogram::Histogram::print() const {
 #ifdef PC
-    DBG("histogram:");
+    printf("HIST:");
     for (size_t k = 0; k < size(); ++k)
-        printf("%3d ", int(m_packed.count(k)));
+        printf("%4d ", int(m_packed.value(k)));
+    printf("\r\n");
+    printf("HIST:");
+    for (size_t k = 0; k < size(); ++k)
+        printf("%4d ", int(m_packed.count(k)));
     printf("\r\n");
 #else
     DBG("histogram:");
@@ -149,7 +153,7 @@ void histogram::Histogram::shrink_if_needed() {
 
 void histogram::Histogram::update(u16 value) {
     //DBG("update:%u\r\n", value);
-    float alpha = 0.999;
+    float alpha = 1;
     if (m_packed.m_max == 0) {
         alpha = 0;
     }

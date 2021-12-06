@@ -12,6 +12,7 @@ class adcfile : public common::analog_read_callback {
 
   public:
     adcfile();
+    static adcfile *instance();
     void setT(const int &T);
     u16 read();
 };

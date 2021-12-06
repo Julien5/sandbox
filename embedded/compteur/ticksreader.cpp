@@ -1,7 +1,6 @@
-#include "compteur.h"
+#include "ticksreader.h"
 #include "common/debug.h"
 #include "common/time.h"
-#include "common/analog.h"
 #include "histogram.h"
 #include "status.h"
 #include <math.h>
@@ -10,6 +9,8 @@
 u16 bound(u16 T, u16 k) {
     return T + k;
 }
+
+//#define SEARCH
 
 bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
     //H.print();
@@ -20,14 +21,15 @@ bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
     status::instance.set(status::index::M, M);
     status::instance.set(status::index::m, m);
     status::instance.set(status::index::line, __LINE__);
-    //DBG("m:%d M:%d\n", int(m), int(M));
+    DBG("m:%d M:%d\n", int(m), int(M));
     if (M - m < minWidth)
         return false;
     status::instance.set(status::index::line, __LINE__);
-    const auto T0 = H.threshold(20);
+    const auto T0 = (m + M) / 2; //H.threshold(40);
     status::instance.set(status::index::T0, T0);
-    //DBG("T0:%d\n", int(T0));
+    DBG("T0:%d\n", int(T0));
     if (T0 == m || T0 == M) {
+        DBG("ERR:not calibrated (1)\r\n");
         return false;
     }
     status::instance.set(status::index::line, __LINE__);
@@ -39,66 +41,85 @@ bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
         k++;
         v2 = H.argmax(bound(T0, k), M);
     }
-    //DBG("k=%d T0+k=%d b2=%d\n", k, T0 + k, u16(0.3 * m + 0.7 * M));
+    DBG("k=%d T0+k=%d b2=%d\n", k, T0 + k, u16(0.3 * m + 0.7 * M));
 #else
-    auto bound = T0 + 2;
-    auto v2 = H.argmax(bound, M);
-    if (v2 == bound) {
-        bound = u16(0.3 * m + 0.7 * M);
-        v2 = H.argmax(bound, M);
-    }
+    auto v2 = H.argmax(T0, M);
 #endif
     status::instance.set(status::index::v1, v1);
     status::instance.set(status::index::v2, v2);
-    //DBG("v1:%d v2:%d\n", int(v1), int(v2));
-    if (v1 == v2)
+    DBG("v1:%d v2:%d\n", int(v1), int(v2));
+    if (v1 == v2) {
+        DBG("ERR:not calibrated T0:%d v1:%d v2:%d (2) \r\n", int(T0), int(v1), int(v2));
+        H.print();
         return false;
+    }
     status::instance.set(status::index::line, __LINE__);
     const auto v = H.argmin(v1, v2);
-    //DBG("v:%d \n", int(v));
+    DBG("v:%d \n", int(v));
     status::instance.set(status::index::v, v);
-    if (v == v1 || v == v2)
+    if (v == v1 || v == v2) {
+        DBG("ERR:not calibrated #:%d v1:%d v2:%d v:%d (3) \r\n", int(H.count()), int(v1), int(v2), int(v));
+        H.print();
         return false;
+    }
     status::instance.set(status::index::line, __LINE__);
-    const auto TH = v + 2;
-    const auto TL = v - 2;
-    //DBG("TL:%d TH:%d\n", int(TL), int(TH));
+    const auto TH = std::min(v + 1, int(v2));
+    const auto TL = std::max(v - 1, int(v1));
+    DBG("TL:%d TH:%d\n", int(TL), int(TH));
     status::instance.set(status::index::TH, TH);
     status::instance.set(status::index::TL, TL);
     *_TL = TL;
     *_TH = TH;
     return true;
 }
-#include <math.h>
-static int t = 0;
-u16 analog_read() {
-    return common::analog().read();
-}
+//#include <math.h>
+//static int t = 0;
 
-void flush_adc() {
-    auto t0 = common::time::since_reset();
-    while (common::time::elapsed_since(t0).value() < 250) {
-        analog_read();
-        common::time::delay(common::time::ms(1));
+bool switchLED(bool on) {
+    bool ret = false;
+    const int espEnablePin = 3;
+    static bool last_state = false;
+    if (last_state != on) {
+#ifdef ARDUINO
+        digitalWrite(espEnablePin, on ? 1 : 0);
+#endif
+        ret = true;
     }
+    last_state = on;
+    return ret;
 }
 
 TicksReader::TicksReader() {
-    flush_adc();
+    switchLED(false);
 }
 
-bool TicksReader::take() {
-    const auto a = analog_read();
-    DBG("time:%d s analog value:%d\r\n", int(common::time::since_reset().value() / 1000), int(a));
-    H.update(a);
+bool TicksReader::tick() {
+    u16 value = 0;
+    if (m_reader.done() && !m_reader.old()) {
+        if (switchLED(false)) {
+            value = round(m_reader.average());
+        }
+    }
+    m_reader.tick();
+    if (m_reader.old()) {
+        m_reader.reset();
+        assert(!m_reader.done());
+        switchLED(true);
+        // restart new measurement => nothing else to do.
+        return false;
+    }
+    if (value == 0)
+        return false;
+    DBG("time:%d s analog value:%d\r\n", int(common::time::since_reset().value() / 1000), value);
+    H.update(int(value));
     constexpr auto size_adc = sizeof(m_last_adc_value) / sizeof(m_last_adc_value[0]);
     if (m_adc_index >= size_adc) {
         memset((u8 *)m_last_adc_value, 0, sizeof(m_last_adc_value));
         m_adc_index = 0;
     }
-    m_last_adc_value[m_adc_index] = a;
+    m_last_adc_value[m_adc_index] = value;
     m_adc_index++;
-    // H.print();
+    //H.print();
     u16 TH = 0;
     u16 TL = 0;
     assert(TL <= TH);
@@ -106,20 +127,24 @@ bool TicksReader::take() {
     status::instance.set(status::index::calibrated, u8(c));
     //status::instance.dump();
     if (!c) {
+        DBG("ERR:not calibrated\r\n");
         return false;
     }
-    //DBG("TL=[%3d] TH=[%3d]\r\n", TL, TH);
+    DBG("TL=[%3d] TH=[%3d]\r\n", TL, TH);
     // is the value classificable ?
-    if (TL < a && a < TH) {
+    if (TL < value && value < TH) {
+        DBG("ERR:out of range\r\n");
+        H.print();
         return false;
     }
-    const auto new_value = a >= TH;
+    const auto new_value = value >= TH;
     if (new_value == m_last_value)
         return false;
     m_last_value = new_value;
     if (new_value == 0) {
         return false;
     }
+    DBG("TICK TL=[%3d] TH=[%3d]\r\n", TL, TH);
     return true;
 }
 
