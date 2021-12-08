@@ -38,6 +38,7 @@ namespace histogram {
 		  high(100) = minimum()
 		*/
         u16 high(int percent) const;
+        u16 low(int percent) const;
         const packed *get_packed(size_t *L) const {
             *L = sizeof(m_packed);
             return &m_packed;

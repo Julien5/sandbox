@@ -142,6 +142,23 @@ u16 histogram::Histogram::high(int percent) const {
     return m_packed.value(n);
 }
 
+u16 histogram::Histogram::low(int percent) const {
+    if (count() == 0)
+        return 0;
+    assert(size() > 0);
+    const float wanted_count = count() * float(percent) / 100;
+    isize Gn = 0;
+    isize n = 0;
+    while (n >= 0) {
+        Gn += m_packed.count(n);
+        if (Gn >= wanted_count)
+            break;
+        n++;
+    }
+    assert(minimum() <= m_packed.value(n) && m_packed.value(n) <= maximum());
+    return m_packed.value(n);
+}
+
 void histogram::Histogram::shrink_if_needed() {
     const u16 kmax = 0xffff / 2;
     if (count() <= kmax)

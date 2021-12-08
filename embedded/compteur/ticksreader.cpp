@@ -23,7 +23,7 @@ bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
     status::instance.set(status::index::line, __LINE__);
     DBG("m:%d M:%d\n", int(m), int(M));
     const auto d = M - m;
-    if (d < float(m) / 10) {
+    if (20 * d < float(m)) {
         DBG("ERR:not calibrated (narrow 1)\r\n");
         return false;
     }
@@ -40,39 +40,19 @@ bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
         return false;
     }
     status::instance.set(status::index::line, __LINE__);
-    const auto v1 = H.argmax(m, T0 - 1);
-#ifdef SEARCH
-    int k = 2;
-    auto v2 = H.argmax(bound(T0, k), M);
-    while (v2 == bound(T0, k) && (T0 + k) < M) {
-        k++;
-        v2 = H.argmax(bound(T0, k), M);
-    }
-    DBG("k=%d T0+k=%d b2=%d\n", k, T0 + k, u16(0.3 * m + 0.7 * M));
-#else
-    auto v2 = H.argmax(T0, M);
-#endif
-    status::instance.set(status::index::v1, v1);
-    status::instance.set(status::index::v2, v2);
-    DBG("v1:%d v2:%d\n", int(v1), int(v2));
-    if (v1 == v2) {
-        DBG("ERR:not calibrated T0:%d v1:%d v2:%d (2) \r\n", int(T0), int(v1), int(v2));
+    const auto TH = H.high(70);
+    const auto TL = H.low(100 / 20);
+    if (TH <= TL) {
+        DBG("ERR:not calibrated #:%d TL:%d TH:%d (3) \r\n", int(H.count()), int(TH), int(TL));
         H.print();
         return false;
     }
-    status::instance.set(status::index::line, __LINE__);
-    const auto v = H.argmin(v1, v2);
-    DBG("v:%d \n", int(v));
-    status::instance.set(status::index::v, v);
-    if (v == v1 || v == v2) {
-        DBG("ERR:not calibrated #:%d v1:%d v2:%d v:%d (3) \r\n", int(H.count()), int(v1), int(v2), int(v));
+    const auto dT = TH - TL;
+    if (3 * dT < d) {
+        DBG("ERR:not calibrated #:%d TL:%d TH:%d (3) \r\n", int(H.count()), int(TH), int(TL));
         H.print();
         return false;
     }
-    status::instance.set(status::index::line, __LINE__);
-    const auto TH = std::min(v + 1, int(v2));
-    const auto TL = std::max(v - 1, int(v1));
-    DBG("TL:%d TH:%d\n", int(TL), int(TH));
     status::instance.set(status::index::TH, TH);
     status::instance.set(status::index::TL, TL);
     *_TL = TL;
@@ -140,8 +120,8 @@ bool TicksReader::tick() {
     DBG("TL=[%3d] TH=[%3d]\r\n", TL, TH);
     // is the value classificable ?
     if (TL < value && value < TH) {
-        DBG("ERR out of range TL=[%3d] value=%d TH=[%3d]\r\n", TL, int(value), TH);
-        H.print();
+        //DBG("ERR out of range TL=[%3d] value=%d TH=[%3d]\r\n", TL, int(value), TH);
+        // H.print();
         return false;
     }
     const auto new_value = value >= TH;
