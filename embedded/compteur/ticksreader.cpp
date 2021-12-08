@@ -14,7 +14,7 @@ u16 bound(u16 T, u16 k) {
 
 bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
     //H.print();
-    const u8 minWidth = 4;
+    const u8 minWidth = 10;
     const auto M = H.maximum();
     const auto m = H.minimum();
     //assert(M != 0);
@@ -22,10 +22,17 @@ bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
     status::instance.set(status::index::m, m);
     status::instance.set(status::index::line, __LINE__);
     DBG("m:%d M:%d\n", int(m), int(M));
-    if (M - m < minWidth)
+    const auto d = M - m;
+    if (d < float(m) / 10) {
+        DBG("ERR:not calibrated (narrow 1)\r\n");
         return false;
+    }
+    if (M - m < minWidth) {
+        DBG("ERR:not calibrated (narrow 2)\r\n");
+        return false;
+    }
     status::instance.set(status::index::line, __LINE__);
-    const auto T0 = (m + M) / 2; //H.threshold(40);
+    const auto T0 = (m + M) / 2; //H.high(40);
     status::instance.set(status::index::T0, T0);
     DBG("T0:%d\n", int(T0));
     if (T0 == m || T0 == M) {
@@ -133,7 +140,7 @@ bool TicksReader::tick() {
     DBG("TL=[%3d] TH=[%3d]\r\n", TL, TH);
     // is the value classificable ?
     if (TL < value && value < TH) {
-        DBG("ERR:out of range\r\n");
+        DBG("ERR out of range TL=[%3d] value=%d TH=[%3d]\r\n", TL, int(value), TH);
         H.print();
         return false;
     }
@@ -144,7 +151,7 @@ bool TicksReader::tick() {
     if (new_value == 0) {
         return false;
     }
-    DBG("TICK TL=[%3d] TH=[%3d]\r\n", TL, TH);
+    DBG("TICK %d secs TL=[%3d] TH=[%3d]\r\n", int(common::time::since_reset().value() / 1000), TL, TH);
     return true;
 }
 

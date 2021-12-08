@@ -125,7 +125,7 @@ u32 histogram::Histogram::count(u16 index) const {
     return m_packed.count(index);
 }
 
-u16 histogram::Histogram::threshold(int percent) const {
+u16 histogram::Histogram::high(int percent) const {
     if (count() == 0)
         return 0;
     assert(size() > 0);
@@ -207,10 +207,10 @@ int histogram::Histogram::test() {
         assert(H.count() == 10);
         assert(H.minimum() == 0);
         assert(H.maximum() == 9);
-        assert(H.threshold(0) == H.maximum());
-        assert(H.threshold(100) == H.minimum());
-        assert(H.threshold(50) == 8);
-        assert(H.threshold(10) == 9);
+        assert(H.high(0) == H.maximum());
+        assert(H.high(100) == H.minimum());
+        assert(H.high(50) == 8);
+        assert(H.high(10) == 9);
     }
 
     DBG("testing (2)\n");
@@ -228,7 +228,7 @@ int histogram::Histogram::test() {
         TRACE();
         assert(H.maximum() == 9);
         TRACE();
-        assert(H.threshold(50) == 4);
+        assert(H.high(50) == 4);
         TRACE();
 #ifdef PC
         size_t L = 0;

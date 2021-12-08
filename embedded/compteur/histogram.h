@@ -34,10 +34,10 @@ namespace histogram {
         u16 minimum() const;
         u16 maximum() const;
         /*! 
-		  threshold(0) = maximum()
-		  threshold(100) = minimum()
+		  high(0) = maximum()
+		  high(100) = minimum()
 		*/
-        u16 threshold(int percent) const;
+        u16 high(int percent) const;
         const packed *get_packed(size_t *L) const {
             *L = sizeof(m_packed);
             return &m_packed;
