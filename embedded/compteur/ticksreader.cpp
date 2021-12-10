@@ -23,20 +23,14 @@ bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
     status::instance.set(status::index::line, __LINE__);
     DBG("m:%d M:%d\n", int(m), int(M));
     const auto d = M - m;
-    if (20 * d < float(m)) {
-        DBG("ERR:not calibrated (narrow 1)\r\n");
+    if (d < float(m) * (5.0 / 100)) {
+        DBG("ERR:not calibrated (d>5% threshold)\r\n");
+        H.print();
         return false;
     }
-    if (M - m < minWidth) {
-        DBG("ERR:not calibrated (narrow 2)\r\n");
-        return false;
-    }
-    status::instance.set(status::index::line, __LINE__);
-    const auto T0 = (m + M) / 2; //H.high(40);
-    status::instance.set(status::index::T0, T0);
-    DBG("T0:%d\n", int(T0));
-    if (T0 == m || T0 == M) {
-        DBG("ERR:not calibrated (1)\r\n");
+    if (d < minWidth) {
+        DBG("ERR:not calibrated (d>10 abs. threshold)\r\n");
+        H.print();
         return false;
     }
     status::instance.set(status::index::line, __LINE__);
@@ -49,7 +43,7 @@ bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
     }
     const auto dT = TH - TL;
     if (3 * dT < d) {
-        DBG("ERR:not calibrated #:%d TL:%d TH:%d (3) \r\n", int(H.count()), int(TH), int(TL));
+        DBG("ERR:not calibrated (dT<d/3 threshold #:%d TL:%d TH:%d (3) \r\n", int(H.count()), int(TL), int(TH));
         H.print();
         return false;
     }

@@ -163,27 +163,24 @@ void histogram::Histogram::shrink_if_needed() {
     const u16 kmax = 0xffff / 2;
     if (count() <= kmax)
         return;
-    DBG("shrinking...\n");
+    DBG("shrinking...\r\n");
     for (usize k = 0; k < size(); ++k)
         m_packed.bins[k] /= 2;
 }
 
 void histogram::Histogram::update(u16 value) {
-    //DBG("update:%u\r\n", value);
     float alpha = 1;
-    if (m_packed.m_max == 0) {
+    if (count() == 0) {
         alpha = 0;
     }
 
     m_packed.m_min = xMin(float(value), m_packed.m_min);
     m_packed.m_max = xMax(float(value), m_packed.m_max);
-
     if (value > m_packed.m_min) {
         m_packed.m_min = alpha * m_packed.m_min + (1 - alpha) * value;
     } else if (value < m_packed.m_max) {
         m_packed.m_max = alpha * m_packed.m_max + (1 - alpha) * value;
     }
-
     const auto k = m_packed.index(value);
     if (k == size())
         return;
@@ -226,7 +223,7 @@ int histogram::Histogram::test() {
         assert(H.maximum() == 9);
         assert(H.high(0) == H.maximum());
         assert(H.high(100) == H.minimum());
-        assert(H.high(50) == 8);
+        assert(H.high(50) == 7);
         assert(H.high(10) == 9);
     }
 
@@ -237,15 +234,19 @@ int histogram::Histogram::test() {
         H.update(9);
         for (int k = 15; k != 0; --k)
             H.update(k % 10);
+        H.update(6);
         H.print();
         TRACE();
-        assert(H.count() == 17);
+        assert(H.count() == 18);
         TRACE();
         assert(H.minimum() == 0);
         TRACE();
         assert(H.maximum() == 9);
         TRACE();
-        assert(H.high(50) == 4);
+        DBG("H.high(30):%d\n", int(H.high(30)));
+        assert(H.high(30) == 6);
+        assert(H.low(50) == 3);
+        H.print();
         TRACE();
 #ifdef PC
         size_t L = 0;
