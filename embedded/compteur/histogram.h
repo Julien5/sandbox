@@ -13,7 +13,7 @@ namespace histogram {
         float m_min;
         float m_max;
         usize index(const u16 &value) const;
-        u16 value(const usize &index) const;
+        u16 min(const usize &index) const;
         u32 count(const usize &index) const;
     } __attribute__((packed));
 
@@ -43,7 +43,7 @@ namespace histogram {
             *L = sizeof(m_packed);
             return &m_packed;
         }
-        u16 value(u16 index) const;
+        u16 min(u16 index) const;
         u32 count(u16 index) const;
         u16 argmax(u16 m, u16 M) const;
         u16 argmin(u16 m, u16 M) const;

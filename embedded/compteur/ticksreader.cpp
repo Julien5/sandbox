@@ -172,7 +172,7 @@ int TicksReader::test() {
     auto c = calibrated(H, &TL, &TH);
     DBG("c=%d\n", int(c));
     for (int k = 0; k < int(histogram::NBINS); ++k) {
-        DBG("H[%d]=%d\n", int(H.value(k)), int(H.count(k)));
+        DBG("H[%d]=%d\n", int(H.min(k)), int(H.count(k)));
     }
 
     status::instance.dump();

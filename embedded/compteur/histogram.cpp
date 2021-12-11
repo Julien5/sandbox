@@ -15,7 +15,7 @@ namespace impl {
     }
 }
 
-u16 histogram::packed::value(const usize &index) const {
+u16 histogram::packed::min(const usize &index) const {
     return m_min + (m_max - m_min) * float(index) / (NBINS - 1);
 }
 
@@ -59,7 +59,7 @@ void histogram::Histogram::print() const {
 #ifdef PC
     printf("HIST:");
     for (size_t k = 0; k < size(); ++k)
-        printf("%4d ", int(m_packed.value(k)));
+        printf("%4d ", int(m_packed.min(k)));
     printf("\r\n");
     printf("HIST:");
     for (size_t k = 0; k < size(); ++k)
@@ -73,7 +73,7 @@ void histogram::Histogram::print() const {
     return;
     DBG("values: ");
     for (size_t k = 0; k < size(); ++k)
-        DBG("[%3d] ", int(m_packed.value(k)));
+        DBG("[%3d] ", int(m_packed.min(k)));
     DBG("\r\n");
     DBG("counts: ");
     for (size_t k = 0; k < size(); ++k) {
@@ -95,30 +95,30 @@ u16 histogram::Histogram::argmax(u16 m, u16 M) const {
     usize imax = NBINS;
     u32 max = 0;
     for (usize index = 0; index < size(); ++index) {
-        if (m <= m_packed.value(index) && m_packed.value(index) <= M)
+        if (m <= m_packed.min(index) && m_packed.min(index) <= M)
             if (m_packed.count(index) > max) {
                 imax = index;
                 max = m_packed.count(index);
             }
     }
-    return m_packed.value(imax);
+    return m_packed.min(imax);
 }
 
 u16 histogram::Histogram::argmin(u16 m, u16 M) const {
     usize imin = NBINS;
     u32 min = count();
     for (usize index = 0; index < size(); ++index) {
-        if (m <= m_packed.value(index) && m_packed.value(index) <= M)
+        if (m <= m_packed.min(index) && m_packed.min(index) <= M)
             if (m_packed.count(index) < min) {
                 min = m_packed.count(index);
                 imin = index;
             }
     }
-    return m_packed.value(imin);
+    return m_packed.min(imin);
 }
 
-u16 histogram::Histogram::value(u16 index) const {
-    return m_packed.value(index);
+u16 histogram::Histogram::min(u16 index) const {
+    return m_packed.min(index);
 }
 
 u32 histogram::Histogram::count(u16 index) const {
@@ -138,8 +138,8 @@ u16 histogram::Histogram::high(int percent) const {
             break;
         n--;
     }
-    assert(minimum() <= m_packed.value(n) && m_packed.value(n) <= maximum());
-    return m_packed.value(n);
+    assert(minimum() <= m_packed.min(n) && m_packed.min(n) <= maximum());
+    return m_packed.min(n);
 }
 
 u16 histogram::Histogram::low(int percent) const {
@@ -155,8 +155,8 @@ u16 histogram::Histogram::low(int percent) const {
             break;
         n++;
     }
-    assert(minimum() <= m_packed.value(n) && m_packed.value(n) <= maximum());
-    return m_packed.value(n);
+    assert(minimum() <= m_packed.min(n) && m_packed.min(n) <= maximum());
+    return m_packed.min(n);
 }
 
 void histogram::Histogram::shrink_if_needed() {
