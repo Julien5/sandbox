@@ -15,8 +15,16 @@ namespace impl {
     }
 }
 
-u16 histogram::packed::min(const usize &index) const {
-    return m_min + (m_max - m_min) * float(index) / (NBINS - 1);
+float histogram::packed::min(const usize &index) const {
+    return m_min + delta() * index;
+}
+
+float histogram::packed::delta() const {
+    return (m_max - m_min) / (NBINS - 1);
+}
+
+float histogram::packed::max(const usize &index) const {
+    return min(index) + delta();
 }
 
 usize histogram::packed::index(const u16 &value) const {

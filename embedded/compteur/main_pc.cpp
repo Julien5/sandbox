@@ -26,7 +26,7 @@ int tests() {
 }
 
 int main(int argc, char **argv) {
-    return tests();
+    //return tests();
     application::setup();
     std::thread serial_thread(transmitter::run);
     while (1) {

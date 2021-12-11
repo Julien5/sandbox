@@ -13,7 +13,9 @@ namespace histogram {
         float m_min;
         float m_max;
         usize index(const u16 &value) const;
-        u16 min(const usize &index) const;
+        float min(const usize &index) const;
+        float max(const usize &index) const;
+        float delta() const;
         u32 count(const usize &index) const;
     } __attribute__((packed));
 
