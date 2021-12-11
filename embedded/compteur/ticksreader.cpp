@@ -34,8 +34,9 @@ bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
         return false;
     }
     status::instance.set(status::index::line, __LINE__);
-    const auto TH = H.high(70);
-    const auto TL = H.low(100 / 20);
+    const int markwidth_percent = 5;
+    const auto TH = H.high(100 - markwidth_percent - 1);
+    const auto TL = H.low(markwidth_percent - 1);
     if (TH <= TL) {
         DBG("ERR:not calibrated #:%d TL:%d TH:%d (3) \r\n", int(H.count()), int(TH), int(TL));
         H.print();
@@ -148,16 +149,15 @@ const u8 *TicksReader::adc_data(usize *L) const {
 
 #ifdef PC
 histogram::Histogram make_histogram() {
-
     histogram::packed p;
     u32 k = 0;
-    p.m_min = 100;
+    p.m_B1 = 100;
     //auto B={570, 725, 342, 42, 5, 37, 8};
     auto B = {142, 130, 187, 243, 180, 128, 62, 59, 10, 28, 12, 36, 20, 43, 14, 39};
     for (auto b : B) {
         p.bins[k++] = b;
     }
-    p.m_max = p.m_min + sizeof(p.bins) / sizeof(p.bins[0]) - 1;
+    p.m_B2 = p.m_B1 + sizeof(p.bins) / sizeof(p.bins[0]) - 1;
     return histogram::Histogram(p);
 }
 

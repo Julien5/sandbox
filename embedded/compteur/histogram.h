@@ -10,8 +10,8 @@ namespace histogram {
     struct packed {
         packed();
         Bin bins[NBINS];
-        float m_min;
-        float m_max;
+        float m_B1;
+        float m_B2;
         usize index(const u16 &value) const;
         float min(const usize &index) const;
         float max(const usize &index) const;
@@ -24,6 +24,7 @@ namespace histogram {
         Bin *begin() const;
         Bin *end() const;
         void shrink_if_needed();
+        void spread(const float &m2, const float &M2);
 
       public:
         Histogram(){};
