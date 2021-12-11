@@ -63,7 +63,6 @@ common::time::us common::time::since_reset_us() {
     return test_t;
 }
 void common::time::delay(const ms &delay) {
-    assert(0);
     test_t.add(delay);
 }
 void common::time::simulate(const us &delay) {
