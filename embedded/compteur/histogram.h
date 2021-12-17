@@ -43,8 +43,7 @@ namespace histogram {
         u16 arghigh(int percent) const;
         u16 arglow(int percent) const;
 
-        u32 integral_count_to(u16 index) const;
-        u32 integral_count_from(u16 index) const;
+        u32 count(u16 from, u16 to) const;
 
         const packed *get_packed(size_t *L) const {
             *L = sizeof(m_packed);

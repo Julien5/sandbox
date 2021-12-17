@@ -35,11 +35,13 @@ bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
         return false;
     }
     status::instance.set(status::index::line, __LINE__);
-    const int markwidth_percent = 5;
+    //const int markwidth_percent = 5;
     const auto TH = m + (2 * d / 3);
     const auto TL = m + d / 3;
-    const auto Q3 = H.integral_count_from(2 * (histogram::NBINS - 1) / 3);
-    const auto Q1 = H.integral_count_to((histogram::NBINS - 1) / 3);
+    const auto end = histogram::NBINS;
+    const auto Q3 = H.count(2 * (end - 1) / 3, end);
+    assert((end - 1) / 3 < end);
+    const auto Q1 = H.count(0, (end - 1) / 3);
     const auto percent5 = 100 * float(Q1) / H.count();
     const auto percent95 = 100 * float(Q3) / H.count();
     if (std::fabs(percent5 - 5) > 1 || std::fabs(percent95 - 95) > 1) {

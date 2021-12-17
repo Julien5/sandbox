@@ -58,22 +58,14 @@ histogram::packed::packed() : m_B1(0xffff), m_B2(0) {
 }
 
 u32 histogram::Histogram::count() const {
-    return integral_count_to(NBINS - 1);
+    return count(0, NBINS);
 }
 
-u32 histogram::Histogram::integral_count_to(u16 index) const {
+u32 histogram::Histogram::count(u16 from, u16 to) const {
     u32 ret = 0;
-    assert(index < NBINS);
-    impl::for_each(begin(), begin() + index, [&](const histogram::Bin &bin) {
-        ret += bin;
-    });
-    return ret;
-}
-
-u32 histogram::Histogram::integral_count_from(u16 index) const {
-    u32 ret = 0;
-    assert(index < NBINS);
-    impl::for_each(begin() + index, end(), [&](const histogram::Bin &bin) {
+    assert(from <= NBINS && to <= NBINS);
+    assert(0 <= from && from <= to);
+    impl::for_each(begin() + from, begin() + to, [&](const histogram::Bin &bin) {
         ret += bin;
     });
     return ret;
@@ -119,7 +111,7 @@ float intersection_width(const histogram::packed &p1, size_t k, const histogram:
 template <typename R>
 R positive(R x) {
     if (x < 0)
-        return -x;
+        return 0;
     return x;
 }
 
@@ -134,9 +126,7 @@ void histogram::Histogram::spread(const float &m2, const float &M2) {
     const auto oldcount = count();
     const auto &p1(m_packed);
 
-    //DBG("(spread count:%d to m2=%d M2=%d)\r\n", int(count()), int(m2), int(M2));
     assert(p2.max(NBINS - 1) > M2);
-    print();
     float values[NBINS] = {0};
     for (size_t k = 0; k < NBINS; ++k) {
         for (size_t l = 0; l < NBINS; ++l) {
@@ -155,26 +145,41 @@ void histogram::Histogram::spread(const float &m2, const float &M2) {
         }
     }
     float epsilon = 0;
+    size_t newcount = 0;
+    float values_sum = 0;
     for (size_t l = 0; l < NBINS; ++l) {
+        values_sum += values[l];
         p2.bins[l] = positive(std::round(values[l] - epsilon));
+        DBG("x[%d]=%3.1f eps=%2.2f => xp=round[%3.1f]=%d\n", int(l), values[l], epsilon, values[l] - epsilon, p2.bins[l]);
         epsilon = p2.bins[l] - values[l];
+        DBG("=> eps=%f \n", epsilon);
+        newcount += p2.bins[l];
     }
-    //DBG("(spread error:%f)\r\n", epsilon);
+    auto good = std::fabs(oldcount - newcount) == 0;
+    if (!good) {
+        DBG("not good: old:%d new:%d values-sum=%f\n", oldcount, int(newcount), values_sum);
+        print();
+        printf("vals:");
+        for (size_t l = 0; l < NBINS; ++l) {
+            printf("%5.1f    |", values[l]);
+        }
+        printf("\n");
+        m_packed = p2;
+        print();
+        assert(0);
+    }
     m_packed = p2;
-    //DBG("(spread error:%d (%d))\r\n", int(oldcount - count()), NBINS);
-    print();
-    assert(int(std::fabs(oldcount - count())) < int(NBINS));
 }
 
 void histogram::Histogram::print() const {
 #ifdef PC
     printf("HIST:");
     for (size_t k = 0; k < size(); ++k)
-        printf("%3d %3d|", int(m_packed.min(k)), int(m_packed.max(k)));
+        printf("%3.1f %3.1f|", m_packed.min(k), m_packed.max(k));
     printf("\r\n");
     printf("HIST:");
     for (size_t k = 0; k < size(); ++k)
-        printf("%3d    |", int(m_packed.count(k)));
+        printf("%6d   |", int(m_packed.count(k)));
     printf("\r\n");
 #else
     DBG("histogram:");
@@ -280,7 +285,6 @@ void histogram::Histogram::shrink_if_needed() {
 }
 
 void histogram::Histogram::update(u16 value, const bool adapt) {
-    const auto oldcount = count();
     if (count() == 0) {
         m_packed.m_B1 = value;
         m_packed.m_B2 = value;
