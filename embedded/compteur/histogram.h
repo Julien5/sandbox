@@ -30,18 +30,22 @@ namespace histogram {
         Histogram(){};
         Histogram(const packed &p) : m_packed(p){};
         void print() const;
-        void update(u16 value);
+        void update(u16 value, const bool adapt = false);
         usize size() const;
         //! number of update() calls - 1 (first sets min/max)
         u32 count() const;
         u16 minimum() const;
         u16 maximum() const;
         /*! 
-		  high(0) = maximum()
-		  high(100) = minimum()
+		  arghigh(0) = maximum()
+		  arghigh(100) = minimum()
 		*/
-        u16 high(int percent) const;
-        u16 low(int percent) const;
+        u16 arghigh(int percent) const;
+        u16 arglow(int percent) const;
+
+        u32 integral_count_to(u16 index) const;
+        u32 integral_count_from(u16 index) const;
+
         const packed *get_packed(size_t *L) const {
             *L = sizeof(m_packed);
             return &m_packed;

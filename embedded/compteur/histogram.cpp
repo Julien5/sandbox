@@ -21,6 +21,7 @@ float histogram::packed::min(const usize &index) const {
 }
 
 float histogram::packed::delta() const {
+    assert(NBINS > 1);
     return (m_B2 - m_B1) / (NBINS - 1);
 }
 
@@ -57,8 +58,22 @@ histogram::packed::packed() : m_B1(0xffff), m_B2(0) {
 }
 
 u32 histogram::Histogram::count() const {
+    return integral_count_to(NBINS - 1);
+}
+
+u32 histogram::Histogram::integral_count_to(u16 index) const {
     u32 ret = 0;
-    impl::for_each(begin(), end(), [&](const histogram::Bin &bin) {
+    assert(index < NBINS);
+    impl::for_each(begin(), begin() + index, [&](const histogram::Bin &bin) {
+        ret += bin;
+    });
+    return ret;
+}
+
+u32 histogram::Histogram::integral_count_from(u16 index) const {
+    u32 ret = 0;
+    assert(index < NBINS);
+    impl::for_each(begin() + index, end(), [&](const histogram::Bin &bin) {
         ret += bin;
     });
     return ret;
@@ -82,7 +97,7 @@ float intersection_width(const histogram::packed &p1, size_t k, const histogram:
     const auto M2 = p2.max(l);
     const auto b1 = m1 < m2;
     const auto b2 = M1 < M2;
-    DBG("k:%d l:%d m1:%d M1:%d m2:%d M2:%d\r\n", int(k), int(l), int(m1), int(M1), int(m2), int(M2));
+    //DBG("k:%d l:%d m1:%d M1:%d m2:%d M2:%d\r\n", int(k), int(l), int(m1), int(M1), int(m2), int(M2));
     float min = m1, max = M1;
     if (b1 && b2) {
         min = m2;
@@ -101,6 +116,13 @@ float intersection_width(const histogram::packed &p1, size_t k, const histogram:
     return max - min;
 }
 
+template <typename R>
+R positive(R x) {
+    if (x < 0)
+        return -x;
+    return x;
+}
+
 void histogram::Histogram::spread(const float &m2, const float &M2) {
     histogram::packed p2;
     p2.m_B1 = m2;
@@ -112,7 +134,7 @@ void histogram::Histogram::spread(const float &m2, const float &M2) {
     const auto oldcount = count();
     const auto &p1(m_packed);
 
-    DBG("(spread count:%d to m2=%d M2=%d)\r\n", int(count()), int(m2), int(M2));
+    //DBG("(spread count:%d to m2=%d M2=%d)\r\n", int(count()), int(m2), int(M2));
     assert(p2.max(NBINS - 1) > M2);
     print();
     float values[NBINS] = {0};
@@ -126,30 +148,33 @@ void histogram::Histogram::spread(const float &m2, const float &M2) {
             }
             const float I = intersection_width(p1, k, p2, l);
             if (I > 0 && p1.bins[k] > 0) {
-                DBG("(k:%d,l:%d,I:%f)\r\n", int(k), int(l), I);
-                DBG("(p1.bins[k]:%d,I/delta:%f)\r\n", int(p1.bins[k]), I / p1.delta());
+                //DBG("(k:%d,l:%d,I:%f)\t", int(k), int(l), I);
+                // DBG("(p1.bins[k]:%d,I/delta:%f)\r\n", int(p1.bins[k]), I / p1.delta());
             }
             values[l] += I * p1.bins[k] / p1.delta();
         }
     }
+    float epsilon = 0;
     for (size_t l = 0; l < NBINS; ++l) {
-        p2.bins[l] = std::ceil(values[l]);
+        p2.bins[l] = positive(std::round(values[l] - epsilon));
+        epsilon = p2.bins[l] - values[l];
     }
+    //DBG("(spread error:%f)\r\n", epsilon);
     m_packed = p2;
-    DBG("(spread:)\r\n");
+    //DBG("(spread error:%d (%d))\r\n", int(oldcount - count()), NBINS);
     print();
-    assert(std::fabs(int(oldcount) - int(count())) < NBINS);
+    assert(int(std::fabs(oldcount - count())) < int(NBINS));
 }
 
 void histogram::Histogram::print() const {
 #ifdef PC
     printf("HIST:");
     for (size_t k = 0; k < size(); ++k)
-        printf("%4d ", int(m_packed.min(k)));
+        printf("%3d %3d|", int(m_packed.min(k)), int(m_packed.max(k)));
     printf("\r\n");
     printf("HIST:");
     for (size_t k = 0; k < size(); ++k)
-        printf("%4d ", int(m_packed.count(k)));
+        printf("%3d    |", int(m_packed.count(k)));
     printf("\r\n");
 #else
     DBG("histogram:");
@@ -211,7 +236,7 @@ u32 histogram::Histogram::count(u16 index) const {
     return m_packed.count(index);
 }
 
-u16 histogram::Histogram::high(int percent) const {
+u16 histogram::Histogram::arghigh(int percent) const {
     if (count() == 0)
         return 0;
     assert(size() > 0);
@@ -228,7 +253,7 @@ u16 histogram::Histogram::high(int percent) const {
     return m_packed.min(n);
 }
 
-u16 histogram::Histogram::low(int percent) const {
+u16 histogram::Histogram::arglow(int percent) const {
     if (count() == 0)
         return 0;
     assert(size() > 0);
@@ -254,7 +279,7 @@ void histogram::Histogram::shrink_if_needed() {
         m_packed.bins[k] /= 2;
 }
 
-void histogram::Histogram::update(u16 value) {
+void histogram::Histogram::update(u16 value, const bool adapt) {
     const auto oldcount = count();
     if (count() == 0) {
         m_packed.m_B1 = value;
@@ -264,16 +289,18 @@ void histogram::Histogram::update(u16 value) {
         return;
     }
     const bool need_to_spread = (value < minimum() || value > maximum());
-    if (need_to_spread) {
+    if (need_to_spread || adapt) {
         auto m2 = xMin(value, minimum());
         auto M2 = xMax(value, maximum());
-        /*const float epsilon = 0.00001;
-        const float alpha = count() > 0 ? 1.0 - epsilon : 0;
-        if (value > minimum()) {
-            m2 = alpha * m_packed.m_B1 + (1 - alpha) * value;
-        } else if (value < maximum()) {
-            M2 = alpha * m_packed.m_B2 + (1 - alpha) * value;
-			}*/
+        if (adapt) {
+            const float epsilon = 0.00001;
+            const float alpha = count() > 0 ? 1.0 - epsilon : 0;
+            if (value > minimum()) {
+                m2 = alpha * min(0) + (1 - alpha) * value;
+            } else if (value < maximum()) {
+                M2 = alpha * min(NBINS - 1) + (1 - alpha) * value;
+            }
+        }
         spread(m2, M2);
     }
     const auto k = m_packed.index(value);
@@ -315,12 +342,12 @@ int histogram::Histogram::test() {
         assert(H.count() == 10);
         assert(H.minimum() == 0);
         assert(H.maximum() == 9);
-        assert(H.high(0) == H.maximum());
-        assert(H.high(100) == H.minimum());
-        assert(H.high(50) == 7);
+        assert(H.arghigh(0) == H.maximum());
+        assert(H.arghigh(100) == H.minimum());
+        assert(H.arghigh(50) == 7);
         H.print();
-        DBG("high(10):%d\n", H.high(10));
-        assert(H.high(10) == 8);
+        DBG("high(10):%d\n", H.arghigh(10));
+        assert(H.arghigh(10) == 8);
     }
 
     DBG("testing (2)\n");
@@ -339,9 +366,9 @@ int histogram::Histogram::test() {
         TRACE();
         assert(H.maximum() == 9);
         TRACE();
-        DBG("H.high(30):%d\n", int(H.high(30)));
-        assert(H.high(30) == 6);
-        assert(H.low(50) == 3);
+        DBG("H.high(30):%d\n", int(H.arghigh(30)));
+        assert(H.arghigh(30) == 6);
+        assert(H.arglow(50) == 3);
         H.print();
         TRACE();
 #ifdef PC
@@ -361,6 +388,28 @@ int histogram::Histogram::test() {
         for (int k = 15; k != 0; --k)
             H.update(k % 10);
         H.update(6);
+    }
+
+    {
+        Histogram H;
+        H.update(0);
+        H.update(NBINS - 1);
+        // delta = 1
+        H.update(4);
+        H.update(5);
+        assert(H.count(0) == 1);
+        assert(H.count(NBINS - 1) == 1);
+        assert(H.count(4) == 1);
+        assert(H.count(5) == 1);
+        assert(H.count() == 4);
+        H.print();
+        H.update(10 * (NBINS - 1));
+        // delta = 10
+        H.print();
+        assert(H.count() == 5);
+        H.update(200);
+        H.print();
+        assert(H.count() == 6);
     }
     DBG("ALL GOOD\n");
     return 0;

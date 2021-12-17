@@ -3,6 +3,7 @@
 #include "common/time.h"
 #include "histogram.h"
 #include "status.h"
+#include <cmath>
 #include <math.h>
 #include <string.h>
 
@@ -24,7 +25,7 @@ bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
     DBG("m:%d M:%d\n", int(m), int(M));
     const auto d = M - m;
     if (d < float(m) * (5.0 / 100)) {
-        DBG("ERR:not calibrated (d>5% threshold)\r\n");
+        DBG("ERR:not calibrated (d>5 threshold)\r\n");
         H.print();
         return false;
     }
@@ -35,16 +36,14 @@ bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
     }
     status::instance.set(status::index::line, __LINE__);
     const int markwidth_percent = 5;
-    const auto TH = H.high(100 - markwidth_percent - 1);
-    const auto TL = H.low(markwidth_percent - 1);
-    if (TH <= TL) {
-        DBG("ERR:not calibrated #:%d TL:%d TH:%d (3) \r\n", int(H.count()), int(TH), int(TL));
-        H.print();
-        return false;
-    }
-    const auto dT = TH - TL;
-    if (3 * dT < d) {
-        DBG("ERR:not calibrated (dT<d/3 threshold #:%d TL:%d TH:%d (3) \r\n", int(H.count()), int(TL), int(TH));
+    const auto TH = m + (2 * d / 3);
+    const auto TL = m + d / 3;
+    const auto Q3 = H.integral_count_from(2 * (histogram::NBINS - 1) / 3);
+    const auto Q1 = H.integral_count_to((histogram::NBINS - 1) / 3);
+    const auto percent5 = 100 * float(Q1) / H.count();
+    const auto percent95 = 100 * float(Q3) / H.count();
+    if (std::fabs(percent5 - 5) > 1 || std::fabs(percent95 - 95) > 1) {
+        DBG("ERR:not calibrated (percent5:%f percent95:%f)\r\n", percent5, percent95);
         H.print();
         return false;
     }

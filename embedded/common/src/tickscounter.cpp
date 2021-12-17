@@ -373,7 +373,7 @@ int tickscounter::test() {
         C.tick();
         assert(C.total() == 6);
         void delay(const ms &delay);
-        C.print();
+        //C.print();
     }
     C.reset();
     assert(C.total() == 0);
@@ -385,7 +385,7 @@ int tickscounter::test() {
         T += some_real_ticks(C);
         assert(C.total() == T);
     }
-    C.print();
+    //C.print();
     assert(C.total() == T);
     DBG("T=%d\n", T);
 
@@ -401,7 +401,7 @@ int tickscounter::test() {
         T += some_real_ticks(C);
     }
     assert(T >= (K1 + K2));
-    C.print();
+    //C.print();
     assert(C.total() == T);
 
 #ifdef PC
