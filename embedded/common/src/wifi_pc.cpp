@@ -58,7 +58,7 @@ namespace wifi {
             DBG("L:%d\r\n", int(L));
             auto ok = S->read_until(buffer, L, 100);
             if (!ok) {
-                DBG("nread:%d\r\n", nread);
+                DBG("nread:%d\r\n", int(nread));
                 return 5;
             }
             r->data(buffer, L);

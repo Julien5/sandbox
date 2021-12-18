@@ -18,6 +18,7 @@ u16 status::Data::get(const usize &index) {
 };
 
 void status::Data::set(const usize &indx, const u16 &value) {
+    return;
     if (indx == status::index::M) {
         //DBG("M:%d\n", value);
         assert(value != 0);

@@ -53,7 +53,7 @@ usize histogram::Histogram::size() const {
 }
 
 histogram::packed::packed() : m_B1(0xffff), m_B2(0) {
-    DBG("m_min:%d\r\n", int(m_B1));
+    DBG("ctor m_min:%f size:%d\r\n", m_B1, int(sizeof(*this)));
     memset(bins, 0, sizeof(bins));
 }
 
@@ -126,14 +126,14 @@ void histogram::Histogram::spread(const float &m2, const float &M2) {
     const auto oldcount = count();
     const auto &p1(m_packed);
 
-    assert(p2.max(NBINS - 1) > M2);
     float values[NBINS] = {0};
     for (size_t k = 0; k < NBINS; ++k) {
         for (size_t l = 0; l < NBINS; ++l) {
             if (intersection_empty(p1, k, p2, l))
                 continue;
             if (p1.delta() == 0) {
-                values[l] += p1.bins[k];
+                if (k == l)
+                    values[l] += p1.bins[k];
                 continue;
             }
             const float I = intersection_width(p1, k, p2, l);
@@ -150,14 +150,17 @@ void histogram::Histogram::spread(const float &m2, const float &M2) {
     for (size_t l = 0; l < NBINS; ++l) {
         values_sum += values[l];
         p2.bins[l] = positive(std::round(values[l] - epsilon));
-        DBG("x[%d]=%3.1f eps=%2.2f => xp=round[%3.1f]=%d\n", int(l), values[l], epsilon, values[l] - epsilon, p2.bins[l]);
+        //DBG("x[%d]=%3.1f eps=%2.2f => xp=round[%3.1f]=%d\n", int(l), values[l], epsilon, values[l] - epsilon, p2.bins[l]);
         epsilon = p2.bins[l] - values[l];
-        DBG("=> eps=%f \n", epsilon);
+        //DBG("=> eps=%f \n", epsilon);
         newcount += p2.bins[l];
     }
-    auto good = std::fabs(oldcount - newcount) == 0;
+    auto enlarged = m2 <= minimum() && maximum() <= M2;
+    float dcount = std::fabs(float(oldcount) - float(newcount));
+    auto good = !enlarged || dcount <= 2;
+    DBG("enlarged:%d old:%d new:%d dcount=%f values-sum=%f\n", int(enlarged), oldcount, int(newcount), dcount, values_sum);
     if (!good) {
-        DBG("not good: old:%d new:%d values-sum=%f\n", oldcount, int(newcount), values_sum);
+        DBG("not good: enlarged:%d old:%d new:%d dcount=%f values-sum=%f\n", int(enlarged), oldcount, int(newcount), dcount, values_sum);
         print();
         printf("vals:");
         for (size_t l = 0; l < NBINS; ++l) {
@@ -199,11 +202,11 @@ void histogram::Histogram::print() const {
 #endif
 }
 
-u16 histogram::Histogram::minimum() const {
+float histogram::Histogram::minimum() const {
     return m_packed.min(0);
 }
 
-u16 histogram::Histogram::maximum() const {
+float histogram::Histogram::maximum() const {
     return m_packed.max(NBINS - 1);
 }
 
@@ -233,7 +236,7 @@ u16 histogram::Histogram::argmin(u16 m, u16 M) const {
     return m_packed.min(imin);
 }
 
-u16 histogram::Histogram::min(u16 index) const {
+float histogram::Histogram::min(u16 index) const {
     return m_packed.min(index);
 }
 
@@ -294,15 +297,18 @@ void histogram::Histogram::update(u16 value, const bool adapt) {
     }
     const bool need_to_spread = (value < minimum() || value > maximum());
     if (need_to_spread || adapt) {
-        auto m2 = xMin(value, minimum());
-        auto M2 = xMax(value, maximum());
+        auto m = min(0);
+        auto M = min(NBINS - 1);
+        auto m2 = xMin(float(value), m);
+        auto M2 = xMax(float(value), M);
         if (adapt) {
             const float epsilon = 0.00001;
             const float alpha = count() > 0 ? 1.0 - epsilon : 0;
-            if (value > minimum()) {
-                m2 = alpha * min(0) + (1 - alpha) * value;
+            if (value > m) {
+                m2 = alpha * m + (1 - alpha) * value;
             } else if (value < maximum()) {
-                M2 = alpha * min(NBINS - 1) + (1 - alpha) * value;
+                M2 = alpha * M + (1 - alpha) * value;
+                DBG("M:%f M2:%f\n", M, M2);
             }
         }
         spread(m2, M2);

@@ -48,7 +48,7 @@ class serial_callback : public wifi::callback {
         output->write(reinterpret_cast<u8 *>(&total_length), sizeof(total_length));
     }
     void data(u8 *data, size_t length) {
-        DBG("forwarding %d bytes\n", length);
+        DBG("forwarding %d bytes\n", int(length));
         output->write(data, length);
     }
 };

@@ -11,8 +11,6 @@ u16 bound(u16 T, u16 k) {
     return T + k;
 }
 
-//#define SEARCH
-
 bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
     //H.print();
     const u8 minWidth = 10;
@@ -30,7 +28,7 @@ bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
         return false;
     }
     if (d < minWidth) {
-        DBG("ERR:not calibrated (d>10 abs. threshold)\r\n");
+        DBG("ERR:not calibrated (d>10 abs. threshold) %f\r\n", d);
         H.print();
         return false;
     }
@@ -44,7 +42,7 @@ bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
     const auto Q1 = H.count(0, (end - 1) / 3);
     const auto percent5 = 100 * float(Q1) / H.count();
     const auto percent95 = 100 * float(Q3) / H.count();
-    if (std::fabs(percent5 - 5) > 1 || std::fabs(percent95 - 95) > 1) {
+    if (std::fabs(percent5 - 5) > 1 || std::fabs(percent95 - 95) > 5) {
         DBG("ERR:not calibrated (percent5:%f percent95:%f)\r\n", percent5, percent95);
         H.print();
         return false;
@@ -94,7 +92,13 @@ bool TicksReader::tick() {
     if (value == 0)
         return false;
     DBG("time:%d s analog value:%d\r\n", int(common::time::since_reset().value() / 1000), value);
-    H.update(int(value));
+
+    u16 TH = 0;
+    u16 TL = 0;
+    assert(TL <= TH);
+    auto iscalibrated = calibrated(H, &TL, &TH);
+    H.update(int(value), !iscalibrated);
+
     constexpr auto size_adc = sizeof(m_last_adc_value) / sizeof(m_last_adc_value[0]);
     if (m_adc_index >= size_adc) {
         memset((u8 *)m_last_adc_value, 0, sizeof(m_last_adc_value));
@@ -102,22 +106,17 @@ bool TicksReader::tick() {
     }
     m_last_adc_value[m_adc_index] = value;
     m_adc_index++;
-    //H.print();
-    u16 TH = 0;
-    u16 TL = 0;
-    assert(TL <= TH);
-    auto c = calibrated(H, &TL, &TH);
-    status::instance.set(status::index::calibrated, u8(c));
+
+    status::instance.set(status::index::calibrated, u8(iscalibrated));
     //status::instance.dump();
-    if (!c) {
+    if (!iscalibrated) {
         DBG("ERR:not calibrated\r\n");
         return false;
     }
     DBG("TL=[%3d] TH=[%3d]\r\n", TL, TH);
     // is the value classificable ?
     if (TL < value && value < TH) {
-        //DBG("ERR out of range TL=[%3d] value=%d TH=[%3d]\r\n", TL, int(value), TH);
-        // H.print();
+        DBG("ERR out of range TL=[%3d] value=%d TH=[%3d]\r\n", TL, int(value), TH);
         return false;
     }
     const auto new_value = value >= TH;
