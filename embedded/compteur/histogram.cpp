@@ -3,7 +3,6 @@
 #include "common/platform.h"
 #include "common/rusttypes.h"
 #include "common/time.h"
-#include <cmath>
 #include <stdlib.h>
 #include <string.h>
 
@@ -54,7 +53,6 @@ usize histogram::Histogram::size() const {
 }
 
 histogram::packed::packed() : m_B1(0xffff), m_B2(0) {
-    DBG("ctor m_min:%f size:%d\r\n", m_B1, int(sizeof(*this)));
     memset(bins, 0, sizeof(bins));
 }
 
@@ -159,13 +157,12 @@ void histogram::Histogram::spread(const float &m2, const float &M2) {
     auto enlarged = m2 <= minimum() && maximum() <= M2;
     float dcount = std::fabs(float(oldcount) - float(newcount));
     auto good = !enlarged || dcount <= 2;
-    DBG("enlarged:%d old:%d new:%d dcount=%f values-sum=%f\n", int(enlarged), oldcount, int(newcount), dcount, values_sum);
     if (!good) {
-        DBG("not good: enlarged:%d old:%d new:%d dcount=%f values-sum=%f\n", int(enlarged), oldcount, int(newcount), dcount, values_sum);
+        DBG("not good: enlarged:%d old:%d new:%d dcount=%f values-sum=%f\n", int(enlarged), int(oldcount), int(newcount), double(dcount), double(values_sum));
         print();
         printf("vals:");
         for (size_t l = 0; l < NBINS; ++l) {
-            printf("%5.1f    |", values[l]);
+            printf("%5.1f    |", double(values[l]));
         }
         printf("\n");
         m_packed = p2;
@@ -319,7 +316,6 @@ void histogram::Histogram::update(u16 value, const bool adapt) {
                 m2 = alpha * m + (1 - alpha) * value;
             } else if (value < maximum()) {
                 M2 = alpha * M + (1 - alpha) * value;
-                DBG("M:%f M2:%f\n", M, M2);
             }
         }
         spread(m2, M2);

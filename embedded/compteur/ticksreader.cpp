@@ -3,7 +3,6 @@
 #include "common/time.h"
 #include "histogram.h"
 #include "status.h"
-#include <cmath>
 #include <math.h>
 #include <string.h>
 
@@ -28,7 +27,7 @@ bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
         return false;
     }
     if (d < minWidth) {
-        DBG("ERR:not calibrated (d>10 abs. threshold) %f\r\n", d);
+        DBG("ERR:not calibrated (d>10 abs. threshold) %f\r\n", double(d));
         H.print();
         return false;
     }
@@ -43,7 +42,7 @@ bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
     const auto percent5 = 100 * float(Q1) / H.count();
     const auto percent95 = 100 * float(Q3) / H.count();
     if (std::fabs(percent5 - 5) > 1 || std::fabs(percent95 - 95) > 5) {
-        DBG("ERR:not calibrated (percent5:%f percent95:%f)\r\n", percent5, percent95);
+        DBG("ERR:not calibrated (percent5:%f percent95:%f)\r\n", double(percent5), double(percent95));
         H.print();
         return false;
     }
@@ -55,10 +54,10 @@ bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
 }
 //#include <math.h>
 //static int t = 0;
-
+const int espEnablePin = 3;
 bool switchLED(bool on) {
     bool ret = false;
-    const int espEnablePin = 3;
+
     static bool last_state = false;
     if (last_state != on) {
 #ifdef ARDUINO
@@ -71,6 +70,9 @@ bool switchLED(bool on) {
 }
 
 TicksReader::TicksReader() {
+#ifdef ARDUINO
+    pinMode(espEnablePin, OUTPUT);
+#endif
     switchLED(false);
 }
 

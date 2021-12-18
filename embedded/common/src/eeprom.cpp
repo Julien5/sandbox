@@ -131,7 +131,7 @@ namespace impl {
             return -1;
         DBG("OK");
         eeprom::ram_address addr = dst;
-        for (int k = 0; k < xMin(eeprom::length(ret), L); ++k) {
+        for (eeprom::length k = 0; k < xMin(eeprom::length(ret), L); ++k) {
             *addr = read(index++);
             addr++;
         }
@@ -146,7 +146,7 @@ namespace impl {
         write(index++, *(L2++));
         write(index++, *(L2++));
 
-        for (int k = 0; k < L; ++index, ++k)
+        for (eeprom::length k = 0; k < L; ++index, ++k)
             write(index, src[k]);
 
         write(index++, checksum(src, L));

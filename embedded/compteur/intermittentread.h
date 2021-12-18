@@ -1,7 +1,8 @@
 #pragma once
 #include "adcfile.h"
 #include "common/time.h"
-#include <memory>
+#include "common/platform.h"
+#include "common/analog.h"
 
 class IntermittentRead {
   public:

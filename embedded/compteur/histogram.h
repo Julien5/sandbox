@@ -2,6 +2,7 @@
 
 #include "common/rusttypes.h"
 #include "common/time.h"
+#include "common/platform.h"
 
 namespace histogram {
     constexpr size_t NBINS = 16;

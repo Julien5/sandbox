@@ -162,7 +162,7 @@ bool noise_at_index(const bin (&bins)[NTICKS], int k, const int secondsUntilAlon
     assert(now >= b.end());
     const Clock::ms age = now - b.end();
     const Clock::ms max_age = secondsUntilAloneTick * 1000L;
-    if (age > max_age && b.m_count < minAloneTicks) {
+    if (age > max_age && int(b.m_count) < minAloneTicks) {
         // situation where count is too low in an old bin.
         // is it really dirt ?
         // distance to previous and next
@@ -377,7 +377,7 @@ int tickscounter::test() {
     }
     C.reset();
     assert(C.total() == 0);
-    int T = 0;
+    bin::count T = 0;
     const int K1 = 3;
     assert(C.total() == T);
     for (int k = 0; k < K1; ++k) {

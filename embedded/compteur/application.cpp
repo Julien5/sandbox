@@ -18,9 +18,7 @@ std::unique_ptr<compteur> C;
 void application::setup() {
     debug::init_serial();
     DBG(".");
-#ifdef ARDUINO
-    pinMode(espEnablePin, OUTPUT);
-#endif
+
     C = std::unique_ptr<compteur>(new compteur);
 }
 

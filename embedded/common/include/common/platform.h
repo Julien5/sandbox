@@ -21,11 +21,16 @@ T xMax(const T &a, const T &b) {
 }
 
 #if defined(PC) || defined(ESP8266)
+#include <cmath>
 #include <cstddef>
 typedef std::size_t size_t;
 #endif
 
 #if defined(ARDUINO)
+#include <math.h>
+#undef min
+#undef max
+#undef round
 namespace std {
     template <typename T>
     class unique_ptr {
@@ -64,6 +69,20 @@ namespace std {
                 delete _ptr;
         }
     };
+    template <typename T>
+    T min(const T &a, const T &b) {
+        return a < b ? a : b;
+    };
+    template <typename T>
+    T max(const T &a, const T &b) {
+        return a > b ? a : b;
+    };
+    inline float round(const float &x) {
+        return ::round(x);
+    }
+    inline float fabs(const float &x) {
+        return ::fabs(x);
+    }
 }
 #else
 #include <memory>
