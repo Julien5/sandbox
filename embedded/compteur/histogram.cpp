@@ -2,6 +2,7 @@
 #include "common/debug.h"
 #include "common/platform.h"
 #include "common/rusttypes.h"
+#include "common/time.h"
 #include <cmath>
 #include <stdlib.h>
 #include <string.h>
@@ -202,6 +203,16 @@ void histogram::Histogram::print() const {
 #endif
 }
 
+void histogram::Histogram::print_gnuplot_block(const common::time::ms &ms) const {
+#ifdef PC
+    const char *prefix = "gnuplot:histogram";
+    for (size_t k = 0; k < size(); ++k)
+        printf("%s:%d %3.1f %3.2f\n", prefix, int(ms.value() / 1000), m_packed.min(k), float(count(k)) / count());
+    printf("%s\n", prefix);
+#else
+#endif
+}
+
 float histogram::Histogram::minimum() const {
     return m_packed.min(0);
 }
@@ -317,6 +328,7 @@ void histogram::Histogram::update(u16 value, const bool adapt) {
     assert(k < size());
     m_packed.bins[k]++;
     shrink_if_needed();
+    print_gnuplot_block(common::time::since_reset());
 }
 
 #ifdef PC

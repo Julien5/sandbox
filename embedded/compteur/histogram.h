@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/rusttypes.h"
+#include "common/time.h"
 
 namespace histogram {
     constexpr size_t NBINS = 16;
@@ -30,6 +31,7 @@ namespace histogram {
         Histogram(){};
         Histogram(const packed &p) : m_packed(p){};
         void print() const;
+        void print_gnuplot_block(const common::time::ms &ms) const;
         void update(u16 value, const bool adapt = false);
         usize size() const;
         //! number of update() calls - 1 (first sets min/max)
