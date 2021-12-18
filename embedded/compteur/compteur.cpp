@@ -51,7 +51,8 @@ bool compteur::update() {
 }
 
 void compteur::print() {
-    // DBG("time:%4d sec total:%d\n",int(time::since_reset()/1000),int(counter.total()));
+    DBG("time:%4d sec total:%d\r\n", int(common::time::since_reset().value() / 1000), int(counter.total()));
+    counter.print();
 }
 
 const u8 *compteur::data(size_t *L) const {

@@ -16,6 +16,10 @@ Clock::ms bin::end() const {
     return m_start + m_duration;
 }
 
+Clock::ms bin::start() const {
+    return m_start;
+}
+
 void bin::tick() {
     const Clock::ms m = Clock::millis_since_start();
     if (empty())
@@ -124,7 +128,7 @@ int counter::compress_index() {
     for (int k = 0; (k + 1) < NTICKS; ++k) {
         const auto &b1 = m_packed.m_bins[k];
         const auto &b2 = m_packed.m_bins[k + 1];
-        const auto p = b1.distance(b2);
+        const auto p = b2.end() - b1.start();
         if (p < pmin || k == 0) {
             pmin = p;
             indx = k;
@@ -305,7 +309,7 @@ void counter::print() const {
         float pmax = -1;
         if (m_packed.m_bins[k].m_duration > 0)
             pmax = 1000 * float(m_packed.m_bins[k].m_count) / m_packed.m_bins[k].m_duration;
-        printf("%02d: %9d->%-9d [%6d] #=%3d pmax=%2.3f d=%6d\n",
+        printf("counter: %02d: %9d->%-9d [%6d] #=%3d pmax=%2.3f d=%6d\n",
                k,
                m_packed.m_bins[k].m_start / 1000,
                m_packed.m_bins[k].end() / 1000,

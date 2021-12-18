@@ -5,3 +5,5 @@ run ./compteur.pc and grep histogram data
 
 run gnuplot
 gnuplot simulation/tools/histogram.gnuplot ; feh datafile.png 
+python3 simulation/tools/generate.py power=1000 repetitions=10;
+python3 simulation/tools/generate.py power=1000 repetitions=10;

@@ -56,7 +56,7 @@ u16 adcfile::read() {
     // last line is empty
     if (m_line_index >= (m_lines.size() - 1)) {
         m_line_index = 0;
-        assert(0);
+        // stop: assert(0);
         m_element_index = 0;
     }
     auto line = m_lines[m_line_index];

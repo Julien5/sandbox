@@ -1,6 +1,7 @@
 #include "application.h"
 #include "common/analog.h"
 #include "common/debug.h"
+#include "common/serial.h"
 #include "common/time.h"
 #include "common/wifi.h"
 #include "common/utils.h"
@@ -17,14 +18,13 @@ std::unique_ptr<compteur> C;
 
 void application::setup() {
     debug::init_serial();
-    DBG(".");
-
+    DBG("sizeof(compteur):%d\r\n", int(sizeof(compteur)));
+    DBG("sizeof(wifi::wifi):%d\r\n", int(sizeof(wifi::wifi)));
+    DBG("sizeof(common::serial):%d\r\n", int(sizeof(common::serial)));
     C = std::unique_ptr<compteur>(new compteur);
 }
 
-common::time::us start_on;
-common::time::us stop_on;
-
 void application::loop() {
-    C->update();
+    if (C->update())
+        C->print();
 }

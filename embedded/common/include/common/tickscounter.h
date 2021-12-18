@@ -9,77 +9,78 @@
 #endif
 
 namespace tickscounter {
-  struct bin {
-    
-    typedef u16 count;
-    typedef Clock::ms duration;
+    struct bin {
 
-    bin();
-    Clock::ms m_start=0;
-    count m_count=0;
-    duration m_duration=0;
-    void reset();
-    bool empty() const;
-    Clock::ms end() const;
-    void tick();
-    void take(bin &other);
-    void move(bin &other);
-    duration distance(const bin &other) const;
-    bool operator==(const bin &other) const;
-  } __attribute__((packed));
+        typedef u16 count;
+        typedef Clock::ms duration;
 
-  constexpr int NTICKS = 20;
+        bin();
+        Clock::ms m_start = 0;
+        count m_count = 0;
+        duration m_duration = 0;
+        void reset();
+        bool empty() const;
+        Clock::ms end() const;
+        Clock::ms start() const;
+        void tick();
+        void take(bin &other);
+        void move(bin &other);
+        duration distance(const bin &other) const;
+        bool operator==(const bin &other) const;
+    } __attribute__((packed));
 
-  struct packed {    
-    packed():m_bins{}{};
-    packed(const u8 *bytes) {
-      *this = *(packed*)bytes;
-    }
-    bin m_bins[NTICKS];  
-    bool operator==(const packed &other) const;
-  } __attribute__((packed));
+    constexpr int NTICKS = 20;
 
-  struct counter_config {
-    // tickscounter: delete bin if less than kMinAloneTicks ticks (noise_at_index)
-    int kMinAloneTicks = 3;
-    // tickscounter: if a bin is older than kSecondsUntilAloneTick, then it is checked if it is noise
-    // (noise_at_index)
-    int kSecondsUntilAloneTick = 20;
-  };
-  
-  class counter {
-    counter_config m_config;
-    packed m_packed;
-    void tick_first_empty_bin();
-    void compress(); 
-    int compress_index();
-    void denoise();
-    void remove_holes();
-    
-  public:
-    counter(const counter_config c=counter_config());
-    counter(const u8 *data):m_packed(data){}
-  
-    void reset();
-    void tick();
-    void clean();
-    void print() const;
-    bool is_clean() const;
-    bin::count total();
-    bool empty() const;  
-    Clock::ms last_tick_time();
-    Clock::ms age();
-    bin getbin(const int &k) const;
-    u8 bin_count() const;
-   
-    counter_config config() {
-      return m_config;
-    }
-    const packed *get_packed(size_t * L) const {
-      *L=sizeof(m_packed);
-      return &m_packed;
-    }
-  };
-  
-  int test();
+    struct packed {
+        packed() : m_bins{} {};
+        packed(const u8 *bytes) {
+            *this = *(packed *)bytes;
+        }
+        bin m_bins[NTICKS];
+        bool operator==(const packed &other) const;
+    } __attribute__((packed));
+
+    struct counter_config {
+        // tickscounter: delete bin if less than kMinAloneTicks ticks (noise_at_index)
+        int kMinAloneTicks = 3;
+        // tickscounter: if a bin is older than kSecondsUntilAloneTick, then it is checked if it is noise
+        // (noise_at_index)
+        int kSecondsUntilAloneTick = 20;
+    };
+
+    class counter {
+        counter_config m_config;
+        packed m_packed;
+        void tick_first_empty_bin();
+        void compress();
+        int compress_index();
+        void denoise();
+        void remove_holes();
+
+      public:
+        counter(const counter_config c = counter_config());
+        counter(const u8 *data) : m_packed(data) {}
+
+        void reset();
+        void tick();
+        void clean();
+        void print() const;
+        bool is_clean() const;
+        bin::count total();
+        bool empty() const;
+        Clock::ms last_tick_time();
+        Clock::ms age();
+        bin getbin(const int &k) const;
+        u8 bin_count() const;
+
+        counter_config config() {
+            return m_config;
+        }
+        const packed *get_packed(size_t *L) const {
+            *L = sizeof(m_packed);
+            return &m_packed;
+        }
+    };
+
+    int test();
 }
