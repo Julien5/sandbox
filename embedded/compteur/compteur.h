@@ -12,7 +12,7 @@ class compteur {
     bool update();
     void print();
     tickscounter::bin::count total();
-    Detection *ticksReader();
+    Detection *detection();
     const u8 *data(size_t *L) const;
     static int test();
 };
