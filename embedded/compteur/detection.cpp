@@ -1,4 +1,4 @@
-#include "ticksreader.h"
+#include "detection.h"
 #include "common/debug.h"
 #include "common/time.h"
 #include "histogram.h"
@@ -69,14 +69,14 @@ bool switchLED(bool on) {
     return ret;
 }
 
-TicksReader::TicksReader() {
+Detection::Detection() {
 #ifdef ARDUINO
     pinMode(espEnablePin, OUTPUT);
 #endif
     switchLED(false);
 }
 
-bool TicksReader::tick() {
+bool Detection::tick() {
     u16 value = 0;
     if (m_reader.done() && !m_reader.old()) {
         if (switchLED(false)) {
@@ -132,7 +132,7 @@ bool TicksReader::tick() {
     return true;
 }
 
-const u8 *TicksReader::histogram_data(usize *L) const {
+const u8 *Detection::histogram_data(usize *L) const {
     constexpr auto size_adc = sizeof(m_last_adc_value) / sizeof(m_last_adc_value[0]);
     DBG("m_adc_index:%d size:%d\r\n", m_adc_index, int(size_adc));
     if (m_adc_index < size_adc)
@@ -140,7 +140,7 @@ const u8 *TicksReader::histogram_data(usize *L) const {
     return (u8 *)H.get_packed(L);
 }
 
-const u8 *TicksReader::adc_data(usize *L) const {
+const u8 *Detection::adc_data(usize *L) const {
     constexpr auto size_adc = sizeof(m_last_adc_value) / sizeof(m_last_adc_value[0]);
     if (m_adc_index < size_adc)
         return 0;
@@ -163,7 +163,7 @@ histogram::Histogram make_histogram() {
     return histogram::Histogram(p);
 }
 
-int TicksReader::test() {
+int Detection::test() {
     auto H = make_histogram();
     H.print();
     DBG("argmax=%d\n", int(H.argmax(111 + 1, 115)));

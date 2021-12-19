@@ -12,7 +12,7 @@
 
 int tests() {
     DBG("sizeof compteur:%d\n", int(sizeof(compteur)));
-    if (TicksReader::test() != 0)
+    if (Detection::test() != 0)
         return 1;
     if (histogram::Histogram::test() != 0)
         return 1;

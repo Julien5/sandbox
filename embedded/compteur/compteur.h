@@ -1,18 +1,18 @@
 #pragma once
 
-#include "ticksreader.h"
+#include "detection.h"
 #include "common/tickscounter.h"
 
 class compteur {
     tickscounter::counter counter;
-    TicksReader reader;
+    Detection reader;
 
   public:
     compteur();
     bool update();
     void print();
     tickscounter::bin::count total();
-    TicksReader *ticksReader();
+    Detection *ticksReader();
     const u8 *data(size_t *L) const;
     static int test();
 };

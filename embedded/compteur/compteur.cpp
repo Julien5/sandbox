@@ -14,7 +14,7 @@ compteur::compteur()
     debug::address_range("compteur:", this, sizeof(*this));
 }
 
-TicksReader *compteur::ticksReader() {
+Detection *compteur::ticksReader() {
     return &reader;
 }
 

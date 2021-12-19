@@ -3,7 +3,7 @@
 #include "intermittentread.h"
 #include "histogram.h"
 
-class TicksReader {
+class Detection {
     IntermittentRead m_reader;
     histogram::Histogram H;
     bool m_last_value = 0;
@@ -11,7 +11,7 @@ class TicksReader {
     u8 m_adc_index = 0;
 
   public:
-    TicksReader();
+    Detection();
     // returns 1 if the adc just got high.
     bool tick();
     const u8 *histogram_data(usize *L) const;
