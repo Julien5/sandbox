@@ -15,7 +15,7 @@ compteur::compteur()
 }
 
 Detection *compteur::detection() {
-    return &reader;
+    return &m_detection;
 }
 
 double kW(const u32 ticks, const Clock::ms d) {
@@ -43,7 +43,7 @@ bool compteur::update() {
             kW(bin1.m_count + bin2.m_count - 1, bin1.end() - bin2.m_start));
     }
 #endif
-    if (reader.tick()) {
+    if (m_detection.tick()) {
         counter.tick();
         return true;
     }

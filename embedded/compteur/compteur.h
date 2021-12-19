@@ -5,7 +5,7 @@
 
 class compteur {
     tickscounter::counter counter;
-    Detection reader;
+    Detection m_detection;
 
   public:
     compteur();
