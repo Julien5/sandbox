@@ -93,13 +93,22 @@ bool Detection::tick() {
     }
     if (value == 0)
         return false;
-    DBG("time:%d s analog value:%d\r\n", int(common::time::since_reset().value() / 1000), value);
 
-    u16 TH = 0;
-    u16 TL = 0;
+    DBG("time:%d s analog value:%d\r\n", int(common::time::since_reset().value() / 1000), value);
+    H.update(value);
+    auto &TL = m_low_threshold;
+    auto &TH = m_high_threshold;
+
     assert(TL <= TH);
-    auto iscalibrated = calibrated(H, &TL, &TH);
-    H.update(int(value), !iscalibrated);
+    u16 TL2 = 0, TH2;
+
+    auto iscalibrated = calibrated(H, &TL2, &TH2);
+    if (iscalibrated) {
+        TL = TL2;
+        TH = TH2;
+        DBG("update [%d]->[%d] [%d]->[%d]\r\n", TL, TL2, TH, TH2);
+        H.reset();
+    }
 
     constexpr auto size_adc = sizeof(m_last_adc_value) / sizeof(m_last_adc_value[0]);
     if (m_adc_index >= size_adc) {
@@ -111,8 +120,8 @@ bool Detection::tick() {
 
     status::instance.set(status::index::calibrated, u8(iscalibrated));
     //status::instance.dump();
-    if (!iscalibrated) {
-        DBG("ERR:not calibrated\r\n");
+    if (TL == TH) {
+        DBG("ERR:not calibrated (count=%d)\r\n", H.count());
         return false;
     }
     DBG("TL=[%3d] TH=[%3d]\r\n", TL, TH);

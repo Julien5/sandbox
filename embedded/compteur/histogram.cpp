@@ -295,7 +295,14 @@ void histogram::Histogram::shrink_if_needed() {
         m_packed.bins[k] /= 2;
 }
 
-void histogram::Histogram::update(u16 value, const bool adapt) {
+void histogram::Histogram::reset() {
+    memset(&m_packed, 0, sizeof(m_packed));
+    assert(m_packed.m_B1 == 0);
+    assert(m_packed.m_B2 == 0);
+    assert(m_packed.bins[0] == 0);
+}
+
+void histogram::Histogram::update(u16 value) {
     if (count() == 0) {
         m_packed.m_B1 = value;
         m_packed.m_B2 = value;
@@ -303,23 +310,18 @@ void histogram::Histogram::update(u16 value, const bool adapt) {
         assert(minimum() == value);
         return;
     }
-    const bool need_to_spread = (value < minimum() || value > maximum());
-    if (need_to_spread || adapt) {
-        auto m = min(0);
-        auto M = min(NBINS - 1);
-        auto m2 = xMin(float(value), m);
-        auto M2 = xMax(float(value), M);
-        if (adapt) {
-            const float epsilon = 0.00001;
-            const float alpha = count() > 0 ? 1.0 - epsilon : 0;
-            if (value > m) {
-                m2 = alpha * m + (1 - alpha) * value;
-            } else if (value < maximum()) {
-                M2 = alpha * M + (1 - alpha) * value;
-            }
-        }
-        spread(m2, M2);
+    auto m = min(0);
+    auto M = min(NBINS - 1);
+    auto m2 = xMin(float(value), m);
+    auto M2 = xMax(float(value), M);
+    const float epsilon = 0.00001;
+    const float alpha = count() > 0 ? 1.0 - epsilon : 0;
+    if (value > m) {
+        m2 = alpha * m + (1 - alpha) * value;
+    } else if (value < M) {
+        M2 = alpha * M + (1 - alpha) * value;
     }
+    spread(m2, M2);
     const auto k = m_packed.index(value);
     assert(k < size());
     m_packed.bins[k]++;

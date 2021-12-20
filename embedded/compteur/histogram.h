@@ -33,7 +33,7 @@ namespace histogram {
         Histogram(const packed &p) : m_packed(p){};
         void print() const;
         void print_gnuplot_block(const common::time::ms &ms) const;
-        void update(u16 value, const bool adapt = false);
+        void update(u16 value);
         usize size() const;
         //! number of update() calls - 1 (first sets min/max)
         u32 count() const;
@@ -56,6 +56,7 @@ namespace histogram {
         u32 count(u16 index) const;
         u16 argmax(u16 m, u16 M) const;
         u16 argmin(u16 m, u16 M) const;
+        void reset();
         static int test();
     };
 }
