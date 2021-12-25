@@ -3,4 +3,4 @@ set(CORE_SOURCES
   )
 
 add_library(core STATIC ${CORE_SOURCES})
-target_include_directories(core PRIVATE include/)
+target_include_directories(core PUBLIC include/)
