@@ -1,3 +1,5 @@
 if(ARDUINO)
   add_subdirectory(arduino)
+else()
+  add_subdirectory(PC)
 endif()
