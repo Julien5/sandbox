@@ -8,6 +8,7 @@ find_program(AVR_SIZE_TOOL avr-size REQUIRED)
 find_program(AVR_OBJDUMP avr-objdump REQUIRED)
 
 set(ARDUINO 1)
+set(ARDUINOCOREDIR /opt/arduino/ArduinoCore-avr-1.8.2/)
 
 # toolchain starts with defining mandatory variables
 set(CMAKE_SYSTEM_NAME Generic)
