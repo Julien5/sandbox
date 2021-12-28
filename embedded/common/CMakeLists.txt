@@ -32,10 +32,11 @@ else()
 endif()
 
 target_include_directories(common PUBLIC include/)
+
 if (ARDUINO)
   target_link_libraries(common PRIVATE LowPower)
   target_link_libraries(common PRIVATE AltSoftSerial)
   target_link_libraries(common PRIVATE LiquidCrystal)
   target_link_libraries(common PRIVATE EEPROM)
-  target_link_libraries(common PRIVATE core)
+  target_link_libraries(common PUBLIC core)
 endif()

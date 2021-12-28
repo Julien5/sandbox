@@ -16,4 +16,7 @@ target_sources(core PRIVATE
 
 target_include_directories(core PUBLIC
   ${ARDUINOCOREDIR}/cores/arduino
+  ${ARDUINOCOREDIR}/variants/standard
   )
+
+target_compile_options(core INTERFACE -include Arduino.h)

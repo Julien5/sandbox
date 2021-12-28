@@ -21,8 +21,6 @@ set(CMAKE_RANLIB ${AVR_RANLIB})
 add_definitions(-DF_CPU=16000000L -DARDUINO=182 -D__PROG_TYPES_COMPAT__ -DCMAKE)
 
 set(CMAKE_C_FLAGS "-mmcu=atmega328p -Wall -ffunction-sections -fdata-sections -Os -flto")
-set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -fpermissive -fno-exceptions -std=gnu++11 -fno-threadsafe-statics -include Arduino.h")
+set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -fpermissive -fno-exceptions -std=gnu++11 -fno-threadsafe-statics")
 
 
-include_directories(/opt/arduino/ArduinoCore-avr-1.8.2/cores/arduino/)
-include_directories(/opt/arduino/ArduinoCore-avr-1.8.2/variants/standard/)
