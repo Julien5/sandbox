@@ -50,13 +50,17 @@ void write() {
 }
 
 void application::loop() {
-    //TRACE();
-    debug::turnBuildinLED(true);
+    TRACE();
+    common::time::delay(common::time::ms(100));
+    debug::turnBuildinLED(false);
+    return;
+#if 0
 #if defined(ESP8266)
     write();
 #else
     read();
 #endif
+#endif
+    common::time::delay(common::time::ms(100));
     debug::turnBuildinLED(false);
-    //common::time::delay(100);
 }
