@@ -166,9 +166,9 @@ eeprom::write(const eeprom::const_ram_address &src, const eeprom::length &L) {
 }
 
 void eeprom::reset() {
-    ::write(0, 0);
+    write(0, 0);
 }
-
+#ifdef PC
 #include <string.h>
 int eeprom::test() {
     eeprom e;
@@ -200,3 +200,4 @@ int eeprom::test() {
         return 1;
     return 0;
 }
+#endif

@@ -21,12 +21,12 @@ void sleep::deep_sleep(const common::time::ms &delay) {
 #include <esp_sleep.h>
 #include <esp_wifi.h>
 #include "time.h"
-void sleep::deep_sleep(const u32 &ms) {
+void sleep::deep_sleep(const common::time::ms &delay) {
     /* Clean all network connections */
     esp_wifi_disconnect();
     esp_deep_sleep_set_rf_option(0);
     /* Now just wait for the RTC to kill the CPU core */
-    esp_deep_sleep(ms * 1000);
-    common::time::delay(1000);
+    esp_deep_sleep(delay.value() * 1000);
+    common::time::delay(common::time::ms(1000));
 }
 #endif

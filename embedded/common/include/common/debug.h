@@ -66,7 +66,7 @@ static std::mutex stdout_mtx;
     } while (0)
 
 #elif defined(ESP8266)
-
+#include <cassert>
 #include <stdio.h>
 #define DBG(...)                               \
     do {                                       \

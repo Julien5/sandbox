@@ -1,4 +1,5 @@
 add_library(common STATIC)
+
 target_sources(common PRIVATE
   src/clock.cpp
   src/crc.cpp
@@ -22,6 +23,12 @@ if (ARDUINO)
 	src/serial_arduino.cpp
 	src/wifi_arduino.cpp
 	)
+elseif(ESP8266)
+  target_sources(common PRIVATE
+	src/digital_esp8266.cpp
+	src/serial_esp8266.cpp
+	src/wifi_esp8266.cpp
+	)
 else()
   target_sources(common PRIVATE
 	src/analog_pc.cpp
@@ -40,3 +47,8 @@ if (ARDUINO)
   target_link_libraries(common PRIVATE EEPROM)
   target_link_libraries(common PUBLIC core)
 endif()
+
+if (ESP8266)
+  target_link_libraries(common PUBLIC core)
+endif()
+

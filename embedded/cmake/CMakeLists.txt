@@ -1,7 +1,9 @@
 if(ARDUINO)
   add_subdirectory(arduino)
+elseif(ESP8266)
+  add_subdirectory(esp8266)
 else()
-  add_subdirectory(PC)
+  add_subdirectory(pc)
 endif()
 
 function(add_avr_executable targetname)

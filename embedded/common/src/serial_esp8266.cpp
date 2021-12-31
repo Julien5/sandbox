@@ -22,7 +22,7 @@ common::serial::serial() {
         .stop_bits = UART_STOP_BITS_1,
         .flow_ctrl = UART_HW_FLOWCTRL_DISABLE};
     uart_param_config(PORT, &uart_config);
-    uart_driver_install(PORT, BUF_SIZE * 2, BUF_SIZE * 2, 0, NULL);
+    uart_driver_install(PORT, BUF_SIZE * 2, BUF_SIZE * 2, 0, NULL, 0);
 }
 
 usize common::serial::read(u8 *buffer, usize buffer_size, u16 timeout) {

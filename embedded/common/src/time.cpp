@@ -97,7 +97,7 @@ common::time::us common::time::since_reset_us() {
 }
 #include "FreeRTOS.h"
 #include "task.h"
-void common::time::delay(u32 d) {
-    vTaskDelay(d / portTICK_PERIOD_MS);
+void common::time::delay(const ms &delay) {
+    vTaskDelay(delay.value() / portTICK_PERIOD_MS);
 }
 #endif
