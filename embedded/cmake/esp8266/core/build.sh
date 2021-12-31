@@ -10,10 +10,12 @@ mkdir -p $BUILDDIR;
 if [[ ! -f $FILENAME ]]; then
 	rm -Rf $BUILDDIR;
 	echo cmaking core for esp8266
+	pushd $IDF_PATH/examples/get-started/hello_world
 	echo CONFIG_COMPILER_OPTIMIZATION_LEVEL_RELEASE=y >> sdkconfig
 	cmake -S $IDF_PATH/examples/get-started/hello_world -B $BUILDDIR
 	echo generating core for esp8266 
-	make -C $BUILDDIR VERBOSE=1 &> $FILENAME 
+	make -j4 -C $BUILDDIR VERBOSE=1 &> $FILENAME
+	popd
 else
 	echo processing $FILENAME
 fi
