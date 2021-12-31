@@ -15,7 +15,7 @@ if (ARDUINO)
   target_sources(compteur PRIVATE main_arduino.cpp)
 else()
   target_sources(compteur PRIVATE main_pc.cpp)
+  target_link_libraries(compteur PRIVATE wifi-transmitter)
 endif()
 
-target_link_libraries(compteur PRIVATE common wifi-transmitter)
-
+target_link_libraries(compteur PRIVATE common)
