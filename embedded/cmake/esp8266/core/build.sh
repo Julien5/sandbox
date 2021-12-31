@@ -20,7 +20,7 @@ echo grabing CFLAGS
 cat $FILENAME | grep hello_world_main.c | grep "\-o" | tr " " "\n" | grep "^\-" | egrep -v "(-o|-c|-Werror=all|-std=gnu99)" | tr "\n" " " > $BUILDDIR/CFLAGS.txt
 
 echo grabing LFLAGS
-cat $FILENAME | grep hello-world.elf | grep g++ | grep "\-o" | tr " " "\n"  | grep -v "^$" | egrep -v "(-o|hello)" | while read a; do
+cat $FILENAME | grep hello-world.elf | grep g++ | grep "\-o" | tr " " "\n"  | grep -v "^$" | egrep -v "(-o|hello)" | grep -v "libmain.a" | while read a; do
 	if [[ -f $BUILDDIR/$a ]]; then
 		echo $(realpath $BUILDDIR/$a)
 	elif [[ "$a" = *"xtensa-lx106-elf-g++"* ]]; then
