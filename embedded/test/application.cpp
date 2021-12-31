@@ -52,8 +52,7 @@ void write() {
 void application::loop() {
     TRACE();
     common::time::delay(common::time::ms(100));
-    debug::turnBuildinLED(false);
-    return;
+    debug::turnBuildinLED(true);
 #if 0
 #if defined(ESP8266)
     write();

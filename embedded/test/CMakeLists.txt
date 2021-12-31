@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.12)
 set(CMAKE_TOOLCHAIN_FILE /home/julien/projects/sandbox/embedded/cmake/arduino/toolchain.cmake)
 project(project)
 add_executable(test)
-target_sources(test PRIVATE application.cpp  main_arduino.cpp  main_pc.cpp)
+target_sources(test PRIVATE application.cpp  main_arduino.cpp)
 target_link_libraries(test PRIVATE common)
 
 #add_custom_target(flash
