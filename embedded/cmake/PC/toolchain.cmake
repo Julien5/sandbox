@@ -11,3 +11,5 @@ set(CMAKE_RANLIB ranlib)
 add_definitions(-DPC=1)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "") # works
+set(CMAKE_C_FLAGS "-g")
+set(CMAKE_CXX_FLAGS "-g")

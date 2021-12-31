@@ -1,5 +1,5 @@
 #include "application.h"
-#include "transmitter.h"
+#include "../wifi-transmitter/transmitter.h"
 
 #include "common/tickscounter.h"
 #include "common/time.h"

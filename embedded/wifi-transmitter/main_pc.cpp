@@ -18,7 +18,7 @@ void transmitter::run() {
 
 #ifndef NOMAIN
 int main(int, char **) {
-    received::test();
+    //received::test();
     transmitter::setup();
 
     std::thread serial_thread(transmitter::run);

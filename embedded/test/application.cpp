@@ -60,6 +60,6 @@ void application::loop() {
     read();
 #endif
 #endif
-    common::time::delay(common::time::ms(100));
+    common::time::delay(common::time::ms(250));
     debug::turnBuildinLED(false);
 }
