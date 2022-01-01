@@ -16,7 +16,7 @@ function(add_avr_executable targetname)
 	  COMMAND ${CMAKE_OBJCOPY} ARGS -O ihex "$<TARGET_FILE:${targetname}>" "$<TARGET_FILE:${targetname}>.hex"
 	  )
 	add_custom_target(flash-${targetname}
-	  ALL
+	  EXCLUDE_FROM_ALL
 	  avrdude -q -V -p atmega328p -C /etc/avrdude.conf 
 	  -D -c arduino -b ${ARDUINO_BAUD} -P ${ARDUINO_PORT}
 	  -U flash:w:"$<TARGET_FILE:${targetname}>.hex":i
