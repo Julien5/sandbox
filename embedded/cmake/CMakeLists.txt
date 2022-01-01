@@ -25,6 +25,10 @@ function(add_avr_executable targetname)
 	add_custom_target(flash-${targetname}
 	  ${cmd} "$<TARGET_FILE:${targetname}>"
 	  )
+	string(CONCAT cmd ${CMAKE_SOURCE_DIR} "/cmake/esp8266/monitor.sh")
+	add_custom_target(monitor-${targetname}
+	  ${cmd} "$<TARGET_FILE:${targetname}>"
+	  )
   endif()
 endfunction()
 
@@ -33,10 +37,6 @@ else()
   if (ARDUINO)
 	add_custom_target(monitor
 	  screen -L ${ARDUINO_PORT} 9600
-	  )
-  elseif (ESP8266)
-    add_custom_target(monitor
-	  ./cmake/esp8266/monitor.sh
 	  )
   endif()
 endif()
