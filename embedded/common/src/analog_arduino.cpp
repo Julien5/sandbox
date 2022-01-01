@@ -1,4 +1,5 @@
 #include "common/analog.h"
+#include "common/debug.h"
 #include "Arduino.h"
 
 class analog_init {
@@ -13,5 +14,8 @@ class analog_init {
 
 u16 common::analog::read() {
     static analog_init i;
-    return analogRead(0);
+
+    auto ret = analogRead(0);
+    DBG("common::analog::read:%d\r\n", int(ret));
+    return ret;
 }

@@ -37,15 +37,15 @@ common::time::us IntermittentRead::micros_since_last_measure() const {
 }
 
 bool IntermittentRead::tick(u16 *value) {
-    if (k < T) {
+    if (k < sizeof(A) / sizeof(A[0])) {
         auto a = m_analog->read();
-        DBG("adcvalue:%d\r\n", int(a));
         A[k++] = a;
         last_measure_time = common::time::since_reset_us();
     }
     switchLED(!done());
     if (old()) {
-        *value = round(average());
+        auto ambientlight = m_analog->read();
+        *value = round(xMax(average() - ambientlight, 0.0f));
         reset();
         assert(!done());
         switchLED(true);
