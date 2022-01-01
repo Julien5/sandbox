@@ -1,0 +1,4 @@
+Store fixed strings in flash instead of RAM:
+https://gist.github.com/sticilface/e54016485fcccd10950e93ddcd4461a3
+
+- si l'upload marche pas => store en memoire persistante et reset et reessaye.
