@@ -3,16 +3,25 @@
 set -e
 # set -x
 
-BUILDDIR=/tmp/esp82266/core;
+if [[ -z "$IDF_PATH" ]]; then
+	echo IDF_PATH not defined
+	exit 1
+fi
+
+BUILDDIR=/tmp/esp8266/core;
 FILENAME=$BUILDDIR/stdout
 mkdir -p $BUILDDIR;
 #rm -f $FILENAME
 if [[ ! -f $FILENAME ]]; then
 	rm -Rf $BUILDDIR;
+	pushd $IDF_PATH
+	git clean -dfx
+	popd 
 	echo cmaking core for esp8266
 	pushd $IDF_PATH/examples/get-started/hello_world
-	echo CONFIG_COMPILER_OPTIMIZATION_LEVEL_RELEASE=y >> sdkconfig
+	rm -f sdkconfig
 	cmake -S $IDF_PATH/examples/get-started/hello_world -B $BUILDDIR
+	echo CONFIG_COMPILER_OPTIMIZATION_LEVEL_RELEASE=y >> sdkconfig
 	echo generating core for esp8266 
 	make -j4 -C $BUILDDIR VERBOSE=1 &> $FILENAME
 	popd
