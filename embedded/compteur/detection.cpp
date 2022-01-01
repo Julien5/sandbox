@@ -19,15 +19,15 @@ bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
     status::instance.set(status::index::M, M);
     status::instance.set(status::index::m, m);
     status::instance.set(status::index::line, __LINE__);
-    DBG("m:%d M:%d\r\n", int(m), int(M));
     const auto d = M - m;
+    DBG("d:%d m:%d M:%d\r\n", int(d), int(m), int(M));
     if (d < float(m) * (5.0 / 100)) {
-        DBG("ERR:not calibrated (d>5 threshold)\r\n");
+        DBG("ERR:not calibrated (d>5 threshold:%d)\r\n", int(double(m) * (5.0 / 100)));
         H.print();
         return false;
     }
     if (d < minWidth) {
-        DBG("ERR:not calibrated (d>10 abs. threshold) %f\r\n", double(d));
+        DBG("ERR:not calibrated (d>10 abs. threshold) %d\r\n", int(d));
         H.print();
         return false;
     }
@@ -42,7 +42,7 @@ bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
     const auto percent5 = 100 * float(Q1) / H.count();
     const auto percent95 = 100 * float(Q3) / H.count();
     if (std::fabs(percent5 - 5) > 1 || std::fabs(percent95 - 95) > 5) {
-        DBG("ERR:not calibrated (percent5:%f percent95:%f)\r\n", double(percent5), double(percent95));
+        DBG("ERR:not calibrated (percent5:%d percent95:%d)\r\n", int(percent5), int(percent95));
         H.print();
         return false;
     }

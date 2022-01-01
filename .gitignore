@@ -9,3 +9,4 @@ __pycache__
 private_ssid_config.h
 build
 a.out
+.cache

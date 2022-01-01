@@ -5,7 +5,7 @@
 #include "common/platform.h"
 
 namespace histogram {
-    constexpr size_t NBINS = 16;
+    constexpr size_t NBINS = 8;
 
     typedef u32 Bin;
 

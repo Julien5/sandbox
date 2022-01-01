@@ -37,9 +37,9 @@ common::time::us IntermittentRead::micros_since_last_measure() const {
 }
 
 bool IntermittentRead::tick(u16 *value) {
-    const auto age = common::time::since_reset_us().since(last_measure_time);
     if (k < T) {
         auto a = m_analog->read();
+        DBG("adcvalue:%d\r\n", int(a));
         A[k++] = a;
         last_measure_time = common::time::since_reset_us();
     }

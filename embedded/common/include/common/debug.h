@@ -39,7 +39,7 @@ static std::mutex stdout_mtx;
 #include "Arduino.h"
 #define DBG(...)                                       \
     do {                                               \
-        char buffer[32];                               \
+        char buffer[64];                               \
         snprintf(buffer, sizeof(buffer), __VA_ARGS__); \
         Serial.print(buffer);                          \
         Serial.flush();                                \
