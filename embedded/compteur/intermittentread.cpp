@@ -36,7 +36,6 @@ void IntermittentRead::reset() {
     for (int i = 0; i < T; ++i)
         A[i] = 0;
     k = 0;
-    last_measure_time = common::time::us(0);
 }
 
 int IntermittentRead::value(const size_t k) {
