@@ -52,46 +52,13 @@ bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
     *_TH = TH;
     return true;
 }
-//#include <math.h>
-//static int t = 0;
-const int espEnablePin = 3;
-bool switchLED(bool on) {
-    bool ret = false;
-
-    static bool last_state = false;
-    if (last_state != on) {
-#ifdef ARDUINO
-        digitalWrite(espEnablePin, on ? 1 : 0);
-#endif
-        ret = true;
-    }
-    last_state = on;
-    return ret;
-}
 
 Detection::Detection() {
-#ifdef ARDUINO
-    pinMode(espEnablePin, OUTPUT);
-#endif
-    switchLED(false);
 }
 
 bool Detection::tick() {
     u16 value = 0;
-    if (m_reader.done() && !m_reader.old()) {
-        if (switchLED(false)) {
-            value = round(m_reader.average());
-        }
-    }
-    m_reader.tick();
-    if (m_reader.old()) {
-        m_reader.reset();
-        assert(!m_reader.done());
-        switchLED(true);
-        // restart new measurement => nothing else to do.
-        return false;
-    }
-    if (value == 0)
+    if (!m_reader.tick(&value))
         return false;
 
     DBG("time:%d s analog value:%d\r\n", int(common::time::since_reset().value() / 1000), value);

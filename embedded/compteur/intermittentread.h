@@ -14,14 +14,14 @@ class IntermittentRead {
     common::time::us last_measure_time = common::time::us(0);
     int A[T] = {0};
     std::unique_ptr<common::analog> m_analog;
+    int value(const size_t k);
 
   public:
     IntermittentRead();
     common::time::us micros_since_last_measure() const;
-    void tick();
+    bool tick(u16 *value);
     bool done() const;
     bool old() const;
     void reset();
-    int value(const size_t k);
     float average() const;
 };

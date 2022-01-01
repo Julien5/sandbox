@@ -1,9 +1,30 @@
 #include "intermittentread.h"
 #include "adcfile.h"
+#include "common/debug.h"
+
+const int espEnablePin = 3;
+bool switchLED(bool on) {
+    bool ret = false;
+
+    static bool last_state = false;
+    if (last_state != on) {
+#ifdef ARDUINO
+        digitalWrite(espEnablePin, on ? 1 : 0);
+#endif
+        ret = true;
+    }
+    last_state = on;
+    return ret;
+}
 
 constexpr int IntermittentRead::T;
 
 IntermittentRead::IntermittentRead() {
+#ifdef ARDUINO
+    pinMode(espEnablePin, OUTPUT);
+#endif
+    switchLED(false);
+
 #ifdef PC
     common::analog_read_callback::install(adcfile::instance());
     adcfile::instance()->setT(T);
@@ -15,11 +36,22 @@ common::time::us IntermittentRead::micros_since_last_measure() const {
     return common::time::us(common::time::since_reset_us().value() - last_measure_time.value());
 }
 
-void IntermittentRead::tick() {
+bool IntermittentRead::tick(u16 *value) {
+    const auto age = common::time::since_reset_us().since(last_measure_time);
     if (k < T) {
-        A[k++] = m_analog->read();
+        auto a = m_analog->read();
+        A[k++] = a;
         last_measure_time = common::time::since_reset_us();
     }
+    switchLED(!done());
+    if (old()) {
+        *value = round(average());
+        reset();
+        assert(!done());
+        switchLED(true);
+        return true;
+    }
+    return false;
 }
 
 bool IntermittentRead::done() const {
