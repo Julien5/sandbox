@@ -48,5 +48,5 @@ cat $FILENAME | grep hello-world.elf | grep g++ | grep "\-o" | tr " " "\n"  | gr
 	fi
 done | tr "\n" " " > $BUILDDIR/LFLAGS.txt
 
-echo set\(CORE_CFLAGS $(cat /tmp/esp82266/core/CFLAGS.txt)\) >  /tmp/esp82266/core/core.cmake
-echo set\(CORE_LFLAGS \"SHELL:$(cat /tmp/esp82266/core/LFLAGS.txt)\"\) >> /tmp/esp82266/core/core.cmake
+echo set\(CORE_CFLAGS $(cat $BUILDDIR/CFLAGS.txt)\) >  $BUILDDIR/core.cmake
+echo set\(CORE_LFLAGS \"SHELL:$(cat $BUILDDIR/LFLAGS.txt)\"\) >> $BUILDDIR/core.cmake
