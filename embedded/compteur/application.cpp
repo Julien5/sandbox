@@ -21,7 +21,9 @@ void application::setup() {
     DBG("sizeof(compteur):%d\r\n", int(sizeof(compteur)));
     DBG("sizeof(wifi::wifi):%d\r\n", int(sizeof(wifi::wifi)));
     DBG("sizeof(common::serial):%d\r\n", int(sizeof(common::serial)));
+    DBG("ok.%d\r\n", debug::freeMemory());
     C = std::unique_ptr<compteur>(new compteur);
+    DBG("ok.%d\r\n", debug::freeMemory());
 }
 
 void application::loop() {

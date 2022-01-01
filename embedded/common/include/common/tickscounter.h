@@ -29,7 +29,7 @@ namespace tickscounter {
         bool operator==(const bin &other) const;
     } __attribute__((packed));
 
-    constexpr int NTICKS = 20;
+    constexpr int NTICKS = 10;
 
     struct packed {
         packed() : m_bins{} {};

@@ -19,7 +19,7 @@ bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
     status::instance.set(status::index::M, M);
     status::instance.set(status::index::m, m);
     status::instance.set(status::index::line, __LINE__);
-    DBG("m:%d M:%d\n", int(m), int(M));
+    DBG("m:%d M:%d\r\n", int(m), int(M));
     const auto d = M - m;
     if (d < float(m) * (5.0 / 100)) {
         DBG("ERR:not calibrated (d>5 threshold)\r\n");
