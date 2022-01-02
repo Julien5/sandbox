@@ -306,6 +306,17 @@ void histogram::Histogram::reset() {
     assert(m_packed.bins[0] == 0);
 }
 
+void histogram::Histogram::clear() {
+    memset(&m_packed.bins, 0, sizeof(m_packed.bins));
+    for (size_t k = 0; k < NBINS; ++k)
+        assert(m_packed.bins[k] == 0);
+    assert(m_packed.m_B1 > 0);
+    assert(m_packed.m_B2 > 0);
+    assert(m_packed.m_B2 != m_packed.m_B1);
+    m_packed.bins[0] = 1;
+    m_packed.bins[NBINS - 1] = 1;
+}
+
 void histogram::Histogram::update(u16 value) {
     if (count() == 0) {
         m_packed.m_B1 = value;
@@ -319,7 +330,7 @@ void histogram::Histogram::update(u16 value) {
     auto m2 = xMin(float(value), m);
     auto M2 = xMax(float(value), M);
     auto middle = float(M + m) / 2.0f;
-    const float alpha = 0.9;
+    const float alpha = 0.999;
     if (m < value && value < middle) {
         m2 = alpha * m + (1 - alpha) * value;
     } else if (middle < value && value < M) {

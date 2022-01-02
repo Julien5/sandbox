@@ -10,9 +10,8 @@ u16 bound(u16 T, u16 k) {
     return T + k;
 }
 
-bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
-    //H.print();
-    const u8 minWidth = 10;
+bool calibrated(histogram::Histogram &H, u16 *_TL, u16 *_TH) {
+    const u8 minWidth = 50;
     const auto M = H.maximum();
     const auto m = H.minimum();
     //assert(M != 0);
@@ -24,12 +23,15 @@ bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
     DBG("gnuplot:bounds:%f:%d:%d\r\n", float(ms) / 1000, int(m), int(M));
     if (d < float(m) * (5.0 / 100)) {
         DBG("ERR:not calibrated (d>5 threshold:%d)\r\n", int(double(m) * (5.0 / 100)));
+        DBG("gnuplot:errors:%f:1\r\n", float(ms) / 1000);
         H.print();
         return false;
     }
     if (d < minWidth) {
         DBG("ERR:not calibrated (d>10 abs. threshold) %d\r\n", int(d));
+        DBG("gnuplot:errors:%f:2\r\n", float(ms) / 1000);
         H.print();
+        H.clear();
         return false;
     }
     status::instance.set(status::index::line, __LINE__);
@@ -43,10 +45,11 @@ bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
     const auto Q1 = H.count(0, part);
     const auto percent5 = 100 * float(Q1) / H.count();
     const auto percent95 = 100 * float(Q3) / H.count();
-    if (std::fabs(percent5 - 5) > 2.5 || std::fabs(percent95 - 95) > 10) {
+    if (percent5 == 0 || percent5 > 20 || std::fabs(percent95 - 95) > 20) {
         //DBG("Q1:[%2d - %2ld] = %d\r\n", 0, part, int(Q1));
         //DBG("Q3:[%2ld - %2ld] = %d\r\n", 2 * part, end, int(Q3));
         DBG("ERR: p5:%d p95:%d [m:%d M:%d c:%d]\r\n", int(percent5), int(percent95), int(m), int(M), int(H.count()));
+        DBG("gnuplot:errors:%f:3:%d:%d\r\n", float(ms) / 1000, int(percent5), int(percent95));
         H.print();
         return false;
     }
@@ -71,15 +74,14 @@ bool Detection::tick() {
     auto &TH = m_high_threshold;
 
     assert(TL <= TH);
-    u16 TL2 = 0, TH2;
-
+    u16 TL2 = 0, TH2 = 0;
     auto iscalibrated = calibrated(H, &TL2, &TH2);
     if (iscalibrated) {
         //DBG("update: TL:[%d->%d] TH:[%d->%d]\r\n", TL, TL2, TH, TH2);
         DBG("gnuplot:update:%f:%d:%d\r\n", float(ms) / 1000, TL2, TH2);
         TL = TL2;
         TH = TH2;
-        H.reset();
+        H.clear();
     }
 
     constexpr auto size_adc = sizeof(m_last_adc_value) / sizeof(m_last_adc_value[0]);

@@ -57,6 +57,7 @@ namespace histogram {
         u16 argmax(u16 m, u16 M) const;
         u16 argmin(u16 m, u16 M) const;
         void reset();
+        void clear();
         static int test();
     };
 }
