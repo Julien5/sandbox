@@ -20,7 +20,8 @@ bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
     status::instance.set(status::index::m, m);
     status::instance.set(status::index::line, __LINE__);
     const auto d = M - m;
-    DBG("d:%d m:%d M:%d\r\n", int(d), int(m), int(M));
+    auto ms = int(common::time::since_reset().value());
+    DBG("t=%d ms:d=%d:m=%d:M=%d\r\n", int(ms), int(d), int(m), int(M));
     if (d < float(m) * (5.0 / 100)) {
         DBG("ERR:not calibrated (d>5 threshold:%d)\r\n", int(double(m) * (5.0 / 100)));
         H.print();
@@ -63,8 +64,8 @@ bool Detection::tick() {
     u16 value = 0;
     if (!m_reader.tick(&value))
         return false;
-
-    DBG("time:%d ms value:%d\r\n", int(common::time::since_reset().value()), int(value));
+    auto ms = int(common::time::since_reset().value());
+    DBG("time:%d ms value:%d\r\n", ms, int(value));
     H.update(value);
     auto &TL = m_low_threshold;
     auto &TH = m_high_threshold;
@@ -74,7 +75,8 @@ bool Detection::tick() {
 
     auto iscalibrated = calibrated(H, &TL2, &TH2);
     if (iscalibrated) {
-        DBG("update TL:[%d->%d] TH:[%d->%d]\r\n", TL, TL2, TH, TH2);
+        //DBG("update: TL:[%d->%d] TH:[%d->%d]\r\n", TL, TL2, TH, TH2);
+        DBG("update:%d:TL=%d:TH=%d\r\n", ms, TL2, TH2);
         TL = TL2;
         TH = TH2;
         H.reset();
@@ -107,7 +109,7 @@ bool Detection::tick() {
     if (new_value == 0) {
         return false;
     }
-    DBG("TICK %d secs TL=[%3d] TH=[%3d]\r\n", int(common::time::since_reset().value() / 1000), TL, TH);
+    DBG("TICK:%d ms:TL=%3d:TH=%3d\r\n", ms, TL, TH);
     return true;
 }
 
