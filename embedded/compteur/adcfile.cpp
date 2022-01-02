@@ -44,7 +44,7 @@ adcfile *adcfile::instance() {
 }
 
 adcfile::adcfile() {
-    m_lines = lines(read_file("output"));
+    m_lines = lines(read_file("simulation/data/test-01/output.adc"));
 }
 
 void adcfile::setT(const int &T) {
@@ -55,22 +55,13 @@ u16 adcfile::read() {
     assert(m_T > 0);
     // last line is empty
     if (m_line_index >= (m_lines.size() - 1)) {
-        m_line_index = 0;
-        // stop: assert(0);
-        m_element_index = 0;
+        DBG("done.ok.");
+        exit(0);
     }
-    auto line = m_lines[m_line_index];
-    //DBG("line:%s [%d]\r\n", line.c_str(), int(m_line_index));
-    auto elements = split(line, " ");
-    assert(m_element_index < elements.size());
-    assert(m_element_index < m_T);
-    auto element = elements[m_element_index++];
-    if (m_element_index == m_T) {
-        m_line_index++;
-        m_element_index = 0;
-    }
+    auto line = m_lines[m_line_index++];
     common::time::simulate(common::time::us(100));
-    assert(!element.empty());
-    return std::stoi(element);
+    auto ret = std::stoi(line);
+    DBG("common::analog::read:%4d [line:%6d]\r\n", int(ret), int(m_line_index - 1));
+    return ret;
 }
 #endif

@@ -71,9 +71,9 @@ bool Detection::tick() {
 
     auto iscalibrated = calibrated(H, &TL2, &TH2);
     if (iscalibrated) {
+        DBG("update TL:[%d->%d] TH:[%d->%d]\r\n", TL, TL2, TH, TH2);
         TL = TL2;
         TH = TH2;
-        DBG("update [%d]->[%d] [%d]->[%d]\r\n", TL, TL2, TH, TH2);
         H.reset();
     }
 
