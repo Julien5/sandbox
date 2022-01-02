@@ -64,7 +64,7 @@ bool Detection::tick() {
     if (!m_reader.tick(&value))
         return false;
 
-    DBG("time:%d s analog value:%d\r\n", int(common::time::since_reset().value() / 1000), value);
+    DBG("time:%d ms value:%d\r\n", int(common::time::since_reset().value()), int(value));
     H.update(value);
     auto &TL = m_low_threshold;
     auto &TH = m_high_threshold;
