@@ -186,6 +186,7 @@ void histogram::Histogram::print() const {
         printf("%6d   |", int(m_packed.count(k)));
     printf("\r\n");
 #else
+    return;
     DBG("hist:c:");
     for (size_t k = 0; k < size(); ++k)
         DBG("[%3d] ", int(m_packed.count(k)));

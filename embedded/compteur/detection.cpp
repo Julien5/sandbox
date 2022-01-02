@@ -42,7 +42,7 @@ bool calibrated(histogram::Histogram H, u16 *_TL, u16 *_TH) {
     const auto percent5 = 100 * float(Q1) / H.count();
     const auto percent95 = 100 * float(Q3) / H.count();
     if (std::fabs(percent5 - 5) > 1 || std::fabs(percent95 - 95) > 5) {
-        DBG("ERR:not calibrated (percent5:%d percent95:%d)\r\n", int(percent5), int(percent95));
+        DBG("ERR: (p5:%d p95:%d) [m:%d M:%d c:%d]\r\n", int(percent5), int(percent95), int(m), int(M), int(H.count()));
         H.print();
         return false;
     }

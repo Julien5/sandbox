@@ -44,7 +44,7 @@ adcfile *adcfile::instance() {
 }
 
 adcfile::adcfile() {
-    m_lines = lines(read_file("simulation/data/test-01/output.adc"));
+    m_lines = lines(read_file("simulation/data/test-02/output.adc"));
 }
 
 void adcfile::setT(const int &T) {
