@@ -122,22 +122,25 @@ void histogram::Histogram::spread(const float &m2, const float &M2) {
         m_packed = p2;
         return;
     }
+
     const auto oldcount = count();
     const auto &p1(m_packed);
+
+    if (p1.delta() == 0) {
+        auto l = p2.index(minimum());
+        p2.bins[l] = oldcount;
+        m_packed = p2;
+        return;
+    }
 
     float values[NBINS] = {0};
     for (size_t k = 0; k < NBINS; ++k) {
         for (size_t l = 0; l < NBINS; ++l) {
             if (intersection_empty(p1, k, p2, l))
                 continue;
-            if (p1.delta() == 0) {
-                if (k == l)
-                    values[l] += p1.bins[k];
-                continue;
-            }
             const float I = intersection_width(p1, k, p2, l);
             if (I > 0 && p1.bins[k] > 0) {
-                //DBG("(k:%d,l:%d,I:%f)\t", int(k), int(l), I);
+                // DBG("(k:%d,l:%d,I:%f)\t", int(k), int(l), I);
                 // DBG("(p1.bins[k]:%d,I/delta:%f)\r\n", int(p1.bins[k]), I / p1.delta());
             }
             values[l] += I * p1.bins[k] / p1.delta();
@@ -158,7 +161,7 @@ void histogram::Histogram::spread(const float &m2, const float &M2) {
     float dcount = std::fabs(float(oldcount) - float(newcount));
     auto good = !enlarged || dcount <= 2;
     if (!good) {
-        DBG("not good: enlarged:%d old:%d new:%d dcount=%f values-sum=%f\n", int(enlarged), int(oldcount), int(newcount), double(dcount), double(values_sum));
+        //DBG("not good: enlarged:%d old:%d new:%d dcount=%f values-sum=%f\r\n", int(enlarged), int(oldcount), int(newcount), double(dcount), double(values_sum));
         print();
         printf("vals:");
         for (size_t l = 0; l < NBINS; ++l) {
@@ -183,15 +186,15 @@ void histogram::Histogram::print() const {
         printf("%6d   |", int(m_packed.count(k)));
     printf("\r\n");
 #else
-    DBG("histogram:");
+    DBG("hist:c:");
     for (size_t k = 0; k < size(); ++k)
-        DBG("%3d ", int(m_packed.count(k)));
+        DBG("[%3d] ", int(m_packed.count(k)));
     DBG("\r\n");
-    return;
-    DBG("values: ");
+    DBG("hist:m:");
     for (size_t k = 0; k < size(); ++k)
         DBG("[%3d] ", int(m_packed.min(k)));
     DBG("\r\n");
+    return;
     DBG("counts: ");
     for (size_t k = 0; k < size(); ++k) {
         DBG("[%3d] ", int(m_packed.count(k)));
@@ -314,11 +317,11 @@ void histogram::Histogram::update(u16 value) {
     auto M = min(NBINS - 1);
     auto m2 = xMin(float(value), m);
     auto M2 = xMax(float(value), M);
-    const float epsilon = 0.00001;
-    const float alpha = count() > 0 ? 1.0 - epsilon : 0;
-    if (value > m) {
+    auto middle = float(M + m) / 2.0f;
+    const float alpha = 0.9;
+    if (m < value && value < middle) {
         m2 = alpha * m + (1 - alpha) * value;
-    } else if (value < M) {
+    } else if (middle < value && value < M) {
         M2 = alpha * M + (1 - alpha) * value;
     }
     spread(m2, M2);
