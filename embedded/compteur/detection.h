@@ -8,7 +8,7 @@ class Detection {
     histogram::Histogram H;
     u16 m_low_threshold = 0;
     u16 m_high_threshold = 0;
-    bool m_last_value = 0;
+    bool m_last_value = 1;
     u16 m_last_adc_value[64] = {0};
     u8 m_adc_index = 0;
 

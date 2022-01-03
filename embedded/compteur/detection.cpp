@@ -21,7 +21,7 @@ bool calibrated(histogram::Histogram &H, u16 *_TL, u16 *_TH) {
     const auto d = M - m;
     auto ms = int(common::time::since_reset().value());
     PLOT("bounds:%f:%d:%d\r\n", float(ms) / 1000, int(m), int(M));
-    if (H.count() < 100)
+    if (H.count() < 500)
         return false;
     if (d < float(m) * (5.0 / 100)) {
         H.print();
