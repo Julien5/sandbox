@@ -16,12 +16,12 @@ plot '/tmp/replay/values' title 'adc' with lines ls 1, \
 	 '/tmp/replay/bounds' using 1:3 title 'M' with lines ls 6, \
 	 '/tmp/replay/ticks' using 1:2 title 'ticks' with points ls 5
 
-#set size 1,.25
-#set origin 0,0.25
-#plot '/tmp/replay/errors' using 1:($2==1):($2 == 1 ? 0x0000ff : 0xffffff) title 'd5' with boxes lc rgb variable, \
-#	 '/tmp/replay/errors' using 1:($2==2):($2 == 2 ? 0x00ff00 : 0xffffff) title 'd10' with boxes lc rgb variable
+set size 1,.25
+set origin 0,0.25
+plot '/tmp/replay/errors' using 1:($2==1):($2 == 1 ? 0x0000ff : 0xffffff) title 'd5' with boxes lc rgb variable, \
+	 '/tmp/replay/errors' using 1:($2==2):($2 == 2 ? 0x00ff00 : 0xffffff) title 'd10' with boxes lc rgb variable
 
-#set size 1,.25
-#set origin 0,0.0
-plot '/tmp/replay/errors' using 1:3 title 'p5' with lines ls 1, \
-     '/tmp/replay/errors' using 1:4 title 'p95' with lines ls 2
+set size 1,.25
+set origin 0,0.0
+plot '/tmp/replay/errors' using 1:3 title 'p5' with points ls 1, \
+     '/tmp/replay/errors' using 1:4 title 'p95' with points ls 2

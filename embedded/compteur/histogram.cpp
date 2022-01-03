@@ -177,13 +177,14 @@ void histogram::Histogram::spread(const float &m2, const float &M2) {
 
 void histogram::Histogram::print() const {
 #ifdef PC
-    printf("HIST:");
+    auto ms = int(common::time::since_reset().value());
+    printf("HIST:%5.1f:", float(ms) / 1000);
     for (size_t k = 0; k < size(); ++k)
-        printf("%3.1f %3.1f|", m_packed.min(k), m_packed.max(k));
+        printf("%4.1f %4.1f|", m_packed.min(k), m_packed.max(k));
     printf("\r\n");
-    printf("HIST:");
+    printf("HIST:     :");
     for (size_t k = 0; k < size(); ++k)
-        printf("%6d   |", int(m_packed.count(k)));
+        printf("%8d   |", int(m_packed.count(k)));
     printf("\r\n");
 #else
     return;
@@ -330,7 +331,7 @@ void histogram::Histogram::update(u16 value) {
     auto m2 = xMin(float(value), m);
     auto M2 = xMax(float(value), M);
     auto middle = float(M + m) / 2.0f;
-    const float alpha = 0.999;
+    const float alpha = 0.99;
     if (m < value && value < middle) {
         m2 = alpha * m + (1 - alpha) * value;
     } else if (middle < value && value < M) {
