@@ -24,4 +24,5 @@ plot '/tmp/replay/errors' using 1:4 title 'p95' with points ls 2
 
 set size 1,.25
 set origin 0,0.0
+set yrange [0:6]
 plot '/tmp/replay/errors' using 1:3 title 'p5' with points ls 1
