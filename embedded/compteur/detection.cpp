@@ -10,19 +10,16 @@ u16 bound(u16 T, u16 k) {
     return T + k;
 }
 
-bool calibrated(histogram::Histogram &H, u16 *_TL, u16 *_TH) {
-    const u8 minWidth = 50;
+bool calibrated(const histogram::Histogram &H, u16 *_TL, u16 *_TH) {
+    const u8 minWidth = 30;
     const auto M = H.maximum();
     const auto m = H.minimum();
-    //assert(M != 0);
-    status::instance.set(status::index::M, M);
-    status::instance.set(status::index::m, m);
-    status::instance.set(status::index::line, __LINE__);
     const auto d = M - m;
     auto ms = int(common::time::since_reset().value());
     PLOT("bounds:%f:%d:%d\r\n", float(ms) / 1000, int(m), int(M));
-    if (H.count() < 500)
+    if (H.count() < 200)
         return false;
+
     if (d < float(m) * (5.0 / 100)) {
         H.print();
         return false;
@@ -64,6 +61,11 @@ bool Detection::tick() {
     auto ms = int(common::time::since_reset().value());
     PLOT("values:%f:%d\r\n", float(ms) / 1000, int(value));
     H.update(value);
+
+    if (H.maximum() - H.minimum() > 300) {
+        H.reset();
+    }
+
     auto &TL = m_low_threshold;
     auto &TH = m_high_threshold;
 
