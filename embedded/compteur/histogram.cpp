@@ -292,12 +292,12 @@ u16 histogram::Histogram::arglow(int percent) const {
 }
 
 void histogram::Histogram::shrink_if_needed() {
-    const u16 kmax = 0xffff / 2;
+    const u16 kmax = 200;
     if (count() <= kmax)
         return;
     DBG("shrinking...\r\n");
     for (usize k = 0; k < size(); ++k)
-        m_packed.bins[k] /= 2;
+        m_packed.bins[k] /= 3;
 }
 
 void histogram::Histogram::reset() {

@@ -83,8 +83,7 @@ bool Detection::tick() {
         TH = TH2;
     }
     DBG("gnuplot:count:%f:%d:%d:%d\r\n", float(ms) / 1000, int(H.minimum()), int(H.maximum()), H.count());
-    if (H.count() > 1000)
-        H.reset();
+    H.shrink_if_needed();
 
     constexpr auto size_adc = sizeof(m_last_adc_value) / sizeof(m_last_adc_value[0]);
     if (m_adc_index >= size_adc) {

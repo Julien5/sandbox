@@ -25,7 +25,6 @@ namespace histogram {
         packed m_packed;
         Bin *begin() const;
         Bin *end() const;
-        void shrink_if_needed();
         void spread(const float &m2, const float &M2);
 
       public:
@@ -58,6 +57,7 @@ namespace histogram {
         u16 argmin(u16 m, u16 M) const;
         void reset();
         void clear();
+        void shrink_if_needed();
         static int test();
     };
 }
