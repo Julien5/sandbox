@@ -18,7 +18,7 @@ function filter() {
 	cat $DIR/out | cut -f4- -d":" | grep -v "^$" | grep $MARKER |cut -f3- -d":" | tr ":" " " > $DIR/$MARKER
 }
 
-for a in values ticks update bounds errors; do
+for a in values ticks update bounds features; do
 	filter $a
 done
 gnuplot ./simulation/tools/replay.gnuplot
