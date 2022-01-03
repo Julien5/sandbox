@@ -44,7 +44,7 @@ bool calibrated(histogram::Histogram &H, u16 *_TL, u16 *_TH) {
     const auto percent5 = 100 * float(Q1) / H.count();
     const auto percent95 = 100 * float(Q3) / H.count();
     DBG("gnuplot:features:%f:%f:%f\r\n", float(ms) / 1000, percent5, percent95);
-    if (percent5 < 2 || percent5 > 4 || std::fabs(percent95 - 95) > 3) {
+    if (std::fabs(percent5 - 2) > 2 || std::fabs(percent95 - 98) > 2) {
         //DBG("Q1:[%2d - %2ld] = %d\r\n", 0, part, int(Q1));
         //DBG("Q3:[%2ld - %2ld] = %d\r\n", 2 * part, end, int(Q3));
         DBG("ERR: p5:%d p95:%d [m:%d M:%d c:%d]\r\n", int(percent5), int(percent95), int(m), int(M), int(H.count()));
