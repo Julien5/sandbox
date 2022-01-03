@@ -44,7 +44,8 @@ bool calibrated(histogram::Histogram &H, u16 *_TL, u16 *_TH) {
     const auto percent5 = 100 * float(Q1) / H.count();
     const auto percent95 = 100 * float(Q3) / H.count();
     DBG("gnuplot:features:%f:%f:%f\r\n", float(ms) / 1000, percent5, percent95);
-    if (std::fabs(percent5 - 2) > 2 || std::fabs(percent95 - 98) > 2) {
+    const auto percentlow = 2.5;
+    if (std::fabs(percent5 - percentlow) > 2 || std::fabs(percent95 - (100 - percentlow)) > 2) {
         //DBG("Q1:[%2d - %2ld] = %d\r\n", 0, part, int(Q1));
         //DBG("Q3:[%2ld - %2ld] = %d\r\n", 2 * part, end, int(Q3));
         DBG("ERR: p5:%d p95:%d [m:%d M:%d c:%d]\r\n", int(percent5), int(percent95), int(m), int(M), int(H.count()));
@@ -81,8 +82,6 @@ bool Detection::tick() {
             DBG("gnuplot:update:%f:%d:%d:%d\r\n", float(ms) / 1000, TL2, TH2, H.count());
             TL = TL2;
             TH = TH2;
-            if (H.count() > 1000)
-                H.reset();
         }
     }
     DBG("gnuplot:count:%f:%d:%d:%d\r\n", float(ms) / 1000, int(H.minimum()), int(H.maximum()), H.count());

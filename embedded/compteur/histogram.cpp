@@ -331,7 +331,7 @@ void histogram::Histogram::update(u16 value) {
     auto m2 = xMin(float(value), m);
     auto M2 = xMax(float(value), M);
     auto middle = float(M + m) / 2.0f;
-    const float alpha = 1; //0.99;
+    const float alpha = 0.999;
     if (m < value && value < middle) {
         m2 = alpha * m + (1 - alpha) * value;
     } else if (middle < value && value < M) {

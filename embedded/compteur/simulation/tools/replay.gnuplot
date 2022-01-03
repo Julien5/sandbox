@@ -18,12 +18,12 @@ plot '/tmp/replay/values' title 'adc' with lines ls 1, \
 
 set size 1,.25
 set origin 0,0.25
-set yrange [95:100]
+set yrange [90:100]
 plot '/tmp/replay/features' using 1:3 title 'p95' with points ls 2
 #plot '/tmp/replay/errors' using 1:($2==1):($2 == 1 ? 0x0000ff : 0xffffff) title 'd5' with boxes lc rgb variable, \
 #	 '/tmp/replay/errors' using 1:($2==2):($2 == 2 ? 0x00ff00 : 0xffffff) title 'd10' with boxes lc rgb variable
 
 set size 1,.25
 set origin 0,0.0
-set yrange [0:5]
+set yrange [0:10]
 plot '/tmp/replay/features' using 1:2 title 'p5' with points ls 1
