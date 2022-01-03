@@ -5,6 +5,7 @@
 #if defined(NDEBUG)
 #define DBG(...) ((void)0)
 #define TRACE() ((void)0)
+#define PLOT(...) ((void)0)
 #define assert(ignore) ((void)0)
 #else
 
@@ -23,6 +24,16 @@ static std::mutex stdout_mtx;
         printf(__VA_ARGS__);                                    \
         fflush(stdout);                                         \
     } while (0)
+//#define PLOT(...) ((void)0)
+
+#define PLOT(...)                                                       \
+    do {                                                                \
+        std::unique_lock<std::mutex> lock(stdout_mtx);                  \
+        printf("%s:%s:%d: gnuplot:", __FILE__, __FUNCTION__, __LINE__); \
+        printf(__VA_ARGS__);                                            \
+        fflush(stdout);                                                 \
+    } while (0)
+
 #define TRACE()                                                       \
     do {                                                              \
         std::unique_lock<std::mutex> lock(stdout_mtx);                \
@@ -64,7 +75,7 @@ static std::mutex stdout_mtx;
             };                          \
         }                               \
     } while (0)
-
+#define PLOT(...) ((void)0)
 #elif defined(ESP8266)
 #include <cassert>
 #include <stdio.h>
@@ -86,6 +97,7 @@ static std::mutex stdout_mtx;
             };                                                         \
         }                                                              \
     } while (0)
+#define PLOT(...) ((void)0)
 #endif
 #endif
 #endif

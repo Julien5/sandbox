@@ -20,16 +20,14 @@ bool calibrated(histogram::Histogram &H, u16 *_TL, u16 *_TH) {
     status::instance.set(status::index::line, __LINE__);
     const auto d = M - m;
     auto ms = int(common::time::since_reset().value());
-    DBG("gnuplot:bounds:%f:%d:%d\r\n", float(ms) / 1000, int(m), int(M));
+    PLOT("bounds:%f:%d:%d\r\n", float(ms) / 1000, int(m), int(M));
     if (H.count() < 100)
         return false;
     if (d < float(m) * (5.0 / 100)) {
-        DBG("ERR:not calibrated (d>5 threshold:%d)\r\n", int(double(m) * (5.0 / 100)));
         H.print();
         return false;
     }
     if (d < minWidth) {
-        DBG("ERR:not calibrated (d>10 abs. threshold) %d\r\n", int(d));
         H.print();
         return false;
     }
@@ -43,13 +41,9 @@ bool calibrated(histogram::Histogram &H, u16 *_TL, u16 *_TH) {
     const auto Q1 = H.count(0, part);
     const auto percent5 = 100 * float(Q1) / H.count();
     const auto percent95 = 100 * float(Q3) / H.count();
-    DBG("gnuplot:features:%f:%f:%f\r\n", float(ms) / 1000, percent5, percent95);
+    PLOT("features:%f:%f:%f\r\n", float(ms) / 1000, percent5, percent95);
     const auto percentlow = 2.5;
     if (std::fabs(percent5 - percentlow) > 2 || std::fabs(percent95 - (100 - percentlow)) > 2) {
-        //DBG("Q1:[%2d - %2ld] = %d\r\n", 0, part, int(Q1));
-        //DBG("Q3:[%2ld - %2ld] = %d\r\n", 2 * part, end, int(Q3));
-        DBG("ERR: p5:%d p95:%d [m:%d M:%d c:%d]\r\n", int(percent5), int(percent95), int(m), int(M), int(H.count()));
-        DBG("gnuplot:errors:%f:3:%d:%d\r\n", float(ms) / 1000, int(percent5), int(percent95));
         H.print();
         return false;
     }
@@ -68,7 +62,7 @@ bool Detection::tick() {
     if (!m_reader.tick(&value))
         return false;
     auto ms = int(common::time::since_reset().value());
-    DBG("gnuplot:values:%f:%d\r\n", float(ms) / 1000, int(value));
+    PLOT("values:%f:%d\r\n", float(ms) / 1000, int(value));
     H.update(value);
     auto &TL = m_low_threshold;
     auto &TH = m_high_threshold;
@@ -78,11 +72,11 @@ bool Detection::tick() {
     auto iscalibrated = calibrated(H, &TL2, &TH2);
     if (iscalibrated) {
         //DBG("update: TL:[%d->%d] TH:[%d->%d]\r\n", TL, TL2, TH, TH2);
-        DBG("gnuplot:update:%f:%d:%d:%d\r\n", float(ms) / 1000, TL2, TH2, H.count());
+        PLOT("update:%f:%d:%d:%d\r\n", float(ms) / 1000, TL2, TH2, H.count());
         TL = TL2;
         TH = TH2;
     }
-    DBG("gnuplot:count:%f:%d:%d:%d\r\n", float(ms) / 1000, int(H.minimum()), int(H.maximum()), H.count());
+    PLOT("count:%f:%d:%d:%d\r\n", float(ms) / 1000, int(H.minimum()), int(H.maximum()), H.count());
 
     constexpr auto size_adc = sizeof(m_last_adc_value) / sizeof(m_last_adc_value[0]);
     if (m_adc_index >= size_adc) {
@@ -109,7 +103,7 @@ bool Detection::tick() {
     if (new_value == 0) {
         return false;
     }
-    DBG("gnuplot:ticks:%f:%d:%d\r\n", float(ms) / 1000, TL, TH);
+    PLOT("ticks:%f:%d:%d\r\n", float(ms) / 1000, TL, TH);
     return true;
 }
 
