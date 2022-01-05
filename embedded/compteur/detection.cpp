@@ -54,30 +54,42 @@ bool calibrated(const histogram::Histogram &H, u16 *_TL, u16 *_TH) {
 Detection::Detection() {
 }
 
+bool far_outside(const histogram::Histogram &H, const u16 &value) {
+    const auto m = H.minimum();
+    const auto M = H.maximum();
+    if (m <= value && value <= M)
+        return false;
+    const auto d = value > M ? fabs(value - M) : fabs(value - m);
+    const auto W = M - m;
+    return d > xMax(100, int(W / 3));
+}
+
 bool Detection::tick() {
     u16 value = 0;
     if (!m_reader.tick(&value))
         return false;
+
     auto ms = int(common::time::since_reset().value());
     PLOT("values:%f:%d\r\n", float(ms) / 1000, int(value));
+    if (far_outside(H, value))
+        H.reset();
     H.update(value);
 
-    if (H.maximum() - H.minimum() > 300) {
-        H.reset();
-    }
-
-    auto &TL = m_low_threshold;
-    auto &TH = m_high_threshold;
-
-    assert(TL <= TH);
     u16 TL2 = 0, TH2 = 0;
     auto iscalibrated = calibrated(H, &TL2, &TH2);
     if (iscalibrated) {
         //DBG("update: TL:[%d->%d] TH:[%d->%d]\r\n", TL, TL2, TH, TH2);
         PLOT("update:%f:%d:%d:%d\r\n", float(ms) / 1000, TL2, TH2, H.count());
-        TL = TL2;
-        TH = TH2;
+        m_calibration.TL = TL2;
+        m_calibration.TH = TH2;
+        m_calibration.m = H.minimum();
+        m_calibration.M = H.maximum();
     }
+    auto &TL = m_calibration.TL;
+    auto &TH = m_calibration.TH;
+
+    assert(TL <= TH);
+
     PLOT("count:%f:%d:%d:%d\r\n", float(ms) / 1000, int(H.minimum()), int(H.maximum()), H.count());
 
     constexpr auto size_adc = sizeof(m_last_adc_value) / sizeof(m_last_adc_value[0]);
