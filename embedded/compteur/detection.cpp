@@ -65,13 +65,22 @@ bool far_outside(const histogram::Histogram &H, const u16 &value) {
     return d > xMax(100, int(W / 3));
 }
 
+static float xalpha = -1;
 bool Detection::tick() {
     u16 value = 0;
     if (!m_reader.tick(&value))
         return false;
-
+    float delta = 0;
+    const float alpha = 0.95;
+    if (xalpha < 0)
+        xalpha = value;
+    else {
+        delta = fabs(xalpha - value);
+        xalpha = alpha * xalpha + (1 - alpha) * value;
+    }
     auto ms = int(common::time::since_reset().value());
-    PLOT("values:%f:%d\r\n", float(ms) / 1000, int(value));
+    PLOT("values:%f:%d:%f\r\n", float(ms) / 1000, int(value), xalpha);
+    PLOT("delta:%f:%f\r\n", float(ms) / 1000, delta);
     if (far_outside(H, value))
         H.reset();
     H.update(value);
