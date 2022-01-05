@@ -11,15 +11,16 @@ u16 bound(u16 T, u16 k) {
 }
 
 bool calibrated(const histogram::Histogram &H, u16 *_TL, u16 *_TH) {
-    const u8 minWidth = 30;
+    const u8 minWidth = 20;
     const auto M = H.maximum();
     const auto m = H.minimum();
     const auto d = M - m;
     auto ms = int(common::time::since_reset().value());
     PLOT("bounds:%f:%d:%d\r\n", float(ms) / 1000, int(m), int(M));
-    if (H.count() < 200)
+    if (H.count() < 180)
         return false;
 
+    // ???
     if (d < float(m) * (5.0 / 100)) {
         H.print();
         return false;
