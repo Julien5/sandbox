@@ -30,19 +30,6 @@ void print_bin(const tickscounter::bin &b) {
 }
 
 bool compteur::update() {
-#ifdef NODEF
-    const auto t = common::time::since_reset();
-    if (t % 100 == 0 && counter.bin_count() > 2) {
-        const auto bin0 = counter.getbin(0);
-        const auto bin2 = counter.getbin(counter.bin_count() - 2);
-        const auto bin1 = counter.getbin(counter.bin_count() - 1);
-        const auto time_total = bin1.end() - bin0.m_start;
-        DBG("seconds:%3d total:%2d count:%2d power:%2.3fkW  current-power:%2.3fkW\n",
-            t / 1000, counter.total(), counter.bin_count(),
-            kW(counter.total() - 1, time_total),
-            kW(bin1.m_count + bin2.m_count - 1, bin1.end() - bin2.m_start));
-    }
-#endif
     if (m_detection.tick()) {
         counter.tick();
         return true;
@@ -51,8 +38,8 @@ bool compteur::update() {
 }
 
 void compteur::print() {
-    DBG("time:%4d sec total:%d\r\n", int(common::time::since_reset().value() / 1000), int(counter.total()));
     counter.print();
+    DBG("counter:%4f:total:%d\r\n", float(common::time::since_reset().value()) / 1000, int(counter.total()));
 }
 
 const u8 *compteur::data(size_t *L) const {

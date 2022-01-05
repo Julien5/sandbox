@@ -10,6 +10,8 @@
 
 #include <thread>
 
+#include "parameters.h"
+
 int tests() {
     DBG("sizeof compteur:%d\n", int(sizeof(compteur)));
     if (Detection::test() != 0)
@@ -27,6 +29,7 @@ int tests() {
 
 int main(int argc, char **argv) {
     //return tests();
+    parameters::set(argc, argv);
     application::setup();
     std::thread serial_thread(transmitter::run);
     while (1) {

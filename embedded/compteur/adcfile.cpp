@@ -4,6 +4,9 @@
 #include <cassert>
 #include "common/debug.h"
 #include <fstream>
+
+#include "parameters.h"
+
 namespace {
     std::string read_file(const std::string &fileName) {
         std::ifstream ifs(fileName.c_str(), std::ios::in | std::ios::ate);
@@ -44,7 +47,11 @@ adcfile *adcfile::instance() {
 }
 
 adcfile::adcfile() {
-    m_lines = lines(read_file("simulation/data/test-05/output.adc"));
+    std::string filename = "simulation/data/test-05/output.adc";
+    if (!parameters::get().empty()) {
+        filename = parameters::get().at(0);
+    }
+    m_lines = lines(read_file(filename));
 }
 
 void adcfile::setT(const int &T) {

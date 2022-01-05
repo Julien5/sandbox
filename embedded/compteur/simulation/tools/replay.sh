@@ -4,12 +4,14 @@ set -e
 #set -x
 
 DIR=/tmp/replay
+ADCFILE="$1"
 mkdir -p /tmp/replay
 
 if [[ ! -f $DIR/out || "$1" = "build" ]]; then
 	find $DIR/ -type f -delete -print
 	echo regenerate $DIR/out
-	/tmp/build_pc/compteur/compteur > $DIR/out
+	echo file: $ADCFILE
+	/tmp/build_pc/compteur/compteur $ADCFILE > $DIR/out
 fi
 
 function filter() {
