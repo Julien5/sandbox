@@ -71,11 +71,11 @@ bool Detection::tick() {
     if (!m_reader.tick(&value))
         return false;
     float delta = 0;
-    const float alpha = 0.95;
+    const float alpha = 0.98;
     if (xalpha < 0)
         xalpha = value;
     else {
-        delta = fabs(xalpha - value);
+        delta = xalpha - value;
         xalpha = alpha * xalpha + (1 - alpha) * value;
     }
     auto ms = int(common::time::since_reset().value());
@@ -90,7 +90,7 @@ bool Detection::tick() {
     m_last_adc_value[m_adc_index] = value;
     m_adc_index++;
 
-    const auto new_value = value < xalpha && delta > 70;
+    const auto new_value = value < xalpha && delta > 85;
     if (new_value == m_last_value)
         return false;
     m_last_value = new_value;

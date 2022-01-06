@@ -3,9 +3,9 @@
 set -e
 #set -x
 
-DIR=/tmp/replay
+DIR=/tmp/replay/
 ADCFILE="$1"
-mkdir -p /tmp/replay
+mkdir -p $DIR
 
 if [[ ! -f $DIR/out || "$1" = "build" ]]; then
 	find $DIR/ -type f -delete -print
@@ -26,4 +26,5 @@ done
 gnuplot ./simulation/tools/replay.gnuplot
 killall feh || true
 feh -g +50+100 replay.png &
-
+echo -n found:" " 
+cat $DIR/out | tr -d "\r" | grep counter | grep total | tail -1 | cut -f7 -d":"
