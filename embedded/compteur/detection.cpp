@@ -81,26 +81,6 @@ bool Detection::tick() {
     auto ms = int(common::time::since_reset().value());
     PLOT("values:%f:%d:%f\r\n", float(ms) / 1000, int(value), xalpha);
     PLOT("delta:%f:%f\r\n", float(ms) / 1000, delta);
-    if (far_outside(H, value))
-        H.reset();
-    H.update(value);
-
-    u16 TL2 = 0, TH2 = 0;
-    auto iscalibrated = calibrated(H, &TL2, &TH2);
-    if (iscalibrated) {
-        //DBG("update: TL:[%d->%d] TH:[%d->%d]\r\n", TL, TL2, TH, TH2);
-        PLOT("update:%f:%d:%d:%d\r\n", float(ms) / 1000, TL2, TH2, H.count());
-        m_calibration.TL = TL2;
-        m_calibration.TH = TH2;
-        m_calibration.m = H.minimum();
-        m_calibration.M = H.maximum();
-    }
-    auto &TL = m_calibration.TL;
-    auto &TH = m_calibration.TH;
-
-    assert(TL <= TH);
-
-    PLOT("count:%f:%d:%d:%d\r\n", float(ms) / 1000, int(H.minimum()), int(H.maximum()), H.count());
 
     constexpr auto size_adc = sizeof(m_last_adc_value) / sizeof(m_last_adc_value[0]);
     if (m_adc_index >= size_adc) {
@@ -110,24 +90,14 @@ bool Detection::tick() {
     m_last_adc_value[m_adc_index] = value;
     m_adc_index++;
 
-    if (TL == TH) {
-        DBG("ERR:not calibrated (count=%d)\r\n", H.count());
-        return false;
-    }
-    DBG("TL=[%3d] TH=[%3d]\r\n", TL, TH);
-    // is the value classificable ?
-    if (TL < value && value < TH) {
-        DBG("ERR out of range TL=[%3d] value=%d TH=[%3d]\r\n", TL, int(value), TH);
-        return false;
-    }
-    const auto new_value = value >= TH;
+    const auto new_value = value < xalpha && delta > 70;
     if (new_value == m_last_value)
         return false;
     m_last_value = new_value;
     if (new_value == 0) {
         return false;
     }
-    PLOT("ticks:%f:%d:%d\r\n", float(ms) / 1000, TL, TH);
+    PLOT("ticks:%f:%d\r\n", float(ms) / 1000, value);
     return true;
 }
 
@@ -136,7 +106,7 @@ const u8 *Detection::histogram_data(usize *L) const {
     DBG("m_adc_index:%d size:%d\r\n", m_adc_index, int(size_adc));
     if (m_adc_index < size_adc)
         return 0;
-    return (u8 *)H.get_packed(L);
+    return 0;
 }
 
 const u8 *Detection::adc_data(usize *L) const {
