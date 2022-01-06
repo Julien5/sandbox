@@ -71,7 +71,7 @@ bool Detection::tick() {
     if (!m_reader.tick(&value))
         return false;
     float delta = 0;
-    const float alpha = 0.98;
+    const float alpha = 0.9875;
     if (xalpha < 0)
         xalpha = value;
     else {

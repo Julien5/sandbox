@@ -145,6 +145,11 @@
   "file": "/home/julien/projects/sandbox/embedded/compteur/main_pc.cpp"
 },
 {
+  "directory": "/tmp/build_pc/compteur",
+  "command": "/usr/bin/g++  -DPC=1 -I/home/julien/projects/sandbox/embedded/common/include  -g   -o CMakeFiles/compteur.dir/parameters_pc.cpp.obj -c /home/julien/projects/sandbox/embedded/compteur/parameters_pc.cpp",
+  "file": "/home/julien/projects/sandbox/embedded/compteur/parameters_pc.cpp"
+},
+{
   "directory": "/tmp/build_pc/wifi-transmitter",
   "command": "/usr/bin/g++  -DNOMAIN -DPC=1 -I/home/julien/projects/sandbox/embedded/common/include  -g   -o CMakeFiles/wifi-transmitter.dir/application.cpp.obj -c /home/julien/projects/sandbox/embedded/wifi-transmitter/application.cpp",
   "file": "/home/julien/projects/sandbox/embedded/wifi-transmitter/application.cpp"
