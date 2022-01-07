@@ -1,8 +1,18 @@
-set terminal pngcairo size 800,800 enhanced 
-set output 'datafile.png'
-set view map # scale 1
-set style data lines
-#set palette rgbformulae 30,-31,32
-#set pm3d interpolate 2,2
-set zrange [0:0.3]
-splot 'histogram.dat' using 1:2:3 with pm3d
+set terminal pngcairo size 1800,600 enhanced font 'Courier,10'
+set output 'histogram.png'
+
+set lmargin at screen 0.0
+set rmargin at screen 1
+
+unset key
+set tic scale 0
+
+# Color runs from white to green
+#set palette rgbformula -7,2,-7
+set cbrange [0:0.5]
+unset cbtics
+unset yrange
+unset colorbox
+
+set view map
+splot '/tmp/histogram.dat' matrix with image

@@ -6,7 +6,6 @@
 #include "common/stringawaiter.h"
 #include "common/debug.h"
 #include "compteur.h"
-#include "histogram.h"
 
 #include <thread>
 
@@ -15,8 +14,6 @@
 int tests() {
     DBG("sizeof compteur:%d\n", int(sizeof(compteur)));
     if (Detection::test() != 0)
-        return 1;
-    if (histogram::Histogram::test() != 0)
         return 1;
     if (!tickscounter::test())
         return 1;

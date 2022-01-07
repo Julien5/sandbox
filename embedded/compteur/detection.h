@@ -1,13 +1,14 @@
 #pragma once
 
 #include "intermittentread.h"
-#include "histogram.h"
 
 class Detection {
     IntermittentRead m_reader;
     bool m_last_value = 1;
     u16 m_last_adc_value[64] = {0};
     u8 m_adc_index = 0;
+    float xalpha = -1;
+    float variance_delta = 0;
 
   public:
     Detection();

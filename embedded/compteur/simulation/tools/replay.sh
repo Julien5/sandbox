@@ -20,7 +20,7 @@ function filter() {
 	cat $DIR/out | cut -f4- -d":" | grep -v "^$" | grep $MARKER |cut -f3- -d":" | tr ":" " " > $DIR/$MARKER
 }
 
-for a in values ticks update bounds features delta; do
+for a in values ticks delta variance; do
 	filter $a
 done
 gnuplot ./simulation/tools/replay.gnuplot

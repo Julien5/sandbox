@@ -5,7 +5,6 @@ target_sources(compteur PRIVATE
   application.cpp
   compteur.cpp
   detection.cpp
-  histogram.cpp
   intermittentread.cpp
   status.cpp
   transient.cpp
