@@ -15,7 +15,7 @@ namespace common {
             explicit ms(const us &value);
             operator us() const;
             u64 value() const;
-            void add(const ms &other);
+            ms &add(const ms &other);
             ms since(const ms &older) const;
         };
 
@@ -28,7 +28,7 @@ namespace common {
             explicit us(const ms &value);
             operator ms() const;
             u64 value() const;
-            void add(const us &other);
+            us &add(const us &other);
             us since(const us &older) const;
         };
 
@@ -40,6 +40,8 @@ namespace common {
         ms elapsed_since(const ms &t0);
         us elapsed_since(const us ot0);
 
+        //! called by deep_sleep (sleep.cpp)
+        void add_time_slept(const ms &delay);
         void delay(const ms &delay);
 
         void simulate(const us &delay);

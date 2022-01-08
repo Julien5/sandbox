@@ -18,8 +18,9 @@ common::time::ms::operator us() const {
 u64 common::time::ms::value() const {
     return m_value;
 }
-void common::time::ms::add(const ms &other) {
+common::time::ms &common::time::ms::add(const ms &other) {
     m_value += other.value();
+    return *this;
 }
 
 common::time::ms common::time::ms::since(const ms &older) const {
@@ -35,8 +36,9 @@ common::time::us::operator ms() const {
 u64 common::time::us::value() const {
     return m_value;
 }
-void common::time::us::add(const us &other) {
+common::time::us &common::time::us::add(const us &other) {
     m_value += other.value();
+    return *this;
 }
 common::time::us common::time::us::since(const us &older) const {
     return us(value() - older.value());
@@ -68,15 +70,22 @@ void common::time::delay(const ms &delay) {
 void common::time::simulate(const us &delay) {
     test_t.add(delay);
 }
+void common::time::add_time_slept(const ms &delay) {
+    assert(0);
+}
 #endif
 
 #if defined(ARDUINO)
+common::time::ms time_slept;
+void common::time::add_time_slept(const ms &delay) {
+    time_slept.add(delay);
+}
 #include "Arduino.h"
 common::time::ms common::time::since_reset() {
-    return ms(millis());
+    return ms(millis()).add(time_slept);
 }
 common::time::us common::time::since_reset_us() {
-    return us(micros());
+    return us(micros()).add(time_slept);
 }
 void common::time::delay(const ms &delay) {
     return ::delay(delay.value());
@@ -99,5 +108,8 @@ common::time::us common::time::since_reset_us() {
 #include "task.h"
 void common::time::delay(const ms &delay) {
     vTaskDelay(delay.value() / portTICK_PERIOD_MS);
+}
+void common::time::add_time_slept(ms &delay) {
+    assert(0);
 }
 #endif
