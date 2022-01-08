@@ -50,6 +50,17 @@ tickscounter::bin::count compteur::total() {
     return counter.total();
 }
 
+int compteur::current_rpm() {
+    const auto N = counter.total();
+    const auto ms = common::time::since_reset();
+    float minutes = float(ms.value()) / (1000 * 60);
+    return N / minutes;
+}
+
+bool compteur::is_full() const {
+    return counter.is_full();
+}
+
 int compteur::test() {
     compteur U;
     while (true) {

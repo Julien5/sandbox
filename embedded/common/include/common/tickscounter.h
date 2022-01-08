@@ -66,6 +66,7 @@ namespace tickscounter {
         void clean();
         void print() const;
         bool is_clean() const;
+        bool is_full() const;
         bin::count total();
         bool empty() const;
         Clock::ms last_tick_time();

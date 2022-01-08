@@ -47,6 +47,7 @@ int exe(const std::string &method, const char *req, wifi::callback *cb, const u8
     auto code = errno;
     cb->status(code);
     if (!f) {
+        DBG("failed to find: %s code:%d\n", kDataFile, int(code));
         assert(code != 0);
         return code;
     }

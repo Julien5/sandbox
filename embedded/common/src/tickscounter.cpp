@@ -200,6 +200,13 @@ bool counter::is_clean() const {
     return true;
 }
 
+bool counter::is_full() const {
+    for (int l = NTICKS - 1; l > 0; --l)
+        if (!m_packed.m_bins[l].empty())
+            return false;
+    return true;
+}
+
 void counter::denoise() {
     for (int k = 0; k < NTICKS; ++k) {
         if (noise_at_index(m_packed.m_bins, k, m_config.kSecondsUntilAloneTick, m_config.kMinAloneTicks)) {
