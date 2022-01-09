@@ -23,9 +23,10 @@ bool serial::read_until(u8 *addr, const size_t &L, const u16 &timeout) {
     while ((addr - addr0) != int(L)) {
         const auto Lwanted = L - (addr - addr0);
         const auto Lread = read(addr, Lwanted, timeout);
-        //DBG("L:%d\r\n", int(L));
-        if (Lread <= 0) // timeout
+        DBG("L:%d\r\n", int(L));
+        if (Lread <= 0) { // timeout
             return false;
+        }
         addr += Lread;
     }
     return true;
@@ -38,17 +39,15 @@ bool serial::wait_for_begin(const common::time::ms &timeout) {
     while (begin != kBegin) {
         auto t1 = time::since_reset();
         if (t1.since(t0) > timeout) {
-            //     TRACE();
+            assert(0);
             return false;
         }
         bool ok = read_until(&begin, sizeof(begin), timeout.value() / 10);
         if (!ok) {
-            //TRACE();
             return false;
         }
         //DBG("begin:%d kBegin:%d\r\n", begin, kBegin);
     }
-    TRACE();
     return true;
 }
 

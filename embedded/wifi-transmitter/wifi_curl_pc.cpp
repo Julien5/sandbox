@@ -81,7 +81,6 @@ int exe(const std::string &method, const char *req, wifi::callback *cb, const u8
         while (remain(buffer_size, pos) > 0) {
             size_t size_copy = xMin(sizeof(buf), remain(buffer_size, pos));
             memcpy(buf, buffer + pos, size_copy);
-            TRACE();
             cb->data((u8 *)buf, size_copy);
             pos += size_copy;
         }

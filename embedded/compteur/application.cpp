@@ -29,15 +29,24 @@ void application::setup() {
 }
 
 class callback : public wifi::callback {
+    int missing_bytes = -1;
     void status(u8 s) {
         DBG("status:%d\r\n", int(s));
         assert(s == 0);
     }
     void data_length(u16 total_length) {
         DBG("data_length:%d\r\n", int(total_length));
+        missing_bytes = total_length;
     }
     void data(u8 *data, size_t length) {
-        DBG("data:%p length:%d\r\n", data, int(length));
+        DBG("receiving data at %p with length:%d\r\n", data, int(length));
+        missing_bytes -= length;
+        DBG("missing bytes:%d\r\n", missing_bytes);
+    }
+
+  public:
+    bool done() const {
+        return missing_bytes == 0;
     }
 };
 
@@ -47,6 +56,11 @@ void transmit() {
     auto data = C->data(&L);
     TRACE();
     W->post("https://httpbin.org/post", data, L, &cb);
+    while (!cb.done()) {
+        TRACE();
+        using namespace std::chrono_literals;
+        std::this_thread::sleep_for(1000ms);
+    }
 }
 
 bool need_transmit() {
