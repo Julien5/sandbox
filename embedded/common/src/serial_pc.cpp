@@ -14,7 +14,7 @@ struct serial_buffer {
     std::condition_variable cond_var;
 
   public:
-    i16 read(u8 *buffer, size_t buffer_size, u16 timeout) {
+    size_t read(u8 *buffer, size_t buffer_size, u16 timeout) {
         std::unique_lock<std::mutex> lock(mtx);
         if (data.empty()) {
             cond_var.wait_for(lock, std::chrono::milliseconds(timeout));

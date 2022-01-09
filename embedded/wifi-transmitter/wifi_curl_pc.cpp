@@ -71,6 +71,7 @@ int exe(const std::string &method, const char *req, wifi::callback *cb, const u8
     }
     fclose(f);
 
+    TRACE();
     cb->data_length(buffer_size);
 
     // send chunk-wise so that arduino read buffer does not overflow.
@@ -80,6 +81,7 @@ int exe(const std::string &method, const char *req, wifi::callback *cb, const u8
         while (remain(buffer_size, pos) > 0) {
             size_t size_copy = xMin(sizeof(buf), remain(buffer_size, pos));
             memcpy(buf, buffer + pos, size_copy);
+            TRACE();
             cb->data((u8 *)buf, size_copy);
             pos += size_copy;
         }
@@ -87,6 +89,7 @@ int exe(const std::string &method, const char *req, wifi::callback *cb, const u8
     //std::remove(kDataFile);
     if (data && Ldata)
         std::remove("data.bin");
+    TRACE();
     return 0;
 }
 

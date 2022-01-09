@@ -17,6 +17,7 @@ namespace common {
             u64 value() const;
             ms &add(const ms &other);
             ms since(const ms &older) const;
+            bool operator>(const ms &other) const;
         };
 
         class us {

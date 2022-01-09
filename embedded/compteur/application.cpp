@@ -45,7 +45,7 @@ void transmit() {
     callback cb;
     size_t L = 0;
     auto data = C->data(&L);
-    W->post("request", data, L, &cb);
+    W->post("https://httpbin.org/post", data, L, &cb);
 }
 
 bool need_transmit() {

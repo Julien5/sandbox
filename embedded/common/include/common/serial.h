@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/rusttypes.h"
+#include "common/time.h"
 
 namespace common {
     class serial {
@@ -18,7 +19,7 @@ namespace common {
         // loops until L bytes are read.
         // timeout is passed to read() in the loop.
         bool read_until(u8 *addr, const usize &L, const u16 &timeout);
-        bool wait_for_begin(const u16 &timeout);
+        bool wait_for_begin(const common::time::ms &timeout);
         bool check_end();
     };
 }

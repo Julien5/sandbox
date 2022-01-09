@@ -14,31 +14,36 @@
 #include <cassert>
 #include <stdio.h>
 #include <mutex>
+#include <thread>
+#include <map>
+
+#include <string.h>
+#define __BASENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 
 static std::mutex stdout_mtx;
-
-#define DBG(...)                                                \
-    do {                                                        \
-        std::unique_lock<std::mutex> lock(stdout_mtx);          \
-        printf("%s:%s:%d: ", __FILE__, __FUNCTION__, __LINE__); \
-        printf(__VA_ARGS__);                                    \
-        fflush(stdout);                                         \
+int thread_index();
+#define DBG(...)                                                                           \
+    do {                                                                                   \
+        std::unique_lock<std::mutex> lock(stdout_mtx);                                     \
+        printf("%s:%d:%s():[%d]: ", __BASENAME__, __LINE__, __FUNCTION__, thread_index()); \
+        printf(__VA_ARGS__);                                                               \
+        fflush(stdout);                                                                    \
     } while (0)
 //#define PLOT(...) ((void)0)
 
-#define PLOT(...)                                                       \
-    do {                                                                \
-        std::unique_lock<std::mutex> lock(stdout_mtx);                  \
-        printf("%s:%s:%d: gnuplot:", __FILE__, __FUNCTION__, __LINE__); \
-        printf(__VA_ARGS__);                                            \
-        fflush(stdout);                                                 \
+#define PLOT(...)                                                           \
+    do {                                                                    \
+        std::unique_lock<std::mutex> lock(stdout_mtx);                      \
+        printf("%s:%s:%d: gnuplot:", __BASENAME__, __FUNCTION__, __LINE__); \
+        printf(__VA_ARGS__);                                                \
+        fflush(stdout);                                                     \
     } while (0)
 
-#define TRACE()                                                       \
-    do {                                                              \
-        std::unique_lock<std::mutex> lock(stdout_mtx);                \
-        printf("%s:%s:%d TRACE\n", __FILE__, __FUNCTION__, __LINE__); \
-        fflush(stdout);                                               \
+#define TRACE()                                                           \
+    do {                                                                  \
+        std::unique_lock<std::mutex> lock(stdout_mtx);                    \
+        printf("%s:%s:%d TRACE\n", __BASENAME__, __FUNCTION__, __LINE__); \
+        fflush(stdout);                                                   \
     } while (0)
 
 #elif defined(ARDUINO)

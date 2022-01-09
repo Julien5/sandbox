@@ -31,17 +31,17 @@ bool serial::read_until(u8 *addr, const size_t &L, const u16 &timeout) {
     return true;
 }
 
-bool serial::wait_for_begin(const u16 &timeout) {
+bool serial::wait_for_begin(const common::time::ms &timeout) {
     rx_crc8 = 0x00;
     u8 begin = 0;
     auto t0 = time::since_reset();
     while (begin != kBegin) {
         auto t1 = time::since_reset();
-        if (t1.since(t0).value() > timeout) {
+        if (t1.since(t0) > timeout) {
             //     TRACE();
             return false;
         }
-        bool ok = read_until(&begin, sizeof(begin), timeout / 10);
+        bool ok = read_until(&begin, sizeof(begin), timeout.value() / 10);
         if (!ok) {
             //TRACE();
             return false;

@@ -21,7 +21,7 @@ namespace wifi {
     int read_wifi_response(common::serial *S, callback *r) {
         bool ok = false;
         // at this point, the request has been read, which is fast
-        if (!S->wait_for_begin(100))
+        if (!S->wait_for_begin(common::time::ms(100)))
             return 1;
 
         // at this point, 3 things happen on the peer:
@@ -89,7 +89,7 @@ namespace wifi {
         const char command = 'P';
         //                G   http......    0 + Ldata         + data...
         const u16 Ltotal = 1 + strlen(url) + 1 + sizeof(Ldata) + Ldata;
-        TRACE();
+        DBG("url:%s\r\n", url);
         S->begin();
         S->write((u8 *)&Ltotal, sizeof(Ltotal));
         S->write((u8 *)&command, sizeof(command));
@@ -99,6 +99,7 @@ namespace wifi {
         S->end();
         TRACE();
         int ret = read_wifi_response(S.get(), r);
+        TRACE();
         return ret;
     }
 }

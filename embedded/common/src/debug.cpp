@@ -9,6 +9,16 @@ void debug::turnBuildinLED(bool on) {
 int debug::freeMemory() {
     return 0;
 }
+int thread_index() {
+    const std::thread::id id = std::this_thread::get_id();
+    static std::size_t nextindex = 0;
+    static std::mutex my_mutex;
+    static std::map<std::thread::id, std::size_t> ids;
+    std::lock_guard<std::mutex> lock(my_mutex);
+    if (ids.find(id) == ids.end())
+        ids[id] = nextindex++;
+    return ids[id];
+}
 #endif
 
 #ifdef ESP8266

@@ -27,6 +27,10 @@ common::time::ms common::time::ms::since(const ms &older) const {
     return ms(value() - older.value());
 }
 
+bool common::time::ms::operator>(const ms &other) const {
+    return value() > other.value();
+}
+
 common::time::us::us() : m_value(0) {}
 common::time::us::us(u64 v) : m_value(v){};
 common::time::us::us(const ms &v) : m_value(1000 * v.value()){};

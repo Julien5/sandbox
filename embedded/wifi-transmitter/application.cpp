@@ -37,10 +37,9 @@ class serial_callback : public wifi::callback {
         : output(_s){};
     void status(u8 s) {
         DBG("(1) forwarding status %d \n", int(s));
-        common::time::delay(common::time::ms(2500));
-        DBG("(2) forwarding status ... \n");
         auto ret = output->write(&s, sizeof(s));
-        DBG("(3) forwarding status ret:%d \n", int(ret));
+        assert(ret == sizeof(s));
+        DBG("(2) forwarding status ret:%d \n", int(ret));
         //common::time::delay(250);
     }
     void data_length(u16 total_length) {
@@ -65,8 +64,9 @@ void transmitter::loop_serial() {
 
     debug::turnBuildinLED(true);
     TRACE();
-    while (!S->wait_for_begin(1000))
+    while (!S->wait_for_begin(common::time::ms(1000))) {
         TRACE();
+    }
 
     bool ok = false;
     received::message m;
