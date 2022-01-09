@@ -39,11 +39,11 @@ int thread_index();
         fflush(stdout);                                                     \
     } while (0)
 
-#define TRACE()                                                           \
-    do {                                                                  \
-        std::unique_lock<std::mutex> lock(stdout_mtx);                    \
-        printf("%s:%s:%d TRACE\n", __BASENAME__, __FUNCTION__, __LINE__); \
-        fflush(stdout);                                                   \
+#define TRACE()                                                                                     \
+    do {                                                                                            \
+        std::unique_lock<std::mutex> lock(stdout_mtx);                                              \
+        printf("%s:%d:%s():[%d]: TRACE\r\n", __BASENAME__, __LINE__, __FUNCTION__, thread_index()); \
+        fflush(stdout);                                                                             \
     } while (0)
 
 #elif defined(ARDUINO)

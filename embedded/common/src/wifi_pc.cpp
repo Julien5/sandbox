@@ -55,7 +55,6 @@ namespace wifi {
         while (nread < size) {
             u8 buffer[BLOCK_LENGTH];
             const size_t L = xMin(sizeof(buffer), size - nread);
-            DBG("L:%d\r\n", int(L));
             auto ok = S->read_until(buffer, L, 100);
             if (!ok) {
                 DBG("nread:%d\r\n", int(nread));

@@ -14,7 +14,8 @@ struct serial_buffer {
     std::condition_variable cond_var;
 
   public:
-    size_t read(u8 *buffer, size_t buffer_size, u16 timeout) {
+    // i16, because -1 on error.
+    i16 read(u8 *buffer, size_t buffer_size, u16 timeout) {
         std::unique_lock<std::mutex> lock(mtx);
         if (data.empty()) {
             cond_var.wait_for(lock, std::chrono::milliseconds(timeout));
@@ -75,6 +76,7 @@ usize common::serial::read(u8 *buffer, usize buffer_size, u16 timeout) {
     if (Lread < 0) {
         return Lread;
     }
+    DBG("Lread:%d\r\n,", int(Lread));
     crc::CRC8(&rx_crc8, buffer, Lread);
     return Lread;
 }

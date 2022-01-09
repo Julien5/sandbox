@@ -45,6 +45,7 @@ void transmit() {
     callback cb;
     size_t L = 0;
     auto data = C->data(&L);
+    TRACE();
     W->post("https://httpbin.org/post", data, L, &cb);
 }
 
