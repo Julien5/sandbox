@@ -22,12 +22,12 @@
 
 static std::mutex stdout_mtx;
 int thread_index();
-#define DBG(...)                                                                           \
-    do {                                                                                   \
-        std::unique_lock<std::mutex> lock(stdout_mtx);                                     \
-        printf("%s:%d:%s():[%d]: ", __BASENAME__, __LINE__, __FUNCTION__, thread_index()); \
-        printf(__VA_ARGS__);                                                               \
-        fflush(stdout);                                                                    \
+#define DBG(...)                                                                                           \
+    do {                                                                                                   \
+        std::unique_lock<std::mutex> lock(stdout_mtx);                                                     \
+        printf("[%d] %s:%d:%s(): ", thread_index(), __BASENAME__, __LINE__, __FUNCTION__, thread_index()); \
+        printf(__VA_ARGS__);                                                                               \
+        fflush(stdout);                                                                                    \
     } while (0)
 //#define PLOT(...) ((void)0)
 
@@ -42,7 +42,7 @@ int thread_index();
 #define TRACE()                                                                                     \
     do {                                                                                            \
         std::unique_lock<std::mutex> lock(stdout_mtx);                                              \
-        printf("%s:%d:%s():[%d]: TRACE\r\n", __BASENAME__, __LINE__, __FUNCTION__, thread_index()); \
+        printf("[%d] %s:%d:%s(): TRACE\r\n", thread_index(), __BASENAME__, __LINE__, __FUNCTION__); \
         fflush(stdout);                                                                             \
     } while (0)
 

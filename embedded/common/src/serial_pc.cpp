@@ -16,6 +16,7 @@ struct serial_buffer {
   public:
     usize read(u8 *buffer, size_t buffer_size, u16 timeout) {
         std::unique_lock<std::mutex> lock(mtx);
+        DBG("reading from buffer %p, data %p.\r\n", this, &data);
         if (data.empty()) {
             cond_var.wait_for(lock, std::chrono::milliseconds(timeout));
         }
@@ -33,7 +34,7 @@ struct serial_buffer {
         const std::unique_lock<std::mutex> lock(mtx);
         for (size_t i = 0; i < buffer_size; ++i)
             data.push_back(buffer[i]);
-        DBG("buffer size: %d\r\n", int(data.size()));
+        DBG("buffer size: %d in %p\r\n", int(data.size()), &data);
         cond_var.notify_one();
         return buffer_size;
     }

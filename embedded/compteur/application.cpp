@@ -56,11 +56,6 @@ void transmit() {
     auto data = C->data(&L);
     TRACE();
     W->post("https://httpbin.org/post", data, L, &cb);
-    while (!cb.done()) {
-        TRACE();
-        using namespace std::chrono_literals;
-        std::this_thread::sleep_for(1000ms);
-    }
 }
 
 bool need_transmit() {
