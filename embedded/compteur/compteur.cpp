@@ -50,15 +50,22 @@ tickscounter::bin::count compteur::total() {
     return counter.total();
 }
 
-int compteur::current_rpm() {
+float compteur::current_rpm() {
     const auto N = counter.total();
-    const auto ms = common::time::since_reset();
-    float minutes = float(ms.value()) / (1000 * 60);
-    return N / minutes;
+    if (N < 2)
+        return 0;
+    const auto ms0 = common::time::ms(counter.getbin(0).m_start);
+    const auto ms1 = common::time::ms(counter.last_tick_time());
+    float minutes = float(ms1.since(ms0).value()) / (1000 * 60);
+    return float(N) / minutes;
 }
 
 bool compteur::is_full() const {
     return counter.is_full();
+}
+
+void compteur::clear() {
+    counter.reset();
 }
 
 int compteur::test() {
