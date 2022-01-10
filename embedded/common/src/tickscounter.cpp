@@ -229,9 +229,7 @@ void counter::remove_holes() {
     }
 }
 
-Clock::ms
-counter::last_tick_time() {
-    clean();
+Clock::ms counter::last_tick_time() {
     int k = 0;
     move_to_first_empty(m_packed.m_bins, &k);
     k--;
@@ -240,8 +238,7 @@ counter::last_tick_time() {
     return 0;
 }
 
-Clock::ms
-counter::age() {
+Clock::ms counter::age() {
     if (empty())
         return numeric_max<Clock::ms>();
     const Clock::ms now = Clock::millis_since_start();
@@ -266,9 +263,7 @@ bool counter::empty() const {
     return m_packed.m_bins[0].empty();
 }
 
-bin::count
-counter::total() {
-    clean();
+bin::count counter::total() {
     bin::count ret = 0;
     for (int k = 0; k < NTICKS; ++k)
         ret += m_packed.m_bins[k].m_count;

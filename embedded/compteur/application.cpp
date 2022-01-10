@@ -49,7 +49,6 @@ class callback : public wifi::callback {
 };
 
 void transmit() {
-    return;
     TRACE();
     using namespace std::chrono_literals;
     std::this_thread::sleep_for(1000ms);
