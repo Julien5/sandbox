@@ -22,12 +22,12 @@
 
 static std::mutex stdout_mtx;
 int thread_index();
-#define DBG(...)                                                                                           \
-    do {                                                                                                   \
-        std::unique_lock<std::mutex> lock(stdout_mtx);                                                     \
-        printf("[%d] %s:%d:%s(): ", thread_index(), __BASENAME__, __LINE__, __FUNCTION__, thread_index()); \
-        printf(__VA_ARGS__);                                                                               \
-        fflush(stdout);                                                                                    \
+#define DBG(...)                                                                           \
+    do {                                                                                   \
+        std::unique_lock<std::mutex> lock(stdout_mtx);                                     \
+        printf("[%d] %s:%d:%s(): ", thread_index(), __BASENAME__, __LINE__, __FUNCTION__); \
+        printf(__VA_ARGS__);                                                               \
+        fflush(stdout);                                                                    \
     } while (0)
 //#define PLOT(...) ((void)0)
 
