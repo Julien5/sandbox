@@ -201,10 +201,7 @@ bool counter::is_clean() const {
 }
 
 bool counter::is_full() const {
-    for (int l = NTICKS - 1; l > 0; --l)
-        if (!m_packed.m_bins[l].empty())
-            return false;
-    return true;
+    return !m_packed.m_bins[NTICKS - 1].empty();
 }
 
 void counter::denoise() {
