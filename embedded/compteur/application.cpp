@@ -39,9 +39,7 @@ class callback : public wifi::callback {
         missing_bytes = total_length;
     }
     void data(u8 *data, size_t length) {
-        DBG("receiving data at %p with length:%d\r\n", data, int(length));
         missing_bytes -= length;
-        DBG("missing bytes:%d\r\n", missing_bytes);
     }
 
   public:
@@ -51,21 +49,33 @@ class callback : public wifi::callback {
 };
 
 void transmit() {
+    return;
+    TRACE();
+    using namespace std::chrono_literals;
+    std::this_thread::sleep_for(1000ms);
+
+    return;
     callback cb;
     size_t L = 0;
     auto data = C->data(&L);
     TRACE();
     W->post("https://httpbin.org/post", data, L, &cb);
+    // todo: timeout
+    while (!cb.done()) {
+        TRACE();
+
+        std::this_thread::sleep_for(1000ms);
+    }
 }
 
 bool need_transmit() {
     // C full || diff(rpm) > .25
-    return true;
     if (C->is_full())
         return true;
-    if (fabs(current_rpm - C->current_rpm()) > .25)
-        return true;
-    return false;
+    auto rpm = C->current_rpm();
+    if (rpm == 0)
+        return false;
+    return fabs(current_rpm - rpm) > .25;
 }
 
 void application::loop() {
@@ -74,6 +84,8 @@ void application::loop() {
     }
     if (need_transmit()) {
         transmit();
+        DBG("counter: :%3.1f -> %3.1f\r\n", float(current_rpm), float(C->current_rpm()));
+        current_rpm = C->current_rpm();
+        C->clear();
     }
-    current_rpm = C->current_rpm();
 }
