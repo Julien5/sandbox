@@ -21,7 +21,7 @@ namespace wifi {
     int read_wifi_response(common::serial *S, callback *r) {
         bool ok = false;
         // at this point, the request has been read, which is fast
-        if (!S->wait_for_begin(common::time::ms(1000)))
+        if (!S->wait_for_begin(common::time::ms(10000)))
             return 1;
 
         // at this point, 3 things happen on the peer:
