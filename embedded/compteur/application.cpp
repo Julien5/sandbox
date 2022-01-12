@@ -53,17 +53,15 @@ void transmit() {
     using namespace std::chrono_literals;
     std::this_thread::sleep_for(1000ms);
 
-    return;
     callback cb;
     size_t L = 0;
     auto data = C->data(&L);
     TRACE();
-    W->post("https://httpbin.org/post", data, L, &cb);
+    W->post("http://pi:8000/post", data, L, &cb);
     // todo: timeout
     while (!cb.done()) {
         TRACE();
-
-        std::this_thread::sleep_for(1000ms);
+        std::this_thread::sleep_for(100ms);
     }
 }
 
@@ -80,11 +78,12 @@ bool need_transmit() {
 void application::loop() {
     if (C->update()) {
         C->print();
-    }
-    if (need_transmit()) {
-        transmit();
-        DBG("counter: :%3.1f -> %3.1f\r\n", float(current_rpm), float(C->current_rpm()));
-        current_rpm = C->current_rpm();
-        C->clear();
+        if (need_transmit()) {
+            transmit();
+            DBG("counter: :%3.1f -> %3.1f\r\n",
+                float(current_rpm), float(C->current_rpm()));
+            current_rpm = C->current_rpm();
+            C->clear();
+        }
     }
 }
