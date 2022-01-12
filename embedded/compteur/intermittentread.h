@@ -7,7 +7,7 @@
 class IntermittentRead {
   public:
     static const int T0 = 2;
-    static const int T = 4;
+    static const int T = 5;
 
   private:
     size_t k = 0;
@@ -16,7 +16,6 @@ class IntermittentRead {
     u16 m_ambientlight = 0;
     std::unique_ptr<common::analog> m_analog;
     int value(const size_t k);
-    bool done() const;
     bool old() const;
     void reset();
     float average() const;

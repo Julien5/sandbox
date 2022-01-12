@@ -37,25 +37,25 @@ common::time::us IntermittentRead::micros_since_last_measure() const {
 }
 
 bool IntermittentRead::tick(u16 *value) {
-    if (k < sizeof(A) / sizeof(A[0])) {
+    // first adc measure is thrown away, dont use light to save energy
+    // last adc measure ambient light
+    // hopefully swithing the LED off just before the measure does
+    // not make the adc unstable
+    switchLED(0 < 0 && k < (T - 1));
+    if (k < T) {
         auto a = m_analog->read();
         A[k++] = a;
         last_measure_time = common::time::since_reset_us();
     }
-    switchLED(!done());
+
     if (old()) {
-        auto ambientlight = m_analog->read();
+        auto ambientlight = A[T - 1];
         *value = round(xMax(average() - ambientlight, 0.0f));
         reset();
-        assert(!done());
         switchLED(true);
         return true;
     }
     return false;
-}
-
-bool IntermittentRead::done() const {
-    return k == T;
 }
 
 bool IntermittentRead::old() const {
@@ -75,10 +75,10 @@ int IntermittentRead::value(const size_t k) {
 }
 
 float IntermittentRead::average() const {
-    float ret = 0;
-    const int N = (T - T0);
-    for (int t = T0; t < T; ++t) {
-        ret += float(A[t]) / N;
+    u16 ret = 0;
+    const int N = (T - 1) - T0;
+    for (int t = T0; t < T - 1; ++t) {
+        ret += A[t];
     }
-    return ret;
+    return float(ret) / N;
 }
