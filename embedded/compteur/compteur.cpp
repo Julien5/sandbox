@@ -1,6 +1,7 @@
 #include "compteur.h"
 #include "common/debug.h"
 #include "common/time.h"
+#include "common/sleep.h"
 
 tickscounter::counter_config config() {
     tickscounter::counter_config ret;
@@ -34,6 +35,8 @@ bool compteur::update() {
         counter.tick();
         return true;
     }
+    if (m_detection.may_sleep())
+        sleep().deep_sleep(common::time::ms(200));
     return false;
 }
 

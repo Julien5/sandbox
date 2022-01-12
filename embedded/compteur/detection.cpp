@@ -1,7 +1,6 @@
 #include "detection.h"
 #include "common/debug.h"
 #include "common/time.h"
-#include "status.h"
 #include <math.h>
 #include <string.h>
 
@@ -10,6 +9,10 @@ u16 bound(u16 T, u16 k) {
 }
 
 Detection::Detection() {
+}
+
+bool Detection::may_sleep() const {
+    return m_reader.done();
 }
 
 bool Detection::tick() {

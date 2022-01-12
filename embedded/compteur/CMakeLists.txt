@@ -6,8 +6,6 @@ target_sources(compteur PRIVATE
   compteur.cpp
   detection.cpp
   intermittentread.cpp
-  status.cpp
-  transient.cpp
   )
 
 if (ARDUINO)

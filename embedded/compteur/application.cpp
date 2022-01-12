@@ -1,16 +1,9 @@
 #include "application.h"
-#include "common/analog.h"
 #include "common/debug.h"
-#include "common/serial.h"
-#include "common/time.h"
 #include "common/wifi.h"
-#include "common/utils.h"
-#include "common/platform.h"
-#include "common/sleep.h"
 
 #include "application.h"
 #include "compteur.h"
-#include "status.h"
 #include "intermittentread.h"
 
 std::unique_ptr<wifi::wifi> W;
@@ -21,7 +14,6 @@ void application::setup() {
     debug::init_serial();
     DBG("sizeof(compteur):%d\r\n", int(sizeof(compteur)));
     DBG("sizeof(wifi::wifi):%d\r\n", int(sizeof(wifi::wifi)));
-    DBG("sizeof(common::serial):%d\r\n", int(sizeof(common::serial)));
     DBG("ok.%d\r\n", debug::freeMemory());
     C = std::unique_ptr<compteur>(new compteur);
     DBG("ok.%d\r\n", debug::freeMemory());
@@ -50,14 +42,21 @@ class callback : public wifi::callback {
 
 void transmit() {
     TRACE();
-    using namespace std::chrono_literals;
+
     callback cb;
     size_t L = 0;
     auto data = C->data(&L);
     W->post("http://pi:8000/post", data, L, &cb);
     // todo: timeout
+
     while (!cb.done()) {
+#ifdef PC
+        // we need "real" waiting (not simulated)
+        using namespace std::chrono_literals;
         std::this_thread::sleep_for(100ms);
+#else
+        common::time::delay(common::time::ms(100));
+#endif
     }
 }
 

@@ -24,4 +24,5 @@ class IntermittentRead {
   public:
     IntermittentRead();
     bool tick(u16 *value);
+    bool done() const;
 };

@@ -14,6 +14,7 @@ class Detection {
     Detection();
     // returns 1 if the adc just got high.
     bool tick();
+    bool may_sleep() const;
     const u8 *histogram_data(usize *L) const;
     const u8 *adc_data(usize *L = 0) const;
 #ifdef PC

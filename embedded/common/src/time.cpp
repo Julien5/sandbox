@@ -113,7 +113,7 @@ common::time::us common::time::since_reset_us() {
 void common::time::delay(const ms &delay) {
     vTaskDelay(delay.value() / portTICK_PERIOD_MS);
 }
-void common::time::add_time_slept(ms &delay) {
+void common::time::add_time_slept(const ms &delay) {
     assert(0);
 }
 #endif

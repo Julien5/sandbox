@@ -36,6 +36,10 @@ common::time::us IntermittentRead::micros_since_last_measure() const {
     return common::time::us(common::time::since_reset_us().value() - last_measure_time.value());
 }
 
+bool IntermittentRead::done() const {
+    return k >= T;
+}
+
 bool IntermittentRead::tick(u16 *value) {
     // first adc measure is thrown away, dont use light to save energy
     // last adc measure ambient light
