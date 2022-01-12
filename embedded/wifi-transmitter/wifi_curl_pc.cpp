@@ -71,7 +71,6 @@ int exe(const std::string &method, const char *req, wifi::callback *cb, const u8
     }
     fclose(f);
 
-    TRACE();
     cb->data_length(buffer_size);
 
     // send chunk-wise so that arduino read buffer does not overflow.

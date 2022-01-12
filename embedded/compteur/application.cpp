@@ -51,16 +51,12 @@ class callback : public wifi::callback {
 void transmit() {
     TRACE();
     using namespace std::chrono_literals;
-    std::this_thread::sleep_for(1000ms);
-
     callback cb;
     size_t L = 0;
     auto data = C->data(&L);
-    TRACE();
     W->post("http://pi:8000/post", data, L, &cb);
     // todo: timeout
     while (!cb.done()) {
-        TRACE();
         std::this_thread::sleep_for(100ms);
     }
 }
