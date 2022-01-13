@@ -279,12 +279,15 @@ void counter::tick_first_empty_bin() {
             return;
         }
     }
+    // found no empty
+    m_packed.m_bins[NTICKS - 1].tick();
 }
 
 void counter::tick() {
+    if (is_full())
+        compress();
     tick_first_empty_bin();
-    compress();
-    assert(m_packed.m_bins[NTICKS - 1].empty());
+    //assert(m_packed.m_bins[NTICKS - 1].empty());
 }
 
 bin counter::getbin(const int &k) const {
