@@ -47,10 +47,9 @@ adcfile *adcfile::instance() {
 }
 
 adcfile::adcfile() {
-    std::string filename = "simulation/data/test-05/output.adc";
-    if (!parameters::get().empty()) {
-        filename = parameters::get().at(0);
-    }
+    if (parameters::get().empty())
+        throw std::runtime_error("missing filename parameter");
+    auto filename = parameters::get().at(0);
     m_lines = lines(read_file(filename));
 }
 

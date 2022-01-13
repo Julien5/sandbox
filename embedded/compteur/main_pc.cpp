@@ -15,17 +15,19 @@ int tests() {
     DBG("sizeof compteur:%d\n", int(sizeof(compteur)));
     if (Detection::test() != 0)
         return 1;
-    if (!tickscounter::test())
-        return 1;
-    if (!common::StringAwaiter::test())
-        return 1;
-    if (!compteur::test())
-        return 1;
+    if (tickscounter::test() != 0)
+        return 2;
+    if (common::StringAwaiter::test() != 0)
+        return 3;
+    if (compteur::test() != 0)
+        return 4;
     return 0;
 }
 
 int main(int argc, char **argv) {
-    //return tests();
+    auto code = tests();
+    if (code != 0)
+        return code;
     parameters::set(argc, argv);
     application::setup();
     std::thread serial_thread(transmitter::run);

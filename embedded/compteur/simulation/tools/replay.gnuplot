@@ -8,7 +8,7 @@ set pointintervalbox 3
 set grid;
 
 #set yrange [70:100]
-#set xrange [0:150]
+set xrange [0:150]
 #set autoscale fix
 plot '/tmp/replay/values' using 1:2 title 'adc' with lines ls 1, \
      '/tmp/replay/values' using 1:3 title 'x_{\alpha}' with lines ls 2, \
