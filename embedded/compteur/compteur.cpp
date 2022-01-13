@@ -5,7 +5,7 @@
 
 tickscounter::counter_config config() {
     tickscounter::counter_config ret;
-    ret.kMinAloneTicks = 0;
+    ret.kMinAloneTicks = 0; // disable denoising
     ret.kSecondsUntilAloneTick = 3;
     return ret;
 }
