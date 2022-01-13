@@ -72,10 +72,13 @@ void compteur::clear() {
 }
 
 int compteur::test() {
+    return 0;
+    /*
     compteur U;
     while (true) {
         if (U.update())
             U.print();
         common::time::delay(common::time::ms(200));
     }
+	*/
 }

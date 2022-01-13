@@ -23,12 +23,14 @@ int tests() {
         return 4;
     return 0;
 }
-
+#include <cassert>
 int main(int argc, char **argv) {
-    auto code = tests();
-    if (code != 0)
-        return code;
     parameters::set(argc, argv);
+
+    if (!parameters::get().empty() && parameters::get().at(0) == "tests") {
+        return tests();
+    }
+
     application::setup();
     std::thread serial_thread(transmitter::run);
     while (1) {

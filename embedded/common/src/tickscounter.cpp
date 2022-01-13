@@ -207,6 +207,7 @@ bool counter::is_full() const {
 void counter::denoise() {
     for (int k = 0; k < NTICKS; ++k) {
         if (noise_at_index(m_packed.m_bins, k, m_config.kSecondsUntilAloneTick, m_config.kMinAloneTicks)) {
+            DBG("counter: remove %d at index %d\r\n", int(m_packed.m_bins[k].m_count), k);
             m_packed.m_bins[k].reset();
         }
     }
