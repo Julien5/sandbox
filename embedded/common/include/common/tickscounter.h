@@ -53,7 +53,8 @@ namespace tickscounter {
         packed m_packed;
         void tick_first_empty_bin();
         void compress();
-        int compress_index();
+        int compress_index() const;
+        int largest_duration_index() const;
         void denoise();
         void remove_holes();
 

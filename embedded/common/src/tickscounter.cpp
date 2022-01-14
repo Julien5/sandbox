@@ -122,7 +122,20 @@ void counter::reset() {
         m_packed.m_bins[k].reset();
 }
 
-int counter::compress_index() {
+int counter::largest_duration_index() const {
+    bin::duration dmax = 0;
+    int indx = -1;
+    for (int k = 0; k < NTICKS; ++k) {
+        const auto duration = m_packed.m_bins[k].m_duration;
+        if (duration > dmax || k == 0) {
+            dmax = duration;
+            indx = k;
+        }
+    }
+    return indx;
+}
+
+int counter::compress_index() const {
     bin::duration pmin = 0;
     int indx = -1;
     for (int k = 0; (k + 1) < NTICKS; ++k) {
@@ -284,8 +297,9 @@ void counter::tick_first_empty_bin() {
 }
 
 void counter::tick() {
-    if (is_full())
+    if (largest_duration_index() == (NTICKS - 1)) {
         compress();
+    }
     tick_first_empty_bin();
     //assert(m_packed.m_bins[NTICKS - 1].empty());
 }
