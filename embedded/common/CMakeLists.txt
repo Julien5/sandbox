@@ -14,7 +14,6 @@ target_sources(common PRIVATE
   src/tickscounter.cpp
   src/time.cpp
   src/utils.cpp
-  src/wifi_arduino.cpp
   )
 
 if (ARDUINO)
