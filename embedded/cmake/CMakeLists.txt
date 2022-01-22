@@ -15,28 +15,20 @@ function(add_avr_executable targetname)
 	  POST_BUILD
 	  COMMAND ${CMAKE_OBJCOPY} ARGS -O ihex "$<TARGET_FILE:${targetname}>" "$<TARGET_FILE:${targetname}>.hex"
 	  )
-	add_custom_target(flash-${targetname}
-	  avrdude -q -V -p atmega328p -C /etc/avrdude.conf 
-	  -D -c arduino -b ${ARDUINO_BAUD} -P ${ARDUINO_PORT}
-	  -U flash:w:"$<TARGET_FILE:${targetname}>.hex":i
-	  )
+	string(CONCAT cmd ${CMAKE_SOURCE_DIR} "/cmake/arduino/flash.sh")
+	add_custom_target(flash-${targetname} ${cmd} "$<TARGET_FILE:${targetname}>.hex")
   elseif (ESP8266)
 	string(CONCAT cmd ${CMAKE_SOURCE_DIR} "/cmake/esp8266/flash.sh")
-	add_custom_target(flash-${targetname}
-	  ${cmd} "$<TARGET_FILE:${targetname}>"
-	  )
+	add_custom_target(flash-${targetname} ${cmd} "$<TARGET_FILE:${targetname}>")
 	string(CONCAT cmd ${CMAKE_SOURCE_DIR} "/cmake/esp8266/monitor.sh")
-	add_custom_target(monitor-${targetname}
-	  ${cmd} "$<TARGET_FILE:${targetname}>"
-	  )
+	add_custom_target(monitor-${targetname} ${cmd} "$<TARGET_FILE:${targetname}>")
   endif()
 endfunction()
 
 if(TARGET monitor)
 else()
   if (ARDUINO)
-	add_custom_target(monitor
-	  screen -L ${ARDUINO_PORT} 9600
-	  )
+	string(CONCAT cmd ${CMAKE_SOURCE_DIR} "/cmake/arduino/monitor.sh")
+	add_custom_target(monitor ${cmd})
   endif()
 endif()

@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 
 set -e
-set -x
+# set -x
+
+SCRIPTDIR=$(realpath $(dirname $0))
+. $SCRIPTDIR/../catusb.sh
 
 if [[ -z "$IDF_PATH" ]]; then
 	echo IDF_PATH not defined
@@ -15,4 +18,6 @@ fi
 
 ELFFILE=$1
 
-$IDF_PATH/tools/idf_monitor.py --baud 74880 --port "/dev/ttyUSB0" $ELFFILE
+ESPPORT="/dev/$(catusb | grep -i FT232 | cut -f1 -d":")"
+echo using $ESPPORT
+$IDF_PATH/tools/idf_monitor.py --baud 74880 --port $ESPPORT $ELFFILE

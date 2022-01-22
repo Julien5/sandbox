@@ -20,7 +20,7 @@ if [[ ! -f $FILENAME ]]; then
 	echo cmaking core for esp8266
 	pushd $IDF_PATH/examples/get-started/hello_world
 	cmake -S $IDF_PATH/examples/get-started/hello_world -B $BUILDDIR
-	cp $SCRIPTDIR/sdkconfig.console_port1 .
+	cp $SCRIPTDIR/sdkconfig.console_port1 sdkconfig
 	echo generating core for esp8266 
 	make -j4 -C $BUILDDIR VERBOSE=1 &> $FILENAME
 	popd
