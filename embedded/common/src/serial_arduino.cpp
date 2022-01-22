@@ -10,14 +10,17 @@ AltSoftSerial SOFT_UART;
 #define RXCHANNEL Serial
 //#define RXCHANNEL SOFT_UART
 
+//#define TXCHANNEL Serial
+#define TXCHANNEL SOFT_UART
+
 /*
-Board	Transmit Pin	Receive Pin	Unusable PWM
-Teensy 3.5 / 3.6	21	20	22
-Teensy 3.0 / 3.1 / 3.2	21	20	22
-Teensy 2.0	9	10	(none)
-Teensy++ 2.0	25	4	26, 27
+Board                               Transmit Pin    Receive Pin  Unusable PWM
 Arduino Uno, Duemilanove,
-LilyPad, Mini (& other ATMEGA328)	9	8	10
+LilyPad, Mini (& other ATMEGA328)   9               8            10
+Teensy 3.5 / 3.6                    21              20           22
+Teensy 3.0 / 3.1 / 3.2              21              20           22
+Teensy 2.0                          9               10           (none)
+Teensy++ 2.0                        25              4            26, 27
 
 => TX = 9, RX = 8
  */
@@ -30,13 +33,13 @@ namespace delme {
 
 common::serial::serial() {
     debug::address_range("serial:", this, sizeof(*this));
-    SOFT_UART.begin(9600);
+    TXCHANNEL.begin(9600);
     RXCHANNEL.begin(9600);
 }
 
 void common::serial::reset() {
-    SOFT_UART.end();
-    SOFT_UART.begin(9600);
+    TXCHANNEL.end();
+    TXCHANNEL.begin(9600);
 }
 
 usize common::serial::read(u8 *buffer, usize buffer_size, u16 timeout) {
@@ -48,8 +51,8 @@ usize common::serial::read(u8 *buffer, usize buffer_size, u16 timeout) {
 }
 
 usize common::serial::write(u8 *buffer, usize buffer_size) {
-    usize ret = SOFT_UART.write(buffer, buffer_size);
-    SOFT_UART.flush();
+    usize ret = TXCHANNEL.write(buffer, buffer_size);
+    TXCHANNEL.flush();
     assert(ret <= buffer_size);
     crc::CRC8(&tx_crc8, buffer, ret);
     return ret;

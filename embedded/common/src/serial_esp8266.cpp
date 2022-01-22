@@ -5,7 +5,7 @@
 #include "crc.h"
 #include "common/utils.h"
 #define BUF_SIZE 1024
-#define PORT UART_NUM_1
+#define PORT UART_NUM_0
 
 //#define DISABLE_SERIAL
 

@@ -54,7 +54,6 @@ class serial_callback : public wifi::callback {
 
 int k = 0;
 void transmitter::loop_serial() {
-    TRACE();
     if (!S)
         S = std::unique_ptr<common::serial>(new common::serial);
     if (!W)

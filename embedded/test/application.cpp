@@ -29,11 +29,13 @@ void read() {
     DBG("reading ... ");
     u8 recv[256] = {0};
     while (true) {
-        usize Lr = S->read(recv, sizeof(recv), 200);
+        usize Lr = S->read(recv, sizeof(recv), 100);
         // we cannot rely on Lr.
         if (strlen((char *)recv)) {
             DBG("'%s' Lr=%d\r\n", (char *)recv, int(Lr));
             break;
+        } else {
+            DBG("nothing to read\r\n");
         }
     }
 }
@@ -45,20 +47,15 @@ void write() {
     DBG("writing '%s'... ", send);
     const auto Lw = S->write(send, sizeof(send));
     DBG("Lw=%d\r\n", int(Lw));
-    // the send frequency should be (much) lower than the read frequency.
+    // the write frequency should be (much) lower than the read frequency.
     common::time::delay(common::time::ms(1000));
 }
 
 void application::loop() {
-    TRACE();
-    common::time::delay(common::time::ms(100));
-    debug::turnBuildinLED(true);
-#if 0
-#if defined(ESP8266)
+#if defined(ARDUINO)
     write();
 #else
     read();
-#endif
 #endif
     common::time::delay(common::time::ms(250));
     debug::turnBuildinLED(false);
