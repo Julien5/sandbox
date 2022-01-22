@@ -7,7 +7,7 @@ if [[ -z "$IDF_PATH" ]]; then
 	echo IDF_PATH not defined
 	exit 1
 fi
-
+SCRIPTDIR=$(dirname $(realpath $0))
 BUILDDIR=/tmp/esp8266/core;
 FILENAME=$BUILDDIR/stdout
 mkdir -p $BUILDDIR;
@@ -19,9 +19,8 @@ if [[ ! -f $FILENAME ]]; then
 	popd 
 	echo cmaking core for esp8266
 	pushd $IDF_PATH/examples/get-started/hello_world
-	rm -f sdkconfig
 	cmake -S $IDF_PATH/examples/get-started/hello_world -B $BUILDDIR
-	echo CONFIG_COMPILER_OPTIMIZATION_LEVEL_RELEASE=y >> sdkconfig
+	cp $SCRIPTDIR/sdkconfig .
 	echo generating core for esp8266 
 	make -j4 -C $BUILDDIR VERBOSE=1 &> $FILENAME
 	popd
