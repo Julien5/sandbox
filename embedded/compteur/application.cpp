@@ -44,23 +44,19 @@ class callback : public wifi::callback {
 
 void transmit() {
     TRACE();
-
+    auto t0 = common::time::since_reset();
     callback cb;
     size_t L = 0;
     auto data = C->data(&L);
     W->post("http://pi:8000/post", data, L, &cb);
     // todo: timeout
     TRACE();
-    while (!cb.done()) {
-#ifdef PC
-        // we need "real" waiting (not simulated)
-        using namespace std::chrono_literals;
-        std::this_thread::sleep_for(100ms);
-#else
-        common::time::delay(common::time::ms(100));
-#endif
+    if (!cb.done()) {
+        TRACE();
+        assert(0);
     }
     TRACE();
+    DBG("transmit time %d ms\r\n", int(common::time::since_reset().since(t0).value()));
 }
 
 bool need_transmit() {
