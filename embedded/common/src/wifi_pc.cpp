@@ -44,7 +44,7 @@ namespace wifi {
 
         // the timeout is short since the data are complete on the peer.
         u16 size = 0;
-        ok = S->read_until(reinterpret_cast<u8 *>(&size), sizeof(size), 10);
+        ok = S->read_until(reinterpret_cast<u8 *>(&size), sizeof(size), 250);
         if (!ok) {
             return 4;
         }

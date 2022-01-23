@@ -9,8 +9,6 @@ find_program(AVR_OBJDUMP avr-objdump REQUIRED)
 
 set(ARDUINO 1)
 set(ARDUINOCOREDIR /opt/arduino/ArduinoCore-avr-1.8.2/)
-set(ARDUINO_BAUD 57600)
-set(ARDUINO_PORT /dev/ttyUSB0)
 
 # toolchain starts with defining mandatory variables
 set(CMAKE_SYSTEM_NAME Generic)

@@ -31,7 +31,9 @@ class callback : public wifi::callback {
         missing_bytes = total_length;
     }
     void data(u8 *data, size_t length) {
+        DBG("received:%d bytes\r\n", int(length));
         missing_bytes -= length;
+        DBG("missing:%d bytes\r\n", int(missing_bytes));
     }
 
   public:
@@ -48,7 +50,7 @@ void transmit() {
     auto data = C->data(&L);
     W->post("http://pi:8000/post", data, L, &cb);
     // todo: timeout
-
+    TRACE();
     while (!cb.done()) {
 #ifdef PC
         // we need "real" waiting (not simulated)
@@ -58,6 +60,7 @@ void transmit() {
         common::time::delay(common::time::ms(100));
 #endif
     }
+    TRACE();
 }
 
 bool need_transmit() {
@@ -71,6 +74,9 @@ bool need_transmit() {
 }
 
 void application::loop() {
+    transmit();
+    common::time::delay(common::time::ms(500));
+    return;
     if (C->update()) {
         C->print();
         if (need_transmit()) {

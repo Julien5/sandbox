@@ -44,6 +44,7 @@ void common::serial::reset() {
 
 usize common::serial::read(u8 *buffer, usize buffer_size, u16 timeout) {
     // auto soft_uart_timeout = xMax(timeout, u16(100));
+    // DBG("serial received %d bytes\r\n", int(buffer_size));
     RXCHANNEL.setTimeout(timeout);
     usize ret = RXCHANNEL.readBytes((char *)buffer, buffer_size);
     crc::CRC8(&rx_crc8, buffer, ret);

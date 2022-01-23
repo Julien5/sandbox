@@ -63,10 +63,9 @@ void transmitter::loop_serial() {
 
     debug::turnBuildinLED(true);
     TRACE();
-
     while (!S->wait_for_begin(common::time::ms(1000))) {
-        TRACE();
     }
+    TRACE();
 
     bool ok = false;
     received::message m;
