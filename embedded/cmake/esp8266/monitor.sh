@@ -18,6 +18,10 @@ fi
 
 ELFFILE=$1
 
-ESPPORT="/dev/$(catusb | grep -i FT232 | cut -f1 -d":")"
-echo using $ESPPORT
-$IDF_PATH/tools/idf_monitor.py --baud 74880 --port $ESPPORT $ELFFILE
+PORT="/dev/$(catusb | grep -i FT232 | cut -f1 -d":")"
+if [ -z $PORT ]; then
+	echo could not find port
+	exit 1
+fi
+echo using $PORT
+$IDF_PATH/tools/idf_monitor.py --baud 74880 --port $PORT $ELFFILE

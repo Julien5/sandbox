@@ -22,8 +22,12 @@ BINFILE=$ELFFILE.bin
 
 # assume esp is connected BEFORE arduino
 PORT=$(catusb | grep "HL-340 USB-Serial adapter" | cut -f1 -d: | sort | head -1)
-export ESPPORT="/dev/$PORT"
-echo using $ESPPORT
+if [ -z $PORT ]; then
+	echo could not find port
+	exit 1
+fi
+export DEVICE="/dev/$PORT"
+echo using $DEVICE
 export ESPBAUD=460800
 
 # commands found building:
@@ -31,4 +35,4 @@ export ESPBAUD=460800
 
 python $IDF_PATH/components/esptool_py/esptool/esptool.py --chip esp8266 elf2image --flash_mode dio --flash_freq 40m --flash_size 2MB --version=3 -o "$BINFILE" "$ELFFILE"
 
-python $IDF_PATH/components/esptool_py/esptool/esptool.py --chip esp8266 -p $ESPPORT -b 460800 write_flash --flash_mode dio --flash_freq 40m --flash_size 2MB 0x8000 /tmp/esp8266/core/partition_table/partition-table.bin 0x0 /tmp/esp8266/core/bootloader/bootloader.bin 0x10000 "$BINFILE"
+python $IDF_PATH/components/esptool_py/esptool/esptool.py --chip esp8266 -p $DEVICE -b 460800 write_flash --flash_mode dio --flash_freq 40m --flash_size 2MB 0x8000 /tmp/esp8266/core/partition_table/partition-table.bin 0x0 /tmp/esp8266/core/bootloader/bootloader.bin 0x10000 "$BINFILE"
