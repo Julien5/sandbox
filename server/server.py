@@ -33,12 +33,16 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
         log("GET request for {}".format(self.path));
         global database;
         database.insert_request(self.path,bytes());
-        message="hello";
-        message += '\n';
+        header=True;
+        message="hello\n";
+        if self.path == "/epoch":
+            header=False;
+            message=str(int(time.time()));
         message = bytes(message, "utf8");
-        self.send_header('Content-Type',"text/html");
+        if header:
+            self.send_header('Content-Type',"text/html");
+            self.end_headers()
         assert(isinstance(message,bytes));
-        self.end_headers()
         while message:
             n=self.wfile.write(message);
             message=message[n:];

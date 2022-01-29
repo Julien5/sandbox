@@ -34,8 +34,9 @@ namespace common {
         };
 
         // set with an external time source.
-        void set_current_epoch(const ms &d);
+        void set_current_epoch(const ms &epoch);
         ms since_epoch();
+        ms since_epoch(const ms &since_reset_time);
         ms since_reset();
         us since_reset_us();
         ms elapsed_since(const ms &t0);

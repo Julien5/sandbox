@@ -82,3 +82,24 @@ int compteur::test() {
     }
 	*/
 }
+
+common::time::ms compteur::time_between_last_two_ticks() const {
+    if (counter.bin_count() < 2)
+        return common::time::ms();
+    common::time::ms t1, t2; // zero-init
+    for (auto k = tickscounter::NTICKS - 1; k >= 0; --k) {
+        if (counter.getbin(k).empty())
+            continue;
+        auto bin = counter.getbin(k);
+        if (t1.value() == 0) {
+            if (bin.m_count > 1) {
+                return common::time::ms(bin.m_duration / (bin.m_count - 1));
+            }
+            t1 = common::time::ms(bin.start());
+        } else {
+            t2 = common::time::ms(bin.end());
+            break;
+        }
+    }
+    return common::time::ms(t1.value() - t2.value());
+}

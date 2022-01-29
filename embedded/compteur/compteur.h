@@ -12,6 +12,7 @@ class compteur {
     bool update();
     void print();
     tickscounter::bin::count total();
+    common::time::ms time_between_last_two_ticks() const;
     float current_rpm();
     Detection *detection();
     bool is_full() const;

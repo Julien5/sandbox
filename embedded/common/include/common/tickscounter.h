@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include "eeprom.h"
 #include "clock.h"
+#include "common/time.h"
 
 #if !defined(ARDUINO) && !defined(ESP8266)
 #include <string>
@@ -32,6 +33,7 @@ namespace tickscounter {
     constexpr int NTICKS = 10;
 
     struct packed {
+        mutable u64 epoch_at_start = 0;
         packed() : m_bins{} {};
         packed(const u8 *bytes) {
             *this = *(packed *)bytes;
@@ -70,18 +72,15 @@ namespace tickscounter {
         bool is_full() const;
         bin::count total();
         bool empty() const;
-        Clock::ms last_tick_time();
-        Clock::ms age();
+        common::time::ms last_tick_time() const;
+        common::time::ms age() const;
         bin getbin(const int &k) const;
         u8 bin_count() const;
 
         counter_config config() {
             return m_config;
         }
-        const packed *get_packed(size_t *L) const {
-            *L = sizeof(m_packed);
-            return &m_packed;
-        }
+        const packed *get_packed(size_t *L) const;
     };
 
     int test();

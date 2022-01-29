@@ -8,4 +8,4 @@ for a in pc arduino esp8266; do
 	mkdir -p $BUILDDIR && cmake -DCMAKE_TOOLCHAIN_FILE=~/projects/sandbox/embedded/cmake/$a/toolchain.cmake -S ~/projects/sandbox/embedded/ -B $BUILDDIR && make -j3 -C $BUILDDIR;
 done
 
-cp -v /tmp/build_pc/compile_commands.json .
+cp -v /tmp/build_pc/compile_commands.json ~/projects/sandbox/embedded/

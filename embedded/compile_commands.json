@@ -66,11 +66,6 @@
 },
 {
   "directory": "/tmp/build_pc/common",
-  "command": "/usr/bin/g++  -DPC=1 -I/home/julien/projects/sandbox/embedded/common/include  -g   -o CMakeFiles/common.dir/src/wifi_arduino.cpp.obj -c /home/julien/projects/sandbox/embedded/common/src/wifi_arduino.cpp",
-  "file": "/home/julien/projects/sandbox/embedded/common/src/wifi_arduino.cpp"
-},
-{
-  "directory": "/tmp/build_pc/common",
   "command": "/usr/bin/g++  -DPC=1 -I/home/julien/projects/sandbox/embedded/common/include  -g   -o CMakeFiles/common.dir/src/analog_pc.cpp.obj -c /home/julien/projects/sandbox/embedded/common/src/analog_pc.cpp",
   "file": "/home/julien/projects/sandbox/embedded/common/src/analog_pc.cpp"
 },
@@ -121,23 +116,8 @@
 },
 {
   "directory": "/tmp/build_pc/compteur",
-  "command": "/usr/bin/g++  -DPC=1 -I/home/julien/projects/sandbox/embedded/common/include  -g   -o CMakeFiles/compteur.dir/histogram.cpp.obj -c /home/julien/projects/sandbox/embedded/compteur/histogram.cpp",
-  "file": "/home/julien/projects/sandbox/embedded/compteur/histogram.cpp"
-},
-{
-  "directory": "/tmp/build_pc/compteur",
   "command": "/usr/bin/g++  -DPC=1 -I/home/julien/projects/sandbox/embedded/common/include  -g   -o CMakeFiles/compteur.dir/intermittentread.cpp.obj -c /home/julien/projects/sandbox/embedded/compteur/intermittentread.cpp",
   "file": "/home/julien/projects/sandbox/embedded/compteur/intermittentread.cpp"
-},
-{
-  "directory": "/tmp/build_pc/compteur",
-  "command": "/usr/bin/g++  -DPC=1 -I/home/julien/projects/sandbox/embedded/common/include  -g   -o CMakeFiles/compteur.dir/status.cpp.obj -c /home/julien/projects/sandbox/embedded/compteur/status.cpp",
-  "file": "/home/julien/projects/sandbox/embedded/compteur/status.cpp"
-},
-{
-  "directory": "/tmp/build_pc/compteur",
-  "command": "/usr/bin/g++  -DPC=1 -I/home/julien/projects/sandbox/embedded/common/include  -g   -o CMakeFiles/compteur.dir/transient.cpp.obj -c /home/julien/projects/sandbox/embedded/compteur/transient.cpp",
-  "file": "/home/julien/projects/sandbox/embedded/compteur/transient.cpp"
 },
 {
   "directory": "/tmp/build_pc/compteur",

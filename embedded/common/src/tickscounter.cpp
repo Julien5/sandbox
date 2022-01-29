@@ -243,21 +243,21 @@ void counter::remove_holes() {
     }
 }
 
-Clock::ms counter::last_tick_time() {
+common::time::ms counter::last_tick_time() const {
     int k = 0;
     move_to_first_empty(m_packed.m_bins, &k);
     k--;
     if (k >= 0)
-        return m_packed.m_bins[k].end();
-    return 0;
+        return common::time::ms(m_packed.m_bins[k].end());
+    return common::time::ms(0);
 }
 
-Clock::ms counter::age() {
+common::time::ms counter::age() const {
     if (empty())
-        return numeric_max<Clock::ms>();
-    const Clock::ms now = Clock::millis_since_start();
-    assert(now >= last_tick_time());
-    return now - last_tick_time();
+        return common::time::ms(numeric_max<u64>());
+    const auto now = common::time::since_reset();
+    assert(now > last_tick_time());
+    return now.since(last_tick_time());
 }
 
 u8 counter::bin_count() const {
@@ -317,6 +317,12 @@ bool packed::operator==(const packed &other) const {
     return true;
 }
 
+const packed *counter::get_packed(size_t *L) const {
+    m_packed.epoch_at_start = common::time::since_epoch(common::time::ms(getbin(0).start())).value();
+    *L = sizeof(m_packed);
+    return &m_packed;
+}
+
 void counter::print() const {
 #if !defined(ARDUINO) && !defined(ESP8266)
     for (int k = 0; k < NTICKS; ++k) {
@@ -338,8 +344,10 @@ void counter::print() const {
 #endif
 }
 
-u32 one_minute() {
-    return 1000L * 60;
+namespace {
+    u32 one_minute() {
+        return 1000L * 60;
+    }
 }
 
 static int jitter_counter = 2;

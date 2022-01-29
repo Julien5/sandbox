@@ -30,7 +30,7 @@ bool file_exists(const char *fileName) {
 
 int exe(const std::string &method, const char *req, wifi::callback *cb, const u8 *data = nullptr, const int Ldata = 0) {
     // curl -s -X GET "http://example.com/" --output out
-    std::string cmd = "curl -i --raw -s -X " + method + " ";
+    std::string cmd = "curl --http0.9 -i --raw -s -X " + method + " ";
     if (data && Ldata) {
         std::ofstream f;
         f.open("data.bin", std::ios::out | std::ios::binary | std::ios::trunc);

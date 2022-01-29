@@ -5,7 +5,8 @@ using namespace common;
 
 namespace common {
     namespace time {
-        ms epoch_offset(0);
+        ms epoch(0);
+        ms since_reset_at_epoch(0);
     }
 }
 
@@ -48,12 +49,17 @@ common::time::us common::time::us::since(const us &older) const {
     return us(value() - older.value());
 }
 
-void common::time::set_current_epoch(const ms &time) {
-    common::time::epoch_offset = time;
+void common::time::set_current_epoch(const ms &epoch) {
+    common::time::epoch = epoch;
+    common::time::since_reset_at_epoch = common::time::since_reset();
+}
+
+common::time::ms common::time::since_epoch(const ms &since_reset_time) {
+    return ms(common::time::epoch.value() + since_reset_time.value() - common::time::since_reset_at_epoch.value());
 }
 
 common::time::ms common::time::since_epoch() {
-    return ms(common::time::epoch_offset.value() + since_reset().value());
+    return since_epoch(since_reset());
 }
 
 common::time::ms common::time::elapsed_since(const ms &t0) {
