@@ -23,11 +23,11 @@ bool simulated_tick() {
     auto seconds = t.value() / 1000;
     if (seconds == 0)
         return false;
-    auto new_value = seconds % 10 == 0;
+    auto new_value = seconds % 4 == 0;
     auto fast = d3.read();
     debug::turnBuildinLED(fast);
     if (fast) {
-        new_value = seconds % 5 == 0;
+        new_value = seconds % 2 == 0;
     }
     auto ret = last_value != new_value && new_value == true;
     last_value = new_value;

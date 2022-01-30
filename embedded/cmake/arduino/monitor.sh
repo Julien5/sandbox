@@ -23,4 +23,7 @@ else
 	echo "=> esp must be connected before arduino"
 fi
 
+mkdir -p oldlogs
+mv -v screenlog.* oldlogs/
+
 screen -L $DEVICE 9600

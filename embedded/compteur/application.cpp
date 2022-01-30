@@ -85,6 +85,7 @@ float power(const common::time::ms &interval) {
 
 float last_known_power() {
     const auto T = C->time_between_last_two_ticks();
+    DBG("p1 T:%d\r\n", int(T.value()));
     return power(T);
 }
 
@@ -133,6 +134,7 @@ void update_epoch(bool force) {
         auto e = get_epoch();
         if (e == 0)
             return;
+        DBG("epoch:%d\r\n", int(e));
         common::time::set_current_epoch(common::time::ms(1000 * e));
         last_time = common::time::since_epoch();
     }
