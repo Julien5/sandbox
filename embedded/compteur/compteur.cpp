@@ -33,8 +33,10 @@ void print_bin(const tickscounter::bin &b) {
 bool compteur::update() {
     if (m_detection.tick()) {
         counter.tick();
+        DBG("counter ticked\r\n");
         return true;
     }
+    //DBG("counter not ticked\r\n");
     if (m_detection.may_sleep())
         sleep().deep_sleep(common::time::ms(200));
     return false;
@@ -42,7 +44,7 @@ bool compteur::update() {
 
 void compteur::print() {
     counter.print();
-    DBG("counter:%4f:total:%d\r\n", float(common::time::since_reset().value()) / 1000, int(counter.total()));
+    DBG("counter:%d:total:%d\r\n", int(common::time::since_reset().value()) / 1000, int(counter.total()));
 }
 
 const u8 *compteur::data(size_t *L) const {

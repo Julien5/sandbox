@@ -92,13 +92,16 @@ float transmitted_power = 0;
 
 bool need_transmit(const float &_current_power) {
     // C full || diff(rpm) > 200W
-    if (C->is_full())
+    if (C->is_full()) {
+        TRACE();
         return true;
+    }
     if (_current_power == 0)
         return false;
     const auto delta = transmitted_power - _current_power;
     if (fabs(delta) > 200) {
-        DBG("p1:%3.1f -> p2:%3.2f\r\n", transmitted_power, _current_power);
+        DBG("p1:%d -> p2:%d\r\n", int(transmitted_power), int(_current_power));
+        TRACE();
         return true;
     }
     return false;
@@ -130,11 +133,11 @@ void update_epoch(bool force) {
         auto e = get_epoch();
         if (e == 0)
             return;
-        DBG("epoch:%ld\r\n", e);
         common::time::set_current_epoch(common::time::ms(1000 * e));
         last_time = common::time::since_epoch();
     }
 }
+
 const bool force = true;
 void application::loop() {
     update_epoch(!force);
@@ -144,10 +147,12 @@ void application::loop() {
         if (need_transmit(P)) {
             if (transmit()) {
                 transmitted_power = P;
+                DBG("p1:%d -> p2:%d\r\n", int(transmitted_power), int(P));
                 C->clear();
                 update_epoch(force);
-            }
-            DBG("counter: :%3.1fW\n", float(P));
+            } else
+                assert(0);
+            DBG("counter: %dW\n", int(P));
         }
     }
 }

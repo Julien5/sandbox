@@ -3,6 +3,7 @@
 #include "common/time.h"
 #include <math.h>
 #include <string.h>
+#include "common/digital.h"
 
 u16 bound(u16 T, u16 k) {
     return T + k;
@@ -15,7 +16,30 @@ bool Detection::may_sleep() const {
     return m_reader.done();
 }
 
+bool simulated_tick() {
+    static common::digital d3(3);
+    static bool last_value = false;
+    auto t = common::time::since_reset();
+    auto seconds = t.value() / 1000;
+    if (seconds == 0)
+        return false;
+    auto new_value = seconds % 10 == 0;
+    auto fast = d3.read();
+    debug::turnBuildinLED(fast);
+    if (fast) {
+        new_value = seconds % 5 == 0;
+    }
+    auto ret = last_value != new_value && new_value == true;
+    last_value = new_value;
+    return ret;
+}
+
+#define SIMULATION
+
 bool Detection::tick() {
+#ifdef SIMULATION
+    return simulated_tick();
+#else
     u16 value = 0;
     if (!m_reader.tick(&value))
         return false;
@@ -52,6 +76,7 @@ bool Detection::tick() {
         return false;
     }
     PLOT("ticks:%f:%d\r\n", seconds, value);
+#endif
     return true;
 }
 

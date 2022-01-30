@@ -21,6 +21,7 @@ if (ARDUINO)
 	src/analog_arduino.cpp
 	src/serial_arduino.cpp
 	src/wifi_arduino.cpp
+	src/digital_arduino.cpp
 	)
 elseif(ESP8266)
   target_sources(common PRIVATE

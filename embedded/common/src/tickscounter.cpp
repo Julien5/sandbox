@@ -330,16 +330,12 @@ void counter::print() const {
         if ((k + 1) < NTICKS)
             d = m_packed.m_bins[k].distance(m_packed.m_bins[k + 1]);
         float pmax = -1;
-        if (m_packed.m_bins[k].m_duration > 0)
-            pmax = 1000 * float(m_packed.m_bins[k].m_count) / m_packed.m_bins[k].m_duration;
-        printf("counter: %02d: %9d->%-9d [%6d] #=%3d pmax=%2.3f d=%6d\n",
+        printf("counter: %02d: %9d->%-9d [%6d] #=%3d\n",
                k,
                m_packed.m_bins[k].m_start / 1000,
                m_packed.m_bins[k].end() / 1000,
                m_packed.m_bins[k].m_duration / 1000,
-               m_packed.m_bins[k].m_count,
-               pmax,
-               d);
+               m_packed.m_bins[k].m_count);
     }
 #endif
 }
