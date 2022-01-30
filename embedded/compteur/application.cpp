@@ -70,7 +70,7 @@ bool transmit() {
     callback cb;
     size_t L = 0;
     auto data = C->data(&L);
-    W->post("http://pi:8000/post", data, L, &cb);
+    W->post("http://pix:8000/post", data, L, &cb);
     DBG("transmit time %d ms\r\n", int(common::time::since_reset().since(t0).value()));
     return cb.done();
 }
@@ -90,8 +90,11 @@ float last_known_power() {
 }
 
 float transmitted_power = 0;
+bool last_transmit_failed = false;
 
 bool need_transmit(const float &_current_power) {
+    if (last_transmit_failed)
+        return false;
     // C full || diff(rpm) > 200W
     if (C->is_full()) {
         TRACE();
@@ -110,39 +113,42 @@ bool need_transmit(const float &_current_power) {
 
 namespace {
     common::time::ms one_minute() {
-        return common::time::ms(60 * 1000);
+        return common::time::ms(u64(60) * 1000);
     }
 }
 
 bool hourly() {
+    static common::time::ms last_trigger_time(0);
     auto now = common::time::since_epoch();
     auto secs = now.value() / 1000;
     auto minutes = secs / 60;
     auto clockminutes = minutes % 60;
-    return clockminutes == 0;
+    auto trigger = clockminutes % 5 == 0;
+    DBG("%d %d %ld\r\n", secs, int(trigger), now.since(last_trigger_time).value());
+    if ((now > common::time::ms(1) && last_trigger_time.value() == 0) || (trigger && now.since(last_trigger_time) > one_minute())) {
+        last_trigger_time = now;
+        DBG("trigger(%d) last:%ld\r\n", int(secs), last_trigger_time.value());
+        return true;
+    }
+    return false;
 }
 
-bool margin_since(const common::time::ms &_last_time) {
-    auto now = common::time::since_epoch();
-    return now.since(_last_time) > one_minute();
-}
-
-void update_epoch(bool force) {
-    static common::time::ms last_time = common::time::ms(0);
-    const auto time_has_come = hourly() && margin_since(last_time);
-    if (last_time.value() == 0 || time_has_come || force) {
+void hourly_tasks(bool force) {
+    if (hourly() || force) {
+        return;
+        last_transmit_failed = false;
         auto e = get_epoch();
         if (e == 0)
             return;
         DBG("epoch:%d\r\n", int(e));
         common::time::set_current_epoch(common::time::ms(1000 * e));
-        last_time = common::time::since_epoch();
     }
 }
 
 const bool force = true;
 void application::loop() {
-    update_epoch(!force);
+    hourly_tasks(!force);
+    return;
     if (C->update()) {
         C->print();
         const auto P = last_known_power();
@@ -151,9 +157,10 @@ void application::loop() {
                 transmitted_power = P;
                 DBG("p1:%d -> p2:%d\r\n", int(transmitted_power), int(P));
                 C->clear();
-                update_epoch(force);
-            } else
-                assert(0);
+                hourly_tasks(force);
+            } else {
+                last_transmit_failed = true;
+            }
             DBG("counter: %dW\n", int(P));
         }
     }
