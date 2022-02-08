@@ -32,3 +32,7 @@ else()
 	add_custom_target(monitor ${cmd})
   endif()
 endif()
+
+if(ARDUINO)
+  add_subdirectory(arduino/isp-programmer/11.ArduinoISP/ArduinoISP)
+endif()
