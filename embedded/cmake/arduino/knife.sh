@@ -23,7 +23,8 @@ function dude.isp() {
 }
 
 function burn.bootloader() {
-	# erase, unlock (3F == FF for the lock bytes), set fuse 
+	# erase, unlock (3F == FF for the lock bytes), set fuse
+	# lfuse:w:0xDD:m -> external crystal 3-8 mhz.
 	dude.isp -e -Ulock:w:0xFF:m -Ulfuse:w:0xDD:m -Uhfuse:w:0xDE:m -Uefuse:w:0xFD:m 
 
 	OPTIBOOTHEX=/tmp/optiboot/optiboot/bootloaders/optiboot/optiboot_atmega328.hex
