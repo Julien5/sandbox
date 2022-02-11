@@ -52,11 +52,14 @@ void write() {
 }
 
 void application::loop() {
-#if defined(ARDUINO)
+    debug::turnBuildinLED(true);
+    /*#if defined(ARDUINO)
     write();
 #else
     read();
 #endif
+	*/
     common::time::delay(common::time::ms(250));
     debug::turnBuildinLED(false);
+    common::time::delay(common::time::ms(100));
 }

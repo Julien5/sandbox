@@ -1,0 +1,52 @@
+* Installing and Using Optiboot
+
+** Installation: set the right fuse.
+
+Read /tmp/arduino-1.8.19/hardware/arduino/avr/boards.txt.
+
+see https://eleccelerator.com/fusecalc/fusecalc.php?chip=atmega328p to compute fuse.
+
+uno.bootloader.tool=avrdude
+- uno.bootloader.low_fuses=0xFF
+  Ext. Crystal Osc.; Frequency 8.0- MHz; Start-up time PWRDWN/RESET: 16K CK/14 CK + 0 ms;
+  NOT divide clock by 8
+  NOT clock on PORTB0
+  = we want 8mhz internal, no divide => 0xE2
+  
+- uno.bootloader.high_fuses=0xDE
+  boot reset vector enabled
+  other things...
+  = no change
+  
+- uno.bootloader.extended_fuses=0xFD
+  bod at 2.7 v. which is OK
+  = no change
+  
+- uno.bootloader.unlock_bits=0x3F
+- uno.bootloader.lock_bits=0x0F
+  The overall sequence is:
+    unlock lock bits & erase chip
+    program fuses
+    program bootloader
+    lock lock bits.
+  
+- uno.bootloader.file=optiboot/optiboot_atmega328.hex
+  copy that.
+  is that only for 16mhz ?
+  check optiboot website
+  https://github.com/Optiboot/optiboot/blob/master/Wiki/CompilingOptiboot.md
+  git clone https://github.com/Optiboot/optiboot.git
+  cd optiboot/bootloaders/optiboot/
+  make AVR_FREQ=8000000L BAUD_RATE=57600 atmega328
+  -> hex, elf, lst files.
+
+- and then flash:
+  avrdude ... -e -U flash:w:hexfilename.hex -U lock:w:0x0F:m
+  
+** Now i want to burn with an ftdi chip.
+
+The first is to check the schematics on arduino.
+
+  
+
+  
