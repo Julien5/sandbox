@@ -59,7 +59,8 @@ void application::loop() {
     read();
 #endif
 	*/
-    common::time::delay(common::time::ms(250));
+    DBG("hello\r\n");
+    common::time::delay(common::time::ms(1000));
     debug::turnBuildinLED(false);
     common::time::delay(common::time::ms(100));
 }
