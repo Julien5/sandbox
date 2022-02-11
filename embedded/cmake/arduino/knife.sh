@@ -10,13 +10,21 @@ function ispport() {
 	catusb | grep "8 Series USB xHCI HC" | cut -f1 -d: | sort | head -1
 }
 
+function ftdiport() {
+	catusb | grep "Future Technology Devices International" | grep FT232 | cut -f1 -d: | sort | head -1
+}
+
 function dude() {
+	avrdude -v -p atmega328p -c arduino -P/dev/$(ftdiport) -b115200 $@
+}
+
+function dude.isp() {
 	avrdude -v -p atmega328p -c stk500 -P/dev/$(ispport) -b57600 $@
 }
 
 function burn.bootloader() {
 	# erase, unlock (3F == FF for the lock bytes), set fuse 
-	dude -e -Ulock:w:0xFF:m -Ulfuse:w:0xFF:m -Uhfuse:w:0xDE:m -Uefuse:w:0xFD:m 
+	dude.isp -e -Ulock:w:0xFF:m -Ulfuse:w:0xFF:m -Uhfuse:w:0xDE:m -Uefuse:w:0xFD:m 
 
 	OPTIBOOTHEX=/tmp/optiboot/optiboot/bootloaders/optiboot/optiboot_atmega328.hex
 	OPTIBOOTHEX=/tmp/arduino-1.8.19/hardware/arduino/avr/bootloaders/optiboot/optiboot_atmega328.hex
@@ -33,11 +41,11 @@ function burn.bootloader() {
 		popd
 	fi
 	# flash and lock bootloader section (CF==0F)
-	dude -Uflash:w:$OPTIBOOTHEX:i -Ulock:w:0xCF:m
+	dude.isp -Uflash:w:$OPTIBOOTHEX:i -Ulock:w:0xCF:m
 }
 
 function burn.application() {
-	avrdude -q -v -p atmega328p -D -c arduino -b115200 -P /dev/ttyUSB0 -U flash:w:/tmp/build_arduino/test/test.hex:i
+	dude -U flash:w:/tmp/build_arduino/test/test.hex:i
 }
 
 # burn.bootloader
