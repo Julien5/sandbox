@@ -27,8 +27,8 @@ function burn.bootloader() {
 	dude.isp -e -Ulock:w:0xFF:m -Ulfuse:w:0xFF:m -Uhfuse:w:0xDE:m -Uefuse:w:0xFD:m 
 
 	OPTIBOOTHEX=/tmp/optiboot/optiboot/bootloaders/optiboot/optiboot_atmega328.hex
-	OPTIBOOTHEX=/tmp/arduino-1.8.19/hardware/arduino/avr/bootloaders/optiboot/optiboot_atmega328.hex
-	# rm -f $OPTIBOOTHEX
+	# OPTIBOOTHEX=/tmp/arduino-1.8.19/hardware/arduino/avr/bootloaders/optiboot/optiboot_atmega328.hex
+	rm -f $OPTIBOOTHEX
 	if [ ! -f $OPTIBOOTHEX ]; then
 		pushd /tmp/
 		if [ ! -d optiboot ]; then
@@ -48,5 +48,5 @@ function burn.application() {
 	dude -U flash:w:/tmp/build_arduino/test/test.hex:i
 }
 
-# burn.bootloader
+burn.bootloader
 burn.application
