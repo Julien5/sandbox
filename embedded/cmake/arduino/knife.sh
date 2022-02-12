@@ -52,7 +52,7 @@ function burn.bootloader() {
 }
 
 function burn.application() {
-	dude -U flash:w:$1:i
+	dude.isp -U flash:w:$1:i
 }
 
 function monitor() {
