@@ -59,16 +59,18 @@ int debug::freeMemory() {
 void debug::init_serial() {
     Serial.begin(9600);
 }
+#define LED_DEBUG LED_BUILTIN
+//#define LED_DEBUG 9
 void debug::turnBuildinLED(bool on) {
     static bool init_done = false;
     if (!init_done) {
-        pinMode(LED_BUILTIN, OUTPUT);
+        pinMode(LED_DEBUG, OUTPUT);
         init_done = true;
     }
     if (on)
-        digitalWrite(LED_BUILTIN, HIGH);
+        digitalWrite(LED_DEBUG, HIGH);
     else
-        digitalWrite(LED_BUILTIN, LOW);
+        digitalWrite(LED_DEBUG, LOW);
 }
 
 /* https://playground.arduino.cc/Code/AvailableMemory/ */

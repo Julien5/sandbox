@@ -50,7 +50,7 @@ usize common::serial::read(u8 *buffer, usize buffer_size, u16 timeout) {
     crc::CRC8(&rx_crc8, buffer, ret);
     return ret;
 }
-
+static int i = 0;
 usize common::serial::write(u8 *buffer, usize buffer_size) {
     usize ret = TXCHANNEL.write(buffer, buffer_size);
     TXCHANNEL.flush();

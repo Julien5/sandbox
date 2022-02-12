@@ -18,19 +18,25 @@ function ftdiport() {
 	catusb | grep "Future Technology Devices International" | grep FT232 | cut -f1 -d: | sort | head -1
 }
 
-function dude() {
-	avrdude -p atmega328p -c arduino -P/dev/$(ftdiport) -b38400 $@
+function arduinoport() {
+	catusb | grep HL-340 | cut -f1 -d: | sort | tail -1
+}
+
+function dude.arduino() {
+	# avrdude -p atmega328p -c arduino -P/dev/$(ftdiport) -b38400 $@
+	avrdude -p atmega328p -c arduino -P/dev/$(arduinoport) -b57600 $@
 }
 
 function dude.isp() {
-	avrdude -p atmega328p -c stk500 -P/dev/$(ispport) -b57600 $@
+	# specifying a baud rate seems useless. In doubt try -b57600.
+	avrdude -p atmega328p -c stk500 -P/dev/$(ispport) $@ 
 }
 
 function burn.bootloader() {
 	# erase, unlock (3F == FF for the lock bytes), set fuse
 	# lfuse:w:0xDD:m -> external crystal 3-8 mhz.
 	# efuse:w:0xFF:m -> BOD disabled (otherwise programming per ftdi fails.)
-	dude.isp -e -Ulock:w:0xFF:m -Ulfuse:w:0xDD:m -Uhfuse:w:0xDE:m -Uefuse:w:0xFF:m 
+	dude.isp -e -Ulock:w:0xFF:m -Ulfuse:w:0xFF:m -Uhfuse:w:0xDE:m -Uefuse:w:0xFF:m 
 
 	OPTIBOOTHEX=/tmp/optiboot/optiboot/bootloaders/optiboot/optiboot_atmega328.hex
 	# OPTIBOOTHEX=/tmp/arduino-1.8.19/hardware/arduino/avr/bootloaders/optiboot/optiboot_atmega328.hex
@@ -42,7 +48,7 @@ function burn.bootloader() {
 		fi
 		pushd optiboot/optiboot/bootloaders/optiboot
 		make clean
-		make AVR_FREQ=4000000L BAUD_RATE=38400 LED=B5 LED_START_FLASHES=5 LED_DATA_FLASH=1 atmega328
+		make AVR_FREQ=16000000L BAUD_RATE=38400 LED=B5 LED_START_FLASHES=5 LED_DATA_FLASH=1 atmega328
 		sleep 1
 		popd
 		popd
@@ -53,6 +59,7 @@ function burn.bootloader() {
 
 function burn.application() {
 	dude.isp -U flash:w:$1:i
+	#dude.arduino -U flash:w:$1:i
 }
 
 function monitor() {

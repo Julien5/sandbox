@@ -60,6 +60,7 @@ void application::loop() {
 #endif
 	*/
     DBG("hello\r\n");
+    write();
     common::time::delay(common::time::ms(1000));
     debug::turnBuildinLED(false);
     common::time::delay(common::time::ms(100));
