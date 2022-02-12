@@ -3,15 +3,12 @@
 #include "common/time.h"
 #include "crc.h"
 #include "common/utils.h"
-#include "SoftwareSerial.h"
-
-SoftwareSerial SOFT_UART(2, 3);
 
 #define RXCHANNEL Serial
 //#define RXCHANNEL SOFT_UART
 
-//#define TXCHANNEL Serial
-#define TXCHANNEL SOFT_UART
+#define TXCHANNEL Serial
+//#define TXCHANNEL SOFT_UART
 
 /*
 Board                               Transmit Pin    Receive Pin  Unusable PWM

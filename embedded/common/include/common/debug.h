@@ -47,38 +47,38 @@ int thread_index();
     } while (0)
 
 #elif defined(ARDUINO)
-
 /*
  * note: in debug mode, DBGTX takes memory.
- * reduce NDATA
  */
-#include "Arduino.h"
+void serialprint(const char *buffer);
+void serialprint(int x);
+void serialflush();
 #define DBG(...)                                       \
     do {                                               \
         char buffer[64];                               \
         snprintf(buffer, sizeof(buffer), __VA_ARGS__); \
-        Serial.print(buffer);                          \
-        Serial.flush();                                \
+        serialprint(buffer);                           \
+        serialflush();                                 \
     } while (0)
-#define TRACE()                    \
-    do {                           \
-        Serial.print(__FILE__);    \
-        Serial.print(":");         \
-        Serial.print(__LINE__);    \
-        Serial.println(": TRACE"); \
-        Serial.flush();            \
+#define TRACE()                 \
+    do {                        \
+        serialprint(__FILE__);  \
+        serialprint(":");       \
+        serialprint(__LINE__);  \
+        serialprint(": TRACE"); \
+        serialflush();          \
     } while (0)
-#define assert(x)                       \
-    do {                                \
-        if (!(x)) {                     \
-            Serial.print(__FILE__);     \
-            Serial.print(":");          \
-            Serial.print(__LINE__);     \
-            Serial.println(": ASSERT"); \
-            while (1) {                 \
-                Serial.flush();         \
-            };                          \
-        }                               \
+#define assert(x)                        \
+    do {                                 \
+        if (!(x)) {                      \
+            serialprint(__FILE__);       \
+            serialprint(":");            \
+            serialprint(__LINE__);       \
+            serialprint(": ASSERT\r\n"); \
+            while (1) {                  \
+                serialflush();           \
+            };                           \
+        }                                \
     } while (0)
 #define PLOT(...) ((void)0)
 #elif defined(ESP8266)

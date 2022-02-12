@@ -55,9 +55,21 @@ int debug::freeMemory() {
 #endif
 
 #ifdef ARDUINO
-#include "Arduino.h"
+#include "SoftwareSerial.h"
+
+SoftwareSerial SOFT_UART(2, 3);
+#define TXCHANNEL SOFT_UART
+void serialprint(const char *buffer) {
+    TXCHANNEL.print(buffer);
+}
+void serialprint(int x) {
+    TXCHANNEL.print(x);
+}
+void serialflush() {
+    TXCHANNEL.flush();
+}
 void debug::init_serial() {
-    Serial.begin(9600);
+    TXCHANNEL.begin(9600);
 }
 #define LED_DEBUG LED_BUILTIN
 //#define LED_DEBUG 9
