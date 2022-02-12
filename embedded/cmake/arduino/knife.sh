@@ -34,9 +34,9 @@ function dude.isp() {
 
 function burn.bootloader() {
 	# erase, unlock (3F == FF for the lock bytes), set fuse
-	# lfuse:w:0xDD:m -> external crystal 3-8 mhz. (16mhz:0xFF, internal:0x62)
+	# lfuse:w:0xDD:m -> external crystal 3-8 mhz. (16mhz:0xFF, internal:0xE2)
 	# efuse:w:0xFF:m -> BOD disabled (otherwise programming per ftdi fails.)
-	dude.isp -e -Ulock:w:0xFF:m -Ulfuse:w:0x62:m -Uhfuse:w:0xDE:m -Uefuse:w:0xFF:m 
+	dude.isp -e -Ulock:w:0xFF:m -Ulfuse:w:0xE2:m -Uhfuse:w:0xDE:m -Uefuse:w:0xFF:m 
 
 	OPTIBOOTHEX=/tmp/optiboot/optiboot/bootloaders/optiboot/optiboot_atmega328.hex
 	# OPTIBOOTHEX=/tmp/arduino-1.8.19/hardware/arduino/avr/bootloaders/optiboot/optiboot_atmega328.hex

@@ -1,5 +1,6 @@
 add_subdirectory(EEPROM)
 add_subdirectory(LiquidCrystal)
 add_subdirectory(AltSoftSerial)
+add_subdirectory(SoftwareSerial)
 add_subdirectory(LowPower)
 add_subdirectory(core)

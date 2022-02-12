@@ -3,9 +3,9 @@
 #include "common/time.h"
 #include "crc.h"
 #include "common/utils.h"
-#include "AltSoftSerial.h"
+#include "SoftwareSerial.h"
 
-AltSoftSerial SOFT_UART;
+SoftwareSerial SOFT_UART(2, 3);
 
 #define RXCHANNEL Serial
 //#define RXCHANNEL SOFT_UART
