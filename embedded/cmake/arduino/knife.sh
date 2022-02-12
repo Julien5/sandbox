@@ -1,13 +1,17 @@
 #!/usr/bin/env bash
 
 set -e
-set -x
+#set -x
 
 SCRIPTDIR=$(realpath $(dirname $0))
 . $SCRIPTDIR/../catusb.sh
 
 function ispport() {
-	catusb | grep "8 Series USB xHCI HC" | cut -f1 -d: | sort | head -1
+	FILTER="head -1"
+	if [ ! -z "$1" ]; then
+		FILTER="$1"
+	fi
+	catusb | grep "8 Series USB xHCI HC" | cut -f1 -d: | sort | $FILTER
 }
 
 function ftdiport() {
@@ -52,7 +56,7 @@ function burn.application() {
 }
 
 function monitor() {
-	screen -L /dev/$(ftdiport) 9600
+	screen -L /dev/$(ispport "tail -1") 9600
 }
 
 function burn.test {
@@ -64,6 +68,8 @@ function help {
 	echo knife.sh burn.test
 	echo knife.sh monitor
 	echo knife.sh burn.application foo.hex
+	echo knife.sh ispport
+	echo knife.sh ispport "tail -1"
 }
 
 "$@"
