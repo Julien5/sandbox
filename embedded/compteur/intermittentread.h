@@ -6,7 +6,7 @@
 
 class IntermittentRead {
   public:
-    static const int T0 = 2;
+    static const int K0 = 2;
     static const int T = 5;
 
   private:

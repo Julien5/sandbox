@@ -34,7 +34,7 @@ bool simulated_tick() {
     return ret;
 }
 
-#define SIMULATION
+//#define SIMULATION
 
 bool Detection::tick() {
 #ifdef SIMULATION
@@ -43,6 +43,7 @@ bool Detection::tick() {
     u16 value = 0;
     if (!m_reader.tick(&value))
         return false;
+    DBG("-> value:%d\r\n", int(value));
     float delta = 0;
     const float alpha = 0.9875;
     if (xalpha < 0)

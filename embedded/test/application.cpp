@@ -12,8 +12,8 @@ void application::setup() {
     S = std::unique_ptr<common::serial>(new common::serial);
     TRACE();
 #ifdef ARDUINO
-    char *c = malloc(1);
-    DBG("%d\r\n", int(c));
+    analogReference(INTERNAL);
+    //analogReference(DEFAULT);
 #endif
 }
 
@@ -59,9 +59,14 @@ void application::loop() {
     read();
 #endif
 	*/
-    DBG("hello\r\n");
+    //DBG("hello\r\n");
+#ifdef ARDUINO
+    auto ret = analogRead(0);
+    DBG("common::analog::read:%d\r\n", int(ret));
+    common::time::delay(common::time::ms(100));
+#endif
     debug::turnBuildinLED(false);
-    write();
+    //write();
     //common::time::delay(common::time::ms(1000));
     //debug::turnBuildinLED(false);
     //common::time::delay(common::time::ms(100));

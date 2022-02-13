@@ -124,7 +124,7 @@ bool hourly() {
     auto minutes = secs / 60;
     auto clockminutes = minutes % 60;
     auto trigger = clockminutes % 5 == 0;
-    DBG("%d %d %ld\r\n", secs, int(trigger), now.since(last_trigger_time).value());
+    // DBG("%d %d %ld\r\n", secs, int(trigger), now.since(last_trigger_time).value());
     if ((now > common::time::ms(1) && last_trigger_time.value() == 0) || (trigger && now.since(last_trigger_time) > one_minute())) {
         last_trigger_time = now;
         DBG("trigger(%d) last:%ld\r\n", int(secs), last_trigger_time.value());
@@ -148,7 +148,6 @@ void hourly_tasks(bool force) {
 const bool force = true;
 void application::loop() {
     hourly_tasks(!force);
-    return;
     if (C->update()) {
         C->print();
         const auto P = last_known_power();
