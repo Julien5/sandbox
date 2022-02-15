@@ -29,7 +29,7 @@ function dude.arduino() {
 
 function dude.isp() {
 	# specifying a baud rate seems useless. In doubt try -b57600.
-	avrdude -p atmega328p -c stk500 -P/dev/$(ispport) $@ 
+	avrdude -p atmega328p -c stk500 -P/dev/$(ispport) -B 0.5 $@ 
 }
 
 function burn.bootloader() {
