@@ -12,7 +12,9 @@ void sleep::deep_sleep(const common::time::ms &d) {
 #if defined(ARDUINO)
 #include "LowPower.h"
 void sleep::deep_sleep(const common::time::ms &delay) {
+    DBG("sleeping (down)\r\n");
     LowPower.longPowerDown(delay.value());
+    DBG("sleeping (up)\r\n");
     // sleeping..
     // ..
     // now wake up
