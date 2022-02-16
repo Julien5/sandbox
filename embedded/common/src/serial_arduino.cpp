@@ -29,7 +29,6 @@ namespace delme {
 }
 
 common::serial::serial() {
-    debug::address_range("serial:", this, sizeof(*this));
     TXCHANNEL.begin(9600);
     RXCHANNEL.begin(9600);
 }

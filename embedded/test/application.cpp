@@ -2,6 +2,7 @@
 #include "common/debug.h"
 #include "common/time.h"
 #include "common/serial.h"
+#include "common/utils.h"
 #include <string.h>
 
 std::unique_ptr<common::serial> S;
@@ -31,43 +32,40 @@ void read() {
     while (true) {
         usize Lr = S->read(recv, sizeof(recv), 100);
         // we cannot rely on Lr.
-        if (strlen((char *)recv)) {
-            DBG("'%s' Lr=%d\r\n", (char *)recv, int(Lr));
+        if (Lr > 0) {
+            DBG("read Lr=%d bytes\r\n", int(Lr));
+            utils::dump(recv, Lr);
             break;
         } else {
-            DBG("nothing to read\r\n");
+            DBG("nothing to read Lr=%d\r\n", int(Lr));
         }
     }
 }
 
 void write() {
-    u8 send[512] = {0};
+    u8 send[32] = {0};
     //    snprintf((char *)send, sizeof(send), "%s[%d]%s", prefix, (int)Lr, (char *)recv);
     snprintf((char *)send, sizeof(send), "%s%s", prefix, prefix);
     DBG("writing '%s'... ", send);
-    const auto Lw = S->write(send, sizeof(send));
+    const auto Lw = S->write(send, strlen((char *)send));
     DBG("Lw=%d\r\n", int(Lw));
     // the write frequency should be (much) lower than the read frequency.
     //common::time::delay(common::time::ms(1000));
 }
 
 void application::loop() {
+    DBG("loop()\r\n");
     debug::turnBuildinLED(true);
-    /*#if defined(ARDUINO)
-    write();
+#if defined(ARDUINO)
+    read(); //write();
 #else
-    read();
+    write(); //read();
+    common::time::delay(common::time::ms(100));
 #endif
-	*/
-    //DBG("hello\r\n");
 #ifdef ARDUINO
     auto ret = analogRead(0);
     DBG("common::analog::read:%d\r\n", int(ret));
-    common::time::delay(common::time::ms(100));
 #endif
     debug::turnBuildinLED(false);
-    //write();
-    //common::time::delay(common::time::ms(1000));
-    //debug::turnBuildinLED(false);
-    common::time::delay(common::time::ms(100));
+    common::time::delay(common::time::ms(1000));
 }
