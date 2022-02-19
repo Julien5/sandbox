@@ -34,6 +34,7 @@ namespace tickscounter {
 
     struct packed {
         mutable u64 epoch_at_start = 0;
+        mutable u64 millis_at_send = 0;
         packed() : m_bins{} {};
         packed(const u8 *bytes) {
             *this = *(packed *)bytes;

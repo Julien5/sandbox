@@ -1,78 +1,34 @@
 #include "application.h"
 #include "common/debug.h"
-#include "common/wifi.h"
+#include "httpsender.h"
 
 #include "application.h"
 #include "compteur.h"
 #include "intermittentread.h"
 
-std::unique_ptr<wifi::wifi> W;
 std::unique_ptr<compteur> C;
 
 void application::setup() {
     debug::init_serial();
     DBG("sizeof(compteur):%d\r\n", int(sizeof(compteur)));
-    DBG("sizeof(wifi::wifi):%d\r\n", int(sizeof(wifi::wifi)));
+    DBG("sizeof(wifi::wifi):%d\r\n", int(sizeof(httpsender)));
     DBG("ok.%d\r\n", debug::freeMemory());
     C = std::unique_ptr<compteur>(new compteur);
     DBG("ok.%d\r\n", debug::freeMemory());
-    W = std::unique_ptr<wifi::wifi>(new wifi::wifi);
-}
-
-class callback : public wifi::callback {
-    int missing_bytes = -1;
-    void status(u8 s) {
-        DBG("status:%d\r\n", int(s));
-        assert(s == 0);
-    }
-    void data_length(u16 total_length) {
-        DBG("data_length:%d\r\n", int(total_length));
-        missing_bytes = total_length;
-    }
-    virtual void data(u8 *data, size_t length) {
-        missing_bytes -= length;
-    }
-
-  public:
-    bool done() const {
-        return missing_bytes == 0;
-    }
-};
-
-class epoch_callback : public callback {
-  public:
-    u64 epoch = 0;
-    void data(u8 *data, size_t length) {
-        for (usize k = 0; k < length; ++k) {
-            char n = data[k] - '0';
-            auto ischar = 0 <= n && n <= 9;
-            if (!ischar)
-                continue;
-            epoch = 10 * epoch + n;
-        }
-    }
-};
-
-u64 get_epoch() {
-    TRACE();
-    epoch_callback cb;
-    W->get("http://pi:8000/epoch", &cb);
-    if (cb.epoch < 1643485907) {
-        DBG("invalid epoch:%ld\r\n", cb.epoch);
-        return 0;
-    }
-    return cb.epoch;
 }
 
 bool transmit() {
-    TRACE();
-    auto t0 = common::time::since_reset();
-    callback cb;
     size_t L = 0;
     auto data = C->data(&L);
-    W->post("http://pix:8000/post", data, L, &cb);
-    DBG("transmit time %d ms\r\n", int(common::time::since_reset().since(t0).value()));
-    return cb.done();
+    return httpsender().post_tickcounter(data, L);
+}
+
+u64 get_epoch() {
+    TRACE();
+    u64 e = 0;
+    if (httpsender().get_epoch(&e))
+        return e;
+    return 0;
 }
 
 float power(const common::time::ms &interval) {

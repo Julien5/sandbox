@@ -319,6 +319,7 @@ bool packed::operator==(const packed &other) const {
 
 const packed *counter::get_packed(size_t *L) const {
     m_packed.epoch_at_start = common::time::since_epoch(common::time::ms(getbin(0).start())).value();
+    m_packed.millis_at_send = common::time::since_reset().value();
     *L = sizeof(m_packed);
     return &m_packed;
 }
