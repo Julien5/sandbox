@@ -1,7 +1,7 @@
 #include "application.h"
 #include "common/debug.h"
 #include "httpsender.h"
-
+#include "common/sleep.h"
 #include "application.h"
 #include "compteur.h"
 #include "intermittentread.h"
@@ -17,10 +17,75 @@ void application::setup() {
     DBG("ok.%d\r\n", debug::freeMemory());
 }
 
-bool transmit() {
+namespace flags {
+    bool need_transmit = false;
+}
+
+void transmit() {
+    assert(flags::need_transmit);
     size_t L = 0;
     auto data = C->data(&L);
-    return httpsender().post_tickcounter(data, L);
+    bool ok = httpsender().post_tickcounter(data, L);
+    // if (ok) // no retry for now.
+    flags::need_transmit = false;
+}
+
+bool night() {
+    auto secs = common::time::since_epoch().value() / 1000;
+    auto hours = secs / 3600;
+    auto clockhours = 1 + (hours % 24); // epoch is UTC time.
+    return 23 <= clockhours || clockhours < 6;
+}
+
+bool large_delta() {
+    return C->delta() > 200;
+}
+
+bool full() {
+    return C->is_full();
+}
+
+u16 hours(const common::time::ms &t) {
+    return std::floor((t.value() / 1000) / 3600);
+}
+
+bool hourly() {
+    static common::time::ms last_trigger_time(0);
+    auto now = common::time::since_epoch();
+    if (hours(now) != hours(last_trigger_time)) {
+        last_trigger_time = now;
+        return true;
+    }
+    return false;
+}
+
+bool ticks_coming_soon() {
+    // use compteur
+    return false;
+}
+
+bool need_transmit_worker(bool ticked) {
+    if (night())
+        return false;
+    if (ticked) {
+        if (large_delta())
+            return true;
+        if (full())
+            return true;
+    }
+    if (hourly())
+        return true;
+    return false;
+}
+
+bool need_transmit(bool ticked) {
+    if (flags::need_transmit)
+        return true;
+    if (need_transmit_worker(ticked)) {
+        flags::need_transmit = true;
+        return flags::need_transmit;
+    }
+    return false;
 }
 
 u64 get_epoch() {
@@ -48,7 +113,7 @@ float last_known_power() {
 float transmitted_power = 0;
 bool last_transmit_failed = false;
 
-bool need_transmit(const float &_current_power) {
+bool need_transmit_0(const float &_current_power) {
     if (last_transmit_failed)
         return false;
     // C full || diff(rpm) > 200W
@@ -73,25 +138,8 @@ namespace {
     }
 }
 
-bool hourly() {
-    static common::time::ms last_trigger_time(0);
-    auto now = common::time::since_epoch();
-    auto secs = now.value() / 1000;
-    auto minutes = secs / 60;
-    auto clockminutes = minutes % 60;
-    auto trigger = clockminutes % 5 == 0;
-    // DBG("%d %d %ld\r\n", secs, int(trigger), now.since(last_trigger_time).value());
-    if ((now > common::time::ms(1) && last_trigger_time.value() == 0) || (trigger && now.since(last_trigger_time) > one_minute())) {
-        last_trigger_time = now;
-        DBG("trigger(%d) last:%ld\r\n", int(secs), last_trigger_time.value());
-        return true;
-    }
-    return false;
-}
-
 void hourly_tasks(bool force) {
     if (hourly() || force) {
-        return;
         last_transmit_failed = false;
         auto e = get_epoch();
         if (e == 0)
@@ -101,22 +149,20 @@ void hourly_tasks(bool force) {
     }
 }
 
-const bool force = true;
-void application::loop() {
-    hourly_tasks(!force);
-    if (C->update()) {
-        C->print();
-        const auto P = last_known_power();
-        if (need_transmit(P)) {
-            if (transmit()) {
-                transmitted_power = P;
-                DBG("p1:%d -> p2:%d\r\n", int(transmitted_power), int(P));
-                C->clear();
-                hourly_tasks(force);
-            } else {
-                last_transmit_failed = true;
-            }
-            DBG("counter: %dW\n", int(P));
-        }
+void work() {
+    bool ticked = C->update();
+    if (ticks_coming_soon())
+        return;
+    if (need_transmit(ticked)) {
+        transmit();
     }
+}
+
+void application::loop() {
+    auto t0 = common::time::since_reset();
+    work();
+    auto d = common::time::since_reset().since(t0);
+    if (d.value() > 300)
+        return;
+    sleep().deep_sleep(common::time::ms(300 - d.value()));
 }

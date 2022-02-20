@@ -1,7 +1,6 @@
 #include "compteur.h"
 #include "common/debug.h"
 #include "common/time.h"
-#include "common/sleep.h"
 
 tickscounter::counter_config config() {
     tickscounter::counter_config ret;
@@ -19,13 +18,6 @@ Detection *compteur::detection() {
     return &m_detection;
 }
 
-double kW(const u32 ticks, const Clock::ms d) {
-    if (d == 0)
-        return 0;
-    const double hours = double(d) * 0.001 / 3600.0f;
-    return (double(ticks) / hours) / 75.0f;
-}
-
 void print_bin(const tickscounter::bin &b) {
     // DBG("start:%7d duration:%7d count:%3d\n",b.m_start, b.m_duration,b.m_count);
 }
@@ -36,9 +28,6 @@ bool compteur::update() {
         DBG("counter ticked\r\n");
         return true;
     }
-    //DBG("counter not ticked\r\n");
-    if (m_detection.may_sleep())
-        sleep().deep_sleep(common::time::ms(200));
     return false;
 }
 
@@ -56,6 +45,19 @@ tickscounter::bin::count compteur::total() {
 }
 
 float compteur::current_rpm() {
+    const auto N = counter.total();
+    if (N < 2)
+        return 0;
+    const auto ms0 = common::time::ms(counter.getbin(0).m_start);
+    const auto ms1 = common::time::ms(counter.last_tick_time());
+    float minutes = float(ms1.since(ms0).value()) / (1000 * 60);
+    return float(N) / minutes;
+}
+
+float delta(const tickscounter::bin &b1, const tickscounter::bin &b2) {
+}
+
+float compteur::delta() {
     const auto N = counter.total();
     if (N < 2)
         return 0;

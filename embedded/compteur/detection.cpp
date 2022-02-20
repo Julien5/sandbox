@@ -12,10 +12,6 @@ u16 bound(u16 T, u16 k) {
 Detection::Detection() {
 }
 
-bool Detection::may_sleep() const {
-    return m_reader.done();
-}
-
 bool simulated_tick() {
     static common::digital d3(3);
     static bool last_value = false;

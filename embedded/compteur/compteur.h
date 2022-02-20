@@ -6,6 +6,7 @@
 class compteur {
     tickscounter::counter counter;
     Detection m_detection;
+    common::time::ms m_last_ticks[3];
 
   public:
     compteur();
@@ -14,6 +15,7 @@ class compteur {
     tickscounter::bin::count total();
     common::time::ms time_between_last_two_ticks() const;
     float current_rpm();
+    float delta();
     Detection *detection();
     bool is_full() const;
     void clear();
