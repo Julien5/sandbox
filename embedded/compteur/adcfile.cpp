@@ -47,8 +47,9 @@ adcfile *adcfile::instance() {
 }
 
 adcfile::adcfile() {
-    if (parameters::get().empty())
-        throw std::runtime_error("missing filename parameter");
+    if (parameters::get().empty()) {
+        return;
+    }
     auto filename = parameters::get().at(0);
     m_lines = lines(read_file(filename));
 }
@@ -58,6 +59,8 @@ void adcfile::setT(const int &T) {
 }
 
 u16 adcfile::read() {
+    if (m_lines.empty())
+        throw std::runtime_error("missing filename parameter");
     assert(m_T > 0);
     // last line is empty
     if (m_line_index >= (m_lines.size() - 1)) {

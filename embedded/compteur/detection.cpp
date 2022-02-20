@@ -30,7 +30,7 @@ bool simulated_tick() {
     return ret;
 }
 
-//#define SIMULATION
+#define SIMULATION
 
 bool Detection::tick() {
 #ifdef SIMULATION

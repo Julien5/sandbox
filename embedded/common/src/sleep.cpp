@@ -4,7 +4,6 @@
 
 #if defined(PC)
 void sleep::deep_sleep(const common::time::ms &d) {
-    DBG("deep sleep (=> delay)\n");
     common::time::delay(d);
 }
 #endif

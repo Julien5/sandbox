@@ -12,7 +12,6 @@ namespace wifi {
     wifi::wifi() {
         assert(!S);
         S = std::unique_ptr<common::serial>(new common::serial);
-        debug::address_range("wifi:", this, sizeof(*this));
     }
 
     wifi::~wifi() {

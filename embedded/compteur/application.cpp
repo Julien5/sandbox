@@ -33,12 +33,20 @@ void transmit() {
 bool night() {
     auto secs = common::time::since_epoch().value() / 1000;
     auto hours = secs / 3600;
-    auto clockhours = 1 + (hours % 24); // epoch is UTC time.
+    auto clockhours = 1 + (hours % 24); // epoch is UTC time => UTC+1
     return 23 <= clockhours || clockhours < 6;
 }
 
+float power(const common::time::ms &interval) {
+    if (interval.value() == 0)
+        return 0;
+    const int K = 70;
+    const float T = float(interval.value()) / 1000;
+    return 1000 * float(3600) / (T * K);
+}
+
 bool large_delta() {
-    return C->delta() > 200;
+    return power(C->delta_period()) > 200;
 }
 
 bool full() {
@@ -60,8 +68,8 @@ bool hourly() {
 }
 
 bool ticks_coming_soon() {
-    // use compteur
-    return false;
+    auto t = C->last_tick().add(C->current_period());
+    return t.since(common::time::since_epoch()).value() < 10000;
 }
 
 bool need_transmit_worker(bool ticked) {
@@ -96,56 +104,9 @@ u64 get_epoch() {
     return 0;
 }
 
-float power(const common::time::ms &interval) {
-    if (interval.value() == 0)
-        return 0;
-    const int K = 70;
-    const float T = float(interval.value()) / 1000;
-    return 1000 * float(3600) / (T * K);
-}
-
-float last_known_power() {
-    const auto T = C->time_between_last_two_ticks();
-    DBG("p1 T:%d\r\n", int(T.value()));
-    return power(T);
-}
-
-float transmitted_power = 0;
-bool last_transmit_failed = false;
-
-bool need_transmit_0(const float &_current_power) {
-    if (last_transmit_failed)
-        return false;
-    // C full || diff(rpm) > 200W
-    if (C->is_full()) {
-        TRACE();
-        return true;
-    }
-    if (_current_power == 0)
-        return false;
-    const auto delta = transmitted_power - _current_power;
-    if (fabs(delta) > 200) {
-        DBG("p1:%d -> p2:%d\r\n", int(transmitted_power), int(_current_power));
-        TRACE();
-        return true;
-    }
-    return false;
-}
-
 namespace {
     common::time::ms one_minute() {
         return common::time::ms(u64(60) * 1000);
-    }
-}
-
-void hourly_tasks(bool force) {
-    if (hourly() || force) {
-        last_transmit_failed = false;
-        auto e = get_epoch();
-        if (e == 0)
-            return;
-        DBG("epoch:%d\r\n", int(e));
-        common::time::set_current_epoch(common::time::ms(1000 * e));
     }
 }
 

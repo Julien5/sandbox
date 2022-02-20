@@ -4,7 +4,7 @@
 #include "common/tickscounter.h"
 
 class compteur {
-    tickscounter::counter counter;
+    tickscounter::counter m_counter;
     Detection m_detection;
     common::time::ms m_last_ticks[3];
 
@@ -13,9 +13,9 @@ class compteur {
     bool update();
     void print();
     tickscounter::bin::count total();
-    common::time::ms time_between_last_two_ticks() const;
-    float current_rpm();
-    float delta();
+    common::time::ms last_tick() const;
+    common::time::ms current_period() const;
+    common::time::ms delta_period() const;
     Detection *detection();
     bool is_full() const;
     void clear();

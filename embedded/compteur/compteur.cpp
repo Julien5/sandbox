@@ -10,8 +10,8 @@ tickscounter::counter_config config() {
 }
 
 compteur::compteur()
-    : counter(config()) {
-    debug::address_range("compteur:", this, sizeof(*this));
+    : m_counter(config()) {
+    memset(m_last_ticks, 0, sizeof(m_last_ticks));
 }
 
 Detection *compteur::detection() {
@@ -22,57 +22,62 @@ void print_bin(const tickscounter::bin &b) {
     // DBG("start:%7d duration:%7d count:%3d\n",b.m_start, b.m_duration,b.m_count);
 }
 
+void push(common::time::ms *values, usize N, common::time::ms value) {
+    for (usize k = 0; k < (N - 1); ++k) {
+        values[k] = values[k + 1];
+    }
+    values[N] = value;
+}
+
 bool compteur::update() {
     if (m_detection.tick()) {
-        counter.tick();
-        DBG("counter ticked\r\n");
+        m_counter.tick();
+        push(m_last_ticks, sizeof(m_last_ticks) / sizeof(m_last_ticks[0]), common::time::since_epoch());
+        //DBG("counter ticked\r\n");
         return true;
     }
     return false;
 }
 
 void compteur::print() {
-    counter.print();
-    DBG("counter:%d:total:%d\r\n", int(common::time::since_reset().value()) / 1000, int(counter.total()));
+    m_counter.print();
+    DBG("counter:%d:total:%d\r\n", int(common::time::since_reset().value()) / 1000, int(m_counter.total()));
 }
 
 const u8 *compteur::data(size_t *L) const {
-    return reinterpret_cast<const u8 *>(counter.get_packed(L));
+    return reinterpret_cast<const u8 *>(m_counter.get_packed(L));
 }
 
 tickscounter::bin::count compteur::total() {
-    return counter.total();
+    return m_counter.total();
 }
 
-float compteur::current_rpm() {
-    const auto N = counter.total();
-    if (N < 2)
-        return 0;
-    const auto ms0 = common::time::ms(counter.getbin(0).m_start);
-    const auto ms1 = common::time::ms(counter.last_tick_time());
-    float minutes = float(ms1.since(ms0).value()) / (1000 * 60);
-    return float(N) / minutes;
+common::time::ms compteur::current_period() const {
+    return m_last_ticks[2].since(m_last_ticks[1]);
 }
 
-float delta(const tickscounter::bin &b1, const tickscounter::bin &b2) {
+common::time::ms compteur::delta_period() const {
+    const auto d1 = m_last_ticks[1].since(m_last_ticks[0]);
+    const auto d2 = m_last_ticks[2].since(m_last_ticks[1]);
+    if (d1.value() == 0 || d2.value() == 0)
+        return common::time::ms();
+    return common::time::ms(fabs(double(d1.value()) - double(d2.value())));
 }
 
-float compteur::delta() {
-    const auto N = counter.total();
-    if (N < 2)
-        return 0;
-    const auto ms0 = common::time::ms(counter.getbin(0).m_start);
-    const auto ms1 = common::time::ms(counter.last_tick_time());
-    float minutes = float(ms1.since(ms0).value()) / (1000 * 60);
-    return float(N) / minutes;
+common::time::ms compteur::last_tick() const {
+    for (int k = 2; k >= 0; --k) {
+        if (m_last_ticks[k].value() > 0)
+            return m_last_ticks[k];
+    }
+    return common::time::ms(0);
 }
 
 bool compteur::is_full() const {
-    return counter.is_full();
+    return m_counter.is_full();
 }
 
 void compteur::clear() {
-    counter.reset();
+    m_counter.reset();
 }
 
 int compteur::test() {
@@ -85,25 +90,4 @@ int compteur::test() {
         common::time::delay(common::time::ms(200));
     }
 	*/
-}
-
-common::time::ms compteur::time_between_last_two_ticks() const {
-    if (counter.bin_count() < 2)
-        return common::time::ms();
-    common::time::ms t1, t2; // zero-init
-    for (auto k = tickscounter::NTICKS - 1; k >= 0; --k) {
-        if (counter.getbin(k).empty())
-            continue;
-        auto bin = counter.getbin(k);
-        if (t1.value() == 0) {
-            if (bin.m_count > 1) {
-                return common::time::ms(bin.m_duration / (bin.m_count - 1));
-            }
-            t1 = common::time::ms(bin.start());
-        } else {
-            t2 = common::time::ms(bin.end());
-            break;
-        }
-    }
-    return common::time::ms(t1.value() - t2.value());
 }
