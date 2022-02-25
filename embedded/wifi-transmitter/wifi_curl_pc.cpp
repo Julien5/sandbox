@@ -10,6 +10,7 @@
 #include <strings.h>
 #include <string.h>
 #include "common/platform.h"
+#include "common/time.h"
 
 wifi::wifi_curl::wifi_curl(){};
 wifi::wifi_curl::~wifi_curl(){};
@@ -31,7 +32,7 @@ bool file_exists(const char *fileName) {
 int exe(const std::string &method, const char *req, wifi::callback *cb, const u8 *data = nullptr, const int Ldata = 0) {
     std::string cmd = "curl --http0.9 -i --raw -s -X " + method + " ";
     if (std::getenv("TEST_CURL_SH"))
-        cmd = std::string(std::getenv("TEST_CURL_SH")) + " " + method + " ";
+        cmd = std::string(std::getenv("TEST_CURL_SH")) + " time:" + std::to_string(common::time::since_reset().value()) + " " + method + " ";
     if (data && Ldata) {
         std::ofstream f;
         f.open("data.bin", std::ios::out | std::ios::binary | std::ios::trunc);

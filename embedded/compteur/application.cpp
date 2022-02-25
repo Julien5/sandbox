@@ -8,15 +8,6 @@
 
 std::unique_ptr<compteur> C;
 
-void application::setup() {
-    debug::init_serial();
-    DBG("sizeof(compteur):%d\r\n", int(sizeof(compteur)));
-    DBG("sizeof(wifi::wifi):%d\r\n", int(sizeof(httpsender)));
-    DBG("ok.%d\r\n", debug::freeMemory());
-    C = std::unique_ptr<compteur>(new compteur);
-    DBG("ok.%d\r\n", debug::freeMemory());
-}
-
 namespace flags {
     bool need_transmit = false;
 }
@@ -24,6 +15,7 @@ namespace flags {
 bool transmit() {
     assert(flags::need_transmit);
     size_t L = 0;
+    C->print();
     auto data = C->data(&L);
     bool ok = httpsender().post_tickcounter(data, L);
     assert(ok);
@@ -105,12 +97,14 @@ bool need_transmit(bool ticked) {
     return false;
 }
 
-u64 get_epoch() {
+bool setup_epoch() {
     TRACE();
     u64 e = 0;
-    if (httpsender().get_epoch(&e))
-        return e;
-    return 0;
+    if (httpsender().get_epoch(&e)) {
+        common::time::set_current_epoch(common::time::ms(e * 1000));
+        return true;
+    }
+    return false;
 }
 
 namespace {
@@ -124,8 +118,19 @@ void work() {
     if (ticks_coming_soon())
         return;
     if (need_transmit(ticked)) {
-        if (transmit())
+        if (transmit()) {
             C->clear();
+            setup_epoch();
+        }
+    }
+}
+
+void application::setup() {
+    debug::init_serial();
+    C = std::unique_ptr<compteur>(new compteur);
+    DBG("ok.%d\r\n", debug::freeMemory());
+    while (!setup_epoch()) {
+        DBG("failed\r\n");
     }
 }
 

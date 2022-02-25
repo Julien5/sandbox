@@ -31,9 +31,8 @@ int main(int argc, char **argv) {
     if (!parameters::get().empty() && parameters::get().at(0) == "tests") {
         return tests();
     }
-
-    application::setup();
     std::thread serial_thread(transmitter::run);
+    application::setup();
     while (1) {
         application::loop();
         common::time::simulate(common::time::us(10));

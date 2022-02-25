@@ -1,19 +1,25 @@
 #!/usr/bin/env bash
 
 OUT=/tmp/wifi.curloutput.internal
-echo "$@" &> $OUT
+echo "$@" &> args
 URL=
+TIME=0
 for a in $@; do
 	if [[ "$a" = "http://"* ]];then
 		URL="$a"
-		break;
+	fi
+	if [[ "$a" = "time:"* ]];then
+		b=$(echo $a | cut -f2 -d:)
+		TIME=$((b/1000))
 	fi
 done
-echo $URL
+
 if [[ "$URL" = *"epoch"* ]];then
-	echo $EPOCH
+	echo $((EPOCH+TIME)) > $OUT
+	sleep 0.1
 fi
 
 if [[ "$URL" = *"tickcounter/data"* ]];then
-	echo $EPOCH
+	# nothing to do
+	echo -n
 fi
