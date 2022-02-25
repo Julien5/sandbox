@@ -21,13 +21,15 @@ namespace flags {
     bool need_transmit = false;
 }
 
-void transmit() {
+bool transmit() {
     assert(flags::need_transmit);
     size_t L = 0;
     auto data = C->data(&L);
     bool ok = httpsender().post_tickcounter(data, L);
+    assert(ok);
     // if (ok) // no retry for now.
     flags::need_transmit = false;
+    return ok;
 }
 
 bool night() {
@@ -73,16 +75,23 @@ bool ticks_coming_soon() {
 }
 
 bool need_transmit_worker(bool ticked) {
-    if (night())
+    if (night()) {
         return false;
-    if (ticked) {
-        if (large_delta())
-            return true;
-        if (full())
-            return true;
     }
-    if (hourly())
+    if (ticked) {
+        if (large_delta()) {
+            DBG("\r\n");
+            return true;
+        }
+        if (full()) {
+            DBG("\r\n");
+            return true;
+        }
+    }
+    if (hourly()) {
+        DBG("\r\n");
         return true;
+    }
     return false;
 }
 
@@ -115,7 +124,8 @@ void work() {
     if (ticks_coming_soon())
         return;
     if (need_transmit(ticked)) {
-        transmit();
+        if (transmit())
+            C->clear();
     }
 }
 

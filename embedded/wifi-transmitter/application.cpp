@@ -7,6 +7,8 @@
 #include "common/serial.h"
 
 #include <string.h>
+#include <thread>
+#include <mutex>
 
 #include "message.h"
 
@@ -25,6 +27,23 @@ namespace {
 }
 
 void transmitter::setup() {
+}
+
+namespace stop {
+    std::mutex mtx;
+    bool value = false;
+}
+
+void transmitter::stop() {
+    using namespace stop;
+    std::unique_lock<std::mutex> lock(mtx);
+    value = true;
+}
+
+bool transmitter::stopped() {
+    using namespace stop;
+    std::unique_lock<std::mutex> lock(mtx);
+    return value;
 }
 
 #include <chrono>
@@ -63,8 +82,10 @@ void transmitter::loop_serial() {
 
     debug::turnBuildinLED(true);
     TRACE();
-    while (!S->wait_for_begin(common::time::ms(1000))) {
+    while (!stopped() && !S->wait_for_begin(common::time::ms(1000))) {
     }
+    if (stopped())
+        return;
     TRACE();
 
     bool ok = false;

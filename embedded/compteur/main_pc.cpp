@@ -24,6 +24,7 @@ int tests() {
     return 0;
 }
 #include <cassert>
+
 int main(int argc, char **argv) {
     parameters::set(argc, argv);
 
@@ -36,7 +37,12 @@ int main(int argc, char **argv) {
     while (1) {
         application::loop();
         common::time::simulate(common::time::us(10));
+        const auto t = common::time::since_reset();
+        const auto nhours = t.value() / 1000 / 60 / 60;
+        if (nhours >= 24)
+            break;
     }
+    transmitter::stop();
     serial_thread.join();
     return 0;
 }

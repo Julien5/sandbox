@@ -4,13 +4,15 @@
 
 #include <chrono>
 #include <thread>
+#include <mutex>
+#include <cassert>
 
 void wait(int n = 500) {
     std::this_thread::sleep_for(std::chrono::milliseconds(n));
 }
 
 void transmitter::run() {
-    while (1) {
+    while (!transmitter::stopped()) {
         transmitter::loop_serial();
         wait(250);
     }

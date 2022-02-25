@@ -10,8 +10,8 @@
 namespace wifi {
     std::unique_ptr<common::serial> S;
     wifi::wifi() {
-        assert(!S);
-        S = std::unique_ptr<common::serial>(new common::serial);
+        if (!S)
+            S = std::unique_ptr<common::serial>(new common::serial);
     }
 
     wifi::~wifi() {

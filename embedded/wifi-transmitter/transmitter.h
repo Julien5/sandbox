@@ -1,5 +1,6 @@
 #pragma once
 
 namespace transmitter {
-  void run();
+    void stop();
+    void run();
 }

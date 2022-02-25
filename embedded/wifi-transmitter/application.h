@@ -1,6 +1,8 @@
 #pragma once
 
 namespace transmitter {
-  void setup();
-  void loop_serial();
+    void stop();
+    bool stopped();
+    void setup();
+    void loop_serial();
 }
