@@ -72,7 +72,41 @@ function test_large_delta() {
 	check NTRANSMIT_EPOCH 5 $NTRANSMIT_EPOCH
 }
 
+function test_full() {
+	echo full
+	reset
+	export SIMULATION_DURATION=$((3600*1000*21/10));
+	export START_TIME=$((10*3600))
+	export TICK_PERIOD=380
+	run
+	print
+	check NTRANSMIT_DATA 2 $NTRANSMIT_DATA
+	check NTRANSMIT_EPOCH 3 $NTRANSMIT_EPOCH
+	export TICK_PERIOD=340
+	run
+	print
+	check NTRANSMIT_DATA 4 $NTRANSMIT_DATA
+	check NTRANSMIT_EPOCH 5 $NTRANSMIT_EPOCH
+}
+
+function test_night() {
+	echo night
+	reset
+	export TICK_PERIOD=100
+	export SIMULATION_DURATION=$((3600*1000*59/10));
+	run
+	print
+	check NTRANSMIT_DATA 0 $NTRANSMIT_DATA
+	check NTRANSMIT_EPOCH 1 $NTRANSMIT_EPOCH
+	export SIMULATION_DURATION=$((3600*1000*61/10));
+	run
+	print
+	check NTRANSMIT_DATA 1 $NTRANSMIT_DATA
+	check NTRANSMIT_EPOCH 2 $NTRANSMIT_EPOCH
+}
 
 test_default
 test_ticks_soon
 test_large_delta
+test_full
+test_night
