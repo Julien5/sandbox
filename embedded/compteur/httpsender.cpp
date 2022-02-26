@@ -21,11 +21,11 @@ httpsender::~httpsender() {
 class callback : public wifi::callback {
     int missing_bytes = -1;
     void status(u8 s) {
-        DBG("status:%d\r\n", int(s));
+        //DBG("status:%d\r\n", int(s));
         assert(s == 0);
     }
     void data_length(u16 total_length) {
-        DBG("data_length:%d\r\n", int(total_length));
+        //DBG("data_length:%d\r\n", int(total_length));
         missing_bytes = total_length;
     }
     virtual void data(u8 *data, size_t length) {
@@ -39,11 +39,10 @@ class callback : public wifi::callback {
 };
 
 bool httpsender::post_tickcounter(const u8 *data, const usize &length) {
-    TRACE();
     auto t0 = common::time::since_reset();
     callback cb;
     m_wifi.post("http://pi:8000/compteur/tickcounter/data/", data, length, &cb);
-    DBG("transmit time %d ms\r\n", int(common::time::since_reset().since(t0).value()));
+    //DBG("transmit time %d ms\r\n", int(common::time::since_reset().since(t0).value()));
     return cb.done();
 }
 
@@ -62,7 +61,6 @@ class epoch_callback : public callback {
 };
 
 bool httpsender::get_epoch(u64 *epoch) {
-    TRACE();
     epoch_callback cb;
     m_wifi.get("http://pi:8000/epoch", &cb);
 #define EPOCH_01_02_2022_00_00 1643670000

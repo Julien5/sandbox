@@ -61,7 +61,7 @@ bool serial::check_end() {
         if (ok)
             break;
     }
-    //if (crc8_received != saved_rx_crc8)
-    DBG("CRC: 0x%02x != 0x%02x\r\n", crc8_received, saved_rx_crc8);
+    if (crc8_received != saved_rx_crc8)
+        DBG("CRC: 0x%02x != 0x%02x\r\n", crc8_received, saved_rx_crc8);
     return crc8_received == saved_rx_crc8;
 }

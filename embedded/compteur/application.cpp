@@ -49,7 +49,6 @@ bool night() {
     auto secs = common::time::since_epoch().value() / 1000;
     auto hours = secs / 3600;
     auto clockhours = 1 + (hours % 24); // epoch is UTC time => UTC+1
-    //DBG("clockhours:%d\r\n", int(clockhours));
     return 23 <= clockhours || clockhours < 6;
 }
 
@@ -67,8 +66,6 @@ bool large_delta() {
     if (T0 * T1 == 0)
         return false;
     auto delta_power = (double(1000) * 3600 / 75) * fabs(T1 - T0) / (T1 * T0);
-    DBG("T0:%2.2f s T1:%2.2f\r\n", T0, T1);
-    DBG("delta:%2.2f s power:%2.2f W\r\n", fabs(T0 - T1), delta_power);
     return delta_power > 200;
 }
 
@@ -94,22 +91,16 @@ bool hourly() {
 }
 
 bool ticks_coming_soon() {
-    //DBG("soon:\r\n");
     auto next = C->last_tick().add(C->current_period());
     if (C->last_tick().value() == 0)
         return false;
-    //DBG("soon:last:%zu\r\n", C->last_tick().value());
     if (C->current_period().value() == 0)
         return false;
-    //DBG("soon:   T:%zu\r\n", C->current_period().value());
     auto now = common::time::since_epoch();
-    //DBG("soon: now:%zu\r\n", now.value());
-    //DBG("soon:next:%zu\r\n", next.value());
     if (now > next) {
         return true;
     }
     auto remain = next.since(now);
-    //DBG("soon:%zu\r\n", remain.value());
     assert(now.value() <= next.value());
     return remain.value() < 10000;
 }

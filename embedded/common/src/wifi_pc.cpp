@@ -48,7 +48,7 @@ namespace wifi {
             return 4;
         }
         r->data_length(size);
-        DBG("size:%d\r\n", int(size));
+        //DBG("size:%d\r\n", int(size));
 
         size_t nread = 0;
         while (nread < size) {
@@ -87,7 +87,6 @@ namespace wifi {
         const char command = 'P';
         //                G   http......    0 + Ldata         + data...
         const u16 Ltotal = 1 + strlen(url) + 1 + sizeof(Ldata) + Ldata;
-        DBG("url:%s\r\n", url);
         S->begin();
         S->write((u8 *)&Ltotal, sizeof(Ltotal));
         S->write((u8 *)&command, sizeof(command));
@@ -95,9 +94,6 @@ namespace wifi {
         S->write((u8 *)&Ldata, sizeof(Ldata));
         S->write((u8 *)data, Ldata);
         S->end();
-        TRACE();
-        int ret = read_wifi_response(S.get(), r);
-        TRACE();
-        return ret;
+        return read_wifi_response(S.get(), r);
     }
 }

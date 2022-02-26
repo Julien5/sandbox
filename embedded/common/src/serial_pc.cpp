@@ -78,7 +78,7 @@ usize common::serial::read(u8 *buffer, usize buffer_size, u16 timeout) {
     if (Lread == 0) {
         return Lread;
     }
-    DBG("Lread:%d\r\n", int(Lread));
+    //DBG("Lread:%d\r\n", int(Lread));
     crc::CRC8(&rx_crc8, buffer, Lread);
     return Lread;
 }
