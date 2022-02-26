@@ -8,8 +8,8 @@
 #include "compteur.h"
 
 #include <thread>
-
 #include "parameters.h"
+#include "simulation.h"
 
 int tests() {
     DBG("sizeof compteur:%d\n", int(sizeof(compteur)));
@@ -37,8 +37,7 @@ int main(int argc, char **argv) {
         application::loop();
         common::time::simulate(common::time::us(10));
         const auto t = common::time::since_reset();
-        const auto nhours = t.value() / 1000 / 60 / 60;
-        if (nhours >= 24)
+        if (t > simulation::end_time())
             break;
     }
     transmitter::stop();

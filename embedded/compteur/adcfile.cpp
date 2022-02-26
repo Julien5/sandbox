@@ -3,41 +3,9 @@
 #ifdef PC
 #include <cassert>
 #include "common/debug.h"
-#include <fstream>
+#include "read_file.h"
 
 #include "parameters.h"
-
-namespace {
-    std::string read_file(const std::string &fileName) {
-        std::ifstream ifs(fileName.c_str(), std::ios::in | std::ios::ate);
-        std::ifstream::pos_type s = ifs.tellg();
-        ifs.seekg(0, std::ios::beg);
-        std::vector<char> bytes(s);
-        ifs.read(bytes.data(), s);
-        return std::string(bytes.data(), s);
-    }
-
-    std::vector<std::string> split(const std::string &s, const std::string &sep) {
-        size_t beg = 0;
-        size_t end = 0;
-        std::vector<std::string> ret;
-        while (true) {
-            end = s.find(sep, beg);
-            auto part = s.substr(beg, end == std::string::npos ? end : end - beg);
-            ret.push_back(part);
-            if (end == std::string::npos)
-                break;
-            beg = end + 1;
-            end = 0;
-        }
-        return ret;
-    }
-
-    std::vector<std::string> lines(const std::string &s) {
-        auto ret = split(s, "\n");
-        return ret;
-    }
-}
 
 adcfile *adcfile::instance() {
     static adcfile *inst = nullptr;
@@ -47,11 +15,12 @@ adcfile *adcfile::instance() {
 }
 
 adcfile::adcfile() {
+    using namespace read_file;
     if (parameters::get().empty()) {
         return;
     }
     auto filename = parameters::get().at(0);
-    m_lines = lines(read_file(filename));
+    m_lines = lines(content(filename));
 }
 
 void adcfile::setT(const int &T) {

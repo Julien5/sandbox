@@ -14,8 +14,12 @@ if (ARDUINO)
   # target_compile_definitions(compteur INTERFACE -DSIMULATION=1)
 else()
   target_compile_definitions(compteur PRIVATE -DSIMULATION=1)
-  target_sources(compteur PRIVATE main_pc.cpp simulation_pc)
-  target_sources(compteur PRIVATE parameters_pc.cpp)
+  target_sources(compteur PRIVATE
+	main_pc.cpp
+	simulation_pc.cpp
+	parameters_pc.cpp
+	read_file.cpp
+	)
   target_link_libraries(compteur PRIVATE wifi-transmitter)
 endif()
 
