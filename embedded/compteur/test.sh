@@ -37,7 +37,7 @@ function check() {
 		return 0;
 	fi
 	printf "[NO] %s should be %s\n" $name $expected
-	return 0;
+	exit 1;
 }
 
 function test_default() {
@@ -110,3 +110,4 @@ test_ticks_soon
 test_large_delta
 test_full
 test_night
+echo good

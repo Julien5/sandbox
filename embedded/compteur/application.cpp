@@ -12,14 +12,35 @@ namespace flags {
     bool need_transmit = false;
 }
 
+bool setup_epoch_worker(httpsender *sender) {
+    u64 e = 0;
+    if (sender->get_epoch(&e)) {
+        common::time::set_current_epoch(common::time::ms(e * 1000));
+        return true;
+    }
+    return false;
+}
+
+bool setup_epoch(httpsender *sender = nullptr) {
+    if (sender)
+        return setup_epoch_worker(sender);
+    httpsender s2;
+    return setup_epoch_worker(&s2);
+}
+
 bool transmit() {
     assert(flags::need_transmit);
     size_t L = 0;
     C->print();
     auto data = C->data(&L);
-    bool ok = httpsender().post_tickcounter(data, L);
-    assert(ok);
-    // if (ok) // no retry for now.
+    httpsender sender;
+    bool ok = sender.post_tickcounter(data, L);
+    if (ok) {
+        setup_epoch(&sender);
+    } else {
+        // transmitting failed
+        // no retry for now (we transmit hourly, this is enough.)
+    }
     flags::need_transmit = false;
     return ok;
 }
@@ -124,16 +145,6 @@ bool need_transmit(bool ticked) {
     return false;
 }
 
-bool setup_epoch() {
-    TRACE();
-    u64 e = 0;
-    if (httpsender().get_epoch(&e)) {
-        common::time::set_current_epoch(common::time::ms(e * 1000));
-        return true;
-    }
-    return false;
-}
-
 namespace {
     common::time::ms one_minute() {
         return common::time::ms(u64(60) * 1000);
@@ -147,7 +158,6 @@ void work() {
     if (need_transmit(ticked)) {
         if (transmit()) {
             C->clear();
-            setup_epoch();
         }
     }
 }
