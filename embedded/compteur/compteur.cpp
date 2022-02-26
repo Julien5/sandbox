@@ -53,10 +53,14 @@ tickscounter::bin::count compteur::total() {
 }
 
 common::time::ms compteur::current_period() const {
+    if (m_last_ticks[1].value() * m_last_ticks[2].value() == 0)
+        return common::time::ms();
     return m_last_ticks[2].since(m_last_ticks[1]);
 }
 
 common::time::ms compteur::previous_period() const {
+    if (m_last_ticks[0].value() * m_last_ticks[1].value() == 0)
+        return common::time::ms();
     return m_last_ticks[1].since(m_last_ticks[0]);
 }
 

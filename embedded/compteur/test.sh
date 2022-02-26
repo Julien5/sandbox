@@ -36,7 +36,7 @@ function check() {
 		printf "[OK] %s %s %s\n" $name
 		return 0;
 	fi
-	printf "[NO] %s %s %s\n" $name $expected $actual
+	printf "[NO] %s should be %s\n" $name $expected
 	return 0;
 }
 
@@ -53,13 +53,26 @@ function test_ticks_soon() {
 	echo ticks soon
 	reset
 	export START_TIME=$((10*3600+123))
-	export TICK_PERIOD=7
-	export SIMULATION_DURATION=$((3600*1000*31/10));
+	export TICK_PERIOD=7 # <10 
 	run
 	print
 	check NTRANSMIT_DATA 0 $NTRANSMIT_DATA
 	check NTRANSMIT_EPOCH 1 $NTRANSMIT_EPOCH
 }
 
+function test_large_delta() {
+	echo large delta
+	reset
+	export START_TIME=$((10*3600))
+	export PERIODS_FILE="periods-large-delta.txt"
+	export SIMULATION_DURATION=$((3600*1000*15/10));
+	run
+	print
+	check NTRANSMIT_DATA 4 $NTRANSMIT_DATA
+	check NTRANSMIT_EPOCH 5 $NTRANSMIT_EPOCH
+}
+
+
 test_default
 test_ticks_soon
+test_large_delta

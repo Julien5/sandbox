@@ -44,13 +44,13 @@ namespace {
     }
     int get_period(const common::time::ms &millis) {
         const auto P = read_periods();
-        int period = 0;
+        int period = P.front().period;
         for (auto p : P) {
-            if (millis.value() >= p.start_time.value())
-                return p.period;
+            if (millis.value() < p.start_time.value())
+                return period;
+            period = p.period;
         }
-        assert(0);
-        return 0;
+        return period;
     }
 }
 

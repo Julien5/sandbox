@@ -46,7 +46,8 @@ bool large_delta() {
     if (T0 * T1 == 0)
         return false;
     auto delta_power = (double(1000) * 3600 / 75) * fabs(T1 - T0) / (T1 * T0);
-    DBG("delta:%2.2f ms power:%2.2f W\r\n", 1000 * fabs(T0 - T1), delta_power);
+    DBG("T0:%2.2f s T1:%2.2f\r\n", T0, T1);
+    DBG("delta:%2.2f s power:%2.2f W\r\n", fabs(T0 - T1), delta_power);
     return delta_power > 200;
 }
 
