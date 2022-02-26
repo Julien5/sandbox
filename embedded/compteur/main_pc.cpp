@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
         application::loop();
         common::time::simulate(common::time::us(10));
         const auto t = common::time::since_reset();
-        if (t > simulation::end_time())
+        if (t > simulation::duration())
             break;
     }
     transmitter::stop();

@@ -65,7 +65,7 @@ bool httpsender::get_epoch(u64 *epoch) {
     TRACE();
     epoch_callback cb;
     m_wifi.get("http://pi:8000/epoch", &cb);
-#define EPOCH_01_02_2022_00_00 1643673600
+#define EPOCH_01_02_2022_00_00 1643670000
     if (cb.epoch < EPOCH_01_02_2022_00_00) {
         DBG("invalid epoch:%ld\r\n", cb.epoch);
         return false;

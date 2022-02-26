@@ -5,6 +5,6 @@
 #ifdef PC
 namespace simulation {
     bool tick();
-    common::time::ms end_time();
+    common::time::ms duration();
 }
 #endif

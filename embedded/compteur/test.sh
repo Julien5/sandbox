@@ -4,20 +4,36 @@ set -e
 #set -x
 
 export TEST_CURL_SH=./test-curl.sh
-export EPOCH=$((1643673600+20*3600))
-export TICK_PERIOD=600;
-export PERIODS_FILE=periods.txt
-export SIMULATION_END_TIME=$((3600*1000));
+
+function reset() {
+	unset START_TIME
+	unset TICK_PERIOD
+	unset PERIODS_FILE
+	unset SIMULATION_DURATION
+}
+
 out=out # $(mktemp)
-/tmp/build_pc/compteur/compteur | tee $out || true
-NTRANSMIT=$( grep $TEST_CURL_SH $out | wc -l)
-#rm -f $out
-printf "there were %d transmissions\n" $NTRANSMIT
+function run() {
+	rm -f $out
+	/tmp/build_pc/compteur/compteur | tee $out || true
+	NTRANSMIT=$( grep $TEST_CURL_SH $out | wc -l)
+	NTRANSMIT_DATA=$(grep $TEST_CURL_SH $out | grep tickcounter | wc -l)
+	NTRANSMIT_EPOCH=$(grep $TEST_CURL_SH $out | grep epoch | wc -l)
+}
 
-NTRANSMIT=$(grep $TEST_CURL_SH $out | grep tickcounter | wc -l)
-#rm -f $out
-printf "there were %d tickscounter transmissions\n" $NTRANSMIT
+function print() {
+	printf "there were %d transmissions\n" $NTRANSMIT
+	printf "there were %d tickscounter transmissions\n" $NTRANSMIT_DATA
+	printf "there were %d epoch transmissions\n" $NTRANSMIT_EPOCH
+}
 
-NTRANSMIT=$(grep $TEST_CURL_SH $out | grep epoch | wc -l)
-#rm -f $out
-printf "there were %d epoch transmissions\n" $NTRANSMIT
+function test_ticks_soon() {
+	reset
+	export START_TIME=$((10*3600+123))
+	export TICK_PERIOD=7
+	export SIMULATION_DURATION=$((3600*1000*31/10));
+	run
+	print
+}
+
+test_ticks_soon

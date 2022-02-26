@@ -22,11 +22,11 @@ void print_bin(const tickscounter::bin &b) {
     // DBG("start:%7d duration:%7d count:%3d\n",b.m_start, b.m_duration,b.m_count);
 }
 
-void push(common::time::ms *values, usize N, common::time::ms value) {
+void push(common::time::ms *values, const usize N, const common::time::ms &value) {
     for (usize k = 0; k < (N - 1); ++k) {
         values[k] = values[k + 1];
     }
-    values[N] = value;
+    values[N - 1] = value;
 }
 
 bool compteur::update() {

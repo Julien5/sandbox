@@ -60,12 +60,12 @@ int tick_period() {
     auto env = _getenv("TICK_PERIOD");
     if (!env.empty())
         return std::stoi(env);
-    return 4;
+    return 480; // 100W @ 75U/kWh
 }
 
-common::time::ms simulation::end_time() {
-    if (!_getenv("SIMULATION_END_TIME").empty())
-        return common::time::ms(std::stoi(_getenv("SIMULATION_END_TIME")));
+common::time::ms simulation::duration() {
+    if (!_getenv("SIMULATION_DURATION").empty())
+        return common::time::ms(std::stoi(_getenv("SIMULATION_DURATION")));
     return common::time::ms(24 * 3600 * 1000);
 }
 

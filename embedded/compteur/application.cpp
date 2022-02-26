@@ -28,13 +28,14 @@ bool night() {
     auto secs = common::time::since_epoch().value() / 1000;
     auto hours = secs / 3600;
     auto clockhours = 1 + (hours % 24); // epoch is UTC time => UTC+1
+    //DBG("clockhours:%d\r\n", int(clockhours));
     return 23 <= clockhours || clockhours < 6;
 }
 
 float power(const common::time::ms &interval) {
     if (interval.value() == 0)
         return 0;
-    const int K = 70;
+    const int K = 75;
     const float T = float(interval.value()) / 1000;
     return 1000 * float(3600) / (T * K);
 }
@@ -54,7 +55,7 @@ u16 hours(const common::time::ms &t) {
 bool hourly() {
     static common::time::ms last_trigger_time(0);
     auto now = common::time::since_epoch();
-    if (hours(now) != hours(last_trigger_time)) {
+    if (hours(now) != hours(last_trigger_time) && last_trigger_time.value()) {
         last_trigger_time = now;
         return true;
     }
@@ -62,8 +63,24 @@ bool hourly() {
 }
 
 bool ticks_coming_soon() {
-    auto t = C->last_tick().add(C->current_period());
-    return t.since(common::time::since_epoch()).value() < 10000;
+    //DBG("soon:\r\n");
+    auto next = C->last_tick().add(C->current_period());
+    if (C->last_tick().value() == 0)
+        return false;
+    //DBG("soon:last:%zu\r\n", C->last_tick().value());
+    if (C->current_period().value() == 0)
+        return false;
+    //DBG("soon:   T:%zu\r\n", C->current_period().value());
+    auto now = common::time::since_epoch();
+    //DBG("soon: now:%zu\r\n", now.value());
+    //DBG("soon:next:%zu\r\n", next.value());
+    if (now > next) {
+        return true;
+    }
+    auto remain = next.since(now);
+    //DBG("soon:%zu\r\n", remain.value());
+    assert(now.value() <= next.value());
+    return remain.value() < 10000;
 }
 
 bool need_transmit_worker(bool ticked) {
