@@ -41,7 +41,13 @@ float power(const common::time::ms &interval) {
 }
 
 bool large_delta() {
-    return power(C->delta_period()) > 200;
+    auto T0 = double(C->previous_period().value()) / 1000;
+    auto T1 = double(C->current_period().value()) / 1000;
+    if (T0 * T1 == 0)
+        return false;
+    auto delta_power = (double(1000) * 3600 / 75) * fabs(T1 - T0) / (T1 * T0);
+    DBG("delta:%2.2f ms power:%2.2f W\r\n", 1000 * fabs(T0 - T1), delta_power);
+    return delta_power > 200;
 }
 
 bool full() {
@@ -55,8 +61,11 @@ u16 hours(const common::time::ms &t) {
 bool hourly() {
     static common::time::ms last_trigger_time(0);
     auto now = common::time::since_epoch();
-    if (hours(now) != hours(last_trigger_time) && last_trigger_time.value()) {
+    if (hours(now) != hours(last_trigger_time)) {
+        bool first_time = last_trigger_time.value() == 0;
         last_trigger_time = now;
+        if (first_time)
+            return false;
         return true;
     }
     return false;

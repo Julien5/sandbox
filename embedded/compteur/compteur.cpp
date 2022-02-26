@@ -56,12 +56,8 @@ common::time::ms compteur::current_period() const {
     return m_last_ticks[2].since(m_last_ticks[1]);
 }
 
-common::time::ms compteur::delta_period() const {
-    const auto d1 = m_last_ticks[1].since(m_last_ticks[0]);
-    const auto d2 = m_last_ticks[2].since(m_last_ticks[1]);
-    if (d1.value() == 0 || d2.value() == 0)
-        return common::time::ms();
-    return common::time::ms(fabs(double(d1.value()) - double(d2.value())));
+common::time::ms compteur::previous_period() const {
+    return m_last_ticks[1].since(m_last_ticks[0]);
 }
 
 common::time::ms compteur::last_tick() const {

@@ -15,7 +15,7 @@ class compteur {
     tickscounter::bin::count total();
     common::time::ms last_tick() const;
     common::time::ms current_period() const;
-    common::time::ms delta_period() const;
+    common::time::ms previous_period() const;
     Detection *detection();
     bool is_full() const;
     void clear();
