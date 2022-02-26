@@ -115,23 +115,16 @@ bool ticks_coming_soon() {
 }
 
 bool need_transmit_worker(bool ticked) {
-    if (night()) {
+    if (night())
         return false;
-    }
     if (ticked) {
-        if (large_delta()) {
-            DBG("\r\n");
+        if (large_delta())
             return true;
-        }
-        if (full()) {
-            DBG("\r\n");
+        if (full())
             return true;
-        }
     }
-    if (hourly()) {
-        DBG("\r\n");
+    if (hourly())
         return true;
-    }
     return false;
 }
 
