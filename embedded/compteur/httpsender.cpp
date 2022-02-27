@@ -11,27 +11,24 @@ httpsender::httpsender() {
 #ifdef ARDUINO
     pinMode(esp_pin, OUTPUT);
     digitalWrite(esp_pin, HIGH);
-    // esp needs 300ms to wake up and 5s to connect to wifi
-    DBG("esp starting up\r\n");
+    // esp needs 300ms to wake up and about 4s to connect to wifi
     common::time::delay(common::time::ms(500));
     u8 buffer[4] = {0};
     int q = 4;
     while (q--) {
         usize L = common::serial::serial().read(buffer, 4, 1000);
-        utils::dump(buffer, L);
+        //utils::dump(buffer, L);
     }
     while (true) {
         usize L = common::serial::serial().read(buffer, 4, 1000);
         if (L == 0)
             break;
-        utils::dump(buffer, L);
+        //utils::dump(buffer, L);
     }
-    DBG("esp should be up\r\n");
 #endif
 }
 httpsender::~httpsender() {
     // turn off
-    DBG("esp turn off\r\n");
 #ifdef ARDUINO
     digitalWrite(esp_pin, LOW);
 #endif
@@ -48,10 +45,9 @@ class data_callback : public wifi::callback {
         missing_bytes = total_length;
     }
     virtual void data(u8 *data, size_t length) {
-        DBG("received:%d\n", int(length));
-        utils::dump(data, length);
+        //utils::dump(data, length);
         missing_bytes -= length;
-        DBG("missing:%d\r\n", int(missing_bytes));
+        //DBG("missing:%d\r\n", int(missing_bytes));
     }
 
   public:
@@ -66,11 +62,12 @@ bool httpsender::post_tickcounter(const u8 *data, const usize &length) {
     while (retries--) {
         data_callback cb;
         m_wifi.post("http://pi:8000/compteur/tickcounter/data/", data, length, &cb);
-        //DBG("transmit time %d ms\r\n", int(common::time::since_reset().since(t0).value()));
         if (cb.done()) {
             DBG("SUCCESS data\r\n");
+            DBG("transmit time %d ms\r\n", int(common::time::since_reset().since(t0).value()));
             return true;
         }
+        DBG("failed. retry=%d\r\n", retries);
     }
     return false;
 }
@@ -102,6 +99,7 @@ bool httpsender::get_epoch(u64 *epoch) {
             DBG("SUCCESS epoch:%ld\r\n", cb.epoch);
             return true;
         }
+        DBG("failed. retry=%d\r\n", retries);
     }
     return false;
 }

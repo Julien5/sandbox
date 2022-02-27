@@ -2,6 +2,7 @@
 #include "adcfile.h"
 #include "common/debug.h"
 #include "common/time.h"
+#include "sleep_authorization.h"
 
 const int espEnablePin = 8;
 bool switchLED(bool on) {
@@ -53,12 +54,14 @@ bool IntermittentRead::tick(u16 *value) {
         last_measure_time = common::time::since_reset_us();
     }
 
+    // we are done if k==T, otherwise do not sleep yet
+    if (k < T)
+        sleep_authorization::forbid();
+
     if (old()) {
         auto ambientlight = A[T - 1];
-        //*value = round(average());
         *value = round(xMax(average() - ambientlight, 0.0f));
         reset();
-        switchLED(true);
         return true;
     }
     return false;

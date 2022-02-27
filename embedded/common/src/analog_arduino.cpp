@@ -14,8 +14,7 @@ class analog_init {
 
 u16 common::analog::read() {
     static analog_init i;
-
     auto ret = analogRead(0);
-    DBG("common::analog::read:%d\r\n", int(ret));
+    //DBG("common::analog::read:%d\r\n", int(ret));
     return ret;
 }

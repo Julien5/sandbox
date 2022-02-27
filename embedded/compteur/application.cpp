@@ -5,6 +5,7 @@
 #include "application.h"
 #include "compteur.h"
 #include "intermittentread.h"
+#include "sleep_authorization.h"
 
 std::unique_ptr<compteur> C;
 
@@ -108,14 +109,25 @@ bool ticks_coming_soon() {
 bool need_transmit_worker(bool ticked) {
     if (night())
         return false;
+
+    // do not transmit while the LED is turned on.
+    if (!sleep_authorization::authorized())
+        return false;
+
     if (ticked) {
-        if (large_delta())
+        if (large_delta()) {
+            DBG("- large_delta\r\n");
             return true;
-        if (full())
+        }
+        if (full()) {
+            DBG("- full\r\n");
             return true;
+        }
     }
-    if (hourly())
+    if (hourly()) {
+        DBG("- hourly\r\n");
         return true;
+    }
     return false;
 }
 
@@ -148,18 +160,22 @@ void work() {
 
 void application::setup() {
     debug::init_serial();
+    DBG("hello\r\n");
     C = std::unique_ptr<compteur>(new compteur);
-    DBG("ok.%d\r\n", debug::freeMemory());
+    DBG("init:memory:%d:time:%d\r\n", debug::freeMemory(), int(common::time::since_reset().value()));
     while (!setup_epoch()) {
         DBG("failed\r\n");
     }
+    DBG("READY\r\n");
 }
 
 void application::loop() {
     auto t0 = common::time::since_reset();
+    sleep_authorization::reset();
     work();
     auto d = common::time::since_reset().since(t0);
     if (d.value() > 300)
         return;
-    sleep().deep_sleep(common::time::ms(300 - d.value()));
+    if (sleep_authorization::authorized())
+        sleep().deep_sleep(common::time::ms(300 - d.value()));
 }

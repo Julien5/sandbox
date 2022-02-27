@@ -54,8 +54,10 @@ void write() {
 }
 
 void application::loop() {
-    DBG("loop()\r\n");
+    DBG("loop(%d)\r\n", int(common::time::since_reset().value()));
     debug::turnBuildinLED(true);
+    common::time::delay(common::time::ms(100));
+#if 0
 #if defined(ARDUINO)
     read(); //write();
 #else
@@ -65,6 +67,7 @@ void application::loop() {
 #ifdef ARDUINO
     auto ret = analogRead(0);
     DBG("common::analog::read:%d\r\n", int(ret));
+#endif
 #endif
     debug::turnBuildinLED(false);
     common::time::delay(common::time::ms(1000));

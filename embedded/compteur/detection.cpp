@@ -19,7 +19,7 @@ bool Detection::tick() {
     u16 value = 0;
     if (!m_reader.tick(&value))
         return false;
-    DBG("-> value:%d\r\n", int(value));
+
     float delta = 0;
     const float alpha = 0.9875;
     if (xalpha < 0)
@@ -45,7 +45,9 @@ bool Detection::tick() {
     m_last_adc_value[m_adc_index] = value;
     m_adc_index++;
 
-    const auto new_value = value < xalpha && delta > 85;
+    DBG("-> value:%d xalpha:%d delta:%d\r\n", int(value), int(xalpha), int(delta));
+    const auto delta_threshold = xalpha / 10;
+    const auto new_value = value < xalpha && delta > delta_threshold;
     if (new_value == m_last_value)
         return false;
     m_last_value = new_value;
