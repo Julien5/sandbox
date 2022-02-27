@@ -74,7 +74,7 @@ bool full() {
 }
 
 u16 hours(const common::time::ms &t) {
-    return std::floor((t.value() / 1000) / 3600);
+    return floor((t.value() / 1000) / 3600);
 }
 
 bool hourly() {

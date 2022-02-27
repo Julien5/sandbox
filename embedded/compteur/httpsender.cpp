@@ -9,6 +9,8 @@ httpsender::httpsender() {
 #ifdef ARDUINO
     pinMode(esp_pin, OUTPUT);
     digitalWrite(esp_pin, HIGH);
+    // esp needs 300ms to wake up
+    common::time::delay(common::time::ms(500));
 #endif
 }
 httpsender::~httpsender() {

@@ -83,13 +83,15 @@ usize common::serial::read(u8 *buffer, usize buffer_size, u16 timeout) {
     return Lread;
 }
 
+/*
 void write_file(u8 *buffer, size_t buffer_size) {
     std::fstream f("/tmp/serial.write", std::ios::out | std::ios::binary | std::ios::app);
     f.write(reinterpret_cast<char *>(buffer), buffer_size);
 }
+*/
 
 size_t common::serial::write(u8 *buffer, size_t buffer_size) {
-    write_file(buffer, buffer_size);
+    //write_file(buffer, buffer_size);
     auto &buf = s_map.get(this) == 0 ? s_txbuffer : s_rxbuffer;
     buf.write(buffer, buffer_size);
     crc::CRC8(&tx_crc8, buffer, buffer_size);
