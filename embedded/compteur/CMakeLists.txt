@@ -11,7 +11,7 @@ target_sources(compteur PRIVATE
 
 if (ARDUINO)
   target_sources(compteur PRIVATE main_arduino.cpp simulation_arduino.cpp)
-  target_compile_definitions(compteur INTERFACE -DSIMULATION=1)
+  target_compile_definitions(compteur PRIVATE -DSIMULATION=1)
 else()
   target_compile_definitions(compteur PRIVATE -DSIMULATION=1)
   target_sources(compteur PRIVATE

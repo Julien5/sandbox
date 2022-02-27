@@ -96,38 +96,53 @@
 },
 {
   "directory": "/tmp/build_pc/compteur",
-  "command": "/usr/bin/g++  -DPC=1 -I/home/julien/projects/sandbox/embedded/common/include  -g   -o CMakeFiles/compteur.dir/adcfile.cpp.obj -c /home/julien/projects/sandbox/embedded/compteur/adcfile.cpp",
+  "command": "/usr/bin/g++  -DPC=1 -DSIMULATION=1 -I/home/julien/projects/sandbox/embedded/common/include  -g   -o CMakeFiles/compteur.dir/adcfile.cpp.obj -c /home/julien/projects/sandbox/embedded/compteur/adcfile.cpp",
   "file": "/home/julien/projects/sandbox/embedded/compteur/adcfile.cpp"
 },
 {
   "directory": "/tmp/build_pc/compteur",
-  "command": "/usr/bin/g++  -DPC=1 -I/home/julien/projects/sandbox/embedded/common/include  -g   -o CMakeFiles/compteur.dir/application.cpp.obj -c /home/julien/projects/sandbox/embedded/compteur/application.cpp",
+  "command": "/usr/bin/g++  -DPC=1 -DSIMULATION=1 -I/home/julien/projects/sandbox/embedded/common/include  -g   -o CMakeFiles/compteur.dir/application.cpp.obj -c /home/julien/projects/sandbox/embedded/compteur/application.cpp",
   "file": "/home/julien/projects/sandbox/embedded/compteur/application.cpp"
 },
 {
   "directory": "/tmp/build_pc/compteur",
-  "command": "/usr/bin/g++  -DPC=1 -I/home/julien/projects/sandbox/embedded/common/include  -g   -o CMakeFiles/compteur.dir/compteur.cpp.obj -c /home/julien/projects/sandbox/embedded/compteur/compteur.cpp",
+  "command": "/usr/bin/g++  -DPC=1 -DSIMULATION=1 -I/home/julien/projects/sandbox/embedded/common/include  -g   -o CMakeFiles/compteur.dir/compteur.cpp.obj -c /home/julien/projects/sandbox/embedded/compteur/compteur.cpp",
   "file": "/home/julien/projects/sandbox/embedded/compteur/compteur.cpp"
 },
 {
   "directory": "/tmp/build_pc/compteur",
-  "command": "/usr/bin/g++  -DPC=1 -I/home/julien/projects/sandbox/embedded/common/include  -g   -o CMakeFiles/compteur.dir/detection.cpp.obj -c /home/julien/projects/sandbox/embedded/compteur/detection.cpp",
+  "command": "/usr/bin/g++  -DPC=1 -DSIMULATION=1 -I/home/julien/projects/sandbox/embedded/common/include  -g   -o CMakeFiles/compteur.dir/detection.cpp.obj -c /home/julien/projects/sandbox/embedded/compteur/detection.cpp",
   "file": "/home/julien/projects/sandbox/embedded/compteur/detection.cpp"
 },
 {
   "directory": "/tmp/build_pc/compteur",
-  "command": "/usr/bin/g++  -DPC=1 -I/home/julien/projects/sandbox/embedded/common/include  -g   -o CMakeFiles/compteur.dir/intermittentread.cpp.obj -c /home/julien/projects/sandbox/embedded/compteur/intermittentread.cpp",
+  "command": "/usr/bin/g++  -DPC=1 -DSIMULATION=1 -I/home/julien/projects/sandbox/embedded/common/include  -g   -o CMakeFiles/compteur.dir/intermittentread.cpp.obj -c /home/julien/projects/sandbox/embedded/compteur/intermittentread.cpp",
   "file": "/home/julien/projects/sandbox/embedded/compteur/intermittentread.cpp"
 },
 {
   "directory": "/tmp/build_pc/compteur",
-  "command": "/usr/bin/g++  -DPC=1 -I/home/julien/projects/sandbox/embedded/common/include  -g   -o CMakeFiles/compteur.dir/main_pc.cpp.obj -c /home/julien/projects/sandbox/embedded/compteur/main_pc.cpp",
+  "command": "/usr/bin/g++  -DPC=1 -DSIMULATION=1 -I/home/julien/projects/sandbox/embedded/common/include  -g   -o CMakeFiles/compteur.dir/httpsender.cpp.obj -c /home/julien/projects/sandbox/embedded/compteur/httpsender.cpp",
+  "file": "/home/julien/projects/sandbox/embedded/compteur/httpsender.cpp"
+},
+{
+  "directory": "/tmp/build_pc/compteur",
+  "command": "/usr/bin/g++  -DPC=1 -DSIMULATION=1 -I/home/julien/projects/sandbox/embedded/common/include  -g   -o CMakeFiles/compteur.dir/main_pc.cpp.obj -c /home/julien/projects/sandbox/embedded/compteur/main_pc.cpp",
   "file": "/home/julien/projects/sandbox/embedded/compteur/main_pc.cpp"
 },
 {
   "directory": "/tmp/build_pc/compteur",
-  "command": "/usr/bin/g++  -DPC=1 -I/home/julien/projects/sandbox/embedded/common/include  -g   -o CMakeFiles/compteur.dir/parameters_pc.cpp.obj -c /home/julien/projects/sandbox/embedded/compteur/parameters_pc.cpp",
+  "command": "/usr/bin/g++  -DPC=1 -DSIMULATION=1 -I/home/julien/projects/sandbox/embedded/common/include  -g   -o CMakeFiles/compteur.dir/simulation_pc.cpp.obj -c /home/julien/projects/sandbox/embedded/compteur/simulation_pc.cpp",
+  "file": "/home/julien/projects/sandbox/embedded/compteur/simulation_pc.cpp"
+},
+{
+  "directory": "/tmp/build_pc/compteur",
+  "command": "/usr/bin/g++  -DPC=1 -DSIMULATION=1 -I/home/julien/projects/sandbox/embedded/common/include  -g   -o CMakeFiles/compteur.dir/parameters_pc.cpp.obj -c /home/julien/projects/sandbox/embedded/compteur/parameters_pc.cpp",
   "file": "/home/julien/projects/sandbox/embedded/compteur/parameters_pc.cpp"
+},
+{
+  "directory": "/tmp/build_pc/compteur",
+  "command": "/usr/bin/g++  -DPC=1 -DSIMULATION=1 -I/home/julien/projects/sandbox/embedded/common/include  -g   -o CMakeFiles/compteur.dir/read_file.cpp.obj -c /home/julien/projects/sandbox/embedded/compteur/read_file.cpp",
+  "file": "/home/julien/projects/sandbox/embedded/compteur/read_file.cpp"
 },
 {
   "directory": "/tmp/build_pc/wifi-transmitter",

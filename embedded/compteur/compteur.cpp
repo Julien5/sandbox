@@ -33,7 +33,7 @@ bool compteur::update() {
     if (m_detection.tick()) {
         m_counter.tick();
         push(m_last_ticks, sizeof(m_last_ticks) / sizeof(m_last_ticks[0]), common::time::since_epoch());
-        //DBG("counter ticked\r\n");
+        DBG("ticked:%d\r\n", int(common::time::since_reset().value()));
         return true;
     }
     return false;

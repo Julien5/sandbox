@@ -64,7 +64,6 @@ bool ascii(const u8 a) {
     return false;
 }
 void utils::dump(const u8 *data_buffer, const size_t length) {
-    //DBG("\r\n");
     for (size_t k = 0; k < length; ++k) {
         if (ascii(data_buffer[k]))
             DBG("%2c ", data_buffer[k]);
@@ -73,5 +72,6 @@ void utils::dump(const u8 *data_buffer, const size_t length) {
         if (k % 8 == 0 && k > 0)
             DBG("\r\n");
     }
+    DBG("\r\n");
 }
 #endif
