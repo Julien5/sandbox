@@ -54,6 +54,10 @@ void common::time::set_current_epoch(const ms &epoch) {
     common::time::since_reset_at_epoch = common::time::since_reset();
 }
 
+bool common::time::epoch_is_set() {
+    return common::time::epoch.value() != 0;
+}
+
 common::time::ms common::time::since_epoch(const ms &since_reset_time) {
     return ms(common::time::epoch.value() + since_reset_time.value() - common::time::since_reset_at_epoch.value());
 }
