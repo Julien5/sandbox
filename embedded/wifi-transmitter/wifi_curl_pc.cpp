@@ -12,27 +12,39 @@
 #include "common/platform.h"
 #include "common/time.h"
 
+#include <fstream>
+
 wifi::wifi_curl::wifi_curl(){};
 wifi::wifi_curl::~wifi_curl(){};
 
-const char *kDataFile = "/tmp/wifi.curloutput.internal";
+const std::string kDataFile = "/tmp/wifi.curloutput.internal";
 
-size_t
-remain(size_t buffer_size, size_t pos) {
+size_t remain(size_t buffer_size, size_t pos) {
     if (pos >= buffer_size)
         return 0;
     return buffer_size - pos;
 }
 
-bool file_exists(const char *fileName) {
-    std::ifstream infile(fileName);
+bool file_exists(const std::string &filename) {
+    std::ifstream infile(filename.c_str());
     return infile.good();
 }
 
 int exe(const std::string &method, const char *req, wifi::callback *cb, const u8 *data = nullptr, const int Ldata = 0) {
+    // remove output file (cleanup)
+    if (file_exists(kDataFile))
+        std::remove(kDataFile.c_str());
+
     std::string cmd = "curl --http0.9 -i --raw -s -X " + method + " ";
-    if (std::getenv("TEST_CURL_SH"))
-        cmd = std::string(std::getenv("TEST_CURL_SH")) + " time:" + std::to_string(common::time::since_reset().value()) + " " + method + " ";
+    if (std::getenv("TEST_CURL_SH")) {
+        const std::string test_curl = std::string(std::getenv("TEST_CURL_SH"));
+        if (!file_exists(test_curl)) {
+            DBG("failed: could not find: %s \r\n", test_curl.c_str());
+            return 2;
+        }
+        cmd = test_curl + " time:" + std::to_string(common::time::since_reset().value()) + " " + method + " ";
+    }
+
     if (data && Ldata) {
         std::ofstream f;
         f.open("data.bin", std::ios::out | std::ios::binary | std::ios::trunc);
@@ -42,14 +54,14 @@ int exe(const std::string &method, const char *req, wifi::callback *cb, const u8
         cmd += " ";
     }
     cmd += std::string(req);
-    cmd += " --output /tmp/wifi.curloutput.internal";
+    cmd += " --output " + kDataFile;
     DBG("exe: %s\n", cmd.c_str());
     std::system(cmd.c_str());
-    auto f = fopen(kDataFile, "rb");
+    auto f = fopen(kDataFile.c_str(), "rb");
     auto code = errno;
     cb->status(code);
     if (!f) {
-        DBG("failed to find: %s code:%d\n", kDataFile, int(code));
+        DBG("failed to find: %s code:%d\n", kDataFile.c_str(), int(code));
         assert(code != 0);
         return code;
     }

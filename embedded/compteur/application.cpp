@@ -10,7 +10,7 @@
 std::unique_ptr<compteur> C;
 
 namespace flags {
-    bool need_transmit = false;
+    bool last_transmit_failed = false;
 }
 
 bool setup_epoch_worker(httpsender *sender) {
@@ -30,19 +30,19 @@ bool setup_epoch(httpsender *sender = nullptr) {
 }
 
 bool transmit() {
-    assert(flags::need_transmit);
+    flags::last_transmit_failed = true;
     size_t L = 0;
     C->print();
     auto data = C->data(&L);
     httpsender sender;
     bool ok = sender.post_tickcounter(data, L);
     if (ok) {
+        flags::last_transmit_failed = false;
         setup_epoch(&sender);
     } else {
         // transmitting failed
         // no retry for now (we transmit hourly, this is enough.)
     }
-    flags::need_transmit = false;
     return ok;
 }
 
@@ -114,6 +114,18 @@ bool need_transmit_worker(bool ticked) {
     if (!sleep_authorization::authorized())
         return false;
 
+    if (hourly()) {
+        DBG("- hourly\r\n");
+        return true;
+    }
+
+    // epoch should be set asap
+    if (!common::time::epoch_is_set())
+        return true;
+
+    //if (flags::last_transmit_failed)
+    //    return false;
+
     if (ticked) {
         if (large_delta()) {
             DBG("- large_delta\r\n");
@@ -124,33 +136,20 @@ bool need_transmit_worker(bool ticked) {
             return true;
         }
     }
-    if (hourly()) {
-        DBG("- hourly\r\n");
-        return true;
-    }
     return false;
 }
 
 bool need_transmit(bool ticked) {
-    if (flags::need_transmit)
-        return true;
+    if (ticks_coming_soon())
+        return false;
     if (need_transmit_worker(ticked)) {
-        flags::need_transmit = true;
-        return flags::need_transmit;
+        return true;
     }
     return false;
 }
 
-namespace {
-    common::time::ms one_minute() {
-        return common::time::ms(u64(60) * 1000);
-    }
-}
-
 void work() {
     bool ticked = C->update();
-    if (ticks_coming_soon())
-        return;
     if (need_transmit(ticked)) {
         if (transmit()) {
             C->clear();
@@ -163,10 +162,9 @@ void application::setup() {
     DBG("hello\r\n");
     C = std::unique_ptr<compteur>(new compteur);
     DBG("init:memory:%d:time:%d\r\n", debug::freeMemory(), int(common::time::since_reset().value()));
-    while (!setup_epoch()) {
-        DBG("failed\r\n");
-    }
-    DBG("READY\r\n");
+    // this is sane in setup() to test the connection
+    // also needed by night().
+    setup_epoch();
 }
 
 void application::loop() {

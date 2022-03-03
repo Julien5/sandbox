@@ -25,5 +25,5 @@ fi
 
 if [[ "$URL" = *"tickcounter/data"* ]];then
 	# nothing to do
-	echo -n
+	echo -n > $OUT
 fi

@@ -3,9 +3,8 @@
 set -e
 #set -x
 
-export TEST_CURL_SH=./test-curl.sh
-
 function reset() {
+	export TEST_CURL_SH=./test-curl.sh
 	unset START_TIME
 	unset TICK_PERIOD
 	unset PERIODS_FILE
@@ -20,10 +19,12 @@ function run() {
 	NTRANSMIT=$( grep $TEST_CURL_SH $out | wc -l)
 	NTRANSMIT_DATA=$(grep $TEST_CURL_SH $out | grep tickcounter | wc -l)
 	NTRANSMIT_EPOCH=$(grep $TEST_CURL_SH $out | grep epoch | wc -l)
+	NTRANSMIT_FAILED=$(grep $TEST_CURL_SH $out | grep failed | wc -l)
 }
 
 function print() {
 	printf "there were %d transmissions\n" $NTRANSMIT
+	printf "there were %d failed transmissions\n" $NTRANSMIT_FAILED
 	printf "there were %d tickscounter transmissions\n" $NTRANSMIT_DATA
 	printf "there were %d epoch transmissions\n" $NTRANSMIT_EPOCH
 }
@@ -105,6 +106,17 @@ function test_night() {
 	check NTRANSMIT_EPOCH 2 $NTRANSMIT_EPOCH
 }
 
+
+function test_transmit_failed() {
+	echo transmit failed
+	reset
+	export TEST_CURL_SH=./test-noexists.sh
+	run
+	print
+}
+
+#test_transmit_failed
+#exit 0
 test_default
 test_ticks_soon
 test_large_delta
