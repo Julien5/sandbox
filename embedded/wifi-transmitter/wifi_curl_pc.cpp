@@ -30,33 +30,46 @@ bool file_exists(const std::string &filename) {
     return infile.good();
 }
 
-int exe(const std::string &method, const char *req, wifi::callback *cb, const u8 *data = nullptr, const int Ldata = 0) {
-    // remove output file (cleanup)
-    if (file_exists(kDataFile))
-        std::remove(kDataFile.c_str());
-
-    std::string cmd = "curl --http0.9 -i --raw -s -X " + method + " ";
+std::string command(const std::string &method, const char *req, const u8 *data = nullptr, const int Ldata = 0) {
+    std::string curl = "curl --http0.9 -i --raw -s -X ";
+    std::string cmd = curl + method + " ";
     if (std::getenv("TEST_CURL_SH")) {
         const std::string test_curl = std::string(std::getenv("TEST_CURL_SH"));
-        if (!file_exists(test_curl)) {
-            DBG("failed: could not find: %s \r\n", test_curl.c_str());
-            return 2;
-        }
         cmd = test_curl + " time:" + std::to_string(common::time::since_reset().value()) + " " + method + " ";
+        if (!file_exists(test_curl)) {
+            DBG("failed: could not find: %s req:%s cmd:%s\r\n", test_curl.c_str(), req, cmd.c_str());
+            return std::string();
+        }
     }
 
     if (data && Ldata) {
-        std::ofstream f;
-        f.open("data.bin", std::ios::out | std::ios::binary | std::ios::trunc);
-        f.write((char *)data, Ldata);
-        f.close();
         cmd += "--data-binary \"@data.bin\"";
         cmd += " ";
     }
     cmd += std::string(req);
     cmd += " --output " + kDataFile;
+    return cmd;
+}
+
+int exe(const std::string &method, const char *req, wifi::callback *cb, const u8 *data = nullptr, const int Ldata = 0) {
+    // remove output file (cleanup)
+    if (file_exists(kDataFile))
+        std::remove(kDataFile.c_str());
+    std::string cmd = command(method, req, data, Ldata);
+    if (cmd.empty()) {
+        return 4;
+    }
+    if (data && Ldata) {
+        std::ofstream f;
+        f.open("data.bin", std::ios::out | std::ios::binary | std::ios::trunc);
+        f.write((char *)data, Ldata);
+        f.close();
+    }
     DBG("exe: %s\n", cmd.c_str());
     std::system(cmd.c_str());
+    using namespace std::chrono_literals;
+    std::this_thread::sleep_for(1000ms);
+    errno = 0;
     auto f = fopen(kDataFile.c_str(), "rb");
     auto code = errno;
     cb->status(code);

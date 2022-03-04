@@ -37,8 +37,8 @@ bool transmit() {
     httpsender sender;
     bool ok = sender.post_tickcounter(data, L);
     if (ok) {
-        flags::last_transmit_failed = false;
-        setup_epoch(&sender);
+        if (setup_epoch(&sender))
+            flags::last_transmit_failed = false;
     } else {
         // transmitting failed
         // no retry for now (we transmit hourly, this is enough.)
@@ -119,12 +119,12 @@ bool need_transmit_worker(bool ticked) {
         return true;
     }
 
+    if (flags::last_transmit_failed)
+        return false;
+
     // epoch should be set asap
     if (!common::time::epoch_is_set())
         return true;
-
-    //if (flags::last_transmit_failed)
-    //    return false;
 
     if (ticked) {
         if (large_delta()) {

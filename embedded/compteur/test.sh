@@ -14,9 +14,11 @@ function reset() {
 out=out # $(mktemp)
 function run() {
 	echo running...
-	rm -f $out
+	rm -f $out args
+	sleep 0.1
+	# /tmp/build_pc/compteur/compteur | tee $out || true
 	/tmp/build_pc/compteur/compteur &> $out || true
-	NTRANSMIT=$( grep $TEST_CURL_SH $out | wc -l)
+	NTRANSMIT=$(grep $TEST_CURL_SH $out | wc -l)
 	NTRANSMIT_DATA=$(grep $TEST_CURL_SH $out | grep tickcounter | wc -l)
 	NTRANSMIT_EPOCH=$(grep $TEST_CURL_SH $out | grep epoch | wc -l)
 	NTRANSMIT_FAILED=$(grep $TEST_CURL_SH $out | grep failed | wc -l)
@@ -104,7 +106,7 @@ function test_night() {
 	print
 	check NTRANSMIT_DATA 0 $NTRANSMIT_DATA
 	check NTRANSMIT_EPOCH 1 $NTRANSMIT_EPOCH
-	export SIMULATION_DURATION=$((3600*1000*61/10));
+	export SIMULATION_DURATION=$(hours 6.1)
 	run
 	print
 	check NTRANSMIT_DATA 1 $NTRANSMIT_DATA
@@ -116,17 +118,27 @@ function test_transmit_failed() {
 	echo transmit failed
 	reset
 	export TEST_CURL_SH=./test-noexists.sh
-	export SIMULATION_DURATION=$(hours 4.1)
-	export START_TIME=$((10*3600))
-	export TICK_PERIOD=380
+	# because epoch cannot be set, 6h is 5h
+	export SIMULATION_DURATION=$(hours 5.001)
 	run
 	print
+	check NTRANSMIT_FAILED 6 $NTRANSMIT_FAILED
+	sleep 1
 }
 
-#test_transmit_failed
-test_default
-test_ticks_soon
-test_large_delta
-test_full
-test_night
+function main() {
+	test_transmit_failed
+	test_ticks_soon
+	test_default
+	test_large_delta
+	test_full
+	test_night
+}
+
+if [[ ! -z $1 ]]; then
+	$@
+else
+	main
+fi
+
 echo good
