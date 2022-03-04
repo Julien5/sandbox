@@ -69,15 +69,16 @@ int exe(const std::string &method, const char *req, wifi::callback *cb, const u8
     std::system(cmd.c_str());
     using namespace std::chrono_literals;
     std::this_thread::sleep_for(1000ms);
-    errno = 0;
+
     auto f = fopen(kDataFile.c_str(), "rb");
-    auto code = errno;
-    cb->status(code);
     if (!f) {
+        auto code = errno;
+        cb->status(code);
         DBG("failed to find: %s code:%d\n", kDataFile.c_str(), int(code));
         assert(code != 0);
         return code;
     }
+    cb->status(0);
 
     u8 buffer[16 * 1024];
     memset(buffer, 0, sizeof(buffer));
