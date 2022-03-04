@@ -29,6 +29,11 @@ function print() {
 	printf "there were %d epoch transmissions\n" $NTRANSMIT_EPOCH
 }
 
+function hours() {
+	n=$1
+	echo "scale=4;3600*1000*$n" | bc
+}
+
 function check() {
 	name=$1
 	expected=$2
@@ -66,7 +71,7 @@ function test_large_delta() {
 	reset
 	export START_TIME=$((10*3600))
 	export PERIODS_FILE="periods-large-delta.txt"
-	export SIMULATION_DURATION=$((3600*1000*15/10));
+	export SIMULATION_DURATION=$(hours 1.5)
 	run
 	print
 	check NTRANSMIT_DATA 4 $NTRANSMIT_DATA
@@ -76,7 +81,7 @@ function test_large_delta() {
 function test_full() {
 	echo full
 	reset
-	export SIMULATION_DURATION=$((3600*1000*21/10));
+	export SIMULATION_DURATION=$(hours 2.1)
 	export START_TIME=$((10*3600))
 	export TICK_PERIOD=380
 	run
@@ -94,7 +99,7 @@ function test_night() {
 	echo night
 	reset
 	export TICK_PERIOD=100
-	export SIMULATION_DURATION=$((3600*1000*59/10));
+	export SIMULATION_DURATION=$(hours 5.9)
 	run
 	print
 	check NTRANSMIT_DATA 0 $NTRANSMIT_DATA
@@ -111,12 +116,14 @@ function test_transmit_failed() {
 	echo transmit failed
 	reset
 	export TEST_CURL_SH=./test-noexists.sh
+	export SIMULATION_DURATION=$(hours 4.1)
+	export START_TIME=$((10*3600))
+	export TICK_PERIOD=380
 	run
 	print
 }
 
 #test_transmit_failed
-#exit 0
 test_default
 test_ticks_soon
 test_large_delta
