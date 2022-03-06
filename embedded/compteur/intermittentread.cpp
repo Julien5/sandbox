@@ -31,7 +31,7 @@ IntermittentRead::IntermittentRead() {
     common::analog_read_callback::install(adcfile::instance());
     adcfile::instance()->setT(T);
 #endif
-    m_analog = std::unique_ptr<common::analog>(new common::analog());
+    m_analog = std::unique_ptr<common::analog>(new common::analog(0));
 };
 
 common::time::us IntermittentRead::micros_since_last_measure() const {

@@ -1,6 +1,7 @@
 add_library(common STATIC)
 
 target_sources(common PRIVATE
+  src/analog.cpp
   src/clock.cpp
   src/crc.cpp
   src/debug.cpp

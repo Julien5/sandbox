@@ -12,7 +12,10 @@ namespace common {
     };
 #endif
     class analog {
+        u8 m_pin;
+
       public:
+        analog(const u8 &pin = 0);
         virtual ~analog(){};
         virtual u16 read();
     };
