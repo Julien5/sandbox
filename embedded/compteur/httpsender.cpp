@@ -4,13 +4,13 @@
 #include "common/utils.h"
 #include "common/serial.h"
 
-const char esp_pin = 9;
+const char espEnablePin = 9;
 
 httpsender::httpsender() {
     // turn on
 #ifdef ARDUINO
-    pinMode(esp_pin, OUTPUT);
-    digitalWrite(esp_pin, HIGH);
+    pinMode(espEnablePin, OUTPUT);
+    digitalWrite(espEnablePin, HIGH);
     // esp needs 300ms to wake up and about 4s to connect to wifi
     common::time::delay(common::time::ms(500));
     u8 buffer[4] = {0};
@@ -30,7 +30,7 @@ httpsender::httpsender() {
 httpsender::~httpsender() {
     // turn off
 #ifdef ARDUINO
-    digitalWrite(esp_pin, LOW);
+    digitalWrite(espEnablePin, LOW);
 #endif
 }
 
@@ -68,6 +68,15 @@ bool httpsender::post_tickcounter(const u8 *data, const usize &length) {
             return true;
         }
         DBG("failed. retry=%d\r\n", retries);
+    }
+    return false;
+}
+
+bool httpsender::post_capacity(const u8 *data, const usize &length) {
+    data_callback cb;
+    m_wifi.post("http://pi:8000/compteur/tickcounter/capacity/", data, length, &cb);
+    if (cb.done()) {
+        return true;
     }
     return false;
 }

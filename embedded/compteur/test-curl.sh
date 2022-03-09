@@ -20,10 +20,14 @@ fi
 
 if [[ "$URL" = *"epoch"* ]];then
 	echo $((EPOCH0+REQUEST_TIME)) > $OUT
-	sleep 0.1
 fi
 
 if [[ "$URL" = *"tickcounter/data"* ]];then
+	# nothing to do
+	echo -n > $OUT
+fi
+
+if [[ "$URL" = *"tickcounter/capacity"* ]];then
 	# nothing to do
 	echo -n > $OUT
 fi

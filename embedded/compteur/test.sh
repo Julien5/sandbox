@@ -16,10 +16,10 @@ function run() {
 	echo running...
 	rm -f $out args
 	sleep 0.1
-	# /tmp/build_pc/compteur/compteur | tee $out || true
-	/tmp/build_pc/compteur/compteur &> $out || true
+	#/tmp/build_pc/compteur/compteur | tee $out || true
+    /tmp/build_pc/compteur/compteur &> $out || true
 	NTRANSMIT=$(grep $TEST_CURL_SH $out | wc -l)
-	NTRANSMIT_DATA=$(grep $TEST_CURL_SH $out | grep tickcounter | wc -l)
+	NTRANSMIT_DATA=$(grep $TEST_CURL_SH $out | grep tickcounter/data | wc -l)
 	NTRANSMIT_EPOCH=$(grep $TEST_CURL_SH $out | grep epoch | wc -l)
 	NTRANSMIT_FAILED=$(grep $TEST_CURL_SH $out | grep failed | wc -l)
 }

@@ -23,8 +23,10 @@ capacity::measure::~measure() {
 const u8 *capacity::measure::data(usize *L) {
     *L = sizeof(m_packed);
     common::analog a1(1);
-    m_packed.c1 = a1.read();
     common::analog a2(2);
+#ifndef SIMULATION
+    m_packed.c1 = a1.read();
     m_packed.c2 = a2.read();
+#endif
     return reinterpret_cast<const u8 *>(&m_packed);
 }

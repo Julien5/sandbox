@@ -4,13 +4,13 @@
 #include "common/time.h"
 #include "sleep_authorization.h"
 
-const int espEnablePin = 8;
+const int ledEnablePin = 8;
 bool switchLED(bool on) {
     bool ret = false;
     static bool last_state = false;
     if (last_state != on) {
 #ifdef ARDUINO
-        digitalWrite(espEnablePin, on ? 1 : 0);
+        digitalWrite(ledEnablePin, on ? 1 : 0);
         common::time::delay(common::time::ms(1));
 #endif
         ret = true;
@@ -23,7 +23,7 @@ constexpr int IntermittentRead::T;
 
 IntermittentRead::IntermittentRead() {
 #ifdef ARDUINO
-    pinMode(espEnablePin, OUTPUT);
+    pinMode(ledEnablePin, OUTPUT);
 #endif
     switchLED(false);
 

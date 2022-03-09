@@ -9,5 +9,6 @@ class httpsender {
     httpsender();
     ~httpsender();
     bool post_tickcounter(const u8 *data, const usize &length);
+    bool post_capacity(const u8 *data, const usize &length);
     bool get_epoch(u64 *epoch);
 };

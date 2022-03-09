@@ -6,6 +6,7 @@
 #include "compteur.h"
 #include "intermittentread.h"
 #include "sleep_authorization.h"
+#include "capacity.h"
 
 std::unique_ptr<compteur> C;
 
@@ -36,14 +37,21 @@ bool transmit() {
     auto data = C->data(&L);
     httpsender sender;
     bool ok = sender.post_tickcounter(data, L);
-    if (ok) {
-        if (setup_epoch(&sender))
-            flags::last_transmit_failed = false;
-    } else {
-        // transmitting failed
-        // no retry for now (we transmit hourly, this is enough.)
+    if (!ok)
+        return false;
+    if (!setup_epoch(&sender)) {
+        assert(0);
+        return false;
     }
-    return ok;
+    capacity::measure m;
+    data = m.data(&L);
+    ok = sender.post_capacity(data, L);
+    if (!ok) {
+        assert(0);
+        return false;
+    }
+    flags::last_transmit_failed = false;
+    return true;
 }
 
 bool night() {

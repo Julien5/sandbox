@@ -1,5 +1,5 @@
 #pragma once
-#include "adcfile.h"
+
 #include "common/time.h"
 #include "common/platform.h"
 #include "common/analog.h"

@@ -1,6 +1,11 @@
 [
 {
   "directory": "/tmp/build_pc/common",
+  "command": "/usr/bin/g++  -DPC=1 -I/home/julien/projects/sandbox/embedded/common/include  -g   -o CMakeFiles/common.dir/src/analog.cpp.obj -c /home/julien/projects/sandbox/embedded/common/src/analog.cpp",
+  "file": "/home/julien/projects/sandbox/embedded/common/src/analog.cpp"
+},
+{
+  "directory": "/tmp/build_pc/common",
   "command": "/usr/bin/g++  -DPC=1 -I/home/julien/projects/sandbox/embedded/common/include  -g   -o CMakeFiles/common.dir/src/clock.cpp.obj -c /home/julien/projects/sandbox/embedded/common/src/clock.cpp",
   "file": "/home/julien/projects/sandbox/embedded/common/src/clock.cpp"
 },
@@ -106,6 +111,11 @@
 },
 {
   "directory": "/tmp/build_pc/compteur",
+  "command": "/usr/bin/g++  -DPC=1 -DSIMULATION=1 -I/home/julien/projects/sandbox/embedded/common/include  -g   -o CMakeFiles/compteur.dir/capacity.cpp.obj -c /home/julien/projects/sandbox/embedded/compteur/capacity.cpp",
+  "file": "/home/julien/projects/sandbox/embedded/compteur/capacity.cpp"
+},
+{
+  "directory": "/tmp/build_pc/compteur",
   "command": "/usr/bin/g++  -DPC=1 -DSIMULATION=1 -I/home/julien/projects/sandbox/embedded/common/include  -g   -o CMakeFiles/compteur.dir/compteur.cpp.obj -c /home/julien/projects/sandbox/embedded/compteur/compteur.cpp",
   "file": "/home/julien/projects/sandbox/embedded/compteur/compteur.cpp"
 },
@@ -123,6 +133,11 @@
   "directory": "/tmp/build_pc/compteur",
   "command": "/usr/bin/g++  -DPC=1 -DSIMULATION=1 -I/home/julien/projects/sandbox/embedded/common/include  -g   -o CMakeFiles/compteur.dir/httpsender.cpp.obj -c /home/julien/projects/sandbox/embedded/compteur/httpsender.cpp",
   "file": "/home/julien/projects/sandbox/embedded/compteur/httpsender.cpp"
+},
+{
+  "directory": "/tmp/build_pc/compteur",
+  "command": "/usr/bin/g++  -DPC=1 -DSIMULATION=1 -I/home/julien/projects/sandbox/embedded/common/include  -g   -o CMakeFiles/compteur.dir/sleep_authorization.cpp.obj -c /home/julien/projects/sandbox/embedded/compteur/sleep_authorization.cpp",
+  "file": "/home/julien/projects/sandbox/embedded/compteur/sleep_authorization.cpp"
 },
 {
   "directory": "/tmp/build_pc/compteur",
