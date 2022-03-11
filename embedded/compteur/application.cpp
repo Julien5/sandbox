@@ -164,10 +164,16 @@ void work() {
         }
     }
 }
-
+#include "common/debug.h"
 void application::setup() {
     debug::init_serial();
-    DBG("hello\r\n");
+    int q = 3;
+    while (q--) {
+        common::time::delay(common::time::ms(250));
+        debug::turnBuildinLED(true);
+        common::time::delay(common::time::ms(250));
+        debug::turnBuildinLED(false);
+    }
     C = std::unique_ptr<compteur>(new compteur);
     DBG("init:memory:%d:time:%d\r\n", debug::freeMemory(), int(common::time::since_reset().value()));
     // this is sane in setup() to test the connection

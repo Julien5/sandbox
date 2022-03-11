@@ -9,7 +9,12 @@ const char espEnablePin = 9;
 httpsender::httpsender() {
     // turn on
 #ifdef ARDUINO
+    DBG("init esp...");
     pinMode(espEnablePin, OUTPUT);
+    digitalWrite(espEnablePin, HIGH);
+    common::time::delay(common::time::ms(10));
+    digitalWrite(espEnablePin, LOW);
+    common::time::delay(common::time::ms(10));
     digitalWrite(espEnablePin, HIGH);
     // esp needs 300ms to wake up and about 4s to connect to wifi
     common::time::delay(common::time::ms(500));
@@ -25,6 +30,7 @@ httpsender::httpsender() {
             break;
         //utils::dump(buffer, L);
     }
+    DBG("\r\n");
 #endif
 }
 httpsender::~httpsender() {
@@ -33,7 +39,6 @@ httpsender::~httpsender() {
     digitalWrite(espEnablePin, LOW);
 #endif
 }
-
 class data_callback : public wifi::callback {
     int missing_bytes = -1;
     void status(u8 s) {
@@ -42,6 +47,7 @@ class data_callback : public wifi::callback {
     }
     void data_length(u16 total_length) {
         DBG("data_length:%d\r\n", int(total_length));
+        DBG("memory:%d\r\n", debug::freeMemory());
         missing_bytes = total_length;
     }
     virtual void data(u8 *data, size_t length) {
