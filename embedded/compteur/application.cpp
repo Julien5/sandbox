@@ -33,7 +33,6 @@ bool setup_epoch_worker(httpsender *sender) {
 }
 
 bool setup_epoch(httpsender *sender = nullptr) {
-    return true;
     if (sender)
         return setup_epoch_worker(sender);
     httpsender s2;
@@ -41,7 +40,6 @@ bool setup_epoch(httpsender *sender = nullptr) {
 }
 
 bool transmit() {
-    return true;
     flags::last_transmit_failed = true;
     size_t L = 0;
     C->print();
@@ -191,14 +189,15 @@ void application::setup() {
     setup_epoch();
 }
 
-const common::time::ms sleeping_time(100);
+const common::time::ms sleeping_time(200);
 
 void application::loop() {
-    kounter = 0;
-    printtime();
-    debug::turnBuildinLED(true);
+    auto t0 = common::time::since_reset();
     sleep_authorization::reset();
     work();
-    debug::turnBuildinLED(false);
-    alarmclock::sleep();
+    auto d = common::time::since_reset().since(t0);
+    if (d > sleeping_time)
+        return;
+    if (sleep_authorization::authorized())
+        sleep().deep_sleep(sleeping_time.since(d));
 }

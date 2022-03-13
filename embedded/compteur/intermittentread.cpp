@@ -39,10 +39,6 @@ common::time::us IntermittentRead::micros_since_last_measure() const {
     return common::time::us(common::time::since_reset_us().value() - last_measure_time.value());
 }
 
-bool IntermittentRead::done() const {
-    return k >= T;
-}
-
 struct incrementer {
     isize *m_addr = 0;
     incrementer(isize *addr) : m_addr(addr) {}
@@ -58,33 +54,18 @@ bool IntermittentRead::tick(u16 *value) {
     // not make the adc unstable
     incrementer inc(&k);
     switchLED(0 < k && k < (T - 1));
-    if (old())
-        reset();
-
-    if (k < T) {
-        auto a = m_analog->read();
-        A[k] = a;
-        if (k == 0)
-            last_measure_time = common::time::since_reset_us();
-    }
-
-    if (k == T) {
-        const auto period = common::time::ms(200);
-        auto measure_duration = common::time::since_reset_us().since(last_measure_time);
-        assert(period > measure_duration);
-        const auto sleep_duration = period.since(measure_duration);
-        alarmclock::wakein(sleep_duration);
+    assert(k < T);
+    auto a = m_analog->read();
+    A[k] = a;
+    if (k == T - 1) {
         auto ambientlight = A[T - 1];
         *value = round(xMax(average() - ambientlight, 0.0f));
+        reset();
         return true;
     }
+    assert(k < (T - 1));
+    sleep_authorization::forbid();
     return false;
-}
-
-bool IntermittentRead::old() const {
-    const auto age = common::time::since_reset_us().since(last_measure_time);
-    //DBG("age:%d\r\n", int(common::time::ms(age).value()));
-    return common::time::ms(age).value() > 200;
 }
 
 void IntermittentRead::reset() {

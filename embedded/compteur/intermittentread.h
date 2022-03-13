@@ -16,7 +16,6 @@ class IntermittentRead {
     u16 m_ambientlight = 0;
     std::unique_ptr<common::analog> m_analog;
     int value(const size_t k);
-    bool old() const;
     void reset();
     float average() const;
     common::time::us micros_since_last_measure() const;
@@ -24,5 +23,4 @@ class IntermittentRead {
   public:
     IntermittentRead();
     bool tick(u16 *value);
-    bool done() const;
 };
