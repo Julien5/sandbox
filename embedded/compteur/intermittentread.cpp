@@ -63,7 +63,9 @@ bool IntermittentRead::tick(u16 *value) {
     if (k < T) {
         auto a = m_analog->read();
         A[k] = a;
-        last_measure_time = common::time::since_reset_us();
+        if (k == 0)
+            last_measure_time = common::time::since_reset_us();
+        // no sleep until k==T
         sleep_authorization::forbid();
     }
 
