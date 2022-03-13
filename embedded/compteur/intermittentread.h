@@ -10,7 +10,7 @@ class IntermittentRead {
     static const int T = 5;
 
   private:
-    size_t k = 0;
+    isize k = 0;
     common::time::us last_measure_time = common::time::us(0);
     u16 A[T] = {0};
     u16 m_ambientlight = 0;

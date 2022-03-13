@@ -45,7 +45,7 @@ bool Detection::tick() {
     m_last_adc_value[m_adc_index] = value;
     m_adc_index++;
 
-    DBG("-> value:%d xalpha:%d delta:%d\r\n", int(value), int(xalpha), int(delta));
+    DBG("[%d]-> value:%d xalpha:%d delta:%d\r\n", int(common::time::since_reset().value()), int(value), int(xalpha), int(delta));
     const auto delta_threshold = xalpha / 10;
     const auto new_value = value < xalpha && delta > delta_threshold;
     if (new_value == m_last_value)

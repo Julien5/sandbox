@@ -42,26 +42,34 @@ bool IntermittentRead::done() const {
     return k >= T;
 }
 
+struct incrementer {
+    isize *m_addr = 0;
+    incrementer(isize *addr) : m_addr(addr) {}
+    ~incrementer() {
+        *m_addr = (*m_addr) + 1;
+    };
+};
+
 bool IntermittentRead::tick(u16 *value) {
     // first adc measure is thrown away, dont use light to save energy
     // last adc measure ambient light
     // hopefully swithing the LED off just before the measure does
     // not make the adc unstable
+    incrementer inc(&k);
     switchLED(0 < k && k < (T - 1));
+    if (old())
+        reset();
+
     if (k < T) {
         auto a = m_analog->read();
-        A[k++] = a;
+        A[k] = a;
         last_measure_time = common::time::since_reset_us();
+        sleep_authorization::forbid();
     }
 
-    // we are done if k==T, otherwise do not sleep yet
-    if (k < T)
-        sleep_authorization::forbid();
-
-    if (old()) {
+    if (k == T) {
         auto ambientlight = A[T - 1];
         *value = round(xMax(average() - ambientlight, 0.0f));
-        reset();
         return true;
     }
     return false;
@@ -69,7 +77,7 @@ bool IntermittentRead::tick(u16 *value) {
 
 bool IntermittentRead::old() const {
     const auto age = common::time::since_reset_us().since(last_measure_time);
-    // DBG("since reset:%d,age:%d\r\n", int(common::time::since_reset_us().value()), int(common::time::ms(age).value()));
+    //DBG("age:%d\r\n", int(common::time::ms(age).value()));
     return common::time::ms(age).value() > 200;
 }
 
