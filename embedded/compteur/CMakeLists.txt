@@ -2,6 +2,7 @@ add_avr_executable(compteur)
 
 target_sources(compteur PRIVATE
   adcfile.cpp
+  alarmclock.cpp
   application.cpp
   capacity.cpp
   compteur.cpp

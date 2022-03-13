@@ -3,6 +3,7 @@
 #include "common/debug.h"
 #include "common/time.h"
 #include "sleep_authorization.h"
+#include "alarmclock.h"
 
 const int ledEnablePin = 8;
 bool switchLED(bool on) {
@@ -65,11 +66,14 @@ bool IntermittentRead::tick(u16 *value) {
         A[k] = a;
         if (k == 0)
             last_measure_time = common::time::since_reset_us();
-        // no sleep until k==T
-        sleep_authorization::forbid();
     }
 
     if (k == T) {
+        const auto period = common::time::ms(200);
+        auto measure_duration = common::time::since_reset_us().since(last_measure_time);
+        assert(period > measure_duration);
+        const auto sleep_duration = period.since(measure_duration);
+        alarmclock::wakein(sleep_duration);
         auto ambientlight = A[T - 1];
         *value = round(xMax(average() - ambientlight, 0.0f));
         return true;

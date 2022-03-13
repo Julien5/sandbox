@@ -7,11 +7,20 @@
 #include "intermittentread.h"
 #include "sleep_authorization.h"
 #include "capacity.h"
+#include "alarmclock.h"
 
 std::unique_ptr<compteur> C;
 
 namespace flags {
     bool last_transmit_failed = false;
+}
+static int kounter = 0;
+void printtime() {
+    static common::time::ms last_time;
+    auto now = common::time::since_reset();
+    auto delta = now.since(last_time);
+    DBG("%02d:%05d:%04d\r\n", kounter++, int(now.value()), int(delta.value()));
+    last_time = now;
 }
 
 bool setup_epoch_worker(httpsender *sender) {
@@ -24,6 +33,7 @@ bool setup_epoch_worker(httpsender *sender) {
 }
 
 bool setup_epoch(httpsender *sender = nullptr) {
+    return true;
     if (sender)
         return setup_epoch_worker(sender);
     httpsender s2;
@@ -31,6 +41,7 @@ bool setup_epoch(httpsender *sender = nullptr) {
 }
 
 bool transmit() {
+    return true;
     flags::last_transmit_failed = true;
     size_t L = 0;
     C->print();
@@ -175,19 +186,19 @@ void application::setup() {
         debug::turnBuildinLED(false);
     }
     C = std::unique_ptr<compteur>(new compteur);
-    DBG("init:memory:%d:time:%d\r\n", debug::freeMemory(), int(common::time::since_reset().value()));
     // this is sane in setup() to test the connection
     // also needed by night().
     setup_epoch();
 }
 
+const common::time::ms sleeping_time(100);
+
 void application::loop() {
-    auto t0 = common::time::since_reset();
+    kounter = 0;
+    printtime();
+    debug::turnBuildinLED(true);
     sleep_authorization::reset();
     work();
-    auto d = common::time::since_reset().since(t0);
-    if (d.value() > 300)
-        return;
-    if (sleep_authorization::authorized())
-        sleep().deep_sleep(common::time::ms(300 - d.value()));
+    debug::turnBuildinLED(false);
+    alarmclock::sleep();
 }
