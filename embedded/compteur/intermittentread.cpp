@@ -30,7 +30,6 @@ IntermittentRead::IntermittentRead() {
 
 #ifdef PC
     common::analog_read_callback::install(adcfile::instance());
-    adcfile::instance()->setT(T);
 #endif
     m_analog = std::unique_ptr<common::analog>(new common::analog(0));
 };
@@ -47,6 +46,10 @@ struct incrementer {
     };
 };
 
+#include "adcfile.h"
+
+std::unique_ptr<adcfile> tickfile;
+
 bool IntermittentRead::tick(u16 *value) {
     // first adc measure is thrown away, dont use light to save energy
     // last adc measure ambient light
@@ -59,7 +62,10 @@ bool IntermittentRead::tick(u16 *value) {
     A[k] = a;
     if (k == T - 1) {
         auto ambientlight = A[T - 1];
-        *value = round(xMax(average() - ambientlight, 0.0f));
+        // *value = round(xMax(average() - ambientlight, 0.0f));
+        if (!tickfile)
+            tickfile = std::unique_ptr<adcfile>(new adcfile());
+        *value = tickfile->read();
         reset();
         return true;
     }

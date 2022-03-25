@@ -8,12 +8,10 @@ class adcfile : public common::analog_read_callback {
     std::vector<std::string> m_lines;
     size_t m_line_index = 0;
     size_t m_element_index = 0;
-    size_t m_T = 0;
 
   public:
     adcfile();
     static adcfile *instance();
-    void setT(const int &T);
     u16 read();
 };
 #else

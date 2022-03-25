@@ -21,16 +21,12 @@ adcfile::adcfile() {
     }
     auto filename = parameters::get().at(0);
     m_lines = lines(content(filename));
-}
-
-void adcfile::setT(const int &T) {
-    m_T = T;
+    assert(!m_lines.empty());
 }
 
 u16 adcfile::read() {
     if (m_lines.empty())
         throw std::runtime_error("missing filename parameter");
-    assert(m_T > 0);
     // last line is empty
     if (m_line_index >= (m_lines.size() - 1)) {
         DBG("done.ok.");

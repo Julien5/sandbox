@@ -23,7 +23,7 @@ function filter() {
 for a in values ticks delta variance; do
 	filter $a
 done
-gnuplot ./simulation/tools/replay.gnuplot
+gnuplot ./recordings/tools/replay.gnuplot
 killall feh || true
 feh -g +50+100 replay.png &
 echo -n found:" " 
