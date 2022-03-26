@@ -12,47 +12,25 @@ u16 bound(u16 T, u16 k) {
 Detection::Detection() {
 }
 
-bool new_value(const bool &last_value, const u16 &x, const u16 &x_alpha, const u16 &deltha_threshold) {
+bool new_value(const bool &last_value, const float &delta, const float &deltha_threshold) {
     if (last_value) {
-        return x < x_alpha;
+        return delta > 0;
     }
-    const auto delta = x_alpha - x;
-    return x < x_alpha && delta > deltha_threshold;
+    return delta > deltha_threshold;
 }
 
 bool Detection::tick() {
-    auto ret = tick_worker();
-    if (ret)
-        m_last_tick_time = common::time::since_reset();
-    return ret;
+    return tick_worker();
 }
 
-bool Detection::just_ticked() {
-    if (m_last_tick_time.value() == 0) {
-        //  m_last_tick_time = common::time::since_reset();
-    }
-    auto since = common::time::since_reset().since(m_last_tick_time);
-    const u32 s15 = 1000 * 15;
-    if (since.value() < s15)
-        return true;
-    const u32 s3600 = 1000 * 3600;
-    if (since.value() > s3600)
-        return true;
-    return false;
-}
-
-bool Detection::adapt_threshold(const u16 &x, const float &x_alpha, u16 *threshold) {
-    if (!just_ticked()) {
-        m_threshold_max = 0;
-        m_threshold_min = 0xffff;
+bool Detection::adapt_threshold(const float &delta, float *threshold) {
+    if (delta > 0)
         return false;
-    }
-    m_threshold_max = xMax(m_threshold_max, x);
-    m_threshold_min = xMin(m_threshold_min, x);
-    const u16 K = 3;
     auto seconds = float(common::time::since_reset().value()) / 1000;
-    *threshold = xMin((m_threshold_max - m_threshold_min), 200);
-    PLOT("threshold:%f:%d:%d:%d\r\n", seconds, m_threshold, m_threshold_min, m_threshold_max);
+    const float alpha = 0.999;
+    m_delta_power = alpha * m_delta_power + (1 - alpha) * (-delta);
+    *threshold = 4 * m_delta_power;
+    PLOT("threshold:%f:%f:%f\r\n", seconds, m_threshold, -m_delta_power);
     return true;
 }
 
@@ -87,8 +65,8 @@ bool Detection::tick_worker() {
 
     DBG("[%d]-> value:%d xalpha:%d delta:%03d\r\n", int(common::time::since_reset().value() / 1000), int(value), int(xalpha), int(delta));
     //DBG("[%d]->%d \r\n", int(common::time::since_reset().value()), int(value));
-    adapt_threshold(value, xalpha, &m_threshold);
-    const auto v2 = new_value(m_last_value, value, xalpha, m_threshold);
+    adapt_threshold(delta, &m_threshold);
+    const auto v2 = new_value(m_last_value, delta, m_threshold);
     if (v2 == m_last_value)
         return false;
     m_last_value = v2;

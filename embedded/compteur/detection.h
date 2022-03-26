@@ -6,17 +6,14 @@ class Detection {
     IntermittentRead m_reader;
     bool m_last_value = 1;
     u16 m_last_adc_value[64] = {0};
-    common::time::ms m_last_tick_time;
     u8 m_adc_index = 0;
     float xalpha = -1;
     float variance_delta = 0;
     bool tick_worker();
-    bool just_ticked();
 
-    u16 m_threshold_min = 0xffff;
-    u16 m_threshold_max = 0;
-    u16 m_threshold = 10;
-    bool adapt_threshold(const u16 &x, const float &xalpha, u16 *threshold);
+    float m_delta_power = 0;
+    float m_threshold = 10;
+    bool adapt_threshold(const float &delta, float *threshold);
 
   public:
     Detection();
