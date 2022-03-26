@@ -38,17 +38,9 @@ common::time::us IntermittentRead::micros_since_last_measure() const {
     return common::time::us(common::time::since_reset_us().value() - last_measure_time.value());
 }
 
-struct incrementer {
-    isize *m_addr = 0;
-    incrementer(isize *addr) : m_addr(addr) {}
-    ~incrementer() {
-        *m_addr = (*m_addr) + 1;
-    };
-};
-
 #include "adcfile.h"
-
-#ifdef PC
+//#define TEST07
+#ifdef TEST07
 std::unique_ptr<adcfile> tickfile;
 #endif
 
@@ -57,24 +49,32 @@ bool IntermittentRead::tick(u16 *value) {
     // last adc measure ambient light
     // hopefully swithing the LED off just before the measure does
     // not make the adc unstable
-    incrementer inc(&k);
     switchLED(0 < k && k < (T - 1));
     assert(k < T);
-    auto a = 0; //m_analog->read();
+#ifdef TEST07
+    auto a = 0; // m_analog->read();
+#else
+    auto a = m_analog->read();
+#endif
+    //DBG("k:%d a:%d\r\n", int(k), int(a));
     A[k] = a;
     if (k == T - 1) {
         auto ambientlight = A[T - 1];
         *value = round(xMax(average() - ambientlight, 0.0f));
-#ifdef PC
+#ifdef TEST07
         if (!tickfile)
             tickfile = std::unique_ptr<adcfile>(new adcfile());
         *value = tickfile->read();
 #endif
         reset();
+#ifdef TEST07
+        k++;
+#endif
         return true;
     }
     assert(k < (T - 1));
     sleep_authorization::forbid();
+    k++;
     return false;
 }
 
