@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 
 set -e
-#set -x
+# set -x
 
 DIR=/tmp/replay/
 ADCFILE="$1"
+#rm -Rf $DIR
 mkdir -p $DIR
 
-if [[ ! -f $DIR/out || "$1" = "build" ]]; then
+if true; then #if [[ ! -f $DIR/out || "$1" = "build" ]]; then
 	find $DIR/ -type f -delete -print
 	echo regenerate $DIR/out
 	echo file: $ADCFILE
@@ -17,7 +18,8 @@ fi
 function filter() {
 	MARKER=$1
 	echo regenerate $MARKER
-	cat $DIR/out | cut -f4- -d":" | grep -v "^$" | grep $MARKER |cut -f3- -d":" | tr ":" " " > $DIR/$MARKER
+	# detection.cpp:tick:36: gnuplot:MARKER:1062.901978:492:522.880249
+	cat $DIR/out | grep gnuplot:$MARKER | cut -f6- -d":" | grep -v "^$" | tr ":" " " > $DIR/$MARKER
 }
 
 for a in values ticks delta variance; do

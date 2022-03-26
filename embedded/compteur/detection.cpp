@@ -12,6 +12,13 @@ u16 bound(u16 T, u16 k) {
 Detection::Detection() {
 }
 
+bool new_value(bool last_value, u16 x, u16 x_alpha, float delta, u16 deltha_threshold) {
+    if (last_value) {
+        return x < x_alpha;
+    }
+    return x < x_alpha && delta > deltha_threshold;
+}
+
 bool Detection::tick() {
 #ifdef SIMULATION
     return simulation::tick();
@@ -25,10 +32,6 @@ bool Detection::tick() {
     if (xalpha < 0)
         xalpha = value;
     else {
-        if (delta > 3) {
-            const float a = 0.96;
-            variance_delta = a * variance_delta + (1 - a) * delta * delta;
-        }
         xalpha = alpha * xalpha + (1 - alpha) * value;
         delta = xalpha - value;
     }
@@ -47,12 +50,12 @@ bool Detection::tick() {
 
     DBG("[%d]-> value:%d xalpha:%d delta:%03d\r\n", int(common::time::since_reset().value() / 1000), int(value), int(xalpha), int(delta));
     //DBG("[%d]->%d \r\n", int(common::time::since_reset().value()), int(value));
-    const auto delta_threshold = xMin(xalpha / 10, 50.0f);
-    const auto new_value = value < xalpha && delta > delta_threshold;
-    if (new_value == m_last_value)
+    const auto delta_threshold = 100;
+    const auto v2 = new_value(m_last_value, value, xalpha, delta, delta_threshold);
+    if (v2 == m_last_value)
         return false;
-    m_last_value = new_value;
-    if (new_value == 0) {
+    m_last_value = v2;
+    if (!v2) {
         return false;
     }
     PLOT("ticks:%f:%d\r\n", seconds, value);

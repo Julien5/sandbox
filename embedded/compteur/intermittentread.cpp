@@ -58,7 +58,7 @@ bool IntermittentRead::tick(u16 *value) {
     incrementer inc(&k);
     switchLED(0 < k && k < (T - 1));
     assert(k < T);
-    auto a = m_analog->read();
+    auto a = 0; //m_analog->read();
     A[k] = a;
     if (k == T - 1) {
         auto ambientlight = A[T - 1];
