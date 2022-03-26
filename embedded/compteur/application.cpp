@@ -33,7 +33,6 @@ bool setup_epoch_worker(httpsender *sender) {
 }
 
 bool setup_epoch(httpsender *sender = nullptr) {
-    return true;
     if (sender)
         return setup_epoch_worker(sender);
     httpsender s2;
@@ -41,7 +40,6 @@ bool setup_epoch(httpsender *sender = nullptr) {
 }
 
 bool transmit() {
-    return true;
     flags::last_transmit_failed = true;
     size_t L = 0;
     C->print();

@@ -48,7 +48,9 @@ struct incrementer {
 
 #include "adcfile.h"
 
+#ifdef PC
 std::unique_ptr<adcfile> tickfile;
+#endif
 
 bool IntermittentRead::tick(u16 *value) {
     // first adc measure is thrown away, dont use light to save energy
@@ -62,10 +64,12 @@ bool IntermittentRead::tick(u16 *value) {
     A[k] = a;
     if (k == T - 1) {
         auto ambientlight = A[T - 1];
-        // *value = round(xMax(average() - ambientlight, 0.0f));
+        *value = round(xMax(average() - ambientlight, 0.0f));
+#ifdef PC
         if (!tickfile)
             tickfile = std::unique_ptr<adcfile>(new adcfile());
         *value = tickfile->read();
+#endif
         reset();
         return true;
     }
