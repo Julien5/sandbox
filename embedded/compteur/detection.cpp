@@ -28,7 +28,11 @@ bool Detection::adapt_threshold(const float &delta, float *threshold) {
         return false;
     auto seconds = float(common::time::since_reset().value()) / 1000;
     const float alpha = 0.999;
+    if (m_delta_power == 0)
+        m_delta_power = -delta;
     m_delta_power = alpha * m_delta_power + (1 - alpha) * (-delta);
+    if (seconds < 15)
+        return false;
     *threshold = 4 * m_delta_power;
     PLOT("threshold:%f:%f:%f\r\n", seconds, m_threshold, -m_delta_power);
     return true;
@@ -63,7 +67,7 @@ bool Detection::tick_worker() {
     m_last_adc_value[m_adc_index] = value;
     m_adc_index++;
 
-    DBG("[%d]-> value:%d xalpha:%d delta:%03d\r\n", int(common::time::since_reset().value() / 1000), int(value), int(xalpha), int(delta));
+    DBG("[%d]-> value:%d xalpha:%d delta:%03d threshold:%03d\r\n", int(common::time::since_reset().value() / 1000), int(value), int(xalpha), int(delta), int(m_threshold));
     //DBG("[%d]->%d \r\n", int(common::time::since_reset().value()), int(value));
     adapt_threshold(delta, &m_threshold);
     const auto v2 = new_value(m_last_value, delta, m_threshold);

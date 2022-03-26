@@ -33,7 +33,6 @@ bool setup_epoch_worker(httpsender *sender) {
 }
 
 bool setup_epoch(httpsender *sender = nullptr) {
-    return true;
     if (sender)
         return setup_epoch_worker(sender);
     httpsender s2;
@@ -158,7 +157,6 @@ bool need_transmit_worker(bool ticked) {
 }
 
 bool need_transmit(bool ticked) {
-    return false;
     if (ticks_coming_soon())
         return false;
     if (need_transmit_worker(ticked)) {
