@@ -12,14 +12,51 @@ u16 bound(u16 T, u16 k) {
 Detection::Detection() {
 }
 
-bool new_value(bool last_value, u16 x, u16 x_alpha, float delta, u16 deltha_threshold) {
+bool new_value(const bool &last_value, const u16 &x, const u16 &x_alpha, const u16 &deltha_threshold) {
     if (last_value) {
         return x < x_alpha;
     }
+    const auto delta = x_alpha - x;
     return x < x_alpha && delta > deltha_threshold;
 }
 
 bool Detection::tick() {
+    auto ret = tick_worker();
+    if (ret)
+        m_last_tick_time = common::time::since_reset();
+    return ret;
+}
+
+bool Detection::just_ticked() {
+    if (m_last_tick_time.value() == 0) {
+        //  m_last_tick_time = common::time::since_reset();
+    }
+    auto since = common::time::since_reset().since(m_last_tick_time);
+    const u32 s15 = 1000 * 15;
+    if (since.value() < s15)
+        return true;
+    const u32 s3600 = 1000 * 3600;
+    if (since.value() > s3600)
+        return true;
+    return false;
+}
+
+bool Detection::adapt_threshold(const u16 &x, const float &x_alpha, u16 *threshold) {
+    if (!just_ticked()) {
+        m_threshold_max = 0;
+        m_threshold_min = 0xffff;
+        return false;
+    }
+    m_threshold_max = xMax(m_threshold_max, x);
+    m_threshold_min = xMin(m_threshold_min, x);
+    const u16 K = 3;
+    auto seconds = float(common::time::since_reset().value()) / 1000;
+    *threshold = xMin((m_threshold_max - m_threshold_min), 200);
+    PLOT("threshold:%f:%d:%d:%d\r\n", seconds, m_threshold, m_threshold_min, m_threshold_max);
+    return true;
+}
+
+bool Detection::tick_worker() {
 #ifdef SIMULATION
     return simulation::tick();
 #else
@@ -50,8 +87,8 @@ bool Detection::tick() {
 
     DBG("[%d]-> value:%d xalpha:%d delta:%03d\r\n", int(common::time::since_reset().value() / 1000), int(value), int(xalpha), int(delta));
     //DBG("[%d]->%d \r\n", int(common::time::since_reset().value()), int(value));
-    const auto delta_threshold = 100;
-    const auto v2 = new_value(m_last_value, value, xalpha, delta, delta_threshold);
+    adapt_threshold(value, xalpha, &m_threshold);
+    const auto v2 = new_value(m_last_value, value, xalpha, m_threshold);
     if (v2 == m_last_value)
         return false;
     m_last_value = v2;

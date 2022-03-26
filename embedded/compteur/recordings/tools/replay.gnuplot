@@ -15,5 +15,7 @@ plot '/tmp/replay/values' using 1:2 title 'adc' with lines ls 1, \
 	 '/tmp/replay/ticks' using 1:2 title 'ticks' with points ls 5
 
 #set yrange [70:100]
-plot '/tmp/replay/delta' using 1:2 title 'delta' with lines ls 1
-#	 '/tmp/replay/variance' using 1:2 title '{\sigma}' with lines ls 2
+plot '/tmp/replay/delta' using 1:2 title 'delta' with lines ls 1, \
+	 '/tmp/replay/threshold' using 1:2 title 'threshold' with lines ls 2,\
+	 '/tmp/replay/threshold' using 1:3 title 't_min' with lines ls 3,\
+	 '/tmp/replay/threshold' using 1:4 title 't_max' with lines ls 4

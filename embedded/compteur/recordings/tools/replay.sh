@@ -22,7 +22,7 @@ function filter() {
 	cat $DIR/out | grep gnuplot:$MARKER | cut -f6- -d":" | grep -v "^$" | tr ":" " " > $DIR/$MARKER
 }
 
-for a in values ticks delta variance; do
+for a in values ticks delta threshold; do
 	filter $a
 done
 gnuplot ./recordings/tools/replay.gnuplot
