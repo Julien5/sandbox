@@ -69,7 +69,9 @@ function burn.application() {
 }
 
 function monitor() {
-	screen -L /dev/$(ispport "tail -1") 9600
+	mkdir -p oldlogs
+	find -name "*.log" -exec mv "{}" oldlogs/ \;
+	screen  -Logfile log-$(date +%Y.%m.%d.%H.%M.%S).log  -L /dev/$(ispport "tail -1") 9600
 }
 
 function burn.test {

@@ -59,7 +59,7 @@ bool Detection::tick_worker() {
     PLOT("delta:%f:%f\r\n", seconds, delta);
     PLOT("variance:%f:%f\r\n", seconds, variance_delta);
 
-    LOG("[%d]-> value:%d xalpha:%d delta:%03d threshold:%03d\r\n", int(common::time::since_reset().value() / 1000), int(value), int(xalpha), int(delta), int(m_threshold));
+    LOG("[%lu]-> value:%d xalpha:%d delta:%03d threshold:%03d\r\n", common::time::since_reset().value(), int(value), int(xalpha), int(delta), int(m_threshold));
     //DBG("[%d]->%d \r\n", int(common::time::since_reset().value()), int(value));
     adapt_threshold(delta, &m_threshold);
     const auto v2 = new_value(m_last_value, delta, m_threshold);
