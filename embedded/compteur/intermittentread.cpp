@@ -28,9 +28,6 @@ IntermittentRead::IntermittentRead() {
 #endif
     switchLED(false);
 
-#ifdef PC
-    common::analog_read_callback::install(adcfile::instance());
-#endif
     m_analog = std::unique_ptr<common::analog>(new common::analog(0));
 };
 
@@ -39,8 +36,8 @@ common::time::us IntermittentRead::micros_since_last_measure() const {
 }
 
 #include "adcfile.h"
-//#define TEST07
-#ifdef TEST07
+
+#ifdef PC
 std::unique_ptr<adcfile> tickfile;
 #endif
 
@@ -56,7 +53,7 @@ bool IntermittentRead::tick(u16 *value) {
     if (k == T - 1) {
         auto ambientlight = A[T - 1];
         *value = round(xMax(average() - ambientlight, 0.0f));
-#ifdef TEST07
+#ifdef PC
         if (!tickfile)
             tickfile = std::unique_ptr<adcfile>(new adcfile());
         *value = tickfile->read();

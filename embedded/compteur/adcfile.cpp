@@ -7,13 +7,6 @@
 
 #include "parameters.h"
 
-adcfile *adcfile::instance() {
-    static adcfile *inst = nullptr;
-    if (!inst)
-        inst = new adcfile();
-    return inst;
-}
-
 adcfile::adcfile() {
     using namespace read_file;
     if (parameters::get().empty()) {

@@ -12,7 +12,9 @@ if true; then #if [[ ! -f $DIR/out || "$1" = "build" ]]; then
 	find $DIR/ -type f -delete -print
 	echo regenerate $DIR/out
 	echo file: $ADCFILE
-	/tmp/build_pc/compteur/compteur $ADCFILE > $DIR/out
+	if ! /tmp/build_pc/compteur/compteur $ADCFILE > $DIR/out; then
+		echo "program crash (ignore)"
+	fi
 fi
 
 function filter() {

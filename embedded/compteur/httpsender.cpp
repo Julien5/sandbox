@@ -62,7 +62,14 @@ class data_callback : public wifi::callback {
     }
 };
 
+void wait() {
+    common::time::delay(common::time::ms(3500));
+}
+
 bool httpsender::post_tickcounter(const u8 *data, const usize &length) {
+    wait();
+    return true;
+
     auto t0 = common::time::since_reset();
     int retries = 3;
     while (retries--) {
@@ -79,6 +86,9 @@ bool httpsender::post_tickcounter(const u8 *data, const usize &length) {
 }
 
 bool httpsender::post_capacity(const u8 *data, const usize &length) {
+    wait();
+    return true;
+
     data_callback cb;
     m_wifi.post("http://pi:8000/compteur/tickcounter/capacity/", data, length, &cb);
     if (cb.done()) {
@@ -102,6 +112,9 @@ class epoch_callback : public data_callback {
 };
 
 bool httpsender::get_epoch(u64 *epoch) {
+    wait();
+    return true;
+
     int retries = 3;
     while (retries--) {
         epoch_callback cb;
