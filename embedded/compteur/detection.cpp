@@ -70,6 +70,7 @@ bool Detection::tick_worker() {
         return false;
     }
     PLOT("ticks:%f:%d\r\n", seconds, value);
+    LOG("[%lu]-> ticked:%d\r\n", common::time::since_reset().value(), int(value));
 #endif
     return true;
 }
