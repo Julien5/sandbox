@@ -9,7 +9,7 @@ const char espEnablePin = 9;
 httpsender::httpsender() {
     // turn on
 #ifdef ARDUINO
-    DBG("init esp...");
+    LOG("init esp...");
     pinMode(espEnablePin, OUTPUT);
     digitalWrite(espEnablePin, HIGH);
     common::time::delay(common::time::ms(10));
@@ -30,7 +30,7 @@ httpsender::httpsender() {
             break;
         //utils::dump(buffer, L);
     }
-    DBG("\r\n");
+    LOG("\r\n");
 #endif
 }
 httpsender::~httpsender() {
@@ -47,7 +47,7 @@ class data_callback : public wifi::callback {
     }
     void data_length(u16 total_length) {
         DBG("data_length:%d\r\n", int(total_length));
-        DBG("memory:%d\r\n", debug::freeMemory());
+        LOG("memory:%d\r\n", debug::freeMemory());
         missing_bytes = total_length;
     }
     virtual void data(u8 *data, size_t length) {

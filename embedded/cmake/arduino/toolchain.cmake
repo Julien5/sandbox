@@ -19,6 +19,7 @@ set(CMAKE_AR ${AVR_AR})
 set(CMAKE_RANLIB ${AVR_RANLIB})
 
 add_definitions(-DF_CPU=8000000L -DARDUINO=182 -D__PROG_TYPES_COMPAT__ -DCMAKE)
+add_definitions(-DNDEBUG)
 
 set(CMAKE_C_FLAGS "-mmcu=atmega328p -Wall -ffunction-sections -fdata-sections -Os -flto")
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -fpermissive -fno-exceptions -std=gnu++11 -fno-threadsafe-statics")

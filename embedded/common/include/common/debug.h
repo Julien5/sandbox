@@ -2,11 +2,44 @@
 
 #include "common/rusttypes.h"
 
+#if defined(ARDUINO)
+void serialprint(const char *buffer);
+void serialprint(int x);
+void serialflush();
+#endif
+
+#if defined(PC)
+#define LOG(...)                                                                           \
+    do {                                                                                   \
+        std::unique_lock<std::mutex> lock(stdout_mtx);                                     \
+        printf("[%d] %s:%d:%s(): ", thread_index(), __BASENAME__, __LINE__, __FUNCTION__); \
+        printf(__VA_ARGS__);                                                               \
+        fflush(stdout);                                                                    \
+    } while (0)
+#elif defined(ARDUINO)
+#define LOG(...)                                       \
+    do {                                               \
+        char buffer[64];                               \
+        snprintf(buffer, sizeof(buffer), __VA_ARGS__); \
+        serialprint(buffer);                           \
+        serialflush();                                 \
+    } while (0)
+
+#elif defined(ESP8266)
+#define LOG(...)                               \
+    do {                                       \
+        printf("%s:%d: ", __FILE__, __LINE__); \
+        printf(__VA_ARGS__);                   \
+    } while (0)
+
+#endif
+
 #if defined(NDEBUG)
 #define DBG(...) ((void)0)
 #define TRACE() ((void)0)
 #define PLOT(...) ((void)0)
 #define assert(ignore) ((void)0)
+
 #else
 
 #if defined(PC)
@@ -50,9 +83,6 @@ int thread_index();
 /*
  * note: in debug mode, DBGTX takes memory.
  */
-void serialprint(const char *buffer);
-void serialprint(int x);
-void serialflush();
 #define DBG(...)                                       \
     do {                                               \
         char buffer[64];                               \
