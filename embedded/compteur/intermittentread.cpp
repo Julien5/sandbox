@@ -51,12 +51,7 @@ bool IntermittentRead::tick(u16 *value) {
     // not make the adc unstable
     switchLED(0 < k && k < (T - 1));
     assert(k < T);
-#ifdef TEST07
-    auto a = 0; // m_analog->read();
-#else
     auto a = m_analog->read();
-#endif
-    //DBG("k:%d a:%d\r\n", int(k), int(a));
     A[k] = a;
     if (k == T - 1) {
         auto ambientlight = A[T - 1];
@@ -67,9 +62,6 @@ bool IntermittentRead::tick(u16 *value) {
         *value = tickfile->read();
 #endif
         reset();
-#ifdef TEST07
-        k++;
-#endif
         return true;
     }
     assert(k < (T - 1));
