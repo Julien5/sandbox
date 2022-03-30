@@ -5,6 +5,8 @@
 #count m_count=0; 2 bytes
 #duration m_duration=0; 4 bytes
 ###
+import datetime
+from readints import *;
 
 class bin:
     def __init__(self,start,count,duration):
@@ -20,9 +22,14 @@ class bin:
 
 class tickscounter:
     def __init__(self,start,end,bins):
-        self.epoch_at_start = start;
+        self.epoch_at_start = datetime.datetime.fromtimestamp(start/1000);
         self.millis_at_end = end;
         self.bins = bins;
+
+    def __str__(self):
+        s="start:%s millis(end)=%d" % (self.epoch_at_start.strftime("%Y-%m-%d %H:%M:%S"),self.millis_at_end);
+        b="\n".join([str(b ) for b in self.bins if b.count > 1]);
+        return s+"\n"+b;
     
 def readbins(bytes):
     pos=0;
@@ -36,15 +43,6 @@ def readbins(bytes):
         index+=1;
         ret.append(bin(start,count,duration));
     return ret;
-
-def read_ui64(bytes,pos):
-    return int.from_bytes(bytes[pos:pos+8], byteorder='little', signed=True)
-
-def read_ui32(bytes,pos):
-    return int.from_bytes(bytes[pos:pos+4], byteorder='little', signed=True)
-
-def read_ui16(bytes,pos):
-    return int.from_bytes(bytes[pos:pos+2], byteorder='little', signed=True)
 
 def main():
     f=open("tickscounter.packed.bin",'rb');
