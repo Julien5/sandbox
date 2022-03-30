@@ -10,11 +10,10 @@ set grid;
 #set yrange [70:100]
 #set xrange [1200:1600]
 #set autoscale fix
-plot '/tmp/replay/values' using 1:2 title 'adc' with lines ls 1, \
-     '/tmp/replay/values' using 1:3 title 'x_{\alpha}' with lines ls 2, \
-	 '/tmp/replay/ticks' using 1:2 title 'ticks' with points ls 5
+plot '/tmp/replay/value' using 1:2 title 'adc' with lines ls 1, \
+     '/tmp/replay/xalpha' using 1:2 title 'x_{\alpha}' with lines ls 2, \
+	 '/tmp/replay/ticked' using 1:2 title 'ticks' with points ls 5
 
 #set yrange [70:100]
 plot '/tmp/replay/delta' using 1:2 title 'delta' with lines ls 1, \
-	 '/tmp/replay/threshold' using 1:2 title 'threshold' with lines ls 2,\
-	 '/tmp/replay/threshold' using 1:3 title 't_{max}' with lines ls 3
+	 '/tmp/replay/threshold' using 1:2 title 'threshold' with lines ls 2

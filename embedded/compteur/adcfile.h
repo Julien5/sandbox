@@ -5,8 +5,8 @@
 #include "common/analog.h"
 
 class adcfile : public common::analog_read_callback {
-    std::vector<std::string> m_lines;
-    size_t m_line_index = 0;
+    std::vector<u16> m_values;
+    size_t m_index = 0;
     size_t m_element_index = 0;
 
   public:

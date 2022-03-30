@@ -4,6 +4,8 @@
 #include "common/utils.h"
 #include "common/serial.h"
 
+// #define SKIP
+
 const char espEnablePin = 9;
 
 httpsender::httpsender() {
@@ -67,9 +69,10 @@ void wait() {
 }
 
 bool httpsender::post_tickcounter(const u8 *data, const usize &length) {
-    //wait();
-    // return true;
-
+#if defined(SKIP)
+    wait();
+    return true;
+#endif
     auto t0 = common::time::since_reset();
     int retries = 3;
     while (retries--) {
@@ -86,9 +89,10 @@ bool httpsender::post_tickcounter(const u8 *data, const usize &length) {
 }
 
 bool httpsender::post_capacity(const u8 *data, const usize &length) {
-    //wait();
-    //return true;
-
+#if defined(SKIP)
+    wait();
+    return true;
+#endif
     data_callback cb;
     m_wifi.post("http://pi:8000/compteur/tickcounter/capacity/", data, length, &cb);
     if (cb.done()) {
@@ -112,9 +116,10 @@ class epoch_callback : public data_callback {
 };
 
 bool httpsender::get_epoch(u64 *epoch) {
-    //wait();
-    //return true;
-
+#if defined(SKIP)
+    wait();
+    return true;
+#endif
     int retries = 3;
     while (retries--) {
         epoch_callback cb;

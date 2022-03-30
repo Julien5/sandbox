@@ -123,43 +123,43 @@ bool ticks_coming_soon() {
     return remain.value() < 10000;
 }
 
-bool need_transmit_worker(bool ticked) {
+char need_transmit_worker(bool ticked) {
+    const char no = 0;
     if (night())
-        return false;
+        return no;
 
     // do not transmit while the LED is turned on.
     if (!sleep_authorization::authorized())
-        return false;
+        return no;
 
     if (hourly()) {
-        DBG("- hourly\r\n");
-        return true;
+        return 1;
     }
 
     if (flags::last_transmit_failed)
-        return false;
+        return no;
 
     // epoch should be set asap
     if (!common::time::epoch_is_set())
-        return true;
+        return 2;
 
     if (ticked) {
         if (large_delta()) {
-            DBG("- large_delta\r\n");
-            return true;
+            return 3;
         }
         if (full()) {
-            DBG("- full\r\n");
-            return true;
+            return 4;
         }
     }
-    return false;
+    return no;
 }
 
 bool need_transmit(bool ticked) {
     if (ticks_coming_soon())
         return false;
-    if (need_transmit_worker(ticked)) {
+    char reason = need_transmit_worker(ticked);
+    if (reason != 0) {
+        LOG("[%07lu] transmit:%03d\r\n", u32(common::time::since_reset().value()), int(reason));
         return true;
     }
     return false;

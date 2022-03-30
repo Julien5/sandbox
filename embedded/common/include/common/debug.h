@@ -9,12 +9,11 @@ void serialflush();
 #endif
 
 #if defined(PC)
-#define LOG(...)                                                                           \
-    do {                                                                                   \
-        std::unique_lock<std::mutex> lock(stdout_mtx);                                     \
-        printf("[%d] %s:%d:%s(): ", thread_index(), __BASENAME__, __LINE__, __FUNCTION__); \
-        printf(__VA_ARGS__);                                                               \
-        fflush(stdout);                                                                    \
+#define LOG(...)                                       \
+    do {                                               \
+        std::unique_lock<std::mutex> lock(stdout_mtx); \
+        printf(__VA_ARGS__);                           \
+        fflush(stdout);                                \
     } while (0)
 #elif defined(ARDUINO)
 #define LOG(...)                                       \

@@ -55,11 +55,8 @@ bool Detection::tick_worker() {
         delta = xalpha - value;
     }
     auto seconds = float(common::time::since_reset().value()) / 1000;
-    PLOT("values:%f:%d:%f\r\n", seconds, int(value), xalpha);
-    PLOT("delta:%f:%f\r\n", seconds, delta);
-    PLOT("variance:%f:%f\r\n", seconds, variance_delta);
 
-    LOG("[%lu]-> value:%d xalpha:%d delta:%03d threshold:%03d\r\n", u32(common::time::since_reset().value()), int(value), int(xalpha), int(delta), int(m_threshold));
+    LOG("[%07lu] value:%03d xalpha:%03d delta:%03d threshold:%03d\r\n", u32(common::time::since_reset().value()), int(value), int(xalpha), int(delta), int(m_threshold));
     //DBG("[%d]->%d \r\n", int(common::time::since_reset().value()), int(value));
     adapt_threshold(delta, &m_threshold);
     const auto v2 = new_value(m_last_value, delta, m_threshold);
@@ -69,10 +66,9 @@ bool Detection::tick_worker() {
     if (!v2) {
         return false;
     }
-    PLOT("ticks:%f:%d\r\n", seconds, value);
-    LOG("[%lu]-> ticked:%d\r\n", common::time::since_reset().value(), int(value));
-#endif
+    LOG("[%07lu] ticked:%03d\r\n", u32(common::time::since_reset().value()), int(value));
     return true;
+#endif
 }
 
 #ifdef PC

@@ -13,22 +13,36 @@ adcfile::adcfile() {
         return;
     }
     auto filename = parameters::get().at(0);
-    m_lines = lines(content(filename));
-    assert(!m_lines.empty());
+    std::vector<std::string> L = lines(content(filename));
+    for (auto l : L) {
+        // [1200766]-> value:511 xalpha:518 delta:007 threshold:072
+        // [1200766] value:511 xalpha:518 delta:007 threshold:072
+        bool good = !l.empty() && l[0] == '[' && l.find("value:") != std::string::npos;
+        if (!good)
+            continue;
+        auto parts = split(l, " ");
+        for (auto part : parts) {
+            if (part[0] == '[')
+                continue;
+            auto pair = split(part, ":");
+            auto name = pair[0];
+            auto value = pair[1];
+            if (name == "value")
+                m_values.push_back(std::stoi(value));
+        }
+    }
+    assert(!m_values.empty());
 }
 
 u16 adcfile::read() {
-    if (m_lines.empty())
-        throw std::runtime_error("missing filename parameter");
     // last line is empty
-    if (m_line_index >= (m_lines.size() - 1)) {
+    if (m_index >= (m_values.size() - 1)) {
         DBG("done.ok.");
         exit(0);
     }
-    auto line = m_lines[m_line_index++];
+    auto ret = m_values[m_index++];
     common::time::simulate(common::time::us(100));
-    auto ret = std::stoi(line);
-    DBG("common::analog::read:%4d [line:%6d]\r\n", int(ret), int(m_line_index - 1));
+    DBG("common::analog::read:%4d [line:%6d]\r\n", int(ret), int(m_index - 1));
     return ret;
 }
 #endif
