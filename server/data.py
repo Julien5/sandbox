@@ -37,8 +37,6 @@ class Sql:
     def insert_request(self,path,data):
         t=str(datetime.datetime.now());
         self.sqlite.execute('INSERT INTO requests (path,data,time) VALUES (?,?,?)', (path, data, t));
-        if data and "tickscounter" in path:
-            self.insert_ticks(ticks_from_post_data(data,t)); 
         self.conn.commit();
 
     def read_request(self,path):

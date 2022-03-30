@@ -8,7 +8,7 @@
 import datetime
 from readints import *;
 
-class bin:
+class raw_bin:
     def __init__(self,start,count,duration):
         self.start = start;
         self.count = count;
@@ -20,15 +20,54 @@ class bin:
     def __str__(self):
         return "%9d->%-9d [%6d] #=%3d" % (self.start/1000,self.end()/1000,self.duration/1000,self.count);
 
+class bin:
+    def __init__(self,reset_time,rbin):
+        self.start = reset_time+datetime.timedelta(milliseconds=rbin.start);
+        self.count = rbin.count;
+        self.duration = datetime.timedelta(rbin.duration);
+
+    def end(self):
+        return self.start + self.duration;
+        
+    def __str__(self):
+        t1=self.start.strftime("%H:%M:%S");
+        t2=self.end().strftime("%H:%M:%S");
+        return "%s -> %s #=%3d" % (t1,t2,self.count);
+    
+
 class tickscounter:
-    def __init__(self,start,end,bins):
-        self.epoch_at_start = datetime.datetime.fromtimestamp(start/1000);
-        self.millis_at_end = end;
-        self.bins = bins;
+    def __init__(self,start,millis_at_end,raw_bins,end):
+        assert(raw_bins);
+        milli_1=raw_bins[0].start;
+        self.epoch_1=datetime.datetime.fromtimestamp(start/1000);
+        assert(milli_1>=0)
+        epoch_0=self.epoch_1 - datetime.timedelta(milliseconds=milli_1);
+        assert(epoch_0<=self.epoch_1)
+        self.bins=[];
+        for b in raw_bins:
+            c=bin(epoch_0,b);
+            if c.count:
+                self.bins.append(c);
+        assert(not self.start() or self.start()<=self.end())
+
+    def start(self):
+        if not self.bins:
+            return None;
+        return self.bins[0].start;
+
+    def end(self):
+        if not self.bins:
+            return None;
+        return self.bins[-1].end();
+        
+    def total_millis(self):
+        return (self.end() - self.start()).total_seconds()*1000;
 
     def __str__(self):
-        s="start:%s millis(end)=%d" % (self.epoch_at_start.strftime("%Y-%m-%d %H:%M:%S"),self.millis_at_end);
-        b="\n".join([str(b ) for b in self.bins if b.count > 1]);
+        if not self.bins:
+            return "start:%s {} " % (self.epoch_1.strftime("%Y-%m-%d %H:%M:%S"))
+        s="start:%s end=%s" % (self.start().strftime("%Y-%m-%d %H:%M:%S"),self.end().strftime("%Y-%m-%d %H:%M:%S"));
+        b="\n".join([str(b) for b in self.bins if b.count > 0]);
         return s+"\n"+b;
     
 def readbins(bytes):
@@ -41,7 +80,7 @@ def readbins(bytes):
         duration=read_ui32(bytes,pos); pos+=4;
         end=start+duration;
         index+=1;
-        ret.append(bin(start,count,duration));
+        ret.append(raw_bin(start,count,duration));
     return ret;
 
 def main():

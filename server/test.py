@@ -17,7 +17,7 @@ for r in R:
 	epoch_at_start=read_ui64(bytes,pos); pos+=8;
 	millis_at_end=read_ui64(bytes,pos); pos+=8;
 	bins=tickscounter.readbins(bytes[pos:]);
-	t=tickscounter.tickscounter(epoch_at_start,millis_at_end,bins);
+	t=tickscounter.tickscounter(epoch_at_start,millis_at_end,bins,r.time);
 	print(t);
 
 	#tickscounter();
