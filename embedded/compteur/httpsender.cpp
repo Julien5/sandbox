@@ -77,7 +77,7 @@ bool httpsender::post_tickcounter(const u8 *data, const usize &length) {
     int retries = 3;
     while (retries--) {
         data_callback cb;
-        m_wifi.post("http://pi:8000/compteur/tickcounter/data/", data, length, &cb);
+        m_wifi.post("http://pi:8000/compteur/tickcounter/", data, length, &cb);
         if (cb.done()) {
             DBG("SUCCESS data\r\n");
             DBG("transmit time %d ms\r\n", int(common::time::since_reset().since(t0).value()));
@@ -94,7 +94,7 @@ bool httpsender::post_capacity(const u8 *data, const usize &length) {
     return true;
 #endif
     data_callback cb;
-    m_wifi.post("http://pi:8000/compteur/tickcounter/capacity/", data, length, &cb);
+    m_wifi.post("http://pi:8000/compteur/capacity/", data, length, &cb);
     if (cb.done()) {
         return true;
     }

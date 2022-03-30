@@ -17,6 +17,12 @@ class bin:
         
     def __str__(self):
         return "%9d->%-9d [%6d] #=%3d" % (self.start/1000,self.end()/1000,self.duration/1000,self.count);
+
+class tickscounter:
+    def __init__(self,start,end,bins):
+        self.epoch_at_start = start;
+        self.millis_at_end = end;
+        self.bins = bins;
     
 def readbins(bytes):
     pos=0;
@@ -30,7 +36,10 @@ def readbins(bytes):
         index+=1;
         ret.append(bin(start,count,duration));
     return ret;
-        
+
+def read_ui64(bytes,pos):
+    return int.from_bytes(bytes[pos:pos+8], byteorder='little', signed=True)
+
 def read_ui32(bytes,pos):
     return int.from_bytes(bytes[pos:pos+4], byteorder='little', signed=True)
 
