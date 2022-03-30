@@ -11,7 +11,7 @@ class Detection {
     bool tick_worker();
 
     float m_delta_power = 0;
-    float m_threshold = 10;
+    float m_threshold = 100;
     bool adapt_threshold(const float &delta, float *threshold);
 
   public:
