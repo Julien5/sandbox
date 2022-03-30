@@ -12,6 +12,8 @@ import data;
 import sys;
 import mail;
 
+import get_compteur;
+
 def log(msg):
     print("log:",msg);
     f=open("server.log",'a');
@@ -38,11 +40,16 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
         if self.path == "/epoch":
             header=False;
             message=str(int(time.time()));
+        if self.path == "/compteur/tickscounter":
+            header=False;
+            message=get_compteur.get_tickscounter(database,10);
+            log(str(len(message)));
         message = bytes(message, "utf8");
         if header:
             self.send_header('Content-Type',"text/html");
             self.end_headers()
         assert(isinstance(message,bytes));
+        log(str(len(message)));
         while message:
             n=self.wfile.write(message);
             message=message[n:];
@@ -64,6 +71,7 @@ def run():
     log('starting server...')
     # Server settings
     server_address = ('0.0.0.0', 8000)
+    testHTTPServer_RequestHandler.protocol = "HTTP/1.0";
     httpd = HTTPServer(server_address, testHTTPServer_RequestHandler)
     log('running server...')
     while True:
