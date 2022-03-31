@@ -26,8 +26,22 @@ def read_file(path):
 
 database = data.Sql();
 
+def htmlize(s):
+    tmpl = '''
+ <!DOCTYPE html>
+<html>
+<body>
+<p>{string}</p>
+</body>
+</html>
+    '''
+    s=s.replace("\n","</p>\n<p>");
+    ret=tmpl.replace("{string}",s);
+    return ret;
+
 class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
     def setup(self):
+        BaseHTTPRequestHandler.protocol_version = 'HTTP/1.0'
         BaseHTTPRequestHandler.setup(self)
         self.request.settimeout(30)
               
@@ -41,11 +55,11 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
             header=False;
             message=str(int(time.time()));
         if self.path == "/compteur/tickscounter":
-            header=False;
-            message=get_compteur.get_tickscounter(database,10);
+            message=htmlize(get_compteur.get_tickscounter(database,10));
             log(str(len(message)));
         message = bytes(message, "utf8");
         if header:
+            self.send_response(200);
             self.send_header('Content-Type',"text/html");
             self.end_headers()
         assert(isinstance(message,bytes));

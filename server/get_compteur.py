@@ -8,7 +8,7 @@ import tickscounter;
 from readints import *;
 
 def get_tickscounter(sql,n):
-	R=sql.read_request("/compteur/tickcounter/data");
+	R=sql.read_request("/compteur/tickcounter");
 	Q=[];
 	for r in R[-n:]:
 		bytes=r.data;
