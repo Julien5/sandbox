@@ -12,11 +12,24 @@ u16 bound(u16 T, u16 k) {
 Detection::Detection() {
 }
 
-bool new_value(const bool &last_value, const float &delta, const float &deltha_threshold) {
-    if (last_value) {
-        return delta < 0;
+bool Detection::trigger(const float &delta) {
+    if (m_delta_old == 0)
+        return false;
+    const auto T = -m_threshold;
+    const auto &d1 = m_delta_old - T;
+    const auto &d2 = delta - T;
+    if (d1 * d2 < 0) { // cross T
+        m_trigger_conditions[0] = d1 < 0 && d2 > 0;
     }
-    return delta < -deltha_threshold;
+    if (m_delta_old * delta < 0) { // cross 0
+        m_trigger_conditions[1] = m_delta_old < 0 && delta > 0;
+    }
+    bool ret = m_trigger_conditions[0] && m_trigger_conditions[1];
+    if (ret) {
+        m_trigger_conditions[0] = false;
+        m_trigger_conditions[1] = false;
+    }
+    return ret;
 }
 
 bool Detection::tick() {
@@ -25,9 +38,11 @@ bool Detection::tick() {
 
 bool Detection::adapt_threshold(const float &delta, float *threshold) {
     if (delta < 0) {
+        // the red mark may be here
         m_delta_max = xMax(m_delta_max, -delta);
         return false;
     }
+    // the red mark is probably not here
     auto seconds = float(common::time::since_reset().value()) / 1000;
     float alpha = 0.999;
     m_delta_mean = alpha * m_delta_mean + (1 - alpha) * delta;
@@ -60,15 +75,11 @@ bool Detection::tick_worker() {
     LOG("[%07lu] value:%03d xalpha:%03d delta:%03d deltamax:%03d threshold:%03d\r\n", u32(common::time::since_reset().value()), int(value), int(xalpha), int(delta), int(-m_delta_max), int(-m_threshold));
     //DBG("[%d]->%d \r\n", int(common::time::since_reset().value()), int(value));
     adapt_threshold(delta, &m_threshold);
-    const auto v2 = new_value(m_last_value, delta, m_threshold);
-    if (v2 == m_last_value)
-        return false;
-    m_last_value = v2;
-    if (!v2) {
-        return false;
-    }
-    LOG("[%07lu] ticked:%03d\r\n", u32(common::time::since_reset().value()), int(value));
-    return true;
+    auto ticked = trigger(delta);
+    m_delta_old = delta;
+    if (ticked)
+        LOG("[%07lu] ticked:%03d\r\n", u32(common::time::since_reset().value()), int(value));
+    return ticked;
 #endif
 }
 
