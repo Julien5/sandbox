@@ -14,7 +14,7 @@ function run() {
 	if [[ "$1" = "simulate" ]]; then 
 		find $DIR/ -type f -delete -print
 		echo regenerate $DIR/out
-		echo file: $ADCFILE
+		echo file: $INPUTFILE
 		if ! /tmp/build_pc/compteur/compteur $INPUTFILE > $OUTPUTFILE; then
 			echo "program crash (ignore)"
 		fi
@@ -28,18 +28,34 @@ function split() {
 }
 
 function filter() {
-	MARKER=$1
-	echo regenerate $MARKER
-	cat $OUTPUTFILE | grep "^\[" | grep $MARKER | split | grep $MARKER | cut -f2 -d: > $DIR/$MARKER
+	local MARKER=$1
+	cat $OUTPUTFILE | grep "^\[" | grep "$MARKER:" | split | grep "^$MARKER:" | cut -b13- > $DIR/$MARKER
 }
 
-run # simulate
+function plot() {
+	for a in value xalpha delta threshold ticked deltamax; do
+		filter $a
+	done
+	gnuplot ./recordings/tools/replay.gnuplot
+}
 
-#for a in values ticks delta threshold; do
-for a in value xalpha delta threshold ticked transmit; do
-	filter $a
-done
+function display() {
+	killall feh || true
+	feh -g +50+100 replay.png &
+}
 
-gnuplot ./recordings/tools/replay.gnuplot
-killall feh || true
-feh -g +50+100 replay.png &
+function loop() {
+	killall feh || true
+	feh --reload=5 -g +50+100 replay.png &
+	while true; do
+		run
+		plot
+		sleep 5;
+		echo ok $(date -Is)
+	done
+}
+
+run simulate
+plot
+display
+# loop
