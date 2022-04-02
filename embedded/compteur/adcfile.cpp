@@ -14,10 +14,10 @@ adcfile::adcfile() {
     }
     auto filename = parameters::get().at(0);
     std::vector<std::string> L = lines(content(filename));
-    for (auto l : L) {
+    for (const auto &l : L) {
         // [1200766]-> value:511 xalpha:518 delta:007 threshold:072
         // [1200766] value:511 xalpha:518 delta:007 threshold:072
-        bool good = !l.empty() && l[0] == '[' && l.find("value:") != std::string::npos;
+        bool good = !l.empty() && l[0] == '[' && l.find(" x:") != std::string::npos;
         if (!good)
             continue;
         auto parts = split(l, " ");
@@ -27,7 +27,7 @@ adcfile::adcfile() {
             auto pair = split(part, ":");
             auto name = pair[0];
             auto value = pair[1];
-            if (name == "value")
+            if (name == "x")
                 m_values.push_back(std::stoi(value));
         }
     }

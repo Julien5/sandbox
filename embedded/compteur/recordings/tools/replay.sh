@@ -33,7 +33,7 @@ function split() {
 
 function filter() {
 	local MARKER=$1
-	cat $OUTPUTFILE | grep "^\[" | grep "$MARKER:" | split | grep "^$MARKER:" | cut -b13- > $DIR/$MARKER
+	cat $OUTPUTFILE | grep "^\[" | grep " $MARKER:" | split | grep "^$MARKER:" | cut -b13- > $DIR/$MARKER
 }
 
 function plot() {
@@ -48,7 +48,19 @@ function display() {
 	feh -g +50+100 replay.png &
 }
 
-function loop() {
+function simulate() {
+	run simulate
+	plot
+	display
+}
+
+function replot() {
+	run 
+	plot
+	display
+}
+
+function monitor() {
 	killall feh || true
 	feh --reload=5 -g +50+100 replay.png &
 	while true; do
@@ -59,7 +71,4 @@ function loop() {
 	done
 }
 
-# run simulate
-# plot
-# display
-loop
+simulate

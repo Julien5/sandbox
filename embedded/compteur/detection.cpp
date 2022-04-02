@@ -50,7 +50,7 @@ bool Detection::adapt_threshold(const float &delta, float *threshold) {
     m_delta_max = alpha * m_delta_max + (1 - alpha) * m_delta_mean;
     if (seconds < 15)
         return false;
-    *threshold = (1 * m_delta_mean + 2 * m_delta_max) / 3;
+    *threshold = (2 * m_delta_mean + 2 * m_delta_max) / 4;
     return true;
 }
 
