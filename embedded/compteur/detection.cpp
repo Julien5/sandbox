@@ -46,7 +46,7 @@ bool Detection::adapt_threshold(const float &delta, float *threshold) {
     auto seconds = float(common::time::since_reset().value()) / 1000;
     float alpha = 0.999;
     m_delta_mean = alpha * m_delta_mean + (1 - alpha) * delta;
-    alpha = 0.9999;
+    alpha = 0.99999;
     m_delta_max = alpha * m_delta_max + (1 - alpha) * m_delta_mean;
     if (seconds < 15)
         return false;
@@ -63,7 +63,7 @@ bool Detection::tick_worker() {
         return false;
 
     float delta = 0;
-    const float alpha = 0.9875;
+    const float alpha = 0.999;
     if (xalpha < 0)
         xalpha = value;
     else {
