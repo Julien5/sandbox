@@ -21,6 +21,10 @@ function run() {
 	else
 		cp $INPUTFILE $OUTPUTFILE
 	fi
+	if [[ "$1" = "truncate" ]]; then
+		tail -3000 $OUTPUTFILE > /tmp/trunc
+		mv /tmp/trunc $OUTPUTFILE
+	fi
 }
 
 function split() {
@@ -33,7 +37,7 @@ function filter() {
 }
 
 function plot() {
-	for a in value xalpha delta threshold ticked deltamax; do
+	for a in x xa d dmax T ticked; do
 		filter $a
 	done
 	gnuplot ./recordings/tools/replay.gnuplot
@@ -48,14 +52,14 @@ function loop() {
 	killall feh || true
 	feh --reload=5 -g +50+100 replay.png &
 	while true; do
-		run
+		run truncate
 		plot
 		sleep 5;
 		echo ok $(date -Is)
 	done
 }
 
-run simulate
-plot
-display
-# loop
+# run simulate
+# plot
+# display
+loop

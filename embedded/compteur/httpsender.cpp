@@ -4,7 +4,7 @@
 #include "common/utils.h"
 #include "common/serial.h"
 
-#define SKIP
+// #define SKIP
 
 const char espEnablePin = 9;
 

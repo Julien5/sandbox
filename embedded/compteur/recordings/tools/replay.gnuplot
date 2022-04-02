@@ -1,4 +1,4 @@
-set terminal pngcairo size 1800,800 enhanced font 'Courier,10'
+set terminal pngcairo size 1200,600 enhanced font 'Courier,10'
 set output 'replay.png'
 set multiplot layout 2,1 rowsfirst
 
@@ -10,11 +10,11 @@ set grid;
 #set yrange [70:100]
 #set xrange [0:200]
 set autoscale fix
-plot '/tmp/replay/value' using 1:2 title 'adc' with lines ls 1, \
-     '/tmp/replay/xalpha' using 1:2 title 'x_{a}}' with lines ls 2, \
+plot '/tmp/replay/x' using 1:2 title 'adc' with lines ls 1, \
+     '/tmp/replay/xa' using 1:2 title 'x_{a}}' with lines ls 2, \
 	 '/tmp/replay/ticked' using 1:2 title 'ticks' with points ls 5
 
 #set yrange [70:100]
-plot '/tmp/replay/delta' using 1:2 title 'delta' with lines ls 1, \
-	 '/tmp/replay/threshold' using 1:2 title 'threshold' with lines ls 2, \
-	 '/tmp/replay/deltamax' using 1:2 title 'deltamax' with lines ls 3
+plot '/tmp/replay/d' using 1:2 title 'delta' with lines ls 1, \
+	 '/tmp/replay/T' using 1:2 title 'threshold' with lines ls 2, \
+	 '/tmp/replay/dmax' using 1:2 title 'deltamax' with lines ls 3

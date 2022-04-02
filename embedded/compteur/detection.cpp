@@ -50,7 +50,7 @@ bool Detection::adapt_threshold(const float &delta, float *threshold) {
     m_delta_max = alpha * m_delta_max + (1 - alpha) * m_delta_mean;
     if (seconds < 15)
         return false;
-    *threshold = (m_delta_mean + m_delta_max) / 2;
+    *threshold = (1 * m_delta_mean + 2 * m_delta_max) / 3;
     return true;
 }
 
@@ -72,7 +72,7 @@ bool Detection::tick_worker() {
     }
     auto seconds = float(common::time::since_reset().value()) / 1000;
 
-    LOG("[%07lu] value:%03d xalpha:%03d delta:%03d deltamax:%03d threshold:%03d\r\n", u32(common::time::since_reset().value()), int(value), int(xalpha), int(delta), int(-m_delta_max), int(-m_threshold));
+    LOG("[%07lu] x:%03d xa:%03d d:%03d dmax:%03d T:%03d\r\n", u32(common::time::since_reset().value()), int(value), int(xalpha), int(delta), int(-m_delta_max), int(-m_threshold));
     //DBG("[%d]->%d \r\n", int(common::time::since_reset().value()), int(value));
     adapt_threshold(delta, &m_threshold);
     auto ticked = trigger(delta);
