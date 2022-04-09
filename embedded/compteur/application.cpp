@@ -7,7 +7,6 @@
 #include "intermittentread.h"
 #include "sleep_authorization.h"
 #include "capacity.h"
-#include "alarmclock.h"
 
 std::unique_ptr<compteur> C;
 

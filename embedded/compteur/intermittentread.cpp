@@ -3,7 +3,6 @@
 #include "common/debug.h"
 #include "common/time.h"
 #include "sleep_authorization.h"
-#include "alarmclock.h"
 
 const int ledEnablePin = 8;
 bool switchLED(bool on) {
