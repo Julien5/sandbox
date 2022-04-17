@@ -119,7 +119,7 @@ bool ticks_coming_soon() {
     }
     auto remain = next.since(now);
     assert(now.value() <= next.value());
-    return remain.value() < 10000;
+    return remain.value() < 15000;
 }
 
 char need_transmit_worker(bool ticked) {
@@ -191,8 +191,6 @@ void application::setup() {
 const common::time::ms sleeping_time(200);
 
 void application::loop() {
-    setup_epoch();
-    return;
     auto t0 = common::time::since_reset();
     sleep_authorization::reset();
     work();
