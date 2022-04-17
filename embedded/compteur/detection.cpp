@@ -4,6 +4,7 @@
 #include <math.h>
 #include <string.h>
 #include "simulation.h"
+#include "softdebug.h"
 
 u16 bound(u16 T, u16 k) {
     return T + k;
@@ -72,12 +73,14 @@ bool Detection::tick_worker() {
     }
     auto seconds = float(common::time::since_reset().value()) / 1000;
 
-    LOG("[%07lu] x:%03d xa:%03d d:%03d dmax:%03d T:%03d\r\n", u32(common::time::since_reset().value()), int(value), int(xalpha), int(delta), int(-m_delta_max), int(-m_threshold));
+    if (softdebug::log_enabled()) {
+        LOG("[%07lu] x:%03d xa:%03d d:%03d dmax:%03d T:%03d\r\n", u32(common::time::since_reset().value()), int(value), int(xalpha), int(delta), int(-m_delta_max), int(-m_threshold));
+    }
     //DBG("[%d]->%d \r\n", int(common::time::since_reset().value()), int(value));
     adapt_threshold(delta, &m_threshold);
     auto ticked = trigger(delta);
     m_delta_old = delta;
-    if (ticked)
+    if (ticked && softdebug::log_enabled())
         LOG("[%07lu] ticked:%03d\r\n", u32(common::time::since_reset().value()), int(value));
     return ticked;
 #endif

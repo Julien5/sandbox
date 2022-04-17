@@ -3,6 +3,7 @@
 #include "common/time.h"
 #include "common/utils.h"
 #include "common/serial.h"
+#include "softdebug.h"
 
 //#define SKIP
 
@@ -11,7 +12,9 @@ const char espEnablePin = 9;
 httpsender::httpsender() {
     // turn on
 #if defined(ARDUINO) && !defined(SKIP)
-    LOG("init esp...");
+    if (softdebug::log_enabled()) {
+        LOG("init esp...");
+    }
     pinMode(espEnablePin, OUTPUT);
     digitalWrite(espEnablePin, HIGH);
     common::time::delay(common::time::ms(10));
@@ -25,14 +28,18 @@ httpsender::httpsender() {
     while (q--) {
         usize L = common::serial::serial().read(buffer, 4, 1000);
         utils::dump(buffer, L);
+        common::time::delay(common::time::ms(10));
     }
     while (true) {
         usize L = common::serial::serial().read(buffer, 4, 1000);
-        break;
+        if (L == 0)
+            break;
         utils::dump(buffer, L);
     }
     common::time::delay(common::time::ms(500));
-    LOG("\r\n");
+    if (softdebug::log_enabled()) {
+        LOG("\r\n");
+    }
 #endif
 }
 httpsender::~httpsender() {
@@ -49,7 +56,9 @@ class data_callback : public wifi::callback {
     }
     void data_length(u16 total_length) {
         DBG("data_length:%d\r\n", int(total_length));
-        LOG("memory:%d\r\n", debug::freeMemory());
+        if (softdebug::log_enabled()) {
+            LOG("memory:%d\r\n", debug::freeMemory());
+        }
         missing_bytes = total_length;
     }
     virtual void data(u8 *data, size_t length) {

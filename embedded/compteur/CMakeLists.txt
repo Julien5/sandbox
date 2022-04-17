@@ -9,6 +9,7 @@ target_sources(compteur PRIVATE
   intermittentread.cpp
   httpsender.cpp
   sleep_authorization.cpp
+  softdebug.cpp
   )
 
 if (ARDUINO)
