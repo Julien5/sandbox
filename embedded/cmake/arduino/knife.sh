@@ -68,11 +68,22 @@ function burn.application() {
 	dude.isp -U flash:w:$1:i
 }
 
-function monitor() {
+function monitor.isp() {
 	mkdir -p oldlogs
 	find -name "*.log" -exec mv "{}" oldlogs/ \;
 	screen  -Logfile log-$(date +%Y.%m.%d.%H.%M.%S).log  -L /dev/$(ispport "tail -1") 9600
 }
+
+function monitor.ftdi() {
+	mkdir -p oldlogs
+	find -name "*.log" -exec mv "{}" oldlogs/ \;
+	screen  -Logfile log-$(date +%Y.%m.%d.%H.%M.%S).log  -L /dev/$(ftdiport) 9600
+}
+
+function monitor() {
+	monitor.ftdi
+}
+
 
 function burn.test {
 	burn.fuse

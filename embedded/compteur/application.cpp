@@ -191,6 +191,8 @@ void application::setup() {
 const common::time::ms sleeping_time(200);
 
 void application::loop() {
+    setup_epoch();
+    return;
     auto t0 = common::time::since_reset();
     sleep_authorization::reset();
     work();

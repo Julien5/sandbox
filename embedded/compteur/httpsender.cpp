@@ -4,13 +4,13 @@
 #include "common/utils.h"
 #include "common/serial.h"
 
-#define SKIP
+//#define SKIP
 
 const char espEnablePin = 9;
 
 httpsender::httpsender() {
     // turn on
-#ifdef ARDUINO
+#if defined(ARDUINO) && !defined(SKIP)
     LOG("init esp...");
     pinMode(espEnablePin, OUTPUT);
     digitalWrite(espEnablePin, HIGH);
@@ -19,18 +19,19 @@ httpsender::httpsender() {
     common::time::delay(common::time::ms(10));
     digitalWrite(espEnablePin, HIGH);
     // esp needs 300ms to wake up and about 4s to connect to wifi
-    common::time::delay(common::time::ms(500));
+    common::time::delay(common::time::ms(1000));
     u8 buffer[4] = {0};
-    int q = 4;
+    int q = 10;
     while (q--) {
         usize L = common::serial::serial().read(buffer, 4, 1000);
-        //utils::dump(buffer, L);
+        utils::dump(buffer, L);
     }
+    q = 10;
     while (true) {
         usize L = common::serial::serial().read(buffer, 4, 1000);
-        if (L == 0)
+        if (L == 0 && (q--) < 0)
             break;
-        //utils::dump(buffer, L);
+        utils::dump(buffer, L);
     }
     LOG("\r\n");
 #endif
@@ -65,7 +66,7 @@ class data_callback : public wifi::callback {
 };
 
 void wait() {
-    common::time::delay(common::time::ms(3500));
+    //common::time::delay(common::time::ms(3500));
 }
 
 bool httpsender::post_tickcounter(const u8 *data, const usize &length) {
@@ -123,7 +124,8 @@ bool httpsender::get_epoch(u64 *epoch) {
     int retries = 3;
     while (retries--) {
         epoch_callback cb;
-        m_wifi.get("http://pi:8000/epoch", &cb);
+        auto ret = m_wifi.get("http://pi:8000/epoch", &cb);
+        DBG("ret:%d\r\n", int(ret));
 #define EPOCH_01_02_2022_00_00 1643670000
         if (cb.epoch < EPOCH_01_02_2022_00_00) {
             DBG("invalid epoch:%ld\r\n", cb.epoch);

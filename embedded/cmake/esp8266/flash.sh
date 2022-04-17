@@ -22,6 +22,7 @@ BINFILE=$ELFFILE.bin
 
 # assume esp is connected BEFORE arduino
 PORT=$(catusb | grep "HL-340 USB-Serial adapter" | cut -f1 -d: | sort | head -1)
+PORT=$(catusb | grep "FT232" | cut -f1 -d: | sort | head -1)
 if [ -z $PORT ]; then
 	echo could not find port
 	exit 1
