@@ -19,20 +19,19 @@ httpsender::httpsender() {
     common::time::delay(common::time::ms(10));
     digitalWrite(espEnablePin, HIGH);
     // esp needs 300ms to wake up and about 4s to connect to wifi
-    common::time::delay(common::time::ms(1000));
+    common::time::delay(common::time::ms(300));
     u8 buffer[4] = {0};
     int q = 10;
     while (q--) {
         usize L = common::serial::serial().read(buffer, 4, 1000);
         utils::dump(buffer, L);
     }
-    q = 10;
     while (true) {
         usize L = common::serial::serial().read(buffer, 4, 1000);
-        if (L == 0 && (q--) < 0)
-            break;
+        break;
         utils::dump(buffer, L);
     }
+    common::time::delay(common::time::ms(500));
     LOG("\r\n");
 #endif
 }
