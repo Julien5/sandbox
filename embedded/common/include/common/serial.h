@@ -10,6 +10,7 @@ namespace common {
 
       public:
         serial();
+        usize write(const char *buffer);
         usize write(u8 *buffer, usize buffer_size);
         usize read(u8 *buffer, usize buffer_size, u16 timeout);
         bool begin();

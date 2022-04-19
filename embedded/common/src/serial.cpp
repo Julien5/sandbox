@@ -2,7 +2,7 @@
 #include "common/debug.h"
 #include "common/utils.h"
 #include "common/time.h"
-
+#include <pstring.h>
 using namespace common;
 
 const u8 kBegin = 0xFF;
@@ -42,10 +42,10 @@ bool serial::wait_for_begin(const common::time::ms &timeout) {
             return false;
         }
         bool ok = read_until(&begin, sizeof(begin), timeout.value() / 10);
+        //DBG("begin:%d kBegin:%d\r\n", begin, kBegin);
         if (!ok) {
             return false;
         }
-        //DBG("begin:%d kBegin:%d\r\n", begin, kBegin);
     }
     return true;
 }
@@ -64,4 +64,8 @@ bool serial::check_end() {
     if (crc8_received != saved_rx_crc8)
         LOG("CRC: 0x%02x != 0x%02x\r\n", crc8_received, saved_rx_crc8);
     return crc8_received == saved_rx_crc8;
+}
+
+usize serial::write(const char *buffer) {
+    return write((u8 *)buffer, strlen(buffer));
 }
