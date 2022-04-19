@@ -3,6 +3,7 @@
 #include "common/serial.h"
 #include "common/debug.h"
 #include "common/platform.h"
+#include "common/utils.h"
 
 #include <string.h>
 #define BLOCK_LENGTH 32
@@ -19,6 +20,16 @@ namespace wifi {
 
     int read_wifi_response(common::serial *S, callback *r) {
         bool ok = false;
+        /*
+        while (true) {
+            u8 buffer[4] = {0};
+            usize L = S->read(buffer, 4, 1000);
+            if (L > 0)
+                utils::dump(buffer, L);
+            else
+                DBG("(0)\r\n");
+		}
+		*/
         // at this point, the request has been read, which is fast
         if (!S->wait_for_begin(common::time::ms(10000)))
             return 1;

@@ -2,7 +2,8 @@
 #include "common/debug.h"
 #include "common/utils.h"
 #include "common/time.h"
-#include <pstring.h>
+#include <string.h>
+
 using namespace common;
 
 const u8 kBegin = 0xFF;
@@ -67,5 +68,5 @@ bool serial::check_end() {
 }
 
 usize serial::write(const char *buffer) {
-    return write((u8 *)buffer, strlen(buffer));
+    return write((u8 *)buffer, strlen(buffer) + 1);
 }

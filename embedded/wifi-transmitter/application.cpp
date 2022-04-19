@@ -79,7 +79,13 @@ void transmitter::loop_serial() {
         W = std::unique_ptr<wifi::WIFI>(new wifi::WIFI);
 
     DBG("waiting for begin");
-
+    int q = 100;
+    /*
+	while (true) {
+        S->write("AAA");
+        common::time::delay(common::time::ms(100));
+	}
+	*/
     debug::turnBuildinLED(true);
     TRACE();
     while (!stopped() && !S->wait_for_begin(common::time::ms(1000))) {
