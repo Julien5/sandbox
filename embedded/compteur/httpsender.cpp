@@ -28,14 +28,14 @@ httpsender::httpsender() {
     // remove garbage from the UART RX buffer
     while (q--) {
         usize L = common::serial::serial().read(buffer, 4, 1000);
-        //utils::dump(buffer, L);
+        utils::dump(buffer, L);
         common::time::delay(common::time::ms(10));
     }
     while (true) {
         usize L = common::serial::serial().read(buffer, 4, 1000);
         if (L == 0)
             break;
-        //utils::dump(buffer, L);
+        utils::dump(buffer, L);
     }
     common::time::delay(common::time::ms(500));
     if (softdebug::log_enabled()) {

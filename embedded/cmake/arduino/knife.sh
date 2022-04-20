@@ -84,7 +84,6 @@ function monitor() {
 	monitor.ftdi
 }
 
-
 function burn.test {
 	burn.fuse
 	burn.application /tmp/build_arduino/test/test.hex 
