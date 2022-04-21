@@ -24,7 +24,7 @@ class bin:
     def __init__(self,reset_time,rbin):
         self.start = reset_time+datetime.timedelta(milliseconds=rbin.start);
         self.count = rbin.count;
-        self.duration = datetime.timedelta(rbin.duration);
+        self.duration = datetime.timedelta(milliseconds=rbin.duration);
 
     def end(self):
         return self.start + self.duration;

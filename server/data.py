@@ -53,7 +53,7 @@ class Sql:
 
 def main():
     sql=Sql();
-    R=sql.read_request("/compteur/tickcounter/data");
+    R=sql.read_request("/compteur/tickcounter/");
     print(len(R));
     for r in R:
         print(str(r))
