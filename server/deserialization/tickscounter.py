@@ -21,14 +21,21 @@ class raw_bin:
         return "%9d->%-9d [%6d] #=%3d" % (self.start/1000,self.end()/1000,self.duration/1000,self.count);
 
 class bin:
-    def __init__(self,reset_time,rbin):
-        self.start = reset_time+datetime.timedelta(milliseconds=rbin.start);
-        self.count = rbin.count;
-        self.duration = datetime.timedelta(milliseconds=rbin.duration);
+    def __init__(self,start,count,duration):
+        self.start = start;
+        self.count = count;
+        self.duration = duration;
+
+    @classmethod
+    def from_raw_bin(cls,reset_time,rbin):
+        start = reset_time+datetime.timedelta(milliseconds=rbin.start);
+        count = rbin.count;
+        duration = datetime.timedelta(milliseconds=rbin.duration);
+        return cls(start,count,duration);
 
     def end(self):
         return self.start + self.duration;
-        
+
     def __str__(self):
         t1=self.start.strftime("%H:%M:%S");
         t2=self.end().strftime("%H:%M:%S");
@@ -45,7 +52,7 @@ class tickscounter:
         assert(epoch_0<=self.epoch_1)
         self.bins=[];
         for b in raw_bins:
-            c=bin(epoch_0,b);
+            c=bin.from_raw_bin(epoch_0,b);
             if c.count:
                 self.bins.append(c);
         assert(not self.start() or self.start()<=self.end())
@@ -69,6 +76,25 @@ class tickscounter:
         s="start:%s end=%s" % (self.start().strftime("%Y-%m-%d %H:%M:%S"),self.end().strftime("%Y-%m-%d %H:%M:%S"));
         b="\n".join([str(b) for b in self.bins if b.count > 0]);
         return s+"\n"+b;
+
+    def count(self):
+        return sum([b.count for b in self.bins]);
+
+    def midbins(self,start,end):
+        R=list();
+        for q in self.bins:
+            if q.end()>=start and q.start<=end:
+                s=max(q.start,start);
+                e=min(q.end(),end);
+                assert(s<=e);
+                c=q.count;
+                if q.count > 1:
+                    dloc = e-s;
+                    proportion=dloc/q.duration;
+                    c=proportion*q.count;
+                R.append(bin(s,c,e-s));
+        return R;        
+        
     
 def readbins(bytes):
     pos=0;

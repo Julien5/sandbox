@@ -25,7 +25,7 @@ class request:
 
     def __str__(self):
         return "%05d %40s %03d bytes %s" % (self.ID,self.path,len(self.data),self.time.strftime("%Y-%m-%d %H:%M:%S"));
-      
+    
 class Sql:
     def __init__(self):
         create = not os.path.exists("sqlite.db");
@@ -39,9 +39,13 @@ class Sql:
         self.sqlite.execute('INSERT INTO requests (path,data,time) VALUES (?,?,?)', (path, data, t));
         self.conn.commit();
 
-    def read_request(self,path):
+    def read_request(self,path,startday=None):
         ret=[];
-        self.sqlite.execute("SELECT * FROM requests WHERE path LIKE (?)",("%"+path+"%",))
+        date="1970-01-01";
+        if startday:
+            date=startday.strftime("%Y-%m-%d");
+        self.sqlite.execute("SELECT * FROM requests WHERE path LIKE (?) AND date(time)>=date(?)",("%"+path+"%",date,))
+
         rows = self.sqlite.fetchall()
         for row in rows:
             r_id=int(row[0]);
