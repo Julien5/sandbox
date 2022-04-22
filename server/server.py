@@ -57,6 +57,14 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
         if self.path == "/compteur/tickscounter":
             message=htmlize(get_compteur.get_tickscounter(database,10));
             log(str(len(message)));
+        if self.path.endswith(".html"):
+            filename=self.path;
+            if filename[0] == "/":
+                filename=filename[1:];
+            if os.path.exists(filename):
+                message=open(filename,"r").read();
+            else:
+                print("could not find",filename);
         message = bytes(message, "utf8");
         if header:
             self.send_response(200);

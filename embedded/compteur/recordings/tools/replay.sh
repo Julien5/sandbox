@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 set -e
-# set -x
+#set -x
 
 DIR=/tmp/replay/
 INPUTFILE="$1"
@@ -22,7 +22,7 @@ function run() {
 		cp $INPUTFILE $OUTPUTFILE
 	fi
 	if [[ "$1" = "truncate" ]]; then
-		tail -3000 $OUTPUTFILE > /tmp/trunc
+		tail -8000 $OUTPUTFILE > /tmp/trunc
 		mv /tmp/trunc $OUTPUTFILE
 	fi
 }
@@ -71,4 +71,5 @@ function monitor() {
 	done
 }
 
-simulate
+monitor
+#simulate
