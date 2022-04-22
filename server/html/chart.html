@@ -21,13 +21,7 @@
 					yAxisID: 'temperature',
 					backgroundColor: 'transparent',
 					borderColor: 'rgb(255, 99, 132)',
-					pointBackgroundColor: 'rgb(255, 99, 132)',
-					tension: 0,
-					fill: false
-				}, {
-					yAxisID: 'precipitation',
-					backgroundColor: 'rgba(54, 162, 235, 0.5)',
-					borderColor: 'transparent'
+					pointBackgroundColor: 'rgb(255, 99, 132)'
 				}]
 			},
 			plugins: [ChartDataSource],
@@ -36,16 +30,11 @@
 					yAxes: [{
 						id: 'temperature',
 						gridLines: {
-							drawOnChartArea: false
-						}
-					}, {
-						id: 'precipitation',
-						position: 'right',
-						gridLines: {
-							drawOnChartArea: false
+							drawOnChartArea: true
 						}
 					}]
 				},
+				animation: false,
 				plugins: {
 					datasource: {
 						url: '/csv/data.csv'
@@ -54,7 +43,6 @@
 			}
 		});
 	  </script>
-
 	</div>
   </body>
 </html>
