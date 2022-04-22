@@ -36,6 +36,19 @@ class bin:
     def end(self):
         return self.start + self.duration;
 
+    def midbin(self,start,end):
+        if not (self.end()>=start and self.start<=end):
+            return None;
+        s=max(self.start,start);
+        e=min(self.end(),end);
+        assert(s<=e);
+        c=self.count;
+        if self.duration.total_seconds() > 0:
+            dloc = e-s;
+            proportion=dloc/self.duration;
+            c=proportion*self.count;
+        return bin(s,c,e-s);
+
     def __str__(self):
         t1=self.start.strftime("%H:%M:%S");
         t2=self.end().strftime("%H:%M:%S");
@@ -66,6 +79,9 @@ class tickscounter:
         if not self.bins:
             return None;
         return self.bins[-1].end();
+
+    def getbins(self):
+        return self.bins;
         
     def total_millis(self):
         return (self.end() - self.start()).total_seconds()*1000;
@@ -80,21 +96,6 @@ class tickscounter:
     def count(self):
         return sum([b.count for b in self.bins]);
 
-    def midbins(self,start,end):
-        R=list();
-        for q in self.bins:
-            if q.end()>=start and q.start<=end:
-                s=max(q.start,start);
-                e=min(q.end(),end);
-                assert(s<=e);
-                c=q.count;
-                if q.count > 1:
-                    dloc = e-s;
-                    proportion=dloc/q.duration;
-                    c=proportion*q.count;
-                R.append(bin(s,c,e-s));
-        return R;        
-        
     
 def readbins(bytes):
     pos=0;

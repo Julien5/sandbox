@@ -62,8 +62,8 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
             if filename[0] == "/":
                 filename=filename[1:];
             if os.path.exists(filename):
-                if "chart" in filename:
-                    get_compteur.exportcsv();
+                #if "chart" in filename:
+                #    get_compteur.exportcsv();
                 message=open(filename,"r").read();
             else:
                 print("could not find",filename);
