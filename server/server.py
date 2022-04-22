@@ -57,7 +57,7 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
         if self.path == "/compteur/tickscounter":
             message=htmlize(get_compteur.get_tickscounter(database,10));
             log(str(len(message)));
-        if self.path.endswith(".html"):
+        if self.path.endswith(".html") or self.path.endswith(".csv"):
             filename=self.path;
             if filename[0] == "/":
                 filename=filename[1:];

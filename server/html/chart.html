@@ -1,44 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Charte</title>
+    <title>Chart</title>
   </head>
   <body style="font-family:'Mono'">
 	<div>
+	  <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+	  <script lang="javascript" src="https://cdn.sheetjs.com/xlsx-0.18.6/package/dist/xlsx.full.min.js"></script>
+	  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datasource@0.1.0"></script>
+
 	  <canvas id="myChart"></canvas>
-	  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-	  <script>
-		const labels = [
-			'January',
-			'February',
-			'March',
-			'April',
-			'May',
-			'June',
-		];
-
-		const data = {
-			labels: labels,
-			datasets: [{
-				label: 'My First dataset',
-				backgroundColor: 'rgb(255, 99, 132)',
-				borderColor: 'rgb(255, 99, 132)',
-				data: [0, 10, 5, 2, 20, 30, 45],
-			}]
-		};
-
-		const config = {
-			type: 'line',
-			data: data,
-			options: {}
-		};
-	  </script>
 
 	  <script>
-		const myChart = new Chart(
-			document.getElementById('myChart'),
-			config
-		);
+		var ctx = document.getElementById("myChart");
+		var chart = new Chart(ctx, {
+			type: 'bar',
+			data: {
+				datasets: [{
+					type: 'line',
+					yAxisID: 'temperature',
+					backgroundColor: 'transparent',
+					borderColor: 'rgb(255, 99, 132)',
+					pointBackgroundColor: 'rgb(255, 99, 132)',
+					tension: 0,
+					fill: false
+				}, {
+					yAxisID: 'precipitation',
+					backgroundColor: 'rgba(54, 162, 235, 0.5)',
+					borderColor: 'transparent'
+				}]
+			},
+			plugins: [ChartDataSource],
+			options: {
+				scales: {
+					yAxes: [{
+						id: 'temperature',
+						gridLines: {
+							drawOnChartArea: false
+						}
+					}, {
+						id: 'precipitation',
+						position: 'right',
+						gridLines: {
+							drawOnChartArea: false
+						}
+					}]
+				},
+				plugins: {
+					datasource: {
+						url: '/csv/data.csv'
+					}
+				}
+			}
+		});
 	  </script>
 
 	</div>
