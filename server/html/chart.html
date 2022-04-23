@@ -18,7 +18,7 @@
 			data: {
 				datasets: [{
 					type: 'line',
-					yAxisID: 'temperature',
+					yAxisID: 'power',
 					backgroundColor: 'transparent',
 					borderColor: 'rgb(255, 99, 132)',
 					pointBackgroundColor: 'rgb(255, 99, 132)'
@@ -28,7 +28,7 @@
 			options: {
 				scales: {
 					yAxes: [{
-						id: 'temperature',
+						id: 'power',
 						gridLines: {
 							drawOnChartArea: true
 						}
@@ -40,7 +40,7 @@
 				},
 				plugins: {
 					datasource: {
-						url: '/csv/data.csv'
+						url: '/csv/data2.csv'
 					}
 				}
 			}

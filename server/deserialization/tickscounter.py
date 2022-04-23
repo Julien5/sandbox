@@ -49,6 +49,15 @@ class bin:
             c=proportion*self.count;
         return bin(s,c,e-s);
 
+    def ticks(self):
+        if self.count == 0:
+            return list();
+        if self.count == 1:
+            return [self.start];
+        t1=self.start
+        t2=self.end();
+        
+
     def __str__(self):
         t1=self.start.strftime("%H:%M:%S");
         t2=self.end().strftime("%H:%M:%S");

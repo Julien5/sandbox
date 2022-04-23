@@ -94,14 +94,22 @@ def exportcsv(t1,t2):
 	sql=data.Sql();
 	Q=get_tickscounter(sql);
 	start=t1;
-	step=datetime.timedelta(seconds=60);
+	step=datetime.timedelta(seconds=10*60);
+	line_time=["none"]
+	line_power=["power"]
 	while start < t2:
 		p=power(Q,start,start+step);
-		print(start,p);
+		line_time.append((start+step/2).strftime("%H:%M"));
+		line_power.append(str(p));
 		start+=step;
-			
+	csv=",".join(line_time);
+	csv+="\n";
+	csv+=",".join(line_power);
+	return csv;
+					
 if __name__ == "__main__":
 	main();
-	start=datetime.datetime.fromisoformat("2022-04-22 20:10:00");
+	start=datetime.datetime.fromisoformat("2022-04-22 01:40:00");
 	end=datetime.datetime.fromisoformat("2022-04-22 22:00:00");
-	exportcsv(start,end);
+	csv=exportcsv(start,end);
+	open("csv/data2.csv","w").write(csv);
