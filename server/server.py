@@ -57,13 +57,15 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
         if self.path == "/compteur/list":
             message=htmlize(get_compteur.get_tickscounter_text(database));
             log(str(len(message)));
+        if self.path.endswith(".csv"):
+            end=datetime.datetime.now();
+            start=end-datetime.timedelta(hours=3);
+            message=get_compteur.exportcsv(start,end);
         if self.path.endswith(".html") or self.path.endswith(".csv"):
             filename=self.path;
             if filename[0] == "/":
                 filename=filename[1:];
             if os.path.exists(filename):
-                #if "chart" in filename:
-                #    get_compteur.exportcsv();
                 message=open(filename,"r").read();
             else:
                 print("could not find",filename);

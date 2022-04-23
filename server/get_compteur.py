@@ -43,7 +43,7 @@ def power(T,t):
 	assert(T);	
 	I=find_interval(T,t);
 	if not I:
-		return 0;	
+		return None;	
 	[t1,t2]=I;
 	d=t2-t1;
 	dsec=d.total_seconds();
@@ -56,20 +56,23 @@ def main():
 	day=datetime.datetime.fromisoformat("2022-04-22");
 	Q=get_tickscounter(sql,day);
 	print(len(Q))
-	print(ticks(Q))
+	#print(ticks(Q))
 
 def exportcsv(t1,t2):
 	sql=data.Sql();
 	Q=get_tickscounter(sql,t2);
 	t=t1;
-	step=datetime.timedelta(seconds=10*60);
+	step=datetime.timedelta(seconds=60);
 	line_time=["none"]
 	line_power=["power"]
 	while t < t2:
 		p=power(ticks(Q),t);
-		line_time.append(t.strftime("%H:%M"));
-		line_power.append(str(p));
 		t+=step;
+		if p is None:
+			continue;
+		line_time.append(t.strftime("%H:%M:%S"));
+		line_power.append(str(p));
+		
 	csv=",".join(line_time);
 	csv+="\n";
 	csv+=",".join(line_power);
@@ -77,7 +80,9 @@ def exportcsv(t1,t2):
 					
 if __name__ == "__main__":
 	main();
-	start=datetime.datetime.fromisoformat("2022-04-22 01:40:00");
-	end=datetime.datetime.fromisoformat("2022-04-22 23:00:00");
+	start=datetime.datetime.fromisoformat("2022-04-23 06:00:00");
+	end=datetime.datetime.fromisoformat("2022-04-23 09:00:00");
+	end=datetime.datetime.now();
+	start=end-datetime.timedelta(hours=3);
 	csv=exportcsv(start,end);
 	open("csv/data2.csv","w").write(csv);
