@@ -56,7 +56,13 @@ class bin:
             return [self.start];
         t1=self.start
         t2=self.end();
-        
+        N=self.count
+        delta=(t2-t1)/(N-1);
+        T=[t1+k*delta for k in range(N)];
+        assert(len(T)==N)
+        assert(T[0]==t1);
+        assert(abs(T[-1]-t2).total_seconds()<1);
+        return T;
 
     def __str__(self):
         t1=self.start.strftime("%H:%M:%S");
