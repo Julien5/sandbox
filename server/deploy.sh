@@ -4,28 +4,32 @@ set -e
 set -x 
 SERVER=pi
 
-if [[ $(hostname) = "$SERVER" ]]; then
-	echo i am on the server
-	pwd
-	cd /tmp
-	if [[ ! -f server.tar ]]; then
-	   echo could not find server.tar
-	   exit 1;
-	fi
-	mkdir -p /opt/{backup,hamster-server}
-	tar zcvf /opt/backup/hamster-server.$(date "+%d.%m.%Y.%H.%M.%S").tgz /opt/hamster-server
-	pushd /opt/hamster-server
-	find . -type f -not -name "*.db" -and -not -name "pid" -delete -print
-	find . -type d -empty -print -delete 
-	tar xvf /tmp/server.tar
-	./start_server.sh
-	cat pid
-	popd
-	df -h --type=ext4
-else
-	tar cvf /tmp/server.tar $(find . -name "*.py") start_server.sh
-	scp deploy.sh julien@$SERVER:/tmp/
-	scp /tmp/server.tar julien@$SERVER:/tmp/
-	ssh julien@$SERVER "/tmp/deploy.sh"
-fi
-echo bye
+function backup() {
+	echo backup
+	ssh julien@$SERVER "tar cvf /opt/backup/hamster-server.$(date +%Y.%m.%d-%H.%M.%S).tgz /opt/hamster-server/"
+	scp julien@$SERVER:/opt/hamster-server/sqlite.db backup/sqlite.$(date +%Y.%m.%d-%H.%M.%S).db
+}
+
+TARGET=/tmp/server
+TARBALL=server.tar
+function copy() {
+	rm -f $TARBALL
+	tar -cvf $TARBALL --exclude *.db --exclude backup --exclude systemd --exclude __pycache__ *
+	ssh julien@$SERVER "rm -Rf $TARGET"
+	ssh julien@$SERVER "mkdir -p $TARGET"
+	scp $TARBALL julien@$SERVER:$TARGET
+	rm $TARBALL
+}
+
+function deploy() {
+	ssh julien@$SERVER "tar xvf $TARGET/$TARBALL -C /opt/hamster-server/"
+	ssh julien@$SERVER "cd /opt/hamster-server/; ./start_server.sh"
+}
+
+function main() {
+	backup
+	copy
+	deploy
+}
+
+main

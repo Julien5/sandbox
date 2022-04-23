@@ -19,13 +19,23 @@ def get_tickscounter(sql,day):
 		millis_at_end=read_ui64(bytes,pos); pos+=8;
 		bins=tickscounter.readbins(bytes[pos:]);
 		T=tickscounter.tickscounter(epoch_at_start,millis_at_end,bins,r.time);
-		for b in T.getbins():
+		Q.append(T);
+	return Q;
+
+def get_bins(sql,day):
+	Q=[];	
+	T=get_tickscounter(sql,day);	
+	for t in T:
+		if t.count() == 0:
+			continue;
+		for b in t.getbins():
 			Q.append(b);
 	return Q;
 
 def get_tickscounter_text(sql):
-	Q=get_tickscounter(sql);	
-	return "\n".join([str(q) for q in Q]);	
+	day=datetime.datetime.now();
+	Q=get_tickscounter(sql,day);
+	return "\n".join([str(q) for q in Q if q.count()>0]);	
 
 def ticks(bins):
 	T=list();
@@ -54,13 +64,13 @@ def power(T,t):
 def main():
 	sql=data.Sql();
 	day=datetime.datetime.fromisoformat("2022-04-22");
-	Q=get_tickscounter(sql,day);
+	Q=get_bins(sql,day);
 	print(len(Q))
 	#print(ticks(Q))
 
 def exportcsv(t1,t2):
 	sql=data.Sql();
-	Q=get_tickscounter(sql,t2);
+	Q=get_bins(sql,t2);
 	t=t1;
 	step=datetime.timedelta(seconds=60);
 	line_time=["none"]
