@@ -95,7 +95,6 @@ def main():
 
 def get_current_watt(sql):
 	day=datetime.datetime.now();
-	day=datetime.datetime.fromisoformat("2022-04-23 09:00:00");
 	Q=get_bins(sql,day);
 	T=ticks(Q);
 	if len(Q)<2:

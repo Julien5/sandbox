@@ -58,7 +58,6 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
             message=htmlize(get_compteur.get_tickscounter_text(database));
             log(str(len(message)));
         if self.path == "/compteur/current_watt":
-            header=False;
             message=str(get_compteur.get_current_watt(database));
         if self.path.endswith(".csv"):
             end=datetime.datetime.now();
