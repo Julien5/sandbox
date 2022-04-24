@@ -61,15 +61,7 @@ def power(T,t):
 	W=1000*perhour/70.0;
 	return W;
 
-def main():
-	sql=data.Sql();
-	day=datetime.datetime.fromisoformat("2022-04-22");
-	Q=get_bins(sql,day);
-	print(len(Q))
-	#print(ticks(Q))
-
-def exportcsv(t1,t2):
-	sql=data.Sql();
+def exportcsv(sql,t1,t2):
 	Q=get_bins(sql,t2);
 	t=t1;
 	step=datetime.timedelta(seconds=60);
@@ -80,19 +72,41 @@ def exportcsv(t1,t2):
 		t+=step;
 		if p is None:
 			continue;
-		line_time.append(t.strftime("%H:%M:%S"));
+		line_time.append(t.strftime("%H:%M"));
 		line_power.append(str(p));
-		
 	csv=",".join(line_time);
 	csv+="\n";
 	csv+=",".join(line_power);
 	return csv;
-					
-if __name__ == "__main__":
-	main();
+
+def main():
+	sql=data.Sql();
+	day=datetime.datetime.fromisoformat("2022-04-22");
+	Q=get_bins(sql,day);
+	print(len(Q))
 	start=datetime.datetime.fromisoformat("2022-04-23 06:00:00");
 	end=datetime.datetime.fromisoformat("2022-04-23 09:00:00");
 	end=datetime.datetime.now();
 	start=end-datetime.timedelta(hours=3);
-	csv=exportcsv(start,end);
+	database = data.Sql();
+	csv=exportcsv(database,start,end);
 	open("csv/data2.csv","w").write(csv);
+
+
+def get_current_watt(sql):
+	day=datetime.datetime.now();
+	day=datetime.datetime.fromisoformat("2022-04-23 09:00:00");
+	Q=get_bins(sql,day);
+	T=ticks(Q);
+	if len(Q)<2:
+		return None;
+	t2=T[-1];
+	t1=T[-2];
+	d=t2-t1;
+	t=t1+d/2;
+	p=power(T,t);
+	return [t.strftime("%H:%M:%S"),p];
+					
+if __name__ == "__main__":
+	main();
+
