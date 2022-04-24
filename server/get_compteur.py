@@ -32,8 +32,7 @@ def get_bins(sql,day):
 			Q.append(b);
 	return Q;
 
-def get_tickscounter_text(sql):
-	day=datetime.datetime.now();
+def get_tickscounter_text(sql,day):
 	Q=get_tickscounter(sql,day);
 	return "\n".join([str(q) for q in Q if q.count()>0]);	
 
@@ -81,7 +80,8 @@ def exportcsv(sql,t1,t2):
 
 def main():
 	sql=data.Sql();
-	day=datetime.datetime.fromisoformat("2022-04-22");
+	day=datetime.datetime.fromisoformat("2022-04-23");
+	print(get_tickscounter_text(sql,day));
 	Q=get_bins(sql,day);
 	print(len(Q))
 	start=datetime.datetime.fromisoformat("2022-04-23 06:00:00");
