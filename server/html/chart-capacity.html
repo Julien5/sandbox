@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Chart</title>
+  </head>
+  <body style="font-family:'Mono'">
+	<div>
+	  <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+	  <script lang="javascript" src="https://cdn.sheetjs.com/xlsx-0.18.6/package/dist/xlsx.full.min.js"></script>
+	  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datasource@0.1.0"></script>
+
+	  <canvas id="myChart"></canvas>
+
+	  <script>
+		var ctx = document.getElementById("myChart");
+		var chart = new Chart(ctx, {
+			type: 'bar',
+			data: {
+				datasets: [{
+					type: 'line',
+					yAxisID: 'arduino',
+					backgroundColor: 'transparent',
+					borderColor: 'rgb(255, 0, 132)',
+					pointBackgroundColor: 'rgb(255, 99, 132)',
+					pointRadius: 0
+				},{
+					type: 'line',
+					yAxisID: 'esp',
+					backgroundColor: 'transparent',
+					borderColor: 'rgb(0, 0, 132)',
+					pointBackgroundColor: 'rgb(255, 99, 132)',
+					pointRadius: 0
+				}]
+			},
+			plugins: [ChartDataSource],
+			options: {
+				scales: {
+					yAxes: [{
+						display: true,
+						stacked: true,
+						ticks: {
+							min: 250, // minimum value
+							max: 500 // maximum value
+						},
+						id: 'arduino',
+						gridLines: {
+							drawOnChartArea: true
+						}
+					},{
+						display: false,
+						stacked: true,
+						ticks: {
+							min: 250, // minimum value
+							max: 500 // maximum value
+						},
+						id: 'esp',
+						gridLines: {
+							drawOnChartArea: true
+						}
+					}]
+				},
+				animation: false,
+				legend: {
+					display: false
+				},
+				plugins: {
+					datasource: {
+						url: '/csv/capacity.csv'
+					}
+				}
+			}
+		});
+	  </script>
+	</div>
+  </body> 
+</html>
