@@ -32,7 +32,7 @@ def exportcsv(sql):
 	line_esp=["esp"]
 	line_ard=["arduino"]
 	time=beg;
-	step=datetime.timedelta(seconds=6*3600);
+	step=datetime.timedelta(seconds=3*3600);
 	while True:
 		print(len(line_time))	
 		print("time",time)	

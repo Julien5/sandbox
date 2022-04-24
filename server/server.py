@@ -56,7 +56,8 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
             header=False;
             message=str(int(time.time()));
         if self.path == "/compteur/list":
-            message=htmlize(get_compteur.get_tickscounter_text(database));
+            today=datetime.datetime.now();
+            message=htmlize(get_compteur.get_tickscounter_text(database,today));
             log(str(len(message)));
         if self.path == "/compteur/current_watt":
             message=str(get_compteur.get_current_watt(database));
