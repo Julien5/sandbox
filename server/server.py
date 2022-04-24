@@ -13,6 +13,7 @@ import sys;
 import mail;
 
 import get_compteur;
+import get_capacity;
 
 def log(msg):
     print("log:",msg);
@@ -59,10 +60,13 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
             log(str(len(message)));
         if self.path == "/compteur/current_watt":
             message=str(get_compteur.get_current_watt(database));
-        if self.path.endswith(".csv"):
-            end=datetime.datetime.now();
-            start=end-datetime.timedelta(hours=3);
-            message=get_compteur.exportcsv(database,start,end);
+        if "/csv/" in self.path:
+            if "watt" in self.path:
+                end=datetime.datetime.now();
+                start=end-datetime.timedelta(hours=3);
+                message=get_compteur.exportcsv(database,start,end);
+            if "capacity" in self.path:
+                message=get_capacity.exportcsv(database);    
         if self.path.endswith(".html") or self.path.endswith(".csv"):
             filename=self.path;
             if filename[0] == "/":
