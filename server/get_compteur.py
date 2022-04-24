@@ -104,7 +104,7 @@ def get_current_watt(sql):
 	d=t2-t1;
 	t=t1+d/2;
 	p=power(T,t);
-	return [t.strftime("%H:%M:%S"),p];
+	return [t2.strftime("%H:%M:%S"),p];
 					
 if __name__ == "__main__":
 	main();
