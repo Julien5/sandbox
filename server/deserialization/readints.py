@@ -8,3 +8,6 @@ def read_ui32(bytes,pos):
 
 def read_ui16(bytes,pos):
     return int.from_bytes(bytes[pos:pos+2], byteorder='little', signed=True)
+
+def read_ui8(bytes,pos):
+    return int.from_bytes(bytes[pos:pos+1], byteorder='little', signed=False)    
