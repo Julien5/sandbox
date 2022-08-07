@@ -4,6 +4,7 @@ import gpxpy
 import gpxpy.gpx
 import sys;
 import os;
+import xml.etree.cElementTree as mod_etree
 
 def save_segment(seg,filename):
 	gpx = gpxpy.gpx.GPX()
@@ -62,7 +63,25 @@ def simplify(seg):
 	track=gpx.tracks[0];
 	assert(len(track.segments)==1);
 	print("new length:",len(track.segments[0].points));
-	return track.segments[0];	
+	return track.segments[0];
+
+def segment_to_waypoints(S,with_alarm=False):
+	W = [];
+	for i in range(len(S.points)):
+		s = S.points[i];
+		w = gpxpy.gpx.GPXWaypoint();
+		w.name = "{:03d}".format(i);
+		if with_alarm:
+			w.symbol = "City (Small)";
+		w.latitude=s.latitude;
+		w.longitude=s.longitude;
+		if with_alarm:
+			e = mod_etree.Element(f'wptx1:WaypointExtension');
+			proximity = mod_etree.SubElement(e,f'wptx1:Proximity');
+			proximity.text = "200.0";
+			w.extensions.append(e);
+		W.append(w);
+	return W;
 
 def main(filename):
 	gpx_file = open(filename, 'r')
@@ -75,14 +94,10 @@ def main(filename):
 	save_segment(T,"restarted.gpx");
 
 	S = simplify(T);
-	W = [];
-	for s in S.points:
-		w = gpxpy.gpx.GPXWaypoint();
-		w.latitude=s.latitude;
-		w.longitude=s.longitude;
-		W.append(w);
-		
-	save_waypoints(W,"waypoints.gpx");	
+	W = segment_to_waypoints(S);
+	Wa = segment_to_waypoints(S,True);
+	save_waypoints(W,"waypoints.gpx");
+	save_waypoints(Wa,"waypoints-alarm.gpx");	
 	
 if __name__ == '__main__':
 	print(sys.argv);
