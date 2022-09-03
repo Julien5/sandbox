@@ -6,29 +6,31 @@ import sys;
 import os;
 import xml.etree.cElementTree as mod_etree
 
-def save_segment(seg,name):
-	gpx = gpxpy.gpx.GPX()
-
+def append_segment(gpx,seg,name):
 	gpx_track = gpxpy.gpx.GPXTrack()
 	gpx.tracks.append(gpx_track)
 
 	gpx_segment = gpxpy.gpx.GPXTrackSegment()
 	gpx_track.segments.append(seg);
 	gpx_track.name=name;
-	filename=name;
-	if not ".gpx" in filename:
-		filename="o-"+name+".gpx";
+
+
+def save_segment(segment,filename):
+	gpx = gpxpy.gpx.GPX();
+
+	# save track
+	gpx_track = gpxpy.gpx.GPXTrack()
+	gpx.tracks.append(gpx_track)
+	gpx_segment = gpxpy.gpx.GPXTrackSegment()
+	gpx_track.segments.append(segment);
+
 	f=open(filename,'w');
 	f.write(gpx.to_xml());
-	f.close();
+	f.close();	
 
-def save_waypoints(W,filename):
-	gpx = gpxpy.gpx.GPX()
+def append_waypoints(gpx,W):
 	for w in W:
 		gpx.waypoints.append(w);
-	f=open(filename,'w');
-	f.write(gpx.to_xml());
-	f.close();
 
 def to_routepoint(w):
 	p=gpxpy.gpx.GPXRoutePoint();
@@ -82,8 +84,7 @@ def pois_from_segment(segment):
 		p=segment.points[i];
 		if not is_poi(p):
 			continue;
-	
-		W.append(p);
+		W.append(trackpoint_to_waypoint(p));
 	return W;	
 			
 def clean(segment):
@@ -174,32 +175,53 @@ def segment_to_waypoints(S,with_alarm=False):
 		W.append(w);
 	return W;
 
-def main(filename):
-	gpx_file = open(filename, 'r')
-	gpx = gpxpy.parse(gpx_file)
+def extract_segment(gpx):
 	assert(len(gpx.tracks)==1);
 	track=gpx.tracks[0];
 	print(len(track.segments))
 	#assert(len(track.segments)==1);
 	segment=track.segments[0];
-	print("track has",len(segment.points),"points.");
-	clean(segment);
-	outgpx = gpxpy.gpx.GPX();
-	for poi in pois_from_segment(segment):
-		outgpx.waypoints.append(poi);
-	T = restart(segment);
-	name=track.name;
-	save_segment(T,name);
+	return track.name,segment;
 
-	S = simplify(T,100);
-	S50 = simplify(T,15);
+def readgpx(filename):
+	gpx_file = open(filename, 'r');
+	gpx = gpxpy.parse(gpx_file);
+	return gpx;
 
-	W = segment_to_waypoints(S50);
-	Wa = segment_to_waypoints(S50,True);
-	save_waypoints(W,"o-waypoints-"+name+".gpx");
+class GPX:
+	def __init__(self,filename):
+		self.filename=filename;
+		self.igpx = readgpx(filename);
+		
+	def process(self):
+		self.name,segment=extract_segment(self.igpx);
+		clean(segment);
+		self.waypoints=pois_from_segment(segment);
+		self.track = simplify(segment,10000);
 
-	R = waypoints_to_route(segment_to_waypoints(S50),name);
-	save_route(R,"o-route-"+name+".gpx");
+	def save(self):
+		filename = self.name+".gpx";
+		gpx = gpxpy.gpx.GPX();
+
+		# save track
+		gpx_track = gpxpy.gpx.GPXTrack()
+		gpx.tracks.append(gpx_track)
+		gpx_segment = gpxpy.gpx.GPXTrackSegment()
+		gpx_track.segments.append(self.track);
+		gpx_track.name=self.name;
+
+		# save waypoints
+		for w in self.waypoints:
+			gpx.waypoints.append(w);
+			
+		f=open(filename,'w');
+		f.write(gpx.to_xml());
+		f.close();
+
+def main(filename):
+	g = GPX(filename);
+	g.process();
+	g.save();
 	
 if __name__ == '__main__':
 	print(sys.argv);
