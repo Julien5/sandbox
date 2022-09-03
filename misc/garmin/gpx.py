@@ -104,7 +104,7 @@ class GPX:
 		self.name,segment=extract_segment(self.igpx);
 		clean(segment);
 		self.waypoints=pois_from_segment(segment);
-		self.track = simplify(segment,1000);
+		self.track = simplify(segment,8192);
 
 	def save(self):
 		filename = self.name+".gpx";
