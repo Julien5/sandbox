@@ -107,7 +107,7 @@ class GPX:
 		self.track = simplify(segment,8192);
 
 	def save(self):
-		filename = self.name+".gpx";
+		filename = self.name.replace("/","-")+".gpx";
 		gpx = gpxpy.gpx.GPX();
 
 		# save track
