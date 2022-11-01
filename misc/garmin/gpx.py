@@ -6,6 +6,9 @@ import sys;
 import os;
 import xml.etree.cElementTree as mod_etree
 
+import process;
+import math;
+
 def save_segment(segment,filename):
 	gpx = gpxpy.gpx.GPX();
 
@@ -95,6 +98,12 @@ def readgpx(filename):
 	gpx = gpxpy.parse(gpx_file);
 	return gpx;
 
+def sqr(x):
+	return x*x;
+
+def dist(x1,y1,x2,y2):
+	return math.sqrt(sqr(x2-x1)+sqr(y2-y1));	
+
 class GPX:
 	def __init__(self,filename):
 		self.filename=filename;
@@ -105,7 +114,13 @@ class GPX:
 		clean(segment);
 		self.waypoints=pois_from_segment(segment);
 		self.track = simplify(segment,8192);
-
+		x,y=None,None;
+		for p in segment.points:
+			print(p.latitude,p.longitude);
+			x2,y2=process.convert(p.latitude,p.longitude);
+			if x and y:
+				print("d=",dist(x,y,x2,y2),p.elevation);
+			x,y=x2,y2;
 	def save(self):
 		filename = self.name.replace("/","-")+".gpx";
 		gpx = gpxpy.gpx.GPX();
