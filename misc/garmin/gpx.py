@@ -6,7 +6,7 @@ import sys;
 import os;
 import xml.etree.cElementTree as mod_etree
 
-import process;
+import projection
 import math;
 
 def save_segment(segment,filename):
@@ -117,10 +117,11 @@ class GPX:
 		x,y=None,None;
 		for p in segment.points:
 			print(p.latitude,p.longitude);
-			x2,y2=process.convert(p.latitude,p.longitude);
+			x2,y2=projection.convert(p.latitude,p.longitude);
 			if x and y:
 				print("d=",dist(x,y,x2,y2),p.elevation);
 			x,y=x2,y2;
+			
 	def save(self):
 		filename = self.name.replace("/","-")+".gpx";
 		gpx = gpxpy.gpx.GPX();
