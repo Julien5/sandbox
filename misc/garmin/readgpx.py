@@ -31,9 +31,15 @@ def extract_segment(gpx):
 	return track.name,segment;
 
 def readgpx(filename):
-	gpx_file = open(filename, 'r');
-	gpx = gpxpy.parse(gpx_file);
-	return gpx;
+	try:
+		gpx_file = open(filename, 'r');
+		gpx = gpxpy.parse(gpx_file);
+		return gpx;
+	except Exception as e:
+		print(filename);
+		print(e)
+		raise e;
+		
 
 def to_track(segment,filename):
 	ret=track.Track(filename);
@@ -52,7 +58,15 @@ def tracks(filename):
 		for S in T.segments:
 			clean(S);
 			ret.append(to_track(S,filename));
-	return ret;	 
+	return ret;
+
+def tracksfromdir(dirname):
+	ret=list();
+	for root, dirs, files in os.walk(dirname):
+		for file in files:
+			if file.endswith(".gpx"):
+				ret.extend(tracks(os.path.join(root, file)));
+	return ret;			
 
 def main(filename):
 	tracks(filename);

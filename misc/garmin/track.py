@@ -16,10 +16,10 @@ class Point:
 class Track:
 	def __init__(self,filename):
 		self.filename=filename;
-		self.points=dict();
+		self._points=dict();
 
 	def append(self,time,Point):
-		self.points[time]=Point;
+		self._points[time]=Point;
 
 	def string(self):
 		ret=list();
@@ -28,6 +28,9 @@ class Track:
 			p=self.points[time].string();
 			s=f"{t:s}:{p:s}"
 			ret.append(s);
-		return "\n".join(ret);	
+		return "\n".join(ret);
+
+	def points(self):
+		return self._points
 	
 

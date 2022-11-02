@@ -3,15 +3,15 @@
 import readgpx;
 import sys;
 
-def main(filename):
-	tracks=readgpx.tracks(filename);
-	print(len(tracks));
-	for t in tracks:
-		print(t.string());
+def main():
+	T=readgpx.tracks("testride.gpx");
+	#for t in tracks:
+	#	print(t.string());
+	T=readgpx.tracksfromdir("/tmp/gpx/good");
+	for t in T:
+		P=t.points();
+		date=list(P.keys())[-1]
+		print(str(date),len(t.points()))
 	
 if __name__ == '__main__':
-	if (len(sys.argv)) < 2:
-		print("error");
-		exit(1);
-	filename=sys.argv[1];
-	sys.exit(main(filename))  
+	sys.exit(main())  
