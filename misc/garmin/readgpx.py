@@ -7,6 +7,7 @@ import gpxpy.gpx
 import sys;
 import os;
 import xml.etree.cElementTree as mod_etree
+import projection;
 
 def clean(segment):
 	N=len(segment.points);
@@ -18,17 +19,6 @@ def clean(segment):
 			if "outdooractive" in e.tag:
 				e.tag="OA";
 				
-def extract_segment(gpx):
-	if len(gpx.tracks) != 1:
-		print("could not find unique track.");	
-		sys.exit(1);
-	track=gpx.tracks[0];
-	if len(track.segments) != 1:
-		print("could not find unique segment.");	
-		sys.exit(1);
-	assert(len(track.segments)==1);
-	segment=track.segments[0];
-	return track.name,segment;
 
 def readgpx(filename):
 	try:
@@ -48,7 +38,8 @@ def to_track(segment,filename):
 		longitude=point.longitude;
 		# point.elevation
 		time = point.time;
-		ret.append(time,track.Point(latitude,longitude));
+		(x,y)=projection.convert(latitude,longitude);
+		ret.append(time,track.Point(latitude,longitude,x,y));
 	return ret;	
 		
 def tracks(filename):
@@ -64,8 +55,12 @@ def tracksfromdir(dirname):
 	ret=list();
 	for root, dirs, files in os.walk(dirname):
 		for file in files:
-			if file.endswith(".gpx"):
-				ret.extend(tracks(os.path.join(root, file)));
+			if file.endswith(".gpx") and "Track_" in file:
+				filename=os.path.join(root, file);	
+				try:	
+					ret.extend(tracks(filename));
+				except Exception as e:
+					print("could not read:",filename);	
 	return ret;			
 
 def main(filename):
