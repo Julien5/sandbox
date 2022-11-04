@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import track;
+import geometry;
 
 import gpxpy
 import gpxpy.gpx
@@ -39,7 +40,7 @@ def to_track(segment,filename):
 		# point.elevation
 		time = point.time;
 		(x,y)=projection.convert(latitude,longitude);
-		ret.append(time,track.Point(latitude,longitude,x,y));
+		ret.append(time,geometry.Point(latitude,longitude,x,y));
 	return ret;	
 		
 def tracks(filename):
