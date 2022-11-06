@@ -137,6 +137,11 @@ class Boxes:
 			B._boxes=r;
 			RB.append(B);
 		return RB;
+
+	def distance(self,other):
+		I=self._boxes.intersection(other._boxes);
+		U=self._boxes.union(other._boxes);
+		return len(U-I)/len(U);
 	
 def boxes(track):
 	B=Boxes(track);
