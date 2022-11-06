@@ -97,6 +97,10 @@ class Boxes:
 		R._boxes=A._boxes.intersection(B._boxes);
 		return R;
 
+	def union(self,B):
+		self.filenames.extend(B.filenames);
+		self._boxes=self._boxes.union(B._boxes);
+
 	def neighbours(self,a):
 		(n,m)=a;
 		R=set();
@@ -142,7 +146,6 @@ def boxes(track):
 		v=G[k+1];
 		B.add(u,v);
 	B.addsurroundings(50);	
-	print("number of boxes",len(B.boxes()));
 	return B;
 
 def main():
