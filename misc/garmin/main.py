@@ -18,6 +18,10 @@ def main():
 	B2=boxes.boxes(T2);
 	I=boxes.Boxes.intersection(B1,B2);
 	print(len(I.boxes()));
+	S=I.segments();
+	print(len(S));
+	for s in S:
+		print(len(s.boxes()));	
 	plot.plot_track(T1,"/tmp/track-1.dat");
 	plot.plot_track(T2,"/tmp/track-2.dat");
 	plot.plot_boxes(I,"/tmp/boxes-"+str(counter)+".gnuplot");

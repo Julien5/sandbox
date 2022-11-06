@@ -2,10 +2,14 @@
 
 import geometry;
 import math;
+import copy;
 
 class Boxes:
 	W=50
-	def __init__(self):
+	def __init__(self,track=None):
+		self.filenames=[];
+		if track:
+			self.filenames=[track.filename()];
 		self._boxes=set();
 
 	def min(self,p):
@@ -88,11 +92,50 @@ class Boxes:
 
 	def intersection(A,B):
 		R=Boxes();
+		R.filenames=A.filenames;
+		R.filenames.extend(B.filenames);
 		R._boxes=A._boxes.intersection(B._boxes);
 		return R;
-			
+
+	def neighbours(self,a):
+		(n,m)=a;
+		R=set();
+		for k in [-1,0,+1]:
+			for l in [-1,0,+1]:
+				R.add((n+k,m+l));
+		return R;		
+
+	def segments(self):
+		R=list();
+		A=copy.deepcopy(self._boxes);
+		C=set();
+		while A:
+			Q=None;
+			for a in A:
+				Q=[a];
+				break;
+			if not Q:
+				return;
+			assert(Q);
+			while Q:
+				a=Q.pop(0);
+				for n in A.intersection(self.neighbours(a)):
+					if not n in C:
+						C.add(n); # label
+						Q.append(n); # add to the queue
+			R.append(copy.deepcopy(C));
+			A=A-C;
+			C.clear();
+		RB=list();	
+		for r in R:	
+			B=Boxes();
+			B.filenames=self.filenames;
+			B._boxes=r;
+			RB.append(B);
+		return RB;
+	
 def boxes(track):
-	B=Boxes();
+	B=Boxes(track);
 	G=track.geometry();
 	for k in range(len(G)-1):
 		u=G[k];
