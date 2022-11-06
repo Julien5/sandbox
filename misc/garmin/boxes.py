@@ -92,7 +92,8 @@ class Boxes:
 
 	def intersection(A,B):
 		R=Boxes();
-		R.filenames=A.filenames;
+		R.filenames=list();
+		R.filenames.extend(A.filenames);
 		R.filenames.extend(B.filenames);
 		R._boxes=A._boxes.intersection(B._boxes);
 		return R;
