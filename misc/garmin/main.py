@@ -3,22 +3,25 @@
 import readgpx;
 import sys;
 import plot;
-
+import boxes;
 def main():
 	T=readgpx.tracks("testride.gpx");
 	#for t in tracks:
 	#	print(t.string());
 	#T=readgpx.tracksfromdir("/home/julien/tracks/2022.10.01/GPX/");
 	T=readgpx.tracksfromdir("test");
-	for t in T:
-		P=t.points();
-		date=list(P.keys())[-1]
-		stamp="none";
-		if date:
-			stamp=date.strftime("%d.%m-%H:%M:%S");
-		duration=str(t.duration());
-		print(f"{stamp:20s}{len(t.points()):4d} distance:{t.distance()/1000:8.1f} km duration:{duration:20s} {t.filename():40s}");
-		plot.plot(t,"track-"+stamp.replace(":",".")+".dat");
+	counter=0;
+	assert(len(T)==2);
+	T1=T[0];
+	T2=T[1];
+	B1=boxes.boxes(T1);
+	B2=boxes.boxes(T2);
+	I=boxes.Boxes.intersection(B1,B2);
+	print(len(I.boxes()));
+	plot.plot_track(T1,"/tmp/track-1.dat");
+	plot.plot_track(T2,"/tmp/track-2.dat");
+	plot.plot_boxes(I,"/tmp/boxes-"+str(counter)+".gnuplot");
+		
 	
 if __name__ == '__main__':
 	sys.exit(main())  

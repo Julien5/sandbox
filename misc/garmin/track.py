@@ -23,7 +23,7 @@ class Track:
 		return self._points;
 
 	def geometry(self):
-		return self._points.values();
+		return list(self._points.values());
 
 	def filename(self):
 		return self._filename;

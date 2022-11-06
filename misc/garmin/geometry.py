@@ -99,6 +99,19 @@ def distance(A,B,P):
 	BP=Vector.fromPoints(B,P).norm();
 	return BP;
 
+def lineparameters(A,B):
+	dy=A.y()-B.y();
+	dx=A.x()-B.x();
+	if abs(dx)>1: # y=ax+b
+		a=dy/dx;
+		b=A.y() - a*A.x();
+		return ['y',a,b];
+	elif abs(dy)>1: # x=ay+b
+		a=dx/dy;
+		b=A.x() - a*A.y();
+		return ['x',a,b];
+	return [None,None,None];
+
 def test1():
 	A=Point(3,2);
 	B=Point(8,7);
