@@ -40,7 +40,7 @@ def to_track(segment,filename):
 		# point.elevation
 		time = point.time;
 		(x,y)=projection.convert(latitude,longitude);
-		ret.append(time,geometry.Point(latitude,longitude,x,y));
+		ret.append(time,geometry.Point(x,y,latitude,longitude));
 	return ret;	
 		
 def tracks(filename):

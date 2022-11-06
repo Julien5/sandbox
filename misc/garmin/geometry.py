@@ -7,28 +7,25 @@ def sqr(x):
 	return x*x;	
 
 class Point:
-	def __init__(self,latitude,longitude,x,y):
+	def __init__(self,x,y,latitude=None,longitude=None):
 		self.latitude=latitude;
 		self.longitude=longitude;
 		self._x=x;
 		self._y=y;
 		self.elevation=None; # todo
-
-	def __init__(self,x,y):
-		self.latitude=None;
-		self.longitude=None;
-		self._x=x;
-		self._y=y;
-		self.elevation=None; # todo
+	
+	def string(self):
+		if False and self.latitude:
+			width=8;
+			precision=7;
+			return f"WGS84({self.latitude:{width}.{precision}},{self.longitude:{width}.{precision}})";
+		return 	f"UTM({self.x():9.1f},{self.y():9.1f})";
 	
 
-	def string(self):
-		width=8
-		precision=7
-		return f"({self.latitude:{width}.{precision}},{self.longitude:{width}.{precision}})"
-
 	def distance(self,other):
-		return math.sqrt(sqr(self.x - other.x) + sqr(self.y-other.y));
+		dx=self.x() - other.x();
+		dy=self.y() - other.y();	
+		return math.sqrt(sqr(dx) + sqr(dy));
 
 	def x(self):
 		return self._x;
@@ -78,17 +75,31 @@ class Vector:
 		return Vector(self.x()-other.x(),self.y()-other.y());
 
 	def multiply(self,factor):
-		return Vector(factor.self.x(),factor*self.y());
+		return Vector(factor*self.x(),factor*self.y());
 
 	def normal(self):
+		n=self.norm();
+		ret=Vector(0,1);
 		if sqr(self.y())>0:
 			ret=Vector(1,-self.x()/self.y());
-			ret.normalize();
-			return ret;
-		return Vector(0,1);
+		ret.normalize();
+		return ret.multiply(self.norm());
 
+def distance(A,B,P):
+	AB=Vector.fromPoints(A,B);
+	AP=Vector.fromPoints(A,P);
+	AC=AB.normal();
+	xp = AB.product(AP)/AB.norm2();
+	# yp = AC.product(AP)/AC.norm2();
+	if 0 <= xp <= 1:
+		# return yp*AC.norm();
+		return abs(AC.product(AP)/AC.norm());
+	if xp < 0:
+		return AP.norm();
+	BP=Vector.fromPoints(B,P).norm();
+	return BP;
 
-def main():
+def test1():
 	A=Point(3,2);
 	B=Point(8,7);
 	C=Point(3,5);
@@ -103,6 +114,21 @@ def main():
 	print(CD.product(CDn));
 	print(CD.string());
 	print(CDn.string());
+
+def test2():
+	A=Point(3,2);
+	B=Point(8,7);
+	D=Point(6,2);
+	print("distance:",distance(A,B,D));
+	for x in range(10):
+		D=Point(x,2+x);
+		print(D.string(),"distance:",distance(A,B,D));
+	
+def main():
+	test1();	
+	test2();
+	for u in range(100000):
+		test2();	
 
 if __name__ == '__main__':
 	import sys;

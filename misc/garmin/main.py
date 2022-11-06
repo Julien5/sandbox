@@ -7,8 +7,8 @@ def main():
 	T=readgpx.tracks("testride.gpx");
 	#for t in tracks:
 	#	print(t.string());
-	T=readgpx.tracksfromdir("/home/julien/tracks/2022.10.01/GPX/");
-	#T=readgpx.tracksfromdir("/tmp/gpx/good");
+	#T=readgpx.tracksfromdir("/home/julien/tracks/2022.10.01/GPX/");
+	T=readgpx.tracksfromdir("test");
 	for t in T:
 		P=t.points();
 		date=list(P.keys())[-1]

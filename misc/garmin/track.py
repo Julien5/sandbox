@@ -20,7 +20,10 @@ class Track:
 		return "\n".join(ret);
 
 	def points(self):
-		return self._points
+		return self._points;
+
+	def geometry():
+		return self._points.values();
 
 	def filename(self):
 		return self._filename;
@@ -31,7 +34,8 @@ class Track:
 		for k in range(len(times)-1):
 			p1=self._points[times[k]];
 			p2=self._points[times[k+1]];
-			d+=p1.distance(p2);
+			delta=p1.distance(p2);
+			d+=delta;
 		return d;
 
 	def duration(self):
@@ -39,8 +43,4 @@ class Track:
 			return datetime.timedelta(0);
 		times = sorted(list(self._points.keys()));
 		return times[-1]-times[0];
-		
-
-
-	
-
+	 
