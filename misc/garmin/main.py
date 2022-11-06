@@ -2,6 +2,7 @@
 
 import readgpx;
 import sys;
+import plot;
 
 def main():
 	T=readgpx.tracks("testride.gpx");
@@ -17,6 +18,7 @@ def main():
 			stamp=date.strftime("%d.%m-%H:%M:%S");
 		duration=str(t.duration());
 		print(f"{stamp:20s}{len(t.points()):4d} distance:{t.distance()/1000:8.1f} km duration:{duration:20s} {t.filename():40s}");
+		plot.plot(t,"track-"+stamp.replace(":",".")+".dat");
 	
 if __name__ == '__main__':
 	sys.exit(main())  

@@ -7,8 +7,8 @@ class Track:
 		self._filename=filename;
 		self._points=dict();
 
-	def append(self,time,Point):
-		self._points[time]=Point;
+	def append(self,time,p):
+		self._points[time]=p;
 
 	def string(self):
 		ret=list();
@@ -22,7 +22,7 @@ class Track:
 	def points(self):
 		return self._points;
 
-	def geometry():
+	def geometry(self):
 		return self._points.values();
 
 	def filename(self):
