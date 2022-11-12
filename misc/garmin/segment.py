@@ -32,8 +32,8 @@ def hasintersection(bbox1,bbox2):
 
 class Segment:
 	W=50
-	def __init__(self,indexset,filenames):
-		self.filenames=filenames;
+	def __init__(self,indexset,tracks):
+		self.tracks=tracks;
 		self._boxes=indexset;
 		self._bbox=boundingbox(indexset);
 
@@ -48,18 +48,21 @@ class Segment:
 	def boxes(self):
 		return self._boxes;
 
+	def bbox(self):
+		return self._bbox;
+
 	def intersection(A,B):
 		R=Boxes();
 		if not hasintersection(A._bbox,B._bbox):
 			return R;
-		R.filenames=list();
-		R.filenames.update(A.filenames);
-		R.filenames.update(B.filenames);
+		R.tracks=list();
+		R.tracks.update(A.tracks);
+		R.tracks.update(B.tracks);
 		R._boxes=A._boxes.intersection(B._boxes);
 		return R;
 
 	def union(self,B):
-		self.filenames.update(B.filenames);
+		self.tracks.update(B.tracks);
 		self._boxes=self._boxes.union(B._boxes);
 
 	def distance(self,other):
@@ -71,7 +74,7 @@ class Segment:
 
 	def merge(self,other):
 		self._boxes=self._boxes.union(other._boxes);
-		self.filenames.update(other.filenames);
+		self.tracks.update(other.tracks);
 
 def similars(seglist,seg):
 	R=list();

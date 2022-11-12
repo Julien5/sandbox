@@ -8,9 +8,9 @@ import segment;
 class Boxes:
 	W=50
 	def __init__(self,track=None):
-		self.filenames=set();
+		self.tracks=set();
 		if track:
-			self.filenames=set([track.filename()]);
+			self.tracks=set([track]);
 		self._boxes=set();
 
 	def min(self,p):
@@ -93,14 +93,14 @@ class Boxes:
 
 	def intersection(A,B):
 		R=Boxes();
-		R.filenames=set();
-		R.filenames.update(A.filenames);
-		R.filenames.update(B.filenames);
+		R.tracks=set();
+		R.tracks.update(A.tracks);
+		R.tracks.update(B.tracks);
 		R._boxes=A._boxes.intersection(B._boxes);
 		return R;
 
 	def union(self,B):
-		self.filenames.update(B.filenames);
+		self.tracks.update(B.tracks);
 		self._boxes=self._boxes.union(B._boxes);
 
 	def neighbours(self,a):
@@ -136,7 +136,7 @@ class Boxes:
 		for r in R:
 			if len(r)<200:
 				continue;	
-			B=segment.Segment(r,self.filenames);
+			B=segment.Segment(r,self.tracks);
 			RB.append(B);
 		return RB;
 

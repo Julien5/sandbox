@@ -10,12 +10,12 @@ def nboxes(B):
 	return sum([len(b.boxes()) for b in B]);	
 
 def main():
-	T=readgpx.tracks("testride.gpx");
+	#T=readgpx.tracks("testride.gpx");
 	#for t in tracks:
 	#	print(t.string());
 	#T=readgpx.tracksfromdir("/home/julien/tracks/2022.10.01/GPX/");
 	T=readgpx.tracksfromdir("/home/julien/tracks");
-	#T=T[0:20];
+	T=T[0:20];
 	#T=readgpx.tracksfromdir("test");
 	S=list();
 	print("#tracks:",len(T));
@@ -39,12 +39,10 @@ def main():
 					pool.append(sloc);	
 	print("#segments:",len(pool));
 	for s in pool:
-			print("#segments: surface:",len(s.boxes())," tracks:",len(s.filenames));	
-	return;
+		print("#segments: surface:",len(s.boxes())," tracks:",len(s.tracks));	
 		
-	plot.plot_boxes(B,"/tmp/boxes-0.gnuplot");
-	plot.plot_track(T[0],"/tmp/track-1.dat");
-	plot.plot_track(T[1],"/tmp/track-2.dat");	
+	for k in range(len(pool)):
+		plot.plot_segment(pool[k],"/tmp/pool-{}.gnuplot".format(k));
 	
 if __name__ == '__main__':
 	sys.exit(main())  
