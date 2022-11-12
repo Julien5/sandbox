@@ -3,13 +3,14 @@
 import geometry;
 import math;
 import copy;
+import segment;
 
 class Boxes:
 	W=50
 	def __init__(self,track=None):
-		self.filenames=[];
+		self.filenames=set();
 		if track:
-			self.filenames=[track.filename()];
+			self.filenames=set([track.filename()]);
 		self._boxes=set();
 
 	def min(self,p):
@@ -92,14 +93,14 @@ class Boxes:
 
 	def intersection(A,B):
 		R=Boxes();
-		R.filenames=list();
-		R.filenames.extend(A.filenames);
-		R.filenames.extend(B.filenames);
+		R.filenames=set();
+		R.filenames.update(A.filenames);
+		R.filenames.update(B.filenames);
 		R._boxes=A._boxes.intersection(B._boxes);
 		return R;
 
 	def union(self,B):
-		self.filenames.extend(B.filenames);
+		self.filenames.update(B.filenames);
 		self._boxes=self._boxes.union(B._boxes);
 
 	def neighbours(self,a):
@@ -132,10 +133,10 @@ class Boxes:
 			A=A-C;
 			C.clear();
 		RB=list();	
-		for r in R:	
-			B=Boxes();
-			B.filenames=self.filenames;
-			B._boxes=r;
+		for r in R:
+			if len(r)<200:
+				continue;	
+			B=segment.Segment(r,self.filenames);
 			RB.append(B);
 		return RB;
 
