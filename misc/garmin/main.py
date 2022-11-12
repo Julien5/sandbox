@@ -14,9 +14,9 @@ def main():
 	#for t in tracks:
 	#	print(t.string());
 	#T=readgpx.tracksfromdir("/home/julien/tracks/2022.10.01/GPX/");
-	#T=readgpx.tracksfromdir("/home/julien/tracks");
+	T=readgpx.tracksfromdir("/home/julien/tracks");
 	#T=T[0:20];
-	T=readgpx.tracksfromdir("test");
+	#T=readgpx.tracksfromdir("test");
 	S=list();
 	print("#tracks:",len(T));
 	B=list();
