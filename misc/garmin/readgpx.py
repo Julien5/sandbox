@@ -79,7 +79,7 @@ def clean(tracks):
 	for k in range(N-1):
 		t0=times[k];
 		if T is None:
-			name=t0.strftime("%d.%m-%H:%M")	
+			name=t0.strftime("%d.%m [%H:%M] [+2]")
 			T=track.Track(name);
 		T.append(t0,points[t0]);	
 		t1=times[k+1];
