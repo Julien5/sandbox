@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
 import datetime;
+import copy;
 
 class Track:
-	def __init__(self,filename):
-		self._filename=filename;
+	def __init__(self,name):
+		self._name=name;
 		self._points=dict();
 
 	def append(self,time,p):
@@ -25,8 +26,8 @@ class Track:
 	def geometry(self):
 		return list(self._points.values());
 
-	def filename(self):
-		return self._filename;
+	def name(self):
+		return self._name;
 
 	def distance(self):
 		d=0;
@@ -43,4 +44,16 @@ class Track:
 			return datetime.timedelta(0);
 		times = sorted(list(self._points.keys()));
 		return times[-1]-times[0];
-	 
+
+	def cleanup(self):
+		orig = copy.deepcopy(self._points);
+		self._points=dict();
+		times = sorted(list(self._points.keys()));
+		t1=None;
+		for k in range(len(times)-1):
+			t0=times[k];
+			self._points[t0]=orig[t0];
+			t1=times[k+1];
+			if (t1-t0).total_seconds() > 3600:
+				self._points=dict();
+		self._points[t1]=orig[t1];		

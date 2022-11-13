@@ -40,7 +40,7 @@ def plot_segment(segment,filename):
 	for k in range(len(T)):
 		datfile=filename+".track."+str(k)+".dat"; 
 		plot_track(T[k],datfile);
-		plots.append("\'{}\' with line linestyle {}".format(datfile,k));
+		plots.append("\'{}\' with line linestyle {}".format(datfile,k+1));
 	tracksplot="plot "+", \\\n     ".join(plots);
 	tmpl=open("plot.tmpl",'r').read();
 	tmpl=tmpl.replace("{output}",output);

@@ -10,7 +10,7 @@ import os;
 import xml.etree.cElementTree as mod_etree
 import projection;
 
-def clean(segment):
+def cleansegment(segment):
 	N=len(segment.points);
 	p_prev=None
 	for i in range(N):
@@ -48,7 +48,7 @@ def tracks(filename):
 	ret = list();
 	for T in gpx.tracks:
 		for S in T.segments:
-			clean(S);
+			cleansegment(S);
 			ret.append(to_track(S,filename));
 	return ret;
 
@@ -57,12 +57,41 @@ def tracksfromdir(dirname):
 	for root, dirs, files in os.walk(dirname):
 		for file in files:
 			if file.endswith(".gpx") and "Track_" in file:
-				filename=os.path.join(root, file);	
+				filename=os.path.join(root, file);
 				try:	
 					ret.extend(tracks(filename));
 				except Exception as e:
 					print("could not read:",filename);	
-	return ret;			
+	return ret;
+
+def clean(tracks):
+	# first gather all distinct points	
+	points=dict();
+	for T in tracks:
+		P=T.points();
+		for p in P:
+			points[p]=P[p]
+	# as list
+	times=sorted(list(points));
+	R=list();
+	T=None;
+	N=len(times);
+	for k in range(N-1):
+		t0=times[k];
+		if T is None:
+			name=t0.strftime("%d.%m-%H:%M")	
+			T=track.Track(name);
+		T.append(t0,points[t0]);	
+		t1=times[k+1];
+		d=(t1-t0).total_seconds();
+		if d>150 or k==(N-2):
+			#print("append:",d,len(T.points()),T.name());	
+			R.append(T);
+			T=None;
+			
+	# note: the last point is not inserted.
+	# TODO: fix that.
+	return R;			
 
 def main(filename):
 	tracks(filename);
