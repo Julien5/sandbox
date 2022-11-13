@@ -6,7 +6,7 @@ import copy;
 import segment;
 
 class Boxes:
-	W=50
+	W=segment.boxwidth();
 	def __init__(self,track=None):
 		self.tracks=set();
 		if track:
@@ -20,42 +20,6 @@ class Boxes:
 	def max(self,p):
 		(n,m)=p;
 		return geometry.Point((n+1)*self.W,(m+1)*self.W);
-
-	def boxhitline(self,line,n,m):
-		[mode,a,b]=line;
-		W=self.W;
-		if mode == "x": # vertical
-			for k in range(m,m+2):
-				yF=k*self.W;
-				xF=a*yF+b;
-				if n*W <= xF <= (n+1)*W:
-					return True;
-			if a == 0:
-				assert(False);
-				return False;
-			for k in range(n,n+2):
-				xF=k*self.W;
-				yF=(xF-b)/a;
-				if m*W <= yF <= (m+1)*W:
-					return True;
-			return False;	
-		if mode == "y": # vertical
-			for k in range(n,n+2):
-				xF=k*self.W;
-				yF=a*xF+b;
-				if m*W <= yF <= (m+1)*W:
-					return True;
-			if a == 0:
-				assert(False);
-				return False;
-			for k in range(m,m+2):
-				yF=k*self.W;
-				xF=(yF-b)/a;
-				if n*W <= xF <= (n+1)*W:
-					return True;
-			return False;	
-		assert(False);
-		return False;
 
 	def add(self,u,v):
 		xmin=min(u.x(),v.x());
@@ -73,7 +37,7 @@ class Boxes:
 			return;
 		for n in range(Nmin-1,Nmax+2):
 			for m in range(Mmin-1,Mmax+2):
-				if self.boxhitline([mode,a,b],n,m):
+				if segment.boxhitlineparameters([mode,a,b],n,m):
 					self._boxes.add((n,m));
 
 	def addsurroundings(self,d):
@@ -163,17 +127,17 @@ def main():
 	u=geometry.Point(0,-W);
 	v=geometry.Point(W/2,2*W);
 	[mode,a,b]=geometry.lineparameters(u,v);
-	assert(B.boxhitline([mode,a,b],n,m));
+	assert(B.boxhitlineparameters([mode,a,b],n,m));
 
 	u=geometry.Point(-W,W/2);
 	v=geometry.Point(W,W/2);
 	[mode,a,b]=geometry.lineparameters(u,v);
-	assert(B.boxhitline([mode,a,b],n,m));
+	assert(B.boxhitlineparameters([mode,a,b],n,m));
 
 	u=geometry.Point(-W,W/2)
 	v=geometry.Point(W,W/2);
 	[mode,a,b]=geometry.lineparameters(u,v);
-	assert(B.boxhitline([mode,a,b],n,m));
+	assert(B.boxhitlineparameters([mode,a,b],n,m));
 
 	(n,m)=(11138, 106351);
 	u=geometry.Point( 556912.7-n*W,5317640.2-m*W)
@@ -182,7 +146,7 @@ def main():
 	print(v.string());
 	(n,m)=(0,0);
 	[mode,a,b]=geometry.lineparameters(u,v);
-	assert(B.boxhitline([mode,a,b],n,m));
+	assert(B.boxhitlineparameters([mode,a,b],n,m));
 
 if __name__ == '__main__':
 	import sys;

@@ -14,11 +14,11 @@ def main():
 	#for t in tracks:
 	#	print(t.string());
 	#T=readgpx.tracksfromdir("/home/julien/tracks/2022.10.01/GPX/");
-	#T=readgpx.tracksfromdir("/home/julien/tracks");
-	#T=readgpx.clean(T);
-	#T=T[0:20];
-	T=readgpx.tracksfromdir("test");
+	T=readgpx.tracksfromdir("/home/julien/tracks");
 	T=readgpx.clean(T);
+	T=T[0:20];
+	#T=readgpx.tracksfromdir("test");
+	#T=readgpx.clean(T);
 	S=list();
 	print("#tracks:",len(T));
 	B=list();
@@ -41,7 +41,7 @@ def main():
 					pool.append(sloc);	
 	print("#segments:",len(pool));
 	for s in pool:
-		print("#segments: surface:",len(s.boxes())," tracks:",len(s.tracks));	
+		print("#segments: surface:",len(s.boxes())," tracks:",len(s.tracks)," length:",s.length()/1000,"km");	
 		
 	for k in range(len(pool)):
 		plot.plot_segment(pool[k],"/tmp/pool-{}.gnuplot".format(k));

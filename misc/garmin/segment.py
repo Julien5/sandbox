@@ -4,6 +4,68 @@ import geometry;
 import math;
 import copy;
 
+def boxwidth():
+	return 50	
+
+def geomin(p):
+	(n,m)=p;
+	W=boxwidth();
+	return geometry.Point(n*W,m*W);
+
+def geomax(p):
+	(n,m)=p;
+	W=boxwidth();
+	return geometry.Point((n+1)*W,(m+1)*W);
+
+def boxhitlineparameters(line,n,m):
+	[mode,a,b]=line;
+	W=boxwidth();
+	if mode == "x": # vertical
+		for k in range(m,m+2):
+			yF=k*W;
+			xF=a*yF+b;
+			if n*W <= xF <= (n+1)*W:
+				return True;
+		if a == 0:
+			assert(False);
+			return False;
+		for k in range(n,n+2):
+			xF=k*W;
+			yF=(xF-b)/a;
+			if m*W <= yF <= (m+1)*W:
+				return True;
+		return False;	
+	if mode == "y": # vertical
+		for k in range(n,n+2):
+			xF=k*W;
+			yF=a*xF+b;
+			if m*W <= yF <= (m+1)*W:
+				return True;
+		if a == 0:
+			assert(False);
+			return False;
+		for k in range(m,m+2):
+			yF=k*W;
+			xF=(yF-b)/a;
+			if n*W <= xF <= (n+1)*W:
+				return True;
+		return False;
+	assert(False);
+	return False;
+
+def boxhitline(n,m,u,v):
+	[mode,a,b]=geometry.lineparameters(u,v);
+	if not mode:
+		return False;
+	return boxhitlineparameters([mode,a,b],n,m);
+
+def boxcontainspoint(n,m,u):
+	minpoint=geomin((n,m));
+	maxpoint=geomax((n,m));
+	xok = minpoint.x() <= u.x() <= maxpoint.x();
+	yok = minpoint.y() <= u.y() <= maxpoint.y();
+	return xok and yok;
+
 def boundingbox(indexset):
 	xmin=None;
 	xmax=None;
@@ -21,6 +83,7 @@ def boundingbox(indexset):
 		xmax=max(xmax,n);
 		ymin=min(ymin,m);
 		ymax=max(ymax,m);
+	#print("d",xmax-xmin)		
 	return (xmin,xmax,ymin,ymax);
 
 def hasintersection(bbox1,bbox2):
@@ -71,6 +134,66 @@ class Segment:
 		I=self._boxes.intersection(other._boxes);
 		U=self._boxes.union(other._boxes);
 		return len(U-I)/len(U);
+
+	def containsline(self,u,v):
+		for b in self._boxes:
+			(n,m)=b;
+			if boxhitline(n,m,u,v):
+				return (n,m)
+		return None;
+
+	def containspoint(self,u):
+		for b in self._boxes:
+			(n,m)=b;
+			if boxcontainspoint(n,m,u):
+				return (n,m);
+		return None;
+
+	def length_along_track(self,track):
+		if not self.tracks:
+			raise Exception("no track to compute length");
+		pprev=None;
+		first=None;
+		last=None;
+		P=track.points();
+		ret=0;
+		t0=list(P.keys())[0];
+		for time in P:
+			p=P[time];
+			if not pprev:
+				pprev=p;
+				continue;
+			if first:
+				ret += pprev.distance(p);
+			if not first and self.containsline(pprev,p):
+				first=time;
+				ret=0;
+			if first:	
+				print(time," >>> ","d:",first-t0,last,ret)	
+			if first and not last and not self.containspoint(p):
+				last=time;
+			if first and last:
+				print(track.name(),first,last)
+				break;
+			pprev=p;
+		if (not first) or (not last) or (first == last):
+			return None;
+		print(time," <><> ",first,last,ret)	
+		assert(ret>0);
+		return ret;
+
+	def length(self):
+		if not self.tracks:
+			raise Exception("no track to compute length");
+		lengths=list();
+		for t in self.tracks:
+			L=self.length_along_track(t);	
+			if not (L is None):	
+				lengths.append(L);
+		print(lengths);
+		if not lengths:
+			return -1;	
+		return min(lengths);	
 
 	def merge(self,other):
 		self._boxes=self._boxes.union(other._boxes);
