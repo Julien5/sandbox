@@ -168,17 +168,16 @@ class Segment:
 			if not first and self.containsline(pprev,p):
 				first=time;
 				ret=0;
-			if first:	
-				print(time," >>> ","d:",first-t0,last,ret)	
 			if first and not last and not self.containspoint(p):
 				last=time;
+			print(time," >>> ","first:",first,"last:",last,"ret:",ret)	
 			if first and last:
 				print(track.name(),first,last)
 				break;
 			pprev=p;
+		print("RESULT ",first,last,ret)		
 		if (not first) or (not last) or (first == last):
 			return None;
-		print(time," <><> ",first,last,ret)	
 		assert(ret>0);
 		return ret;
 
