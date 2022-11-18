@@ -23,6 +23,22 @@ class Track:
 	def points(self):
 		return self._points;
 
+	def subtrack(self,time_start,time_end):
+		ret=Track(self._name);
+		P=self.points();
+		for t in P:
+			if time_start <= t <= time_end:
+				ret.append(t,P[t]);
+		return ret;
+
+	def bbox(self):
+		P=self.geometry();	
+		xmin=min([p.x() for p in P]);
+		xmax=max([p.x() for p in P]);
+		ymin=min([p.y() for p in P]);
+		ymax=max([p.y() for p in P]);
+		return (xmin,xmax,ymin,ymax);
+
 	def geometry(self):
 		return list(self._points.values());
 

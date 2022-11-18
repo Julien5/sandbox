@@ -2,6 +2,7 @@
 
 import track
 import geometry;
+import segment;
 
 def center(point):
 	#(n,m)=(11138, 106351);
@@ -31,10 +32,11 @@ def plot_boxes(boxes,filename):
 	f.write(s);
 	f.close();
 
-def plot_segment(segment,filename):
+
+def plot_boxes_and_tracks(boxes,tracks,filename):
 	boxesfilename=filename+".segment";
-	plot_boxes(segment,boxesfilename);
-	T=list(segment.tracks);
+	plot_boxes(boxes,boxesfilename);
+	T=list(tracks);
 	plots=list();
 	output=filename+".png";
 	for k in range(len(T)):
@@ -47,9 +49,12 @@ def plot_segment(segment,filename):
 	tmpl=tmpl.replace("{output}",output);
 	tmpl=tmpl.replace("{boxesfilename}",boxesfilename);
 	tmpl=tmpl.replace("{tracksplot}",tracksplot);
-	(xmin,xmax,ymin,ymax)=segment.bbox();
+	(xmin,xmax,ymin,ymax)=boxes.bbox();
 	tmpl=tmpl.replace("{xmin}",str(segment.geomin((xmin,ymin)).x()));
 	tmpl=tmpl.replace("{ymin}",str(segment.geomin((xmin,ymin)).y()));
 	tmpl=tmpl.replace("{xmax}",str(segment.geomin((xmax,ymax)).x()));
 	tmpl=tmpl.replace("{ymax}",str(segment.geomin((xmax,ymax)).y()));
 	open(filename,'w').write(tmpl);
+
+def plot_segment(segment,filename):
+	plot_boxes_and_tracks(segment,segment.tracks,filename);	

@@ -3,6 +3,8 @@
 import geometry;
 import math;
 import copy;
+import plot;
+import datetime;
 
 def boxwidth():
 	return 50	
@@ -164,9 +166,27 @@ class Segment:
 			t1=times[k+1];
 			p0=P[t0];
 			p1=P[t1];
-			print(">>> ",k,t0,"first:",first,"last:",last,"ret:",ret)	
-			if not first and self.containsline(p0,p1):
-				first=t1;
+			print(">>> ",k,t0,"first:",first,"last:",last,"ret:",ret)
+			index=self.containsline(p0,p1)
+			if not first and not (index is None):
+				print(index);
+				(n,m)=index;
+				assert(boxhitline(n,m,p0,p1))
+				print("p0",p0.string());
+				print("p0.x",p0.x())
+				print("p1",p1.string());
+				pp0=geometry.Point(555242.977628,5317260.078650)
+				pp1=geometry.Point(555243.978894,5317259.899306)
+				(pn,pm)=(11216, 106325)
+				# (11216, 106325)
+				#p0 UTM( 555243.0,5317260.1)
+				#p1 UTM( 555244.0,5317259.9)
+				if (pn,pm) == (n,m): # and (pp0,pp1)==(p0,p1):
+					print("hit",boxhitline(pn,pm,pp0,pp1));
+					assert(False)
+				return None;
+			if not first and self.containspoint(p0):
+				first=t0;
 				ret=0;
 				continue;
 			if first and self.containspoint(p1):
@@ -177,7 +197,11 @@ class Segment:
 			if first and last:
 				print(track.name(),first,last)
 				break;
-		print("RESULT ",first,last,ret)		
+		print("RESULT ",first,last,ret);
+		d = datetime.timedelta(minutes=0)
+		subtrack=track.subtrack(first-d,last+d);
+		tracks=[track,subtrack];
+		plot.plot_boxes_and_tracks(self,tracks,"/tmp/debug-{}.gnuplot".format(track.name()))
 		if (not first) or (not last) or (first == last):
 			return None;
 		assert(ret>0);
@@ -209,8 +233,24 @@ def similars(seglist,seg):
 			# break;
 	return R;
 
+
+def test():
+#(11218, 106332)
+# True
+# p0 UTM( 555243.2,5317250.8)
+# p1 UTM( 555241.9,5317250.9)
+	pp0=geometry.Point(555242.977628,5317260.078650)
+	pp1=geometry.Point(555243.978894,5317259.899306)
+	(pn,pm)=(11216, 106325)
+	print("bmin",geomin((pn,pm)).string());
+	print("bmax",geomax((pn,pm)).string());
+	print(" pp0",pp0.string());
+	print(" pp1",pp1.string());
+	print("hit",boxhitline(pn,pm,pp0,pp1));
+
+
 def main():
-	print("hello");
+	test();	
 
 if __name__ == '__main__':
 	import sys;

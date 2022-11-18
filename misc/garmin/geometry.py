@@ -19,7 +19,7 @@ class Point:
 			width=8;
 			precision=7;
 			return f"WGS84({self.latitude:{width}.{precision}},{self.longitude:{width}.{precision}})";
-		return 	f"UTM({self.x():9.1f},{self.y():9.1f})";
+		return 	f"UTM({self.x():f},{self.y():f})";
 	
 
 	def distance(self,other):
