@@ -156,25 +156,27 @@ class Segment:
 		first=None;
 		last=None;
 		P=track.points();
+		times=sorted(list(P.keys()));
+		assert(len(times)==len(P));
 		ret=0;
-		t0=list(P.keys())[0];
-		for time in P:
-			p=P[time];
-			if not pprev:
-				pprev=p;
-				continue;
-			if first:
-				ret += pprev.distance(p);
-			if not first and self.containsline(pprev,p):
-				first=time;
+		for k in range(len(times)-1):
+			t0=times[k];
+			t1=times[k+1];
+			p0=P[t0];
+			p1=P[t1];
+			print(">>> ",k,t0,"first:",first,"last:",last,"ret:",ret)	
+			if not first and self.containsline(p0,p1):
+				first=t1;
 				ret=0;
-			if first and not last and not self.containspoint(p):
-				last=time;
-			print(time," >>> ","first:",first,"last:",last,"ret:",ret)	
+				continue;
+			if first and self.containspoint(p1):
+				ret += p0.distance(p1);
+				continue;
+			if first and not last and not self.containspoint(p1):
+				last=t0;
 			if first and last:
 				print(track.name(),first,last)
 				break;
-			pprev=p;
 		print("RESULT ",first,last,ret)		
 		if (not first) or (not last) or (first == last):
 			return None;

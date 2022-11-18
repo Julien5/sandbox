@@ -14,11 +14,11 @@ def main():
 	#for t in tracks:
 	#	print(t.string());
 	#T=readgpx.tracksfromdir("/home/julien/tracks/2022.10.01/GPX/");
-	#T=readgpx.tracksfromdir("/home/julien/tracks");
-	#T=readgpx.clean(T);
-	#T=T[0:20];
-	T=readgpx.tracksfromdir("test");
+	T=readgpx.tracksfromdir("/home/julien/tracks");
 	T=readgpx.clean(T);
+	#T=T[0:20];
+	#T=readgpx.tracksfromdir("test");
+	#T=readgpx.clean(T);
 	S=list();
 	print("#tracks:",len(T));
 	B=list();
@@ -40,6 +40,11 @@ def main():
 				if not segindexes:
 					pool.append(sloc);	
 	print("#segments:",len(pool));
+
+	if True:
+		for k in range(len(pool)):
+			plot.plot_segment(pool[k],"/tmp/pool-{}.gnuplot".format(k));
+		return;	
 	#for s in pool:
 	s=pool[1];
 	print("#segments: surface:",len(s.boxes())," tracks:",len(s.tracks)," length:",s.length()/1000,"km");	
