@@ -112,6 +112,9 @@ def lineparameters(A,B):
 		return ['x',a,b];
 	return [None,None,None];
 
+def inside_unit(x):
+	return 0 <= x <= 1;	
+
 def hit(A,B,U,V):
 	Zero=Point(0,0);	
 	AB=Vector.fromPoints(A,B);
@@ -130,7 +133,18 @@ def hit(A,B,U,V):
 	Vy = AC.product(AV)/AC.norm2();
 	V2=Vector.fromPoints(Zero,Point(Vx,Vy));
 	print("V2",V2.string());
-	
+	UVL=[U2,V2];
+	minx=min([U.x() for U in UVL]);
+	maxx=max([U.x() for U in UVL]);
+	print("mx",minx,maxx);
+	if not (inside_unit(minx) or inside_unit(maxx)):
+		return False;
+	miny=min([U.y() for U in UVL]);
+	maxy=max([U.y() for U in UVL]);
+	print("my",miny,maxy);
+	if miny>0 or maxy<0:
+		return False;	
+	return True;
 	epsilon=0.1
 	if abs(U2.x() - V2.x())<epsilon:
 		print("here");
@@ -150,17 +164,18 @@ def test3():
 	A=Point(0,0)
 	B=Point(1,0);
 	for y in [0,0.5,1,2]:
-		print("y",y);	
 		U=Point(0.5,y);
 		V=Point(0.5,y-1);
 		if y<2:
+			assert(hit(U,V,A,B));
 			assert(hit(A,B,U,V));
 		else:
+			assert(not hit(U,V,A,B));	
 			assert(not hit(A,B,U,V));	
-	y=-1	
-	C=Point(-1,y);
-	D=Point(2,y);	
-	assert(not hit(A,B,C,D));
+	#y=-1	
+	#U=Point(-1,y);
+	#V=Point(2,y);	
+	#assert(not hit(A,B,C,D));
 	
 def test1():
 	A=Point(3,2);
