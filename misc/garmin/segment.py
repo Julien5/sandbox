@@ -19,6 +19,7 @@ def geomax(p):
 	W=boxwidth();
 	return geometry.Point((n+1)*W,(m+1)*W);
 
+
 def boxhitlineparameters(line,n,m):
 	[mode,a,b]=line;
 	W=boxwidth();
@@ -42,6 +43,8 @@ def boxhitlineparameters(line,n,m):
 			xF=k*W;
 			yF=a*xF+b;
 			if m*W <= yF <= (m+1)*W:
+				print("hit",k-n,k,xF,m*W, yF, (m+1)*W)
+				print("hity");	
 				return True;
 		if a == 0:
 			assert(False);
@@ -50,6 +53,7 @@ def boxhitlineparameters(line,n,m):
 			yF=k*W;
 			xF=(yF-b)/a;
 			if n*W <= xF <= (n+1)*W:
+				print("hitx");		
 				return True;
 		return False;
 	assert(False);
@@ -57,6 +61,7 @@ def boxhitlineparameters(line,n,m):
 
 def boxhitline(n,m,u,v):
 	[mode,a,b]=geometry.lineparameters(u,v);
+	print([mode,a,b]);
 	if not mode:
 		return False;
 	return boxhitlineparameters([mode,a,b],n,m);
@@ -239,14 +244,17 @@ def test():
 # True
 # p0 UTM( 555243.2,5317250.8)
 # p1 UTM( 555241.9,5317250.9)
-	pp0=geometry.Point(555242.977628,5317260.078650)
-	pp1=geometry.Point(555243.978894,5317259.899306)
+	pp0=geometry.Point(555242.977,5317260.078)
+	pp1=geometry.Point(555243.978,5317259.899)
 	(pn,pm)=(11216, 106325)
 	print("bmin",geomin((pn,pm)).string());
 	print("bmax",geomax((pn,pm)).string());
 	print(" pp0",pp0.string());
 	print(" pp1",pp1.string());
 	print("hit",boxhitline(pn,pm,pp0,pp1));
+
+
+def 	
 
 
 def main():
