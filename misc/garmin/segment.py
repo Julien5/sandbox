@@ -117,6 +117,45 @@ class Segment:
 		my=math.floor(u.y()/boxwidth());
 		return (nx,my) in self._boxes;
 
+	def parts(self,track):
+		if not self.tracks:
+			raise Exception("no track to compute length");
+		first=None;
+		last=None;
+		P=track.points();
+		times=sorted(list(P.keys()));
+		assert(len(times)==len(P));
+		rets=[];
+		for k in range(len(times)-1):
+			t0=times[k];
+			t1=times[k+1];
+			p0=P[t0];
+			p1=P[t1];
+			if not first and self.containspoint(p1):
+				first=t1;
+				continue;
+			if first and self.containspoint(p1):
+				if k<len(times)-2:
+					continue;
+			if first and not last:
+				last=t0;
+				rets.append([first,last]);
+				first=None;
+				last=None;
+		return rets;
+
+	def trackmarkers(self):
+		ret=set();
+		for track in self.tracks:
+			theparts=self.parts(track);
+			if not theparts:
+				print("warning",track.name());
+				continue
+			for part in theparts:
+				[first,last]=part;	
+				ret.add((track.name(),first,last));
+		return ret;	
+
 	def length_along_track(self,track):
 		if not self.tracks:
 			raise Exception("no track to compute length");
@@ -126,44 +165,23 @@ class Segment:
 		times=sorted(list(P.keys()));
 		assert(len(times)==len(P));
 		ret=None;
-		rets=[];
-		for k in range(len(times)-1):
-			t0=times[k];
-			t1=times[k+1];
-			p0=P[t0];
-			p1=P[t1];
-			if not first and self.containspoint(p1):
-				first=t1;
-				ret=0;
-				continue;
-			if first and self.containspoint(p1):
-				ret += p0.distance(p1);
-				if k<len(times)-2:
-					continue;
-			if first and not last:
-				last=t0;
-				rets.append([ret,first,last]);
-				ret=None;
-				first=None;
-				last=None;
-		rmax=None;
-		if not rets:
+		trackparts=self.parts(track);
+		if not trackparts:
 			plot.plot_boxes_and_tracks(self,self.tracks,"/tmp/debug-0.gnuplot");
-			return None;	
-		M=max([r[0] for r in rets]);
-		for r in rets:
-			if r[0]	== M:
-				rmax=r;
-				break;
-		[ret,first,last]=rmax;
+			return None;
 		debug=False;
 		if debug:
 			d = datetime.timedelta(minutes=0)
-			subtrack=track.subtrack(first,last);
-			tracks=[track,subtrack];
-			plot.plot_boxes_and_tracks(self,tracks,"/tmp/debug-{}.gnuplot".format(track.name()))
-			if (not first) or (not last) or (first == last):
-				return None;
+			for p in tracksparts:
+				[first,last]=p;
+				assert(first and last)
+				subtrack=track.subtrack(first,last);
+				tracks=[track,subtrack];
+				plot.plot_boxes_and_tracks(self,tracks,
+										   "/tmp/debug-{}.gnuplot".format(track.name()))
+				if (not first) or (not last) or (first == last):
+						return None;
+		ret=max([track.subtrack(p[0],p[1]).distance() for p in trackparts]);
 		if ret==0:
 			plot.plot_boxes_and_tracks(self,self.tracks,"/tmp/debug-ret0.gnuplot");	
 		return ret;

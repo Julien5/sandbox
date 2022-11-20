@@ -43,8 +43,13 @@ def main():
 		I=pool0[comb[0]];
 		for k in range(1,len(comb)):
 			I=segment.intersection(I,pool0[comb[k]]);
+			# => resegmentation !?
 		pool.append(I);
-		
+
+	for k in [68,69,70,83,84,85]:
+		print(pool[k].trackmarkers());
+	markers=potatoes.harvestmarkers(pool);
+	print("#markers",len(markers));
 	if True:
 		for k in range(len(pool)):
 			s=pool[k];
