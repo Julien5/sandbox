@@ -32,12 +32,9 @@ class Boxes:
 		Mmax=math.floor(ymax/self.W);
 		A=u;#geometry.Point(xmin,ymin);
 		B=v;#geometry.Point(xmax,ymax);
-		[mode,a,b]=geometry.lineparameters(A,B);
-		if not mode:
-			return;
 		for n in range(Nmin-1,Nmax+2):
 			for m in range(Mmin-1,Mmax+2):
-				if segment.boxhitlineparameters([mode,a,b],n,m):
+				if segment.hit(n,m,A,B):
 					self._boxes.add((n,m));
 
 	def addsurroundings(self,d):

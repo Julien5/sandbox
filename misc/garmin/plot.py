@@ -50,10 +50,11 @@ def plot_boxes_and_tracks(boxes,tracks,filename):
 	tmpl=tmpl.replace("{boxesfilename}",boxesfilename);
 	tmpl=tmpl.replace("{tracksplot}",tracksplot);
 	(xmin,xmax,ymin,ymax)=boxes.bbox();
-	tmpl=tmpl.replace("{xmin}",str(segment.geomin((xmin,ymin)).x()));
-	tmpl=tmpl.replace("{ymin}",str(segment.geomin((xmin,ymin)).y()));
-	tmpl=tmpl.replace("{xmax}",str(segment.geomin((xmax,ymax)).x()));
-	tmpl=tmpl.replace("{ymax}",str(segment.geomin((xmax,ymax)).y()));
+	margin=max([(xmax-xmin),(ymax-ymin)])*10;
+	tmpl=tmpl.replace("{xmin}",str(segment.geomin((xmin,ymin)).x()-margin));
+	tmpl=tmpl.replace("{ymin}",str(segment.geomin((xmin,ymin)).y()-margin));
+	tmpl=tmpl.replace("{xmax}",str(segment.geomin((xmax,ymax)).x()+margin));
+	tmpl=tmpl.replace("{ymax}",str(segment.geomin((xmax,ymax)).y()+margin));
 	open(filename,'w').write(tmpl);
 
 def plot_segment(segment,filename):

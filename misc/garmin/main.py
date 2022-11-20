@@ -24,7 +24,6 @@ def main():
 	B=list();
 	for k in range(len(T)):
 		B.append(boxes.boxes(T[k]));
-
 	assert(len(B)==len(T));	
 	print("#boxes:",len(T));
 	pool=list();
@@ -40,7 +39,6 @@ def main():
 				if not segindexes:
 					pool.append(sloc);	
 	print("#segments:",len(pool));
-
 	if False:
 		for k in range(len(pool)):
 			plot.plot_segment(pool[k],"/tmp/pool-{}.gnuplot".format(k));

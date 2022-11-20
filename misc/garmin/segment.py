@@ -5,6 +5,7 @@ import math;
 import copy;
 import plot;
 import datetime;
+import boxhitline;
 
 def boxwidth():
 	return 50	
@@ -43,8 +44,6 @@ def boxhitlineparameters(line,n,m):
 			xF=k*W;
 			yF=a*xF+b;
 			if m*W <= yF <= (m+1)*W:
-				print("hit",k-n,k,xF,m*W, yF, (m+1)*W)
-				print("hity");	
 				return True;
 		if a == 0:
 			assert(False);
@@ -53,18 +52,35 @@ def boxhitlineparameters(line,n,m):
 			yF=k*W;
 			xF=(yF-b)/a;
 			if n*W <= xF <= (n+1)*W:
-				print("hitx");		
 				return True;
 		return False;
 	assert(False);
 	return False;
 
-def boxhitline(n,m,u,v):
+def hit1(n,m,u,v):
 	[mode,a,b]=geometry.lineparameters(u,v);
-	print([mode,a,b]);
 	if not mode:
 		return False;
 	return boxhitlineparameters([mode,a,b],n,m);
+
+def hit3(n,m,u,v):
+	return boxhitline.boxhitline(n,m,u,v);
+
+def hit2(n,m,u,v):
+	W=boxwidth();
+	A=geometry.Point(n*W,m*W);
+	B=geometry.Point((n+1)*W,m*W);
+	C=geometry.Point((n+1)*W,(m+1)*W);
+	D=geometry.Point(n*W,(m+1)*W);
+	sides=[(A,B),(B,C),(C,D),(A,D)];
+	for side in sides:
+		(Al,Bl)=side;
+		if geometry.hit(Al,Bl,u,v):
+			return True;
+	return False;
+
+def hit(n,m,u,v):
+	return hit3(n,m,u,v);
 
 def boxcontainspoint(n,m,u):
 	minpoint=geomin((n,m));
@@ -145,7 +161,7 @@ class Segment:
 	def containsline(self,u,v):
 		for b in self._boxes:
 			(n,m)=b;
-			if boxhitline(n,m,u,v):
+			if hit(n,m,u,v):
 				return (n,m)
 		return None;
 
@@ -159,52 +175,42 @@ class Segment:
 	def length_along_track(self,track):
 		if not self.tracks:
 			raise Exception("no track to compute length");
-		pprev=None;
 		first=None;
 		last=None;
 		P=track.points();
 		times=sorted(list(P.keys()));
 		assert(len(times)==len(P));
-		ret=0;
+		ret=None;
+		rets=[];
 		for k in range(len(times)-1):
 			t0=times[k];
 			t1=times[k+1];
 			p0=P[t0];
 			p1=P[t1];
-			print(">>> ",k,t0,"first:",first,"last:",last,"ret:",ret)
-			index=self.containsline(p0,p1)
-			if not first and not (index is None):
-				print(index);
-				(n,m)=index;
-				assert(boxhitline(n,m,p0,p1))
-				print("p0",p0.string());
-				print("p0.x",p0.x())
-				print("p1",p1.string());
-				pp0=geometry.Point(555242.977628,5317260.078650)
-				pp1=geometry.Point(555243.978894,5317259.899306)
-				(pn,pm)=(11216, 106325)
-				# (11216, 106325)
-				#p0 UTM( 555243.0,5317260.1)
-				#p1 UTM( 555244.0,5317259.9)
-				if (pn,pm) == (n,m): # and (pp0,pp1)==(p0,p1):
-					print("hit",boxhitline(pn,pm,pp0,pp1));
-					assert(False)
-				return None;
-			if not first and self.containspoint(p0):
-				first=t0;
+			if not first and self.containspoint(p1):
+				first=t1;
 				ret=0;
 				continue;
 			if first and self.containspoint(p1):
 				ret += p0.distance(p1);
 				continue;
-			if first and not last and not self.containspoint(p1):
+			if first and not last:
+				assert(self.containspoint(p0) and not self.containspoint(p1));	  	
 				last=t0;
-			if first and last:
-				print(track.name(),first,last)
+				rets.append([ret,first,last]);
+				print("ret",first);
+				ret=None;
+				first=None;
+				last=None;
+		rmax=None;
+		M=max([r[0] for r in rets]);
+		for r in rets:
+			if r[0]	== M:
+				rmax=r;
 				break;
-		print("RESULT ",first,last,ret);
+		[ret,first,last]=rmax;
 		d = datetime.timedelta(minutes=0)
-		subtrack=track.subtrack(first-d,last+d);
+		subtrack=track.subtrack(first,last);
 		tracks=[track,subtrack];
 		plot.plot_boxes_and_tracks(self,tracks,"/tmp/debug-{}.gnuplot".format(track.name()))
 		if (not first) or (not last) or (first == last):
@@ -223,7 +229,7 @@ class Segment:
 		print(lengths);
 		if not lengths:
 			return -1;	
-		return min(lengths);	
+		return max(lengths);	
 
 	def merge(self,other):
 		self._boxes=self._boxes.union(other._boxes);
@@ -252,9 +258,6 @@ def test():
 	print(" pp0",pp0.string());
 	print(" pp1",pp1.string());
 	print("hit",boxhitline(pn,pm,pp0,pp1));
-
-
-def 	
 
 
 def main():

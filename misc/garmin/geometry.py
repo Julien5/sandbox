@@ -78,9 +78,8 @@ class Vector:
 		return Vector(factor*self.x(),factor*self.y());
 
 	def normal(self):
-		n=self.norm();
 		ret=Vector(0,1);
-		if sqr(self.y())>0:
+		if not self.y() == 0:
 			ret=Vector(1,-self.x()/self.y());
 		ret.normalize();
 		return ret.multiply(self.norm());
@@ -124,41 +123,21 @@ def hit(A,B,U,V):
 	Ux = AB.product(AU)/AB.norm2();
 	Uy = AC.product(AU)/AC.norm2();
 	U2=Vector.fromPoints(Zero,Point(Ux,Uy));
-	print("AB",AB.string());
-	print("AC",AC.string());
-	print("U2",U2.string());
 
 	AV=Vector.fromPoints(A,V);
 	Vx = AB.product(AV)/AB.norm2();
 	Vy = AC.product(AV)/AC.norm2();
 	V2=Vector.fromPoints(Zero,Point(Vx,Vy));
-	print("V2",V2.string());
 	UVL=[U2,V2];
 	minx=min([U.x() for U in UVL]);
 	maxx=max([U.x() for U in UVL]);
-	print("mx",minx,maxx);
 	if not (inside_unit(minx) or inside_unit(maxx)):
 		return False;
 	miny=min([U.y() for U in UVL]);
 	maxy=max([U.y() for U in UVL]);
-	print("my",miny,maxy);
 	if miny>0 or maxy<0:
 		return False;	
 	return True;
-	epsilon=0.1
-	if abs(U2.x() - V2.x())<epsilon:
-		print("here");
-		x=sum([U.x() for U in [U2,V2]])/2;
-		if not (0 <= x <= 1):
-			return False;
-		miny=min([U.y() for U in [U2,V2]]);
-		maxy=max([U.y() for U in [U2,V2]]);
-		print("my",miny,maxy)
-		if miny>0 or maxy<0:
-			return False;
-		return True;
-	assert(False);
-	return False	
 
 def test3():
 	A=Point(0,0)
@@ -171,11 +150,15 @@ def test3():
 			assert(hit(A,B,U,V));
 		else:
 			assert(not hit(U,V,A,B));	
-			assert(not hit(A,B,U,V));	
-	#y=-1	
-	#U=Point(-1,y);
-	#V=Point(2,y);	
-	#assert(not hit(A,B,C,D));
+			assert(not hit(A,B,U,V));
+	A=Point(0,0)
+	B=Point(0,1)
+	for x in range(-10,10):
+		U=Point(x,0.5)
+		V=Point(x+1,0.5)
+		ret= 0 <= x+1 <= 1;
+		assert(hit(A,B,U,V)==ret);
+		assert(hit(U,V,A,B)==ret);
 	
 def test1():
 	A=Point(3,2);
@@ -203,8 +186,8 @@ def test2():
 		print(D.string(),"distance:",distance(A,B,D));
 	
 def main():
-	#test1();	
-	#test2();
+	test1();	
+	test2();
 	test3();
 
 if __name__ == '__main__':
