@@ -90,8 +90,6 @@ def plot_segments_intersects(S,filename):
 	tmpl=tmpl.replace("{ymin}",str(segment.geomin((xmin,ymin)).y()-margin));
 	tmpl=tmpl.replace("{xmax}",str(segment.geomin((xmax,ymax)).x()+margin));
 	tmpl=tmpl.replace("{ymax}",str(segment.geomin((xmax,ymax)).y()+margin));
-	
-	
 	open(filename,'w').write(tmpl);
 	
 

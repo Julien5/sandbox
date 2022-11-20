@@ -5,6 +5,7 @@ import sys;
 import plot;
 import boxes;
 import segment
+import potatoes;
 
 def nboxes(B):
 	return sum([len(b.boxes()) for b in B]);	
@@ -18,7 +19,7 @@ def main():
 	#test=True;	
 	if not test:
 		T=readgpx.tracksfromdir("/home/julien/tracks");
-		#T=T[0:20];
+		T=T[0:20];
 	else:	
 		T=readgpx.tracksfromdir("test");	
 	T=readgpx.clean(T);
@@ -27,27 +28,28 @@ def main():
 	B=list();
 	for k in range(len(T)):
 		B.append(boxes.boxes(T[k]));
-	pool=list();
+	pool0=list();
 	for k in range(len(B)):
 		for l in range(k):
 			I=boxes.Boxes.intersection(B[k],B[l]);
 			Sloc=I.segments();
-			#print("couple:",k,l,"=>",len(Sloc),"segments");
-			for sloc in Sloc:
-				segindexes=segment.similars(pool,sloc);
-				for ks in segindexes:
-					plot.plot_segments_intersects([pool[ks],sloc],"/tmp/intersect-{}-{}-{}.gnuplot".format(k,l,ks));
-					#plot.plot_segment(pool[ks],"/tmp/intersect-{}-{}-{}-ks.gnuplot".format(k,l,ks));
-					#plot.plot_segment(sloc,"/tmp/intersect-{}-{}-{}-sloc.gnuplot".format(k,l,ks));
-					#pool[ks].merge(sloc);
-				if not segindexes:
-					pool.append(sloc);	
-	
+			for s in Sloc:
+				pool0.append(s);
+				assert(s._bbox);
+	Combinations=potatoes.harvest(pool0);
+	pool=list();
+	for comb in Combinations:
+		assert(len(comb)>0);
+		I=pool0[comb[0]];
+		for k in range(1,len(comb)):
+			I=segment.intersection(I,pool0[comb[k]]);
+		pool.append(I);
+		
 	if True:
 		for k in range(len(pool)):
 			s=pool[k];
-			print("#segments: surface:",len(s.boxes())," tracks:",len(s.tracks)," length:",s.length()/1000,"km");		
-			plot.plot_segment(s,"/tmp/pool-{}.gnuplot".format(k));
+			print("#segment-{}: surface:".format(k),len(s.boxes())," tracks:",len(s.tracks)," length:",s.length()/1000,"km");		
+			plot.plot_segment(s,"/tmp/segment-{}.gnuplot".format(k));
 		print("#segments:",len(pool));	
 		return;	
 	#for s in pool:

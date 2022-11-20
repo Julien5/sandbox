@@ -94,16 +94,6 @@ class Segment:
 	def bbox(self):
 		return self._bbox;
 
-	def intersection(A,B):
-		R=Boxes();
-		if not hasintersection(A._bbox,B._bbox):
-			return R;
-		R.tracks=list();
-		R.tracks.update(A.tracks);
-		R.tracks.update(B.tracks);
-		R._boxes=A._boxes.intersection(B._boxes);
-		return R;
-
 	def union(self,B):
 		self.tracks.update(B.tracks);
 		self._boxes=self._boxes.union(B._boxes);
@@ -158,7 +148,6 @@ class Segment:
 				last=None;
 		rmax=None;
 		if not rets:
-			assert(0);	
 			plot.plot_boxes_and_tracks(self,self.tracks,"/tmp/debug-0.gnuplot");
 			return None;	
 		M=max([r[0] for r in rets]);
@@ -175,7 +164,8 @@ class Segment:
 			plot.plot_boxes_and_tracks(self,tracks,"/tmp/debug-{}.gnuplot".format(track.name()))
 			if (not first) or (not last) or (first == last):
 				return None;
-		assert(ret>0);
+		if ret==0:
+			plot.plot_boxes_and_tracks(self,self.tracks,"/tmp/debug-ret0.gnuplot");	
 		return ret;
 
 	def length(self):
@@ -205,6 +195,17 @@ def similars(seglist,seg):
 			# break;
 	return R;
 
+def intersection(A,B):
+	R=Segment(set(),set());
+	if not hasintersection(A._bbox,B._bbox):
+		assert(False);
+		return R;
+	R.tracks=set();
+	R.tracks.update(A.tracks);
+	R.tracks.update(B.tracks);
+	R._boxes=A._boxes.intersection(B._boxes);
+	R._bbox=boundingbox(R._boxes);
+	return R;
 
 def test():
 #(11218, 106332)
