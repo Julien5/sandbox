@@ -20,49 +20,6 @@ def geomax(p):
 	W=boxwidth();
 	return geometry.Point((n+1)*W,(m+1)*W);
 
-
-def boxhitlineparameters(line,n,m):
-	[mode,a,b]=line;
-	W=boxwidth();
-	if mode == "x": # vertical
-		for k in range(m,m+2):
-			yF=k*W;
-			xF=a*yF+b;
-			if n*W <= xF <= (n+1)*W:
-				return True;
-		if a == 0:
-			assert(False);
-			return False;
-		for k in range(n,n+2):
-			xF=k*W;
-			yF=(xF-b)/a;
-			if m*W <= yF <= (m+1)*W:
-				return True;
-		return False;	
-	if mode == "y": # vertical
-		for k in range(n,n+2):
-			xF=k*W;
-			yF=a*xF+b;
-			if m*W <= yF <= (m+1)*W:
-				return True;
-		if a == 0:
-			assert(False);
-			return False;
-		for k in range(m,m+2):
-			yF=k*W;
-			xF=(yF-b)/a;
-			if n*W <= xF <= (n+1)*W:
-				return True;
-		return False;
-	assert(False);
-	return False;
-
-def hit1(n,m,u,v):
-	[mode,a,b]=geometry.lineparameters(u,v);
-	if not mode:
-		return False;
-	return boxhitlineparameters([mode,a,b],n,m);
-
 def hit3(n,m,u,v):
 	return boxhitline.boxhitline(n,m,u,v);
 
@@ -166,11 +123,9 @@ class Segment:
 		return None;
 
 	def containspoint(self,u):
-		for b in self._boxes:
-			(n,m)=b;
-			if boxcontainspoint(n,m,u):
-				return (n,m);
-		return None;
+		nx=math.floor(u.x()/boxwidth());
+		my=math.floor(u.y()/boxwidth());
+		return (nx,my) in self._boxes;
 
 	def length_along_track(self,track):
 		if not self.tracks:
@@ -193,28 +148,33 @@ class Segment:
 				continue;
 			if first and self.containspoint(p1):
 				ret += p0.distance(p1);
-				continue;
+				if k<len(times)-2:
+					continue;
 			if first and not last:
-				assert(self.containspoint(p0) and not self.containspoint(p1));	  	
 				last=t0;
 				rets.append([ret,first,last]);
-				print("ret",first);
 				ret=None;
 				first=None;
 				last=None;
 		rmax=None;
+		if not rets:
+			assert(0);	
+			plot.plot_boxes_and_tracks(self,self.tracks,"/tmp/debug-0.gnuplot");
+			return None;	
 		M=max([r[0] for r in rets]);
 		for r in rets:
 			if r[0]	== M:
 				rmax=r;
 				break;
 		[ret,first,last]=rmax;
-		d = datetime.timedelta(minutes=0)
-		subtrack=track.subtrack(first,last);
-		tracks=[track,subtrack];
-		plot.plot_boxes_and_tracks(self,tracks,"/tmp/debug-{}.gnuplot".format(track.name()))
-		if (not first) or (not last) or (first == last):
-			return None;
+		debug=False;
+		if debug:
+			d = datetime.timedelta(minutes=0)
+			subtrack=track.subtrack(first,last);
+			tracks=[track,subtrack];
+			plot.plot_boxes_and_tracks(self,tracks,"/tmp/debug-{}.gnuplot".format(track.name()))
+			if (not first) or (not last) or (first == last):
+				return None;
 		assert(ret>0);
 		return ret;
 
@@ -226,8 +186,9 @@ class Segment:
 			L=self.length_along_track(t);	
 			if not (L is None):	
 				lengths.append(L);
-		print(lengths);
+		#print(lengths);
 		if not lengths:
+			print("what?!?");	
 			return -1;	
 		return max(lengths);	
 

@@ -14,24 +14,25 @@ def main():
 	#for t in tracks:
 	#	print(t.string());
 	#T=readgpx.tracksfromdir("/home/julien/tracks/2022.10.01/GPX/");
-	#T=readgpx.tracksfromdir("/home/julien/tracks");
-	#T=readgpx.clean(T);
-	#T=T[0:20];
-	T=readgpx.tracksfromdir("test");
+	test=False;
+	#test=True;	
+	if not test:
+		T=readgpx.tracksfromdir("/home/julien/tracks");
+		T=T[0:20];
+	else:	
+		T=readgpx.tracksfromdir("test");	
 	T=readgpx.clean(T);
 	S=list();
 	print("#tracks:",len(T));
 	B=list();
 	for k in range(len(T)):
 		B.append(boxes.boxes(T[k]));
-	assert(len(B)==len(T));	
-	print("#boxes:",len(T));
 	pool=list();
 	for k in range(len(B)):
 		for l in range(k):
 			I=boxes.Boxes.intersection(B[k],B[l]);
 			Sloc=I.segments();
-			# print("couple:",k,l,"=>",len(Sloc),"segments");
+			#print("couple:",k,l,"=>",len(Sloc),"segments");
 			for sloc in Sloc:
 				segindexes=segment.similars(pool,sloc);
 				for ks in segindexes:
@@ -39,9 +40,13 @@ def main():
 				if not segindexes:
 					pool.append(sloc);	
 	print("#segments:",len(pool));
-	if False:
+	if True:
 		for k in range(len(pool)):
-			plot.plot_segment(pool[k],"/tmp/pool-{}.gnuplot".format(k));
+			s=pool[k];
+			surface=len(s.boxes());
+			if True or surface == 1928:
+				print("#segments: surface:",len(s.boxes())," tracks:",len(s.tracks)," length:",s.length()/1000,"km");		
+				plot.plot_segment(s,"/tmp/pool-{}.gnuplot".format(k));
 		return;	
 	#for s in pool:
 	s=pool[1];
