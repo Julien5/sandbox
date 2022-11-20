@@ -18,7 +18,7 @@ def main():
 	#test=True;	
 	if not test:
 		T=readgpx.tracksfromdir("/home/julien/tracks");
-		T=T[0:20];
+		#T=T[0:20];
 	else:	
 		T=readgpx.tracksfromdir("test");	
 	T=readgpx.clean(T);
@@ -36,17 +36,19 @@ def main():
 			for sloc in Sloc:
 				segindexes=segment.similars(pool,sloc);
 				for ks in segindexes:
-					pool[ks].merge(sloc);
+					plot.plot_segments_intersects([pool[ks],sloc],"/tmp/intersect-{}-{}-{}.gnuplot".format(k,l,ks));
+					#plot.plot_segment(pool[ks],"/tmp/intersect-{}-{}-{}-ks.gnuplot".format(k,l,ks));
+					#plot.plot_segment(sloc,"/tmp/intersect-{}-{}-{}-sloc.gnuplot".format(k,l,ks));
+					#pool[ks].merge(sloc);
 				if not segindexes:
 					pool.append(sloc);	
-	print("#segments:",len(pool));
+	
 	if True:
 		for k in range(len(pool)):
 			s=pool[k];
-			surface=len(s.boxes());
-			if True or surface == 1928:
-				print("#segments: surface:",len(s.boxes())," tracks:",len(s.tracks)," length:",s.length()/1000,"km");		
-				plot.plot_segment(s,"/tmp/pool-{}.gnuplot".format(k));
+			print("#segments: surface:",len(s.boxes())," tracks:",len(s.tracks)," length:",s.length()/1000,"km");		
+			plot.plot_segment(s,"/tmp/pool-{}.gnuplot".format(k));
+		print("#segments:",len(pool));	
 		return;	
 	#for s in pool:
 	s=pool[1];

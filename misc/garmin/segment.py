@@ -200,7 +200,7 @@ def similars(seglist,seg):
 	R=list();
 	for k in range(len(seglist)):
 		sk=seglist[k];
-		if sk.distance(seg)<0.05:
+		if sk.distance(seg)<0.2:
 			R.append(k); # break ?
 			# break;
 	return R;
