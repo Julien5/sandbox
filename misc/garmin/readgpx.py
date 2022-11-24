@@ -76,20 +76,30 @@ def clean(tracks):
 	R=list();
 	T=None;
 	N=len(times);
+	ends=list();
 	for k in range(N-1):
 		t0=times[k];
-		if T is None:
-			name=t0.strftime("%d.%m [%H:%M] [+2]")
-			T=track.Track(name);
-		T.append(t0,points[t0]);	
 		t1=times[k+1];
 		d=(t1-t0).total_seconds();
-		if d>150 or k==(N-2):
-			#print("append:",d,len(T.points()),T.name());	
-			R.append(T);
-			T=None;
-			
-	# note: the last point is not inserted.
+		if d > 150:
+			ends.append(k);
+	kstart=0;
+	kend=-1;
+	while True:
+		kstart=kend+1;
+		if kstart >= len(times):
+			break;	
+		if ends: # not empty
+			kend=ends.pop(0);
+		else:
+			kend=len(times);
+		name=times[kstart].strftime("%d.%m[%H:%M]")
+		T=track.Track(name);
+		for i in range(kstart,min([kend+1,len(times)])):
+			ti = times[i];	
+			T.append(ti,points[ti]);
+		R.append(T);	
+	# note: the last point of the last track is not inserted.
 	# TODO: fix that.
 	return R;			
 
