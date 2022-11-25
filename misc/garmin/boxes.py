@@ -64,47 +64,45 @@ class Boxes:
 		self.tracks.update(B.tracks);
 		self._boxes=self._boxes.union(B._boxes);
 
-	def neighbours(self,a):
-		(n,m)=a;
-		R=set();
-		for k in [-1,0,+1]:
-			for l in [-1,0,+1]:
-				R.add((n+k,m+l));
-		return R;		
-
-	def segments(self):
-		R=list();
-		A=copy.deepcopy(self._boxes);
-		C=set();
-		while A:
-			Q=None;
-			for a in A:
-				Q=[a];
-				break;
-			if not Q:
-				return;
-			assert(Q);
-			while Q:
-				a=Q.pop(0);
-				for n in A.intersection(self.neighbours(a)):
-					if not n in C:
-						C.add(n); # label
-						Q.append(n); # add to the queue
-			R.append(copy.deepcopy(C));
-			A=A-C;
-			C.clear();
-		RB=list();	
-		for r in R:
-			if len(r)<200:
-				continue;	
-			B=segment.Segment(r,self.tracks);
-			RB.append(B);
-		return RB;
-
 	def distance(self,other):
 		I=self._boxes.intersection(other._boxes);
 		U=self._boxes.union(other._boxes);
 		return len(U-I)/len(U);
+
+
+def neighbours(a):
+	(n,m)=a;
+	R=set();
+	for k in [-1,0,+1]:
+		for l in [-1,0,+1]:
+			R.add((n+k,m+l));
+	return R;
+
+def segments(indexset):
+	R=list();
+	A=copy.deepcopy(indexset);
+	C=set();
+	while A:
+		Q=None;
+		for a in A:
+			Q=[a];
+			break;
+		if not Q:
+			return;
+		assert(Q);
+		while Q:
+			a=Q.pop(0);
+			for n in A.intersection(neighbours(a)):
+				if not n in C:
+					C.add(n); # label
+					Q.append(n); # add to the queue
+		R.append(copy.deepcopy(C));
+		A=A-C;
+		C.clear();
+	RB=list();	
+	for r in R:
+		RB.append(B);
+	return RB;
 	
 def boxes(track):
 	B=Boxes(track);

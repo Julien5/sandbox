@@ -19,7 +19,7 @@ def main():
 	#test=True;	
 	if not test:
 		T=readgpx.tracksfromdir("/home/julien/tracks");
-		T=T[0:20];
+		#T=T[0:20];
 	else:	
 		T=readgpx.tracksfromdir("test");	
 	T=readgpx.clean(T);
@@ -28,15 +28,22 @@ def main():
 	B=list();
 	for k in range(len(T)):
 		B.append(boxes.boxes(T[k]));
-	pool0=list();
-	for k in range(len(B)):
-		for l in range(k):
-			I=boxes.Boxes.intersection(B[k],B[l]);
-			Sloc=I.segments();
-			for s in Sloc:
-				pool0.append(s);
-				assert(s._bbox);
+	pool0=B;
 	Combinations=potatoes.harvest(pool0);
+	print("#combinations",len(Combinations));
+	counter = 0;
+	for tracks in Combinations:
+		if len(tracks)<20:
+			continue;
+		area=Combinations[tracks];
+		home=(int(555230/50),int(5317240/50));
+		area.add(home);
+		if len(area)<10:
+			continue;	
+		B=segment.Segment(area,tracks);
+		plot.plot_boxes_and_tracks(B,tracks,"/tmp/comb-{}.gnuplot".format(counter));
+		counter=counter+1;
+	return;	
 	pool=list();
 	for comb in Combinations:
 		assert(len(comb)>0);
