@@ -81,6 +81,7 @@ def neighboorsmap(cells,traces):
 				ret[k].add(l);
 				assert(l in ret);
 				ret[l].add(k);
+		print(k,"->",ret[k])		
 	return ret;			
 
 

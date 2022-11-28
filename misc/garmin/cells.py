@@ -20,6 +20,24 @@ class Cell:
 	def color(self):
 		return self._color;
 
+def cleanup(Cells):
+	ret=list();	
+	for c in Cells:
+		if len(c.area())<10:
+			continue;
+		if len(c.color())<2:
+			continue;
+		ret.append(c);
+	return ret;	
+
+def union(Cells):
+	if len(Cells)==1:
+		return Cells[0];
+	colors=[set(c.color()) for c in Cells];
+	color=set().intersection(*colors);
+	areas=[c.area() for c in Cells];
+	area=set().union(*areas);
+	return Cell(area,color);
 
 # mother cells contain all there neighboors	
 def mothers(cells,neighboorsmap):
@@ -37,6 +55,34 @@ def mothers(cells,neighboorsmap):
 		if ismother:
 			mothers.add(k);
 	return mothers;
+
+def gathercolor(cells,mother_set,container):
+	color=union([cells[k] for k in mother_set]);
+	container.add(color);
+
+class ColorAccumulator:
+	def __init__(self,C):
+		self._container = set();
+		self.C=C;
+		
+	def __call__(self, mother_set):
+		U=union([self.C[k] for k in mother_set]);
+		if len(U.color())>0:
+			self._container.add(tuple(U.color()));
+
+	def container(self):
+		return self._container;	
+
+# a (sub)mother is a union of cells.				
+def walk(mother_set,neighboorsmap,functor):
+	if type(mother_set) is type(0):
+		mother_set={mother_set};	
+	functor(mother_set);
+	neighboors=set().union(*[neighboorsmap[k] for k in mother_set])-mother_set;
+	for n in neighboors:
+		submother_set=mother_set.union({n});
+		walk(submother_set,neighboorsmap,functor);
+		
 
 # now the question is: how many cell do we have, which
 # (1) are not mothers, and

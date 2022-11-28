@@ -40,7 +40,8 @@ class Track:
 		return (xmin,xmax,ymin,ymax);
 
 	def geometry(self):
-		return list(self._points.values());
+		P=self._points;
+		return [P[t] for t in sorted(P.keys())];
 
 	def name(self):
 		return self._name;

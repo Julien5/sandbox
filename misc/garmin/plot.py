@@ -19,15 +19,31 @@ def plot_track(track,filename):
 	f.write(s);
 	f.close();
 		
-def plot_boxes(boxset,filename,color=1):
+def plot_boxeset(boxset,filename,color=1):
 	s=str();
 	# set object 1 rect from 555243,5317261 to 555343,5317361 lw 1
 	counter=1;
 	for p in boxset:
 		A=center(segment.geomin(p));
 		B=center(segment.geomax(p));
-		s+=f"set object {counter:d} rect from {A.x():d},{A.y():d} to {B.x():d},{B.y():d} lw {color:d} lc {color:d}\n"
+		s+=f"set object {counter:d} rect from {A.x():d},{A.y():d} to {B.x():d},{B.y():d} lw 1 lc {color:d}\n"
 		counter = counter + 1;
+	f=open(filename,'w');
+	f.write(s);
+	f.close();
+
+def plot_boxesets(boxsets,colors,filename):
+	s=str();
+	# set object 1 rect from 555243,5317261 to 555343,5317361 lw 1
+	counter=1;
+	for k in range(len(boxsets)):
+		color=colors[k]
+		for p in boxsets[k]:
+			A=center(segment.geomin(p));
+			B=center(segment.geomax(p));
+			s+=f"set object {counter:d} rect from {A.x():d},{A.y():d} to {B.x():d},{B.y():d} lw 1 lc {color:d}\n"
+			counter = counter + 1;
+			
 	f=open(filename,'w');
 	f.write(s);
 	f.close();
@@ -38,13 +54,14 @@ def make_tracksplot(tracks,filenamebase):
 	for k in range(len(T)):
 		datfile=filenamebase+".track."+str(k)+".dat"; 
 		plot_track(T[k],datfile);
-		title=T[k].name()
+		title=str();#T[k].name()
 		plots.append("\'{}\' with line linestyle {} title \"{}\"".format(datfile,k+1,title));
+		
 	return "plot "+", \\\n     ".join(plots);	
 
-def plot_boxes_and_tracks(boxes,tracks,filename):
+def plot_boxes_and_tracks(indexset,tracks,bbox,filename):
 	boxesfilename=filename+".segment";
-	plot_boxes(boxes.boxes(),boxesfilename);
+	plot_boxeset(indexset,boxesfilename);
 	plots=list();
 	output=filename+".png";
 	tracksplot=make_tracksplot(tracks,filename);
@@ -52,7 +69,26 @@ def plot_boxes_and_tracks(boxes,tracks,filename):
 	tmpl=tmpl.replace("{output}",output);
 	tmpl=tmpl.replace("{boxesfilename}",boxesfilename);
 	tmpl=tmpl.replace("{tracksplot}",tracksplot);
-	(xmin,xmax,ymin,ymax)=boxes.bbox();
+	(xmin,xmax,ymin,ymax)=bbox;
+	margin=max([(xmax-xmin),(ymax-ymin)])*10;
+	tmpl=tmpl.replace("{xmin}",str(segment.geomin((xmin,ymin)).x()-margin));
+	tmpl=tmpl.replace("{ymin}",str(segment.geomin((xmin,ymin)).y()-margin));
+	tmpl=tmpl.replace("{xmax}",str(segment.geomin((xmax,ymax)).x()+margin));
+	tmpl=tmpl.replace("{ymax}",str(segment.geomin((xmax,ymax)).y()+margin));
+	open(filename,'w').write(tmpl);
+
+
+def plot_areas(areas,colors,tracks,bbox,filename):
+	assert(len(areas)==len(colors));
+	boxesfilename=filename+".segment";
+	plot_boxesets(areas,colors,boxesfilename);
+	output=filename+".png";
+	tracksplot=make_tracksplot(tracks,filename);
+	tmpl=open("plot.tmpl",'r').read();
+	tmpl=tmpl.replace("{output}",output);
+	tmpl=tmpl.replace("{boxesfilename}",boxesfilename);
+	tmpl=tmpl.replace("{tracksplot}",tracksplot);
+	(xmin,xmax,ymin,ymax)=bbox;
 	margin=max([(xmax-xmin),(ymax-ymin)])*10;
 	tmpl=tmpl.replace("{xmin}",str(segment.geomin((xmin,ymin)).x()-margin));
 	tmpl=tmpl.replace("{ymin}",str(segment.geomin((xmin,ymin)).y()-margin));
