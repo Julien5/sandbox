@@ -23,7 +23,7 @@ def main():
 	#test=True;	
 	if not test:
 		T=readgpx.tracksfromdir("/home/julien/tracks");
-		#T=T[0:10];
+		#T=T[0:20];
 	else:	
 		T=readgpx.tracksfromdir("test");	
 	T=readgpx.clean(T);
@@ -56,24 +56,38 @@ def main():
 	colors=[len(c.color()) for c in Cells];
 	tracks=[T[0]];
 	plot.plot_areas(areas,colors,tracks,bb,"/tmp/areas.gnuplot");
-	return;
-
-	
 	print("compute map");
 	M=neighboor.neighboorsmap(Cells,T);
 	print("#M",len(M));
 	mothers=cells.mothers(Cells,M);
 	print("mothers:",mothers);
-	counter=0;
 	for m in mothers:
 		cell=Cells[m];
+		print("mother:",m,f"area:{len(cell.area()):5d}"," #tracks:",set(cell.color()),"#neighboors:",M[m])
 		tracks=[T[c] for c in cell.color()];
-		plot.plot_boxes_and_tracks(cell.area(),tracks,bb,"/tmp/mother-{}.gnuplot".format(counter));
-		counter=counter+1;
+		plot.plot_boxes_and_tracks(cell.area(),tracks,bbox.cells([cell]),"/tmp/mother-{}.gnuplot".format(m));
+		for n in M[m]:
+			U=cells.union([cell,Cells[n]]);
+			print("mother:",m,"neighboor",n,"color:",U.color());
+			assert(U.color());
+			if len(U.color())>1 and len(U.area())>50:
+				tracks=[T[c] for c in U.color()];
+				plot.plot_boxes_and_tracks(U.area(),tracks,bbox.cells([U]),"/tmp/mother-{}-{}.gnuplot".format(m,n))
 	A=cells.ColorAccumulator(Cells);
 	for m in mothers:
-		cells.walk(m,M,A);
-	print(A.container());	
+		print("walking:",m);
+		cells.walk(Cells,m,M,A);
+	cont=A.container()
+	counter=0
+	for u in cont:
+		area=cont[u];
+		color=u;
+		U=cells.Cell(area,color);
+		if len(area)>100:
+			print(counter,":",len(u)," tracks on area",len(cont[u]));
+			tracks=[T[c] for c in U.color()];
+			plot.plot_boxes_and_tracks(area,tracks,bbox.cells([U]),"/tmp/good-{}.gnuplot".format(counter))
+			counter=counter+1;
 	return;
 	for tracks in Combinations:
 		if len(tracks)<20:

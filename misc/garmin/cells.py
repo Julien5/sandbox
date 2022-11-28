@@ -5,7 +5,7 @@ import sys
 class Cell:
 	def __init__(self,area,color):
 		self._area=area;
-		self._color=color;
+		self._color=set(color);
 
 	def area(self):
 		return self._area;
@@ -30,14 +30,19 @@ def cleanup(Cells):
 		ret.append(c);
 	return ret;	
 
+def color(Cells):
+	if len(Cells)==1:
+		return Cells[0].color();
+	colors=[set(c.color()) for c in Cells];
+	color=colors[0].intersection(*colors);
+	return color;
+
 def union(Cells):
 	if len(Cells)==1:
 		return Cells[0];
-	colors=[set(c.color()) for c in Cells];
-	color=set().intersection(*colors);
 	areas=[c.area() for c in Cells];
 	area=set().union(*areas);
-	return Cell(area,color);
+	return Cell(area,color(Cells));
 
 # mother cells contain all there neighboors	
 def mothers(cells,neighboorsmap):
@@ -46,6 +51,9 @@ def mothers(cells,neighboorsmap):
 	for k in R:
 		ismother=True;
 		mothercolor=set(cells[k].color());
+		if not k in neighboorsmap:
+			print("zombie:",k);
+			continue;
 		for n in neighboorsmap[k]:
 			neighboor=cells[n];
 			color_neighboor=set(neighboor.color())
@@ -62,26 +70,49 @@ def gathercolor(cells,mother_set,container):
 
 class ColorAccumulator:
 	def __init__(self,C):
-		self._container = set();
+		self._container = dict();
 		self.C=C;
 		
 	def __call__(self, mother_set):
 		U=union([self.C[k] for k in mother_set]);
 		if len(U.color())>0:
-			self._container.add(tuple(U.color()));
+			self._container[tuple(U.color())]=U.area();
 
 	def container(self):
 		return self._container;	
 
-# a (sub)mother is a union of cells.				
-def walk(mother_set,neighboorsmap,functor):
+# a (sub)mother is a union of cells.
+visited=set();
+def walk(cells,mother_set,neighboorsmap,functor):
+	global visited;	
 	if type(mother_set) is type(0):
-		mother_set={mother_set};	
+		mother_set={mother_set};
+		visited=set();
+
+	C=color([cells[k] for k in mother_set]);
+	if mother_set.issubset(visited):
+		#print("depth:",len(mother_set)," color", C)
+		#print("oops, visited earlier");
+		return;	
+	visited.update(mother_set);
+	if len(mother_set)>200:
+		print("depth:",len(mother_set)," color", C)
+		print("max recursion depth reached");
+		assert(0)
+		return;
+
+	if len(C)<=2:
+		print("max depth:",len(mother_set)," (empty colors)")	
+		return;
+
 	functor(mother_set);
 	neighboors=set().union(*[neighboorsmap[k] for k in mother_set])-mother_set;
+	neighboors=neighboors-visited;
+	if not neighboors:
+		print("max depth:",len(mother_set)," color", C," (no neighboors)")	
 	for n in neighboors:
 		submother_set=mother_set.union({n});
-		walk(submother_set,neighboorsmap,functor);
+		walk(cells,submother_set,neighboorsmap,functor);
 		
 
 # now the question is: how many cell do we have, which

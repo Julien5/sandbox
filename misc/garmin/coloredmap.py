@@ -21,5 +21,6 @@ def indexes(C):
 		ret[colort].add(index);
 	return ret;
 
+
 if __name__ == '__main__':
 	sys.exit(main())  
