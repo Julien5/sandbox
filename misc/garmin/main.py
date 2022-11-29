@@ -91,9 +91,9 @@ def sortgroups(Cells,T,groups):
 
 def display(Cells,T,result):
 	counter=0;
-	bb=bbox.cells(Cells);
 	for BigCell in result:
 		S=segmentization.segments(BigCell.area());
+		bb=bbox.cells([BigCell]);
 		for k in range(len(S)):
 			s=S[k];
 			title=f"segment-{counter:d}";
@@ -108,6 +108,7 @@ def display_segment(T,area,bb,title,color):
 	catname="_".join(sorted(cat));
 	subtracks=statistics(T,area,color);
 	if subtracks:
+		print(title);	
 		plot.plot_boxes_and_tracks(area,subtracks,bb,f"/tmp/U-{catname:s}-{title:s}.gnuplot");
 
 def statistics(T,area,color):
@@ -147,7 +148,7 @@ def processtracks(T):
 	#A=[c.area() for c in Cells];
 	#C=[len(c.color()) for c in Cells];
 	#plot.plot_areas(A,C,T,bbox.cells(Cells),"/tmp/map.gnuplot");
-	for color in range(len(T)):
+	for color in [len(T)-1]:#range(len(T)):
 		groups.update(getfriends(Cells,T,color));
 	result=sortgroups(Cells,T,groups);
 	display(Cells,T,result);
@@ -157,8 +158,8 @@ def main():
 	test=False;
 	#test=True;	
 	if not test:
-		T=readgpx.tracksfromdir("/home/julien/tracks/");
-		#T=readgpx.tracksfromdir("/home/julien/tracks/2022.11.25");
+		#T=readgpx.tracksfromdir("/home/julien/tracks/");
+		T=readgpx.tracksfromdir("/home/julien/tracks/2022.11.25");
 		#T=T[0:20];
 	else:	
 		T=readgpx.tracksfromdir("test");
@@ -185,7 +186,8 @@ def main():
 		L=sum([t.distance() for t in C[cat]]);
 		D=sum([t.duration().total_seconds() for t in C[cat]]);
 		print(f"total {cat:10s}: {L/1000:6.1f} km | {D/3600:4.1f}h");
-		#processtracks(C[cat]);
+		processtracks(C[cat]);
+		print()
 		
 if __name__ == '__main__':
 	sys.exit(main())  
