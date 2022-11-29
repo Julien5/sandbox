@@ -9,7 +9,9 @@ import potatoes;
 import coloredmap;
 import segmentization;
 import bbox;
+import segment;
 import neighboor;
+import datetime;
 
 def nboxes(B):
 	return sum([len(b.boxes()) for b in B]);
@@ -78,25 +80,45 @@ def display(Cells,T,result):
 			U=cells.union([c for c in Cells if set(group).issubset(c.color())]);
 			S=segmentization.segments(U.area());
 			bb=bbox.cells([U]);
-			for s in S:
-				print(f"{str():30s} {len(s):5d}");
+			for k in range(len(S)):
+				s=S[k];
+				title=f"segment #{k:d}";
+				print(f"{title:23s} size:{len(s):5d}");
 				display_segment(T,s,bb,U.color());
 			print(f"{str('-'*40):40s}");
 
 def display_segment(T,area,bb,color):
 	tracks=[T[c] for c in sorted(color)];
 	plot.plot_boxes_and_tracks(area,tracks,bb,f"/tmp/U-{len(area):05d}.gnuplot");
-	statistics(T,area,color);
+	statistics(T,area,color,bb);
 
-def statistics(T,area,color):
-	pass;	
-
+def statistics(T,area,color,bb):
+	assert(len(color)>1);
+	parts=dict();
+	subtracks=list();
+	for c in color:
+		parts=segmentization.parts(area,T[c].geometry());
+		for part in parts:
+			(first,last)=part;
+			subtrack=T[c].subtrack(first,last);
+			if subtrack.distance()<1:
+				continue;
+			print(f"{subtrack.name():10s} ",end=" | ");
+			subtracks.append(subtrack);
+			t0=(sorted(subtrack.points())[0]+datetime.timedelta(hours=2)).strftime("%H:%M");
+			print(f"{t0:5s}",end=" | ");
+			print(f"{subtrack.distance()/1000:04.1f} km",end=" | ");
+			speed=3600*subtrack.distance()/subtrack.duration().total_seconds()/1000;
+			print(f"{speed:2.1f} kmh",end=" |");
+			print("");
+	plot.plot_boxes_and_tracks(set(),subtracks,bb,"/tmp/subtracks-{}.gnuplot".format(len(area)));
+		
 def main():
 	test=False;
-	test=True;	
+	#test=True;	
 	if not test:
-		T=readgpx.tracksfromdir("/home/julien/tracks/");
-		#T=readgpx.tracksfromdir("/home/julien/tracks/2022.11.25");
+		#T=readgpx.tracksfromdir("/home/julien/tracks/");
+		T=readgpx.tracksfromdir("/home/julien/tracks/2022.11.25");
 		#T=T[0:20];
 	else:	
 		T=readgpx.tracksfromdir("test");	
@@ -119,7 +141,6 @@ def main():
 			Cells.append(cells.Cell(s,set(color)));
 	print("#colors",len(indexes));
 	print("#cells",len(Cells)," area:",sum([len(c.area()) for c in Cells]));
-	print("cleanup...");
 	# cleanup is evil
 	# Cells=cells.cleanup(Cells);
 	print("#cells",len(Cells)," area:",sum([len(c.area()) for c in Cells]));
@@ -130,7 +151,6 @@ def main():
 		tracks=[T[c] for c in cell.color()];
 		plot.plot_boxes_and_tracks(cell.area(),tracks,bbox.cell(cell),"/tmp/cell-{}.gnuplot".format(k));
 
-	G=getfriends(Cells,T,5);
 	#return;
 	#for n in [5,8,10,23]:
 	#	plot_trackarea(Cells,T,n);

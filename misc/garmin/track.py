@@ -23,7 +23,19 @@ class Track:
 	def points(self):
 		return self._points;
 
-	def subtrack(self,time_start,time_end):
+	def subtrack(self,k0,kend):
+		ret=Track(self._name);
+		P=self.points();
+		times=sorted(self._points.keys());
+		K=range(len(P));
+		for k in K:
+			if k<k0 or k>=kend:
+				continue;
+			t=times[k];
+			ret.append(t,P[t]);
+		return ret;
+
+	def subtrack_time(self,time_start,time_end):
 		ret=Track(self._name);
 		P=self.points();
 		for t in P:

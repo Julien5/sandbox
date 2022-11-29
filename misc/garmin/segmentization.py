@@ -2,6 +2,7 @@
 
 import sys
 import copy;
+import math;
 
 def neighbours(a):
 	(n,m)=a;
@@ -34,6 +35,31 @@ def segments(indexset):
 		C.clear();
 	RB=list();	
 	return R;
+
+
+def containspoint(area,u):
+	nx=math.floor(u.x()/50);
+	my=math.floor(u.y()/50);
+	return (nx,my) in area;
+
+def parts(area,P):
+	first=None;
+	last=None;
+	rets=list();
+	inside=dict();
+	for k in range(len(P)):
+		p=P[k];	
+		inside[k]=containspoint(area,P[k]);
+		if k==0:
+			continue;	
+		if not first and inside[k]:
+			first=k;
+		if first and (not inside[k] or k==len(P)-1):
+			last=k;	
+			rets.append([first,last+1]);
+			first=None;
+			last=None;
+	return rets;	
 
 if __name__ == '__main__':
 	sys.exit(main())  

@@ -77,6 +77,7 @@ def clean(tracks):
 	T=None;
 	N=len(times);
 	ends=list();
+	# split if two points are 150 secs apart
 	for k in range(N-1):
 		t0=times[k];
 		t1=times[k+1];
@@ -85,6 +86,7 @@ def clean(tracks):
 			ends.append(k);
 	kstart=0;
 	kend=-1;
+	maison=geometry.Point(555235,5317262);
 	while True:
 		kstart=kend+1;
 		if kstart >= len(times):
@@ -94,10 +96,19 @@ def clean(tracks):
 		else:
 			kend=len(times);
 		name=times[kstart].strftime("%d.%m[%H:%M]")
-		T=track.Track(name);
+		T0=track.Track(name);
 		for i in range(kstart,min([kend+1,len(times)])):
-			ti = times[i];	
-			T.append(ti,points[ti]);
+			ti = times[i];
+			T0.append(ti,points[ti]);
+		shrinktimes=sorted(T0.points().keys());
+		G=T0.points();
+		while(shrinktimes and maison.distance(G[shrinktimes[0]])<200):
+			shrinktimes.pop(0);
+		while(shrinktimes and maison.distance(G[shrinktimes[-1]])<200):
+			shrinktimes.pop(-1);
+		T=track.Track(name);
+		for t in shrinktimes:
+			T.append(t,G[t]);
 		R.append(T);	
 	# note: the last point of the last track is not inserted.
 	# TODO: fix that.

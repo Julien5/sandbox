@@ -152,38 +152,3 @@ def plot_areas(areas,colors,tracks,bbox,filename):
 	tmpl=tmpl.replace("{ymax}",str(segment.geomin((xmax,ymax)).y()+margin));
 	open(filename,'w').write(tmpl);
 
-def plot_segments_intersects(S,filename):
-	assert(len(S)==2);
-
-	output=filename+".png";
-	tmpl=open("plot.tmpl",'r').read();
-	tmpl=tmpl.replace("{output}",output);
-
-	boxes=[];
-	S1=S[0].boxes();
-	S2=S[1].boxes();
-	S1alone = S1;
-	S2alone = S2;
-	Sdiff = S1.symmetric_difference(S2);
-	for s in [S1alone,S2alone,Sdiff]:
-		index=len(boxes);
-		boxfilename=filename+"box"+str(index)+".segment";
-		color=2;
-		if index < 2:
-			color=1;
-		plot_boxes(s,boxfilename,color);
-		boxes.append("load \""+boxfilename+"\"");	
-	tmpl=tmpl.replace("load \"{boxesfilename}\"","\n".join(boxes));
-	tracks=S[0].tracks.union(S[1].tracks);
-	tmpl=tmpl.replace("{tracksplot}",make_tracksplot(tracks,filename));
-	(xmin,xmax,ymin,ymax)=S[0].bbox();
-	margin=max([(xmax-xmin),(ymax-ymin)])*10;
-	tmpl=tmpl.replace("{xmin}",str(segment.geomin((xmin,ymin)).x()-margin));
-	tmpl=tmpl.replace("{ymin}",str(segment.geomin((xmin,ymin)).y()-margin));
-	tmpl=tmpl.replace("{xmax}",str(segment.geomin((xmax,ymax)).x()+margin));
-	tmpl=tmpl.replace("{ymax}",str(segment.geomin((xmax,ymax)).y()+margin));
-	open(filename,'w').write(tmpl);
-	
-
-def plot_segment(segment,filename):
-	plot_boxes_and_tracks(segment,segment.tracks,filename);	
