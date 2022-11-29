@@ -54,15 +54,15 @@ def getfriends(Cells,T,color):
 	for g in groups:
 		for k in g:	
 			F.add(k);
-	if len(F) != len(groups):
-		print(color,"has",len(F),"friends in",len(groups),"groups");
+	#if len(F) != len(groups):
+		#print(color,"has",len(F),"friends in",len(groups),"groups");
 		#for g in groups:
 		#	print(g)
 	return groups;
 
 def sortgroups(Cells,groups):
 	result=dict();
-	print("sorting and plotting");
+	#print("sorting and plotting");
 	# sort by area
 	for group in groups:	
 		U=cells.union([c for c in Cells if set(group).issubset(c.color())]);
@@ -73,26 +73,31 @@ def sortgroups(Cells,groups):
 	return result;	
 
 def display(Cells,T,result):
+	counter=0;	
 	for a in sorted(result):
 		for group in result[a]:
-			print(f"{str(sorted(set(group))):30s} {a:5d}");
+			#print(f"{str(sorted(set(group))):30s} {a:5d}");
 			# note that U is not necessarily connex.
 			U=cells.union([c for c in Cells if set(group).issubset(c.color())]);
 			S=segmentization.segments(U.area());
 			bb=bbox.cells([U]);
 			for k in range(len(S)):
 				s=S[k];
-				title=f"segment #{k:d}";
+				title=f"segment-{counter:d}";
 				print(f"{title:23s} size:{len(s):5d}");
-				display_segment(T,s,bb,U.color());
+				display_segment(T,s,bb,title,U.color());
+				counter=counter+1;
 			print(f"{str('-'*40):40s}");
+			
 
-def display_segment(T,area,bb,color):
+def display_segment(T,area,bb,title,color):
 	tracks=[T[c] for c in sorted(color)];
-	plot.plot_boxes_and_tracks(area,tracks,bb,f"/tmp/U-{len(area):05d}.gnuplot");
-	statistics(T,area,color,bb);
+	cat=set([t.category() for t in tracks]);
+	catname="_".join(sorted(cat));
+	plot.plot_boxes_and_tracks(area,tracks,bb,f"/tmp/U-{catname:s}-{title:s}.gnuplot");
+	statistics(T,area,color);
 
-def statistics(T,area,color,bb):
+def statistics(T,area,color):
 	assert(len(color)>1);
 	parts=dict();
 	subtracks=list();
@@ -103,29 +108,11 @@ def statistics(T,area,color,bb):
 			subtrack=T[c].subtrack(first,last);
 			if subtrack.distance()<1:
 				continue;
-			print(f"{subtrack.name():10s} ",end=" | ");
 			subtracks.append(subtrack);
-			t0=(sorted(subtrack.points())[0]+datetime.timedelta(hours=2)).strftime("%H:%M");
-			print(f"{t0:5s}",end=" | ");
-			print(f"{subtrack.distance()/1000:04.1f} km",end=" | ");
-			speed=3600*subtrack.distance()/subtrack.duration().total_seconds()/1000;
-			print(f"{speed:2.1f} kmh",end=" |");
-			print("");
-	plot.plot_boxes_and_tracks(set(),subtracks,bb,"/tmp/subtracks-{}.gnuplot".format(len(area)));
-		
-def main():
-	test=False;
-	#test=True;	
-	if not test:
-		#T=readgpx.tracksfromdir("/home/julien/tracks/");
-		T=readgpx.tracksfromdir("/home/julien/tracks/2022.11.25");
-		#T=T[0:20];
-	else:	
-		T=readgpx.tracksfromdir("test");	
-	T=readgpx.clean(T);
-	S=list();
-	print("#tracks:",len(T));
-	print("compute cells");
+			subtrack.stats();
+
+def processtracks(T):
+	#print("#tracks:",len(T));
 	B=dict();
 	for k in range(len(T)):
 		B[k]=boxes.boxes(T[k]);
@@ -139,28 +126,45 @@ def main():
 			#if len(s) == 1:
 			#	continue;
 			Cells.append(cells.Cell(s,set(color)));
-	print("#colors",len(indexes));
-	print("#cells",len(Cells)," area:",sum([len(c.area()) for c in Cells]));
+	#print("#cells",len(Cells)," area:",sum([len(c.area()) for c in Cells]));
 	# cleanup is evil
 	# Cells=cells.cleanup(Cells);
-	print("#cells",len(Cells)," area:",sum([len(c.area()) for c in Cells]));
-	#bb=bbox.cells(Cells);
-	for k in []:#range(len(Cells)):
-		cell=Cells[k];
-		print("cell-{}".format(k),f"area:{len(cell.area()):5d}"," #tracks:",set(cell.color()));
-		tracks=[T[c] for c in cell.color()];
-		plot.plot_boxes_and_tracks(cell.area(),tracks,bbox.cell(cell),"/tmp/cell-{}.gnuplot".format(k));
-
-	#return;
-	#for n in [5,8,10,23]:
-	#	plot_trackarea(Cells,T,n);
-	#return;	
+	#print("#cells",len(Cells)," area:",sum([len(c.area()) for c in Cells]));
 	groups=set();
 	for color in [len(T)-1]:#range(len(T)):
 		groups.update(getfriends(Cells,T,color));
-	print("total",len(groups));	
 	result=sortgroups(Cells,groups);
 	display(Cells,T,result);
-	
+			
+		
+def main():
+	test=False;
+	#test=True;	
+	if not test:
+		T=readgpx.tracksfromdir("/home/julien/tracks/");
+		#T=readgpx.tracksfromdir("/home/julien/tracks/2022.08.04");	
+		#T=readgpx.tracksfromdir("/home/julien/tracks/2022.11.25");
+		#T=T[0:20];
+	else:	
+		T=readgpx.tracksfromdir("test");
+	T=readgpx.clean(T);
+	for t in T:
+		readgpx.write(t,f"/tmp/{t.category():s}-{t.name():s}.gpx");
+	C=dict();
+	for t in T:
+		#t.stats();
+		if not t.category() in C:
+			C[t.category()]=list();
+		C[t.category()].append(t);
+	for cat in C:
+		if cat == "none":
+			continue;	
+		for t in C[cat]:
+			t.stats();	
+		L=sum([t.distance() for t in C[cat]]);
+		D=sum([t.duration().total_seconds() for t in C[cat]]);
+		print(f"total {cat:10s}: {L/1000:6.1f} km | {D/3600:4.1f}h");
+		processtracks(C[cat]);
+		
 if __name__ == '__main__':
 	sys.exit(main())  

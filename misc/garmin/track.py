@@ -2,7 +2,7 @@
 
 import datetime;
 import copy;
-
+import math;
 class Track:
 	def __init__(self,name):
 		self._name=name;
@@ -13,12 +13,63 @@ class Track:
 
 	def string(self):
 		ret=list();
-		for time in self.points:
-			t=time.strftime("%d.%m-%H:%M:%S");
-			p=self.points[time].string();
+		for time in self._points:
+			t=time.strftime("%Y.%m.%d-%H:%M:%S");
+			p=self._points[time].string();
 			s=f"{t:s}:{p:s}"
 			ret.append(s);
 		return "\n".join(ret);
+
+	def speed(self):
+		if not self.duration().total_seconds():
+			return None;	
+		return self.distance()/self.duration().total_seconds();
+
+	def category(self):
+		assert(self._points);	
+		day=sorted(self._points)[0].strftime("%Y-%m-%d");
+		# en velo avec les enfants
+		if day=="2022-08-20":
+			return "cycling";
+		# en velo au tennis
+		if day=="2022-11-17":
+			return "cycling";
+		minrunningspeed=1*1000/3600;
+		maxrunningspeed=15*1000/3600;
+		if not self.speed():
+			return "none";
+		if self.speed()<=minrunningspeed:
+			return "none";
+		if self.distance()<=100:
+			return "none";	
+		if self.speed()>maxrunningspeed:
+			return "cycling";
+		if self.distance()>30000:
+			return "cycling";
+		return "running";
+
+	def stats(self):
+		print(f"{self.name():10s} ",end=" | ");
+		if not self.points():
+			print("empty");
+			return;
+		if self.distance()>500000:
+			print(self.string())	
+			assert(False);	
+		t0=(sorted(self.points())[0]+datetime.timedelta(hours=2)).strftime("%H:%M");
+		print(f"{t0:5s}",end=" | ");
+		#print(f"#{len(self.points()):5d}",end=" | ");
+		print(f"{self.distance()/1000:5.1f} km",end=" | ");
+		ds=self.duration().total_seconds();
+		hours=math.floor(ds/3600);
+		seconds=ds-3600*hours;
+		minutes=math.floor(seconds/60);
+		print(f"{hours:02d}:{minutes:02d}",end=" | ");
+		speed=0;
+		if self.speed():
+			speed=3600*self.speed()/1000;
+		print(f"{speed:4.1f} kmh",end=" |");
+		print("");
 
 	def points(self):
 		return self._points;

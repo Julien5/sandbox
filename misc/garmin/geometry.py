@@ -7,18 +7,18 @@ def sqr(x):
 	return x*x;	
 
 class Point:
-	def __init__(self,x,y,latitude=None,longitude=None):
-		self.latitude=latitude;
-		self.longitude=longitude;
+	def __init__(self,x,y,latitude=None,longitude=None,elevation=0):
+		self._latitude=latitude;
+		self._longitude=longitude;
 		self._x=x;
 		self._y=y;
-		self.elevation=None; # todo
+		self._elevation=elevation; # todo
 	
 	def string(self):
 		if False and self.latitude:
 			width=8;
 			precision=7;
-			return f"WGS84({self.latitude:{width}.{precision}},{self.longitude:{width}.{precision}})";
+			return f"WGS84({self._latitude:{width}.{precision}},{self._longitude:{width}.{precision}})";
 		return 	f"UTM({self.x():f},{self.y():f})";
 	
 
@@ -31,7 +31,16 @@ class Point:
 		return self._x;
 
 	def y(self):
-		return self._y;	
+		return self._y;
+
+	def latitude(self):
+		return self._latitude;
+
+	def longitude(self):
+		return self._longitude;
+
+	def elevation(self):
+		return self._elevation;
 
 class Vector:
 	def __init__(self,x,y):
