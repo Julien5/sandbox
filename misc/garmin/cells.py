@@ -11,6 +11,11 @@ class Cell:
 	def area(self):
 		return self._area;
 
+	def distance(self,other):
+		Inter=self.area().intersection(other.area());
+		Union=self.area().union(other.area());
+		return len(Union-Inter)/len(Union);
+	
 	def bbox(self):
 		nmin=min([n for (n,m) in self._area]);
 		nmax=max([n for (n,m) in self._area])+1;
