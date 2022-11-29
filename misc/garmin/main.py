@@ -45,7 +45,7 @@ def getfriends(Cells,T,color):
 		if len(U.area())<100:
 			continue;
 		large=TrackCell.distance(U)<0.6;
-		many=len(c)>3;
+		many=len(c)>=min(len(T),4);
 		if large or many:
 			groups.add(tu);
 	F=set();		
@@ -73,16 +73,27 @@ def sortgroups(Cells,groups):
 def display(Cells,T,result):
 	for a in sorted(result):
 		for group in result[a]:
-			print(f"{str(sorted(set(group))):80s} {a:5d}");
+			print(f"{str(sorted(set(group))):30s} {a:5d}");
 			# note that U is not necessarily connex.
 			U=cells.union([c for c in Cells if set(group).issubset(c.color())]);
-			tracks=[T[c] for c in sorted(U.color())];
-			bb=bbox.cells([U])
-			plot.plot_boxes_and_tracks(U.area(),tracks,bb,f"/tmp/U-{a:05d}.gnuplot");		
+			S=segmentization.segments(U.area());
+			bb=bbox.cells([U]);
+			for s in S:
+				print(f"{str():30s} {len(s):5d}");
+				display_segment(T,s,bb,U.color());
+			print(f"{str('-'*40):40s}");
+
+def display_segment(T,area,bb,color):
+	tracks=[T[c] for c in sorted(color)];
+	plot.plot_boxes_and_tracks(area,tracks,bb,f"/tmp/U-{len(area):05d}.gnuplot");
+	statistics(T,area,color);
+
+def statistics(T,area,color):
+	pass;	
 
 def main():
 	test=False;
-	#test=True;	
+	test=True;	
 	if not test:
 		T=readgpx.tracksfromdir("/home/julien/tracks/");
 		#T=readgpx.tracksfromdir("/home/julien/tracks/2022.11.25");
