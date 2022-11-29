@@ -22,15 +22,12 @@ def main():
 	test=False;
 	#test=True;	
 	if not test:
-		#T=readgpx.tracksfromdir("/home/julien/tracks/");
-		T=readgpx.tracksfromdir("/home/julien/tracks/2022.11.25");
+		T=readgpx.tracksfromdir("/home/julien/tracks/");
+		#T=readgpx.tracksfromdir("/home/julien/tracks/2022.11.25");
 		#T=T[0:20];
 	else:	
 		T=readgpx.tracksfromdir("test");	
 	T=readgpx.clean(T);
-	for k in range(len(T)):
-		tour=T[k];
-		print("tour-{}".format(k),tour.name());	
 	S=list();
 	print("#tracks:",len(T));
 	B=dict();
@@ -51,12 +48,11 @@ def main():
 	#Cells=cells.cleanup(Cells);
 	print("#cells",len(Cells));
 	#bb=bbox.cells(Cells);
-	for k in range(len(Cells)):
+	for k in []:#range(len(Cells)):
 		cell=Cells[k];
 		print("cell-{}".format(k),f"area:{len(cell.area()):5d}"," #tracks:",set(cell.color()));
-		#tracks=[T[c] for c in cell.color()];
-		#if len(cell.area())>100:
-		#plot.plot_boxes_and_tracks(cell.area(),tracks,bbox.cell(cell),"/tmp/cell-{}.gnuplot".format(k));
+		tracks=[T[c] for c in cell.color()];
+		plot.plot_boxes_and_tracks(cell.area(),tracks,bbox.cell(cell),"/tmp/cell-{}.gnuplot".format(k));
 
 	areas=[c.area() for c in Cells if 10 in c.color()];
 	colors=[c.color() for c in Cells if 10 in c.color()];
@@ -67,6 +63,7 @@ def main():
 		plot.plot_areas([areas[k]],[colors[k]],tracks,bb,f"/tmp/areas-{k:02d}.gnuplot");
 	print("compute map");
 	M=neighboor.neighboorsmap(Cells,T);
+	# sanity check
 	for k in range(len(Cells)):
 		if not k in M:
 			continue;	
@@ -77,10 +74,9 @@ def main():
 				print(n,k);
 				print(Cells[n].color(), Cells[k].color())
 				assert(0);
-	return;		
 	mothers=cells.mothers(Cells,M);
 	print("mothers:",len(mothers));
-	for m in mothers:
+	for m in []: #mothers:
 		cell=Cells[m];
 		print("mother:",m,f"area:{len(cell.area()):5d}"," #tracks:",set(cell.color()),"#neighboors:",M[m])
 		tracks=[T[c] for c in cell.color()];

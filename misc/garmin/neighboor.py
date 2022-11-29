@@ -65,7 +65,7 @@ def neighboorsmap(cells,traces):
 		s=ret[k];
 		if k in s:
 			s.remove(k);
-		print(k,"->",ret[k])
+		#print(k,"->",ret[k])
 	neighboor_along_points(ret,cells,traces,10)
 	return ret;
 

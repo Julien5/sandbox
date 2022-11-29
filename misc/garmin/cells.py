@@ -97,9 +97,9 @@ def walk(cells,mother_set,neighboorsmap,functor):
 	if len(C)<=1:
 		print("max depth:",len(mother_set)," (empty colors)")	
 		return;
-	if len(mother_set)>5:
+	if len(mother_set)>8:
 		#print("depth:",len(mother_set)," color", C)
-		print("max recursion depth reached");
+		#print("max recursion depth reached");
 		return;
 	functor(mother_set);
 	depth=len(mother_set);
