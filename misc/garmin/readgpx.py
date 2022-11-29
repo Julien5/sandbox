@@ -92,7 +92,7 @@ def clean(tracks):
 			kend=ends.pop(0);
 		else:
 			kend=len(times);
-		name0=times[kstart].strftime("%Y.%d.%m")
+		name0=times[kstart].strftime("%Y.%m.%d")
 		name=f"{name0:s}-{len(R):03d}";
 		T0=track.Track(name);
 		for i in range(kstart,min([kend+1,len(times)])):

@@ -50,6 +50,15 @@ def union(Cells):
 	area=set().union(*areas);
 	return Cell(area,color(Cells));
 
+def uunion(Cells):
+	if len(Cells)==1:
+		return Cells[0];
+	areas=[c.area() for c in Cells];
+	area=set().union(*areas);
+	colors=[c.color() for c in Cells];
+	ucolor=set().union(*colors);
+	return Cell(area,ucolor);
+
 # mother cells contain all there neighboors	
 def mothers(cells,neighboorsmap):
 	R=range(len(cells));

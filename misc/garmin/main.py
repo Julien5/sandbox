@@ -46,7 +46,7 @@ def getfriends(Cells,T,color):
 		assert(len(U.color())>1);
 		if len(U.area())<100:
 			continue;
-		large=TrackCell.distance(U)<0.6;
+		large=len(U.area())>500;#TrackCell.distance(U)<0.6;
 		many=len(c)>=min(len(T),4);
 		if large or many:
 			groups.add(tu);
@@ -60,42 +60,55 @@ def getfriends(Cells,T,color):
 		#	print(g)
 	return groups;
 
-def sortgroups(Cells,groups):
-	result=dict();
-	#print("sorting and plotting");
-	# sort by area
+def minarea(category):
+	if category=="cycling":
+		return 1500;
+	return 100;
+
+def sortgroups(Cells,T,groups):
+	BigCells=list();
+	category=T[0].category();
 	for group in groups:	
 		U=cells.union([c for c in Cells if set(group).issubset(c.color())]);
-		key=len(U.area());
-		if not key in result:
-			result[key]=set();
-		result[key].add(group);
+		limit=500;
+		if len(U.area())>minarea(category):
+			BigCells.append(U);
+
+	result=list();
+	for k in range(len(BigCells)):
+		found=False;
+		Bk=BigCells[k];
+		for l in range(len(result)):
+			r=result[l];
+			d=Bk.distance(r);
+			if d<0.1:
+				found=True;
+				result[l]=cells.uunion([r,Bk])
+				break;
+		if not found:
+			result.append(Bk);	
 	return result;	
 
 def display(Cells,T,result):
-	counter=0;	
-	for a in sorted(result):
-		for group in result[a]:
-			#print(f"{str(sorted(set(group))):30s} {a:5d}");
-			# note that U is not necessarily connex.
-			U=cells.union([c for c in Cells if set(group).issubset(c.color())]);
-			S=segmentization.segments(U.area());
-			bb=bbox.cells([U]);
-			for k in range(len(S)):
-				s=S[k];
-				title=f"segment-{counter:d}";
-				print(f"{title:23s} size:{len(s):5d}");
-				display_segment(T,s,bb,title,U.color());
-				counter=counter+1;
-			print(f"{str('-'*40):40s}");
+	counter=0;
+	bb=bbox.cells(Cells);
+	for BigCell in result:
+		S=segmentization.segments(BigCell.area());
+		for k in range(len(S)):
+			s=S[k];
+			title=f"segment-{counter:d}";
+			display_segment(T,s,bb,title,BigCell.color());
+			counter=counter+1;
+		print(f"{str('-'*40):40s}");
 			
 
 def display_segment(T,area,bb,title,color):
 	tracks=[T[c] for c in sorted(color)];
 	cat=set([t.category() for t in tracks]);
 	catname="_".join(sorted(cat));
-	plot.plot_boxes_and_tracks(area,tracks,bb,f"/tmp/U-{catname:s}-{title:s}.gnuplot");
-	statistics(T,area,color);
+	subtracks=statistics(T,area,color);
+	if subtracks:
+		plot.plot_boxes_and_tracks(area,subtracks,bb,f"/tmp/U-{catname:s}-{title:s}.gnuplot");
 
 def statistics(T,area,color):
 	assert(len(color)>1);
@@ -106,21 +119,21 @@ def statistics(T,area,color):
 		for part in parts:
 			(first,last)=part;
 			subtrack=T[c].subtrack(first,last);
-			if subtrack.distance()<1:
+			if subtrack.distance()<1000:
 				continue;
-			subtracks.append(subtrack);
+			subtracks.append(T[c]);
 			subtrack.stats();
+	return subtracks;		
 
 def processtracks(T):
 	#print("#tracks:",len(T));
 	B=dict();
 	for k in range(len(T)):
 		B[k]=boxes.boxes(T[k]);
-	colors=coloredmap.colors(B);
-	indexes=coloredmap.indexes(colors);
+	Map=coloredmap.indexes(coloredmap.colors(B));
 	Cells=list();
-	for color in indexes:
-		S=segmentization.segments(indexes[color]);
+	for color in Map:
+		S=segmentization.segments(Map[color]);
 		for s in S:
 			# ignore cells with one track only.	
 			#if len(s) == 1:
@@ -128,12 +141,15 @@ def processtracks(T):
 			Cells.append(cells.Cell(s,set(color)));
 	#print("#cells",len(Cells)," area:",sum([len(c.area()) for c in Cells]));
 	# cleanup is evil
-	# Cells=cells.cleanup(Cells);
+	Cells=cells.cleanup(Cells);
 	#print("#cells",len(Cells)," area:",sum([len(c.area()) for c in Cells]));
 	groups=set();
-	for color in [len(T)-1]:#range(len(T)):
+	#A=[c.area() for c in Cells];
+	#C=[len(c.color()) for c in Cells];
+	#plot.plot_areas(A,C,T,bbox.cells(Cells),"/tmp/map.gnuplot");
+	for color in range(len(T)):
 		groups.update(getfriends(Cells,T,color));
-	result=sortgroups(Cells,groups);
+	result=sortgroups(Cells,T,groups);
 	display(Cells,T,result);
 			
 		
@@ -157,7 +173,7 @@ def main():
 			C[t.category()]=list();
 		C[t.category()].append(t);
 	for cat in C:
-		if cat == "none":
+		if cat == "none":# or cat == "cycling":
 			continue;	
 		for t in C[cat]:
 			t.stats();	
