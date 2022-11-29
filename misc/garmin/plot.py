@@ -110,7 +110,7 @@ def make_tracksplot(tracks,filenamebase):
 	for k in range(len(T)):
 		datfile=filenamebase+".track."+str(k)+".dat"; 
 		plot_track(T[k],datfile);
-		title=str();#T[k].name()
+		title=T[k].name()
 		plots.append("\'{}\' with line linestyle {} title \"{}\"".format(datfile,k+1,title));
 		
 	return "plot "+", \\\n     ".join(plots);	

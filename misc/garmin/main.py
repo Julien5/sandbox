@@ -12,13 +12,16 @@ import bbox;
 import neighboor;
 
 def nboxes(B):
-	return sum([len(b.boxes()) for b in B]);	
+	return sum([len(b.boxes()) for b in B]);
+
+def plot_trackarea(Cells,T,n):
+	areas=[c.area() for c in Cells if n in c.color()];
+	colors=[c.color() for c in Cells if n in c.color()];
+	tracks=T;
+	bb=bbox.cells([c for c in Cells if n in c.color()]);
+	plot.plot_areas(areas,colors,tracks,bb,"/tmp/trackarea-{}.gnuplot".format(n));
 
 def main():
-	#T=readgpx.tracks("testride.gpx");
-	#for t in tracks:
-	#	print(t.string());
-	#T=readgpx.tracksfromdir("/home/julien/tracks/2022.10.01/GPX/");
 	test=False;
 	#test=True;	
 	if not test:
@@ -44,9 +47,11 @@ def main():
 			#	continue;
 			Cells.append(cells.Cell(s,set(color)));
 	print("#colors",len(indexes));
-	print("#cells",len(Cells));
-	#Cells=cells.cleanup(Cells);
-	print("#cells",len(Cells));
+	print("#cells",len(Cells)," area:",sum([len(c.area()) for c in Cells]));
+	print("cleanup...");
+	# cleanup is evil
+	Cells=cells.cleanup(Cells);
+	print("#cells",len(Cells)," area:",sum([len(c.area()) for c in Cells]));
 	#bb=bbox.cells(Cells);
 	for k in []:#range(len(Cells)):
 		cell=Cells[k];
@@ -54,63 +59,52 @@ def main():
 		tracks=[T[c] for c in cell.color()];
 		plot.plot_boxes_and_tracks(cell.area(),tracks,bbox.cell(cell),"/tmp/cell-{}.gnuplot".format(k));
 
-	areas=[c.area() for c in Cells if 10 in c.color()];
-	colors=[c.color() for c in Cells if 10 in c.color()];
-	tracks=T;
-	bb=bbox.cells([c for c in Cells if 10 in c.color()]);
-	plot.plot_areas(areas,colors,tracks,bb,"/tmp/areas.gnuplot");
-	for k in range(len(areas)):
-		plot.plot_areas([areas[k]],[colors[k]],tracks,bb,f"/tmp/areas-{k:02d}.gnuplot");
-	print("compute map");
-	M=neighboor.neighboorsmap(Cells,T);
-	# sanity check
+	#plot_trackarea(Cells,T,10);
+	color=len(T)-1; # last tour
+	friends=set();
 	for k in range(len(Cells)):
-		if not k in M:
-			continue;	
-		for n in M[k]:
-			if n == k:
-				continue;	
-			if Cells[n].color() == Cells[k].color():
-				print(n,k);
-				print(Cells[n].color(), Cells[k].color())
-				assert(0);
-	mothers=cells.mothers(Cells,M);
-	print("mothers:",len(mothers));
-	for m in []: #mothers:
-		cell=Cells[m];
-		print("mother:",m,f"area:{len(cell.area()):5d}"," #tracks:",set(cell.color()),"#neighboors:",M[m])
-		tracks=[T[c] for c in cell.color()];
-		plot.plot_boxes_and_tracks(cell.area(),tracks,bbox.cells([cell]),"/tmp/mother-{}.gnuplot".format(m));
-		for n in M[m]:
-			U=cells.union([cell,Cells[n]]);
-			assert(U.color());
-			if len(U.color())>=1:
-				tracks=[T[c] for c in U.color()];
-				plot.plot_boxes_and_tracks(U.area(),tracks,bbox.cells([U]),"/tmp/mother-{}-{}.gnuplot".format(m,n))
-	A=cells.ColorAccumulator(Cells);
-	for m in mothers:
-		print("walking",m);			
-		cells.walk(Cells,m,M,A);
-	counter=0
-	result=dict();
-	for S in A.container():
-		key=tuple(sorted(cells.color([Cells[k] for k in S])));
-		#key=tuple(cells.color([Cells[k] for k in S]));
+		if color in Cells[k].color() and len(Cells[k].color())>1:
+			friends.update(Cells[k].color());
+	print("friends:",friends)
+	
+	friendsets=set();		
+	for friend in friends:
+		c=cells.color([c for c in Cells if {color,friend}.issubset(c.color())]);
+		tu=tuple(sorted(c));
+		if len(c)<2:
+			assert(color in c);
+		#print(friend,U.color(),len(U.area()));
+		print(friend," -> ",c);
+		friendsets.add(tu);
+	print(len(friends),"friends");	
+	print(len(friendsets),"friendsets");	
+
+	track=T[color];
+	cell=dict();
+	for k in range(len(track.geometry())):
+		point=track.geometry()[k];	
+		cell[k]=neighboor.cell_lookup_color(Cells,color,point);
+		if k==0:
+			continue;
+		if cell[k] != cell[k-1] and not cell[k] is None:
+			c=Cells[cell[k]];	
+			#print(cell[k-1],"->",cell[k]," area:",len(c.area()),c.color());
+
+	result=dict();		
+	for friendset in friendsets:	
+		U=cells.union([c for c in Cells if set(friendset).issubset(c.color())]);
+		key=len(U.area());
 		if not key in result:
 			result[key]=set();
-		result[key]=result[key].union(S)
-		
-	for color in result:
-		S=result[color];	
-		U=cells.union([Cells[k] for k in S]);
-		if len(U.area())<100:
-			continue;	
-		print(counter,":",len(U.color())," tracks on area",len(U.area()),":",U.color());
-		tracks=[T[c] for c in U.color()];
-		bb=bbox.cell(U);
-		plot.plot_boxes_and_tracks(U.area(),tracks,bb,f"/tmp/good-{counter:03d}.gnuplot".format(counter))
-		counter=counter+1;
-	print("goodbye");		
+		result[key].add(friendset);
 
+	bb=bbox.cells([c for c in Cells if color in c.color()]);
+	for a in sorted(result):
+		for s in result[a]:
+			print(f"{str(sorted(set(s))):80s} {a:5d}");
+			U=cells.union([c for c in Cells if set(s).issubset(c.color())]);
+			tracks=[T[c] for c in sorted(U.color())];
+			plot.plot_boxes_and_tracks(U.area(),tracks,bb,f"/tmp/U-{a:05d}.gnuplot");
+	
 if __name__ == '__main__':
 	sys.exit(main())  

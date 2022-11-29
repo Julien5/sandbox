@@ -26,8 +26,8 @@ def cleanup(Cells):
 	for c in Cells:
 		if len(c.area())<=3:
 			continue;
-		if len(c.color())<2:
-			continue;
+		#if len(c.color())<2:
+		#	continue;
 		ret.append(c);
 	return ret;	
 
@@ -64,10 +64,6 @@ def mothers(cells,neighboorsmap):
 		if ismother:
 			mothers.add(k);
 	return mothers;
-
-def gathercolor(cells,mother_set,container):
-	color=union([cells[k] for k in mother_set]);
-	container.add(color);
 
 class ColorAccumulator:
 	def __init__(self,C):

@@ -12,7 +12,7 @@ def index(u):
 	my=math.floor(u.y()/boxwidth());
 	return (nx,my);
 
-def cell_lookup(cells,indexes,point):
+def cell_lookup_index(cells,indexes,point):
 	ind=index(point);
 	for k in indexes:
 		if ind in cells[k].area():
@@ -29,12 +29,17 @@ def cells_with_color(cells,color):
 		pass;
 	return ret;
 
+def cell_lookup_color(cells,color,point):
+	I=cells_with_color(cells,color);
+	assert(I);
+	return cell_lookup_index(cells,I,point);
+
 def neighboor_along_points(mapping,cells,traces,tk):
 	points=traces[tk].geometry();
 	cell=dict();
 	index=cells_with_color(cells,tk);
 	for k in range(len(points)):
-		cell[k]=cell_lookup(cells,index,points[k]);
+		cell[k]=cell_lookup_index(cells,index,points[k]);
 		if k==0:
 			continue;
 		# from i1 to i0	
