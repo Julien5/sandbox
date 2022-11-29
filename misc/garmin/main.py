@@ -158,7 +158,6 @@ def main():
 	#test=True;	
 	if not test:
 		T=readgpx.tracksfromdir("/home/julien/tracks/");
-		#T=readgpx.tracksfromdir("/home/julien/tracks/2022.08.04");	
 		#T=readgpx.tracksfromdir("/home/julien/tracks/2022.11.25");
 		#T=T[0:20];
 	else:	
@@ -174,13 +173,19 @@ def main():
 		C[t.category()].append(t);
 	for cat in C:
 		if cat == "none":# or cat == "cycling":
-			continue;	
+			continue;
+		S=dict();
 		for t in C[cat]:
-			t.stats();	
+			if not t.distance() in S:	
+				S[t.distance()]=set();	
+			S[t.distance()].add(t);
+		for d in sorted(S):	
+			for t in S[d]:
+				t.stats();	
 		L=sum([t.distance() for t in C[cat]]);
 		D=sum([t.duration().total_seconds() for t in C[cat]]);
 		print(f"total {cat:10s}: {L/1000:6.1f} km | {D/3600:4.1f}h");
-		processtracks(C[cat]);
+		#processtracks(C[cat]);
 		
 if __name__ == '__main__':
 	sys.exit(main())  

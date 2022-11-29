@@ -28,6 +28,8 @@ class Track:
 	def category(self):
 		assert(self._points);	
 		day=sorted(self._points)[0].strftime("%Y-%m-%d");
+		if self.distance()<1000:
+			return "none";	
 		# en velo avec les enfants
 		if day=="2022-08-20":
 			return "cycling";
