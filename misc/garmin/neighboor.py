@@ -53,8 +53,6 @@ def neighboor_along_points(mapping,cells,traces,tk):
 			
 		mapping[i1].add(i0);
 		mapping[i0].add(i1);
-		if i0 != i1:
-			print(">",i1,"->",i0)
 	return False;		
 	
 # big map		

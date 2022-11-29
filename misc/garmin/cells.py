@@ -71,13 +71,11 @@ def gathercolor(cells,mother_set,container):
 
 class ColorAccumulator:
 	def __init__(self,C):
-		self._container = dict();
+		self._container = list();
 		self.C=C;
 		
 	def __call__(self, mother_set):
-		U=union([self.C[k] for k in mother_set]);
-		assert(U.color());
-		self._container[tuple(U.color())]=U.area();
+		self._container.append(mother_set);
 
 	def container(self):
 		return self._container;	
@@ -99,10 +97,9 @@ def walk(cells,mother_set,neighboorsmap,functor):
 	if len(C)<=1:
 		print("max depth:",len(mother_set)," (empty colors)")	
 		return;
-	if len(mother_set)>200:
-		print("depth:",len(mother_set)," color", C)
+	if len(mother_set)>5:
+		#print("depth:",len(mother_set)," color", C)
 		print("max recursion depth reached");
-		assert(0)
 		return;
 	functor(mother_set);
 	depth=len(mother_set);
