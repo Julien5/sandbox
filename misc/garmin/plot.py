@@ -18,15 +18,55 @@ def plot_track(track,filename):
 	f=open(filename,'w');
 	f.write(s);
 	f.close();
-		
+
+def neightbor8(p):
+	(n,m)=p
+	ret=set();	
+	for k in [-1,0,1]:
+		for l in [-1,0,1]:
+			ret.add((n+k,m+l));
+	return ret;
+
+def rgb(color,colordict=None):
+	if type(color) == type(0):
+		c=color;
+		return '#%02x%02x%02x' % (c,c,c);
+	if type(color) == type((0,0,0)):
+		return '#%02x%02x%02x' % color;
+	if type(color) == type(None):
+		return "green";
+	if type(color) == type(set()):
+		n=colordict[tuple(color)];
+		M=len(colordict)
+		f=int(256*n/M);
+		if f<100:
+			return '#%02x%02x%02x' % (f,0,0);
+		elif f<200:
+			return '#%02x%02x%02x' % (0,f,0);
+		return '#%02x%02x%02x' % (0,0,f);
+	print(type(color),color);
+	assert(0);
+	return
+
 def plot_boxeset(boxset,filename,color=1):
 	s=str();
 	# set object 1 rect from 555243,5317261 to 555343,5317361 lw 1
 	counter=1;
+	drgb=rgb(color);
 	for p in boxset:
+		lrgb=drgb;
+		Np=neightbor8(p);
+		border=False;
+		if not Np.issubset(boxset):
+			border=True;	
 		A=center(segment.geomin(p));
 		B=center(segment.geomax(p));
-		s+=f"set object {counter:d} rect from {A.x():d},{A.y():d} to {B.x():d},{B.y():d} lw 1 lc {color:d}\n"
+		s+=f"set object {counter:d} rect from {A.x():d},{A.y():d} to {B.x():d},{B.y():d}\n"
+		if border:
+			# set object 1 back clip linewidth 5 fc rgb "blue" fillstyle solid border lc rgb "black"
+			s+=f"set object {counter:d} back clip lw 3 fc rgb \"{lrgb:s}\" fillstyle solid border lc rgb \"black\"\n"
+		else:
+			s+=f"set object {counter:d} back clip lw 1 fc rgb \"{lrgb:s}\" fillstyle solid\n"
 		counter = counter + 1;
 	f=open(filename,'w');
 	f.write(s);
@@ -36,12 +76,28 @@ def plot_boxesets(boxsets,colors,filename):
 	s=str();
 	# set object 1 rect from 555243,5317261 to 555343,5317361 lw 1
 	counter=1;
+	colordict=dict();
+	if type(colors[0]) == type(set()):
+		for c in colors:
+			colordict[tuple(c)]=len(colordict);
 	for k in range(len(boxsets)):
-		color=colors[k]
+		drgb=rgb(colors[k],colordict);
 		for p in boxsets[k]:
+			lrgb=drgb;	
+			Np=neightbor8(p);
+			border=False;
+			if not Np.issubset(boxsets[k]):
+				border=True;	
 			A=center(segment.geomin(p));
 			B=center(segment.geomax(p));
-			s+=f"set object {counter:d} rect from {A.x():d},{A.y():d} to {B.x():d},{B.y():d} lw 1 lc {color:d}\n"
+			s+=f"set object {counter:d} rect from {A.x():d},{A.y():d} to {B.x():d},{B.y():d}\n"
+			width=2;
+			if True or border:
+				# set object 1 back clip linewidth 5 fc rgb "blue" fillstyle solid border lc rgb "black"
+				brgb=rgb(int(256*(k/len(boxsets))));
+				s+=f"set object {counter:d} back clip lw {width:d} fc rgb \"{lrgb:s}\" fillstyle solid border lc rgb \"{brgb:s}\"\n"
+			else:
+				s+=f"set object {counter:d} back clip lw {width:d} fc rgb \"{lrgb:s}\" fillstyle solid\n"
 			counter = counter + 1;
 			
 	f=open(filename,'w');

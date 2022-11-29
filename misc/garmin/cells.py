@@ -4,6 +4,7 @@ import sys
 
 class Cell:
 	def __init__(self,area,color):
+		assert(type(color)==type(set()));	
 		self._area=area;
 		self._color=set(color);
 
@@ -23,7 +24,7 @@ class Cell:
 def cleanup(Cells):
 	ret=list();	
 	for c in Cells:
-		if len(c.area())<10:
+		if len(c.area())<=3:
 			continue;
 		if len(c.color())<2:
 			continue;
@@ -52,7 +53,7 @@ def mothers(cells,neighboorsmap):
 		ismother=True;
 		mothercolor=set(cells[k].color());
 		if not k in neighboorsmap:
-			print("zombie:",k);
+		#	print("zombie:",k);
 			continue;
 		for n in neighboorsmap[k]:
 			neighboor=cells[n];
@@ -75,8 +76,8 @@ class ColorAccumulator:
 		
 	def __call__(self, mother_set):
 		U=union([self.C[k] for k in mother_set]);
-		if len(U.color())>0:
-			self._container[tuple(U.color())]=U.area();
+		assert(U.color());
+		self._container[tuple(U.color())]=U.area();
 
 	def container(self):
 		return self._container;	
@@ -89,29 +90,32 @@ def walk(cells,mother_set,neighboorsmap,functor):
 		mother_set={mother_set};
 		visited=set();
 
+	# gard against expn explosion	
+	if tuple(mother_set) in visited:
+		return;
+	visited.add(tuple(mother_set));
+	
 	C=color([cells[k] for k in mother_set]);
-	if mother_set.issubset(visited):
-		#print("depth:",len(mother_set)," color", C)
-		#print("oops, visited earlier");
-		return;	
-	visited.update(mother_set);
+	if len(C)<=1:
+		print("max depth:",len(mother_set)," (empty colors)")	
+		return;
 	if len(mother_set)>200:
 		print("depth:",len(mother_set)," color", C)
 		print("max recursion depth reached");
 		assert(0)
 		return;
-
-	if len(C)<=2:
-		print("max depth:",len(mother_set)," (empty colors)")	
-		return;
-
 	functor(mother_set);
+	depth=len(mother_set);
 	neighboors=set().union(*[neighboorsmap[k] for k in mother_set])-mother_set;
-	neighboors=neighboors-visited;
 	if not neighboors:
-		print("max depth:",len(mother_set)," color", C," (no neighboors)")	
+		print("max depth:",len(mother_set)," color", C," (no neighboors)")
+		return;	
 	for n in neighboors:
 		submother_set=mother_set.union({n});
+		# speed up: premature filter
+		C=color([cells[k] for k in submother_set]);
+		if len(C)<=1:
+			continue;
 		walk(cells,submother_set,neighboorsmap,functor);
 		
 
