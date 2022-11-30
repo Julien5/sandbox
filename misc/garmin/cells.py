@@ -27,6 +27,8 @@ class Cell:
 		return self._color;
 
 def cleanup(Cells):
+	# i am evil, dont call me.	
+	assert(0);
 	ret=list();	
 	for c in Cells:
 		if len(c.area())<=3:
