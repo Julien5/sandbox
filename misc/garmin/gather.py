@@ -28,18 +28,21 @@ class ColorAccumulator:
 
 def gather(C,childs,functor):
 	unions=list();
+	for k in range(len(childs)):
+		functor(childs[k],cells.color([C[l] for l in childs[k]]));
+		
 	for k in range(len(childs)-1):
 		s1=childs[k];
 		s2=childs[k+1];
 		U=s1.union(s2);
 		color=cells.color([C[k] for k in U]);
 		if color:
-			functor(U,color);
 			unions.append(U);
+			
 	if unions:
 		gather(C,unions,functor);
 
-def main():
+def test1():
 	area=set();
 	C=list();
 	C.append(cells.Cell(area,{1,2}));
@@ -51,8 +54,27 @@ def main():
 	R=acc.result();
 	for color in R:
 		ret="|".join([str(set(g)) for g in R[color]]);
-		print("groups for ",set(color),"are:",ret);
-			
+		print("groups for",set(color),"are:",ret);
+
+def test2():
+	area=set();
+	C=list();
+	C.append(cells.Cell(area,{1,2}));
+	C.append(cells.Cell(area,{2,3}));
+	C.append(cells.Cell(area,{3,4}));
+	C.append(cells.Cell(area,{4,2}));
+	C.append(cells.Cell(area,{2,5}));
+	acc=ColorAccumulator();
+	gather(C,[{k} for k in range(len(C))],acc);
+	R=acc.result();
+	for color in R:
+		ret="|".join([str(set(g)) for g in R[color]]);
+		print("groups for",set(color),"are:",ret);
+
+def main():
+	test1();
+	#test2();
+		
 	
 if __name__ == '__main__':
 	sys.exit(main())  
