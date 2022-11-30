@@ -12,6 +12,7 @@ import bbox;
 import segment;
 import neighboor;
 import datetime;
+import gather;
 
 def nboxes(B):
 	return sum([len(b.boxes()) for b in B]);
@@ -23,42 +24,17 @@ def plot_trackarea(Cells,T,n):
 	bb=bbox.cells([c for c in Cells if n in c.color()]);
 	plot.plot_areas(areas,colors,tracks,bb,"/tmp/trackarea-{}.gnuplot".format(n));
 
-def getfriends(Cells,T,color):
+def getCellList(Cells,T,index):
+	assert(type(index)==type(0));
 	friends=set();
-	for k in range(len(Cells)):
-		if color in Cells[k].color() and len(Cells[k].color())>1:
-			friends.update(Cells[k].color());
-	
-	if not friends:
-		return set();	
-
-	TrackCell=cells.union([c for c in Cells if color in c.color()]);
-	groups=set();
-	for friend in friends:
-		if friend == color:
-			continue;	
-		c=cells.color([c for c in Cells if {color,friend}.issubset(c.color())]);
-		tu=tuple(sorted(c));
-		if len(c)<2:
-			assert(color in c);
-		U=cells.union([c for c in Cells if {color,friend}.issubset(c.color())]);
-		#print(f"friend:{friend:d} area:{len(U.area()):3d} distance{TrackCell.distance(U):3.2f}");
-		assert(len(U.color())>1);
-		if len(U.area())<100:
-			continue;
-		large=len(U.area())>500;#TrackCell.distance(U)<0.6;
-		many=len(c)>=min(len(T),4);
-		if large or many:
-			groups.add(tu);
-	F=set();		
-	for g in groups:
-		for k in g:	
-			F.add(k);
-	#if len(F) != len(groups):
-		#print(color,"has",len(F),"friends in",len(groups),"groups");
-		#for g in groups:
-		#	print(g)
-	return groups;
+	L=list();
+	I=neighboor.cells_with_color(Cells,index);
+	for p in T[index].geometry():
+		cellIndex=neighboor.cell_lookup_index(Cells,I,p);
+		assert(cellIndex != None);
+		if not L or {cellIndex} != L[-1]:
+			L.append({cellIndex});
+	return L;		
 
 def minarea(category):
 	if category=="cycling":
@@ -124,7 +100,22 @@ def statistics(T,area,color):
 				continue;
 			subtracks.append(T[c]);
 			subtrack.stats();
-	return subtracks;		
+	return subtracks;
+
+def processSingleTrack(Cells,T,index):
+	L=getCellList(Cells,T,index);
+	print("index:", index," cells:",L);
+	acc=gather.Accumulator();
+	assert(L);
+	assert(type(L[0]) == type(set()));
+	gather.walk(Cells,L,acc);
+	R=acc.result();
+	# L = [{1},{2},{3}] (cell indexes)
+	# R[color] is a set. Each element is a set of index.
+	# example:
+	# R[(1)] = {{1,3,4},{6}}
+	acc.print();
+	assert(acc.check(Cells,L));
 
 def processtracks(T):
 	#print("#tracks:",len(T));
@@ -142,16 +133,14 @@ def processtracks(T):
 			Cells.append(cells.Cell(s,set(color)));
 	#print("#cells",len(Cells)," area:",sum([len(c.area()) for c in Cells]));
 	# cleanup is evil
-	Cells=cells.cleanup(Cells);
+	# Cells=cells.cleanup(Cells);
 	#print("#cells",len(Cells)," area:",sum([len(c.area()) for c in Cells]));
 	groups=set();
 	#A=[c.area() for c in Cells];
 	#C=[len(c.color()) for c in Cells];
 	#plot.plot_areas(A,C,T,bbox.cells(Cells),"/tmp/map.gnuplot");
 	for color in [len(T)-1]:#range(len(T)):
-		groups.update(getfriends(Cells,T,color));
-	result=sortgroups(Cells,T,groups);
-	display(Cells,T,result);
+		processSingleTrack(Cells,T,color);	
 			
 		
 def main():
