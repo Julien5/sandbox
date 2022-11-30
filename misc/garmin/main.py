@@ -116,6 +116,12 @@ def processSingleTrack(Cells,T,index):
 	# R[(1)] = {{1,3,4},{6}}
 	acc.print();
 	assert(acc.check(Cells,L));
+	for color in acc.result():
+		w=len(color);	
+		for g in R[color]:
+			a=len(cells.union([Cells[k] for k in g]).area());
+			print(f"{str(set(color)):50s} weigth:{w:3d} area:{a:4d}");
+			
 
 def processtracks(T):
 	#print("#tracks:",len(T));
