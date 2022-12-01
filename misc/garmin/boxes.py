@@ -5,6 +5,30 @@ import math;
 import copy;
 import segment;
 
+def hitlist(u,v):
+	W=segment.boxwidth();	
+	startn=math.floor(u.x()/W);
+	stopn=math.floor(v.x()/W);
+	stepn=1;
+	if startn>stopn:
+		stepn=-1;	
+	startm=math.floor(u.y()/W);
+	stopm=math.floor(v.y()/W);
+	stepm=1;
+	if startm>stopm:
+		stepm=-1;
+	A=u;#geometry.Point(xmin,ymin);
+	B=v;#geometry.Point(xmax,ymax);
+	ret=list();
+	for n in range(startn,stopn+stepn,stepn):
+		for m in range(startn,stopn+stepm,stepm):
+			if segment.hit(n,m,A,B):
+				ret.append((n,m));
+	return ret;
+
+def hitset(u,v):
+	return set(hitlist(u,v));	
+
 class Boxes:
 	W=segment.boxwidth();
 	def __init__(self,track=None):
@@ -22,20 +46,9 @@ class Boxes:
 		return geometry.Point((n+1)*self.W,(m+1)*self.W);
 
 	def add(self,u,v):
-		xmin=min(u.x(),v.x());
-		xmax=max(u.x(),v.x());
-		ymin=min(u.y(),v.y());
-		ymax=max(u.y(),v.y());
-		Nmin=math.floor(xmin/self.W);
-		Nmax=math.floor(xmax/self.W);
-		Mmin=math.floor(ymin/self.W);
-		Mmax=math.floor(ymax/self.W);
-		A=u;#geometry.Point(xmin,ymin);
-		B=v;#geometry.Point(xmax,ymax);
-		for n in range(Nmin-1,Nmax+2):
-			for m in range(Mmin-1,Mmax+2):
-				if segment.hit(n,m,A,B):
-					self._boxes.add((n,m));
+		S=hitset(u,v);
+		for p in S:
+			self._boxes.add(p);
 
 	def addsurroundings(self,d):
 		# add the d-surroundings
@@ -83,31 +96,12 @@ def boxes(track):
 def main():
 	B=Boxes();
 	W=B.W;
-	(n,m)=(0,0);
+	(n1,m1)=(-2,-2);
+	(n2,m2)=(2,2);
 	
-	u=geometry.Point(0,-W);
-	v=geometry.Point(W/2,2*W);
-	[mode,a,b]=geometry.lineparameters(u,v);
-	assert(B.boxhitlineparameters([mode,a,b],n,m));
-
-	u=geometry.Point(-W,W/2);
-	v=geometry.Point(W,W/2);
-	[mode,a,b]=geometry.lineparameters(u,v);
-	assert(B.boxhitlineparameters([mode,a,b],n,m));
-
-	u=geometry.Point(-W,W/2)
-	v=geometry.Point(W,W/2);
-	[mode,a,b]=geometry.lineparameters(u,v);
-	assert(B.boxhitlineparameters([mode,a,b],n,m));
-
-	(n,m)=(11138, 106351);
-	u=geometry.Point( 556912.7-n*W,5317640.2-m*W)
-	v=geometry.Point( 557012.5-n*W,5317514.1-m*W)
-	print(u.string());
-	print(v.string());
-	(n,m)=(0,0);
-	[mode,a,b]=geometry.lineparameters(u,v);
-	assert(B.boxhitlineparameters([mode,a,b],n,m));
+	u=geometry.Point(n1*W,m1*W);
+	v=geometry.Point(n2*W,m2*W);
+	print(hitlist(u,v));
 
 if __name__ == '__main__':
 	import sys;
