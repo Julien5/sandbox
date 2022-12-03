@@ -133,6 +133,8 @@ def plot_boxes_and_tracks(indexset,tracks,bbox,filename):
 	plot_boxeset(indexset,boxesfilename);
 	plots=list();
 	output=filename+".png";
+	if ".gnuplot." in output:
+		output=output.replace(".gnuplot","");
 	tracksplot=make_tracksplot(tracks,filename);
 	tmpl=open("plot.tmpl",'r').read();
 	tmpl=tmpl.replace("{output}",output);

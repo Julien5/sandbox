@@ -58,7 +58,7 @@ def getCellList(Cells,T,index):
 
 def processSingleTrack(Cells,T,index):
 	L=getCellList(Cells,T,index);
-	print("index:", index," cells:",L);
+	# print("index:", index," cells:",L);
 	acc=gather.Accumulator();
 	assert(L);
 	assert(type(L[0]) == type(set()));
@@ -98,8 +98,11 @@ def main():
 	#test=True;
 	print("read files..");
 	if not test:
-		#T=readgpx.tracksfromdir("/home/julien/tracks/");
-		T=readgpx.tracksfromdir("/home/julien/tracks/2022.11.25");
+		dir="/home/julien/tracks/";
+		dir="/home/julien/tracks/2022.11.25";
+		if len(sys.argv)>1:
+			dir=sys.argv[1];
+		T=readgpx.tracksfromdir(dir);
 		#T=T[0:20];
 	else:	
 		T=readgpx.tracksfromdir("test");
@@ -115,21 +118,22 @@ def main():
 			C[t.category()]=list();
 		C[t.category()].append(t);
 	print("OK");	
-	for cat in C:
-		if cat == "none":# or cat == "cycling":
-			continue;
+	for cat in ["cycling","running"]:
 		S=dict();
+		if not cat in C:
+			continue;
 		for t in C[cat]:
 			if not t.distance() in S:	
 				S[t.distance()]=set();	
 			S[t.distance()].add(t);
-		print("category",cat);
+		print("# category",cat);
 		for d in sorted(S):	
 			for t in S[d]:
 				t.stats();	
 		L=sum([t.distance() for t in C[cat]]);
 		D=sum([t.duration().total_seconds() for t in C[cat]]);
 		print(f"total {cat:10s}: {L/1000:6.1f} km | {D/3600:4.1f}h");
+		print("-"*55)
 		processtracks(C[cat]);
 		print()
 		

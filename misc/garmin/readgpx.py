@@ -83,7 +83,8 @@ def clean(tracks):
 			ends.append(k);
 	kstart=0;
 	kend=-1;
-	maison=geometry.Point(555235,5317262);
+	# UTM32 coordinates in front of your door.
+	home=geometry.Point(555235,5317262);
 	while True:
 		kstart=kend+1;
 		if kstart >= len(times):
@@ -100,9 +101,9 @@ def clean(tracks):
 			T0.append(ti,points[ti]);
 		shrinktimes=sorted(T0.points().keys());
 		G=T0.points();
-		while(shrinktimes and maison.distance(G[shrinktimes[0]])<200):
+		while(shrinktimes and home.distance(G[shrinktimes[0]])<200):
 			shrinktimes.pop(0);
-		while(shrinktimes and maison.distance(G[shrinktimes[-1]])<200):
+		while(shrinktimes and home.distance(G[shrinktimes[-1]])<200):
 			shrinktimes.pop(-1);
 		T=track.Track(name);
 		for t in shrinktimes:

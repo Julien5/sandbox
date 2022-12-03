@@ -37,7 +37,6 @@ def statistics(T,area,color):
 
 
 def output(Cells,T,result,index):
-	print("sorting result");
 	S=dict();
 	for color in result:
 		w=len(color);
@@ -56,13 +55,14 @@ def output(Cells,T,result,index):
 	counter=0;
 	for a in sortedareas[0:3]:
 		for A in S[a]:
-			print(f"{str(A.color()):50s} weigth:{len(A.color()):3d} area:{a:4d}");
-			subtracks=statistics(T,A.area(),A.color());
-			cat=set([t.category() for t in subtracks]);
-			catname=".".join(sorted(cat));
+			subtracks=statistics(T,A.area(),A.color());	
+			category=".".join(sorted(set([t.category() for t in subtracks])));
 			title=f"segment-{counter:d}";
+			filename=f"/tmp/{category:s}-{title:s}.gnuplot";
+			print(f"{filename:28s} #visits:{len(A.color()):3d}");
+			print("-"*60)
 			bb=bbox.cell(A);
-			plot.plot_boxes_and_tracks(A.area(),T,bb,f"/tmp/U-{catname:s}-{title:s}.gnuplot");
+			plot.plot_boxes_and_tracks(A.area(),T,bb,filename);
 			counter=counter+1;
 	
 def main():
