@@ -93,10 +93,10 @@ def clean(tracks):
 		if d > 600:
 			ends.append(k);
 		elif d > 200:
-			print("something strange at:",t0,t1,d);	
+			print("[warning] time gap at:",t0,t1,d);
 	kstart=0;
 	kend=-1;
-	homepoint=home(tracks); 
+	#homepoint=home(tracks); 
 	while True:
 		kstart=kend+1;
 		if kstart >= len(times):
@@ -116,9 +116,11 @@ def clean(tracks):
 		threshold=50
 		# remove points near the house, considering they dont *really* belong
 		# to get the most accurage (and comparable) average speed data.
-		while(shrinktimes and homepoint.distance(G[shrinktimes[0]])<threshold):
+		startpoint = G[shrinktimes[0]];
+		stoppoint = G[shrinktimes[-1]];
+		while(shrinktimes and startpoint.distance(G[shrinktimes[0]])<threshold):
 			shrinktimes.pop(0);
-		while(shrinktimes and homepoint.distance(G[shrinktimes[-1]])<threshold):
+		while(shrinktimes and stoppoint.distance(G[shrinktimes[-1]])<threshold):
 			shrinktimes.pop(-1);
 		T=track.Track(name);
 		for t in shrinktimes:

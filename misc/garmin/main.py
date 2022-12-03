@@ -99,7 +99,7 @@ def main():
 	print("read files..");
 	if not test:
 		dir="/home/julien/tracks/";
-		dir="/home/julien/tracks/2022.11.25";
+		# dir="/home/julien/tracks/2022.11.25";
 		if len(sys.argv)>1:
 			dir=sys.argv[1];
 		T=readgpx.tracksfromdir(dir);
@@ -109,8 +109,8 @@ def main():
 	print("clean tracks..");
 	T=readgpx.clean(T);
 	print("categorizing..");
-	#for t in T:
-	#	readgpx.write(t,f"/tmp/{t.category():s}-{t.name():s}.gpx");
+	for t in T:
+		readgpx.write(t,f"/tmp/{t.category():s}-{t.name():s}.gpx");
 	C=dict();
 	for t in T:
 		#t.stats();
