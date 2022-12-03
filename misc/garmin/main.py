@@ -17,23 +17,44 @@ import gather;
 def nboxes(B):
 	return sum([len(b.boxes()) for b in B]);
 
-def plot_trackarea(Cells,T,n):
+def plot_trackarea(Cells,T,n,bb=None):
 	areas=[c.area() for c in Cells if n in c.color()];
 	colors=[c.color() for c in Cells if n in c.color()];
 	tracks=T;
-	bb=bbox.cells([c for c in Cells if n in c.color()]);
+	if not bb:
+		bb=bbox.cells([c for c in Cells if n in c.color()]);
 	plot.plot_areas(areas,colors,tracks,bb,"/tmp/trackarea-{}.gnuplot".format(n));
 
+def celllist(Cells,I,hitlist):
+	sublist=list();
+	for s in hitlist:
+		for i in I:
+			if s in Cells[i].area():
+				if not sublist or i != sublist[-1]:
+						sublist.append(i);
+	return sublist;					
+	
 def getCellList(Cells,T,index):
 	assert(type(index)==type(0));
 	friends=set();
 	L=list();
 	I=neighboor.cells_with_color(Cells,index);
-	for p in T[index].geometry():
-		cellIndex=neighboor.cell_lookup_index(Cells,I,p);
-		assert(cellIndex != None);
-		if not L or {cellIndex} != L[-1]:
-			L.append({cellIndex});
+	assert(I);
+	G=T[index].geometry()
+	for k in range(len(G)-1):
+		u=G[k];
+		v=G[k+1];
+		sublist=celllist(Cells,I,boxes.hitlist(u,v));
+		for cellIndex in sublist:
+			assert(cellIndex != None);
+			if not L or {cellIndex} != L[-1]:
+				L.append({cellIndex});
+	assert(L);
+	# Because the set I includes surroundings, we have:
+	# len(I) <= len(L)
+	# but because L go hit the same cell multiple times, we have
+	# len(I) => len(L)
+	# => we cannot assert anything about there lengths.
 	return L;		
 
 def minarea(category):
@@ -103,7 +124,10 @@ def statistics(T,area,color):
 	return subtracks;
 
 def processSingleTrack(Cells,T,index):
+	t0=datetime.datetime.now();	
 	L=getCellList(Cells,T,index);
+	t1=datetime.datetime.now();
+	print(T[index].distance(),t1-t0);
 	print("index:", index," cells:",L);
 	acc=gather.Accumulator();
 	assert(L);
@@ -114,14 +138,26 @@ def processSingleTrack(Cells,T,index):
 	# R[color] is a set. Each element is a set of index.
 	# example:
 	# R[(1)] = {{1,3,4},{6}}
-	acc.print();
 	assert(acc.check(Cells,L));
 	for color in acc.result():
 		w=len(color);	
 		for g in R[color]:
-			a=len(cells.union([Cells[k] for k in g]).area());
+			A=cells.union([Cells[k] for k in g]);
+			S=segmentization.segments(A.area());
+			if len(S)!=1:
+				assert(len(S)==2);
+				# what !?
+				print("what? there should be one segment but there are",len(S));
+				acc.print();
+				bb=bbox.cells([A]);
+				plot.plot_boxes_and_tracks(A.area(),[T[k] for k in color],bb,f"/tmp/S.gnuplot");
+				plot.plot_boxes_and_tracks(S[0],[T[k] for k in color],bb,f"/tmp/s-0.gnuplot");
+				plot.plot_boxes_and_tracks(S[1],[T[k] for k in color],bb,f"/tmp/s-1.gnuplot");
+				plot_trackarea(Cells,T,index,bb);
+				assert(0);
+			assert(len(S)==1);
+			a=len(A.area());
 			print(f"{str(set(color)):50s} weigth:{w:3d} area:{a:4d}");
-			
 
 def processtracks(T):
 	#print("#tracks:",len(T));
@@ -130,6 +166,7 @@ def processtracks(T):
 		B[k]=boxes.boxes(T[k]);
 	Map=coloredmap.indexes(coloredmap.colors(B));
 	Cells=list();
+	assert(Map);
 	for color in Map:
 		S=segmentization.segments(Map[color]);
 		for s in S:
@@ -137,6 +174,7 @@ def processtracks(T):
 			#if len(s) == 1:
 			#	continue;
 			Cells.append(cells.Cell(s,set(color)));
+	assert(Cells);		
 	#print("#cells",len(Cells)," area:",sum([len(c.area()) for c in Cells]));
 	# cleanup is evil
 	# Cells=cells.cleanup(Cells);
@@ -151,22 +189,26 @@ def processtracks(T):
 		
 def main():
 	test=False;
-	#test=True;	
+	#test=True;
+	print("read files..");
 	if not test:
-		#T=readgpx.tracksfromdir("/home/julien/tracks/");
-		T=readgpx.tracksfromdir("/home/julien/tracks/2022.11.25");
+		T=readgpx.tracksfromdir("/home/julien/tracks/");
+		#T=readgpx.tracksfromdir("/home/julien/tracks/2022.11.25");
 		#T=T[0:20];
 	else:	
 		T=readgpx.tracksfromdir("test");
+	print("clean tracks..");
 	T=readgpx.clean(T);
-	for t in T:
-		readgpx.write(t,f"/tmp/{t.category():s}-{t.name():s}.gpx");
+	print("categorizing..");
+	#for t in T:
+	#	readgpx.write(t,f"/tmp/{t.category():s}-{t.name():s}.gpx");
 	C=dict();
 	for t in T:
 		#t.stats();
 		if not t.category() in C:
 			C[t.category()]=list();
 		C[t.category()].append(t);
+	print("OK");	
 	for cat in C:
 		if cat == "none":# or cat == "cycling":
 			continue;

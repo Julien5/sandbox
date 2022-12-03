@@ -16,13 +16,6 @@ class Cell:
 		Union=self.area().union(other.area());
 		return len(Union-Inter)/len(Union);
 	
-	def bbox(self):
-		nmin=min([n for (n,m) in self._area]);
-		nmax=max([n for (n,m) in self._area])+1;
-		mmin=min([m for (n,m) in self._area]);
-		mmax=max([m for (n,m) in self._area])+1;	
-		return (nmin,nmax,mmin,mmax);
-
 	def color(self):
 		return self._color;
 

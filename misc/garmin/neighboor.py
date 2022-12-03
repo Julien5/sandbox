@@ -20,10 +20,10 @@ def cell_lookup_index(cells,indexes,point):
 	return None;	
 
 def cells_with_color(cells,color):
-	ret=list();	
+	ret=set();	
 	for k in range(len(cells)):
 		if color in cells[k].color():
-			ret.append(k);
+			ret.add(k);
 	if not ret:
 		# due to cell cleanup
 		pass;

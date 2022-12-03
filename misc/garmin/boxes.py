@@ -21,7 +21,7 @@ def hitlist(u,v):
 	B=v;#geometry.Point(xmax,ymax);
 	ret=list();
 	for n in range(startn,stopn+stepn,stepn):
-		for m in range(startn,stopn+stepm,stepm):
+		for m in range(startm,stopm+stepm,stepm):
 			if segment.hit(n,m,A,B):
 				ret.append((n,m));
 	return ret;
@@ -96,12 +96,18 @@ def boxes(track):
 def main():
 	B=Boxes();
 	W=B.W;
+	
+	u=geometry.Point(555451.717571,5317244.658870);
+	v=geometry.Point(555486.123428,5317205.641802);
+	L=hitlist(u,v);
+	assert(L);
+	
 	(n1,m1)=(-2,-2);
 	(n2,m2)=(2,2);
-	
 	u=geometry.Point(n1*W,m1*W);
 	v=geometry.Point(n2*W,m2*W);
 	print(hitlist(u,v));
+
 
 if __name__ == '__main__':
 	import sys;
