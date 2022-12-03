@@ -127,6 +127,14 @@ class Track:
 		times = sorted(list(self._points.keys()));
 		return times[-1]-times[0];
 
+	def begintime(self):
+		times = sorted(list(self._points.keys()));
+		return times[0];	
+
+	def endtime(self):
+		times = sorted(list(self._points.keys()));
+		return times[-1];
+
 	def __hash__(self):
 		return hash((self._name))
 

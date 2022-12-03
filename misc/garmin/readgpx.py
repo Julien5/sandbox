@@ -61,8 +61,16 @@ def tracksfromdir(dirname):
 					pass;	
 	return ret;
 
+def home(T):
+	points=list();	
+	for t in T:
+		points.extend(t.geometry()[0:5]);
+	x=sum([p.x() for p in points])/len(points);
+	y=sum([p.y() for p in points])/len(points);
+	return geometry.Point(x,y);	
+
 def clean(tracks):
-	# first gather all distinct points	
+	# first gather all distinct points
 	points=dict();
 	for T in tracks:
 		P=T.points();
@@ -78,13 +86,17 @@ def clean(tracks):
 		t0=times[k];
 		t1=times[k+1];
 		d=(t1-t0).total_seconds();
-		# split if two points are 1800 secs apart
-		if d > 1800:
+		# there is normally several points per minutes
+		# (2 points/minutes is the most common).
+		# sometimes, there is no point for 1 minute.
+		# no points for 10 minutes -> cut.
+		if d > 600:
 			ends.append(k);
+		elif d > 200:
+			print("something strange at:",t0,t1,d);	
 	kstart=0;
 	kend=-1;
-	# UTM32 coordinates in front of your door.
-	home=geometry.Point(555235,5317262);
+	homepoint=home(tracks); 
 	while True:
 		kstart=kend+1;
 		if kstart >= len(times):
@@ -101,9 +113,12 @@ def clean(tracks):
 			T0.append(ti,points[ti]);
 		shrinktimes=sorted(T0.points().keys());
 		G=T0.points();
-		while(shrinktimes and home.distance(G[shrinktimes[0]])<200):
+		threshold=50
+		# remove points near the house, considering they dont *really* belong
+		# to get the most accurage (and comparable) average speed data.
+		while(shrinktimes and homepoint.distance(G[shrinktimes[0]])<threshold):
 			shrinktimes.pop(0);
-		while(shrinktimes and home.distance(G[shrinktimes[-1]])<200):
+		while(shrinktimes and homepoint.distance(G[shrinktimes[-1]])<threshold):
 			shrinktimes.pop(-1);
 		T=track.Track(name);
 		for t in shrinktimes:
