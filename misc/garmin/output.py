@@ -22,26 +22,6 @@ def bigcell(Cells,g):
 		assert(0);
 	return A;
 
-def display(Cells,T,result):
-	counter=0;
-	for BigCell in result:
-		S=segmentization.segments(BigCell.area());
-		bb=bbox.cell(BigCell);
-		for k in range(len(S)):
-			s=S[k];
-			title=f"segment-{counter:d}";
-			display_segment(T,s,bb,title,BigCell.color());
-			counter=counter+1;
-		print(f"{str('-'*40):40s}");
-
-def display_segment(T,area,title,color):
-	cat=set([t.category() for t in tracks]);
-	catname="_".join(sorted(cat));
-	subtracks=statistics(T,area,color);
-	if subtracks:
-		print(title);	
-		plot.plot_boxes_and_tracks(area,subtracks,bb,f"/tmp/U-{catname:s}-{title:s}.gnuplot");
-
 def statistics(T,area,color):
 	assert(len(color)>1);
 	parts=dict();
@@ -51,8 +31,6 @@ def statistics(T,area,color):
 		for part in parts:
 			(first,last)=part;
 			subtrack=T[c].subtrack(first,last);
-			if subtrack.distance()<1000:
-				continue;
 			subtracks.append(T[c]);
 			subtrack.stats();
 	return subtracks;
