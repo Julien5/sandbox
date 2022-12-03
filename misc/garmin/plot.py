@@ -75,11 +75,11 @@ def plot_boxeset(boxset,filename,color=1):
 		A=center(geomin(p));
 		B=center(geomax(p));
 		s+=f"set object {counter:d} rect from {A.x():d},{A.y():d} to {B.x():d},{B.y():d}\n"
-		if border:
+		#if border:
 			# set object 1 back clip linewidth 5 fc rgb "blue" fillstyle solid border lc rgb "black"
-			s+=f"set object {counter:d} back clip lw 3 fc rgb \"{lrgb:s}\" fillstyle solid border lc rgb \"black\"\n"
-		else:
-			s+=f"set object {counter:d} back clip lw 1 fc rgb \"{lrgb:s}\" fillstyle solid\n"
+		s+=f"set object {counter:d} back clip lw 1 fc rgb \"white\" fillstyle solid border lc rgb \"black\"\n"
+		#else:
+		#s+=f"set object {counter:d} back clip lw 1 fc rgb \"{lrgb:s}\" fillstyle solid\n"
 		counter = counter + 1;
 	f=open(filename,'w');
 	f.write(s);
