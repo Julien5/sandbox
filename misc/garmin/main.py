@@ -13,6 +13,7 @@ import segment;
 import neighboor;
 import datetime;
 import gather;
+import output;
 
 def nboxes(B):
 	return sum([len(b.boxes()) for b in B]);
@@ -57,77 +58,8 @@ def getCellList(Cells,T,index):
 	# => we cannot assert anything about there lengths.
 	return L;		
 
-def minarea(category):
-	if category=="cycling":
-		return 1500;
-	return 100;
-
-def sortgroups(Cells,T,groups):
-	BigCells=list();
-	category=T[0].category();
-	for group in groups:	
-		U=cells.union([c for c in Cells if set(group).issubset(c.color())]);
-		limit=500;
-		if len(U.area())>minarea(category):
-			BigCells.append(U);
-
-	result=list();
-	for k in range(len(BigCells)):
-		found=False;
-		Bk=BigCells[k];
-		for l in range(len(result)):
-			r=result[l];
-			d=Bk.distance(r);
-			if d<0.1:
-				found=True;
-				result[l]=cells.uunion([r,Bk])
-				break;
-		if not found:
-			result.append(Bk);	
-	return result;	
-
-def display(Cells,T,result):
-	counter=0;
-	for BigCell in result:
-		S=segmentization.segments(BigCell.area());
-		bb=bbox.cells([BigCell]);
-		for k in range(len(S)):
-			s=S[k];
-			title=f"segment-{counter:d}";
-			display_segment(T,s,bb,title,BigCell.color());
-			counter=counter+1;
-		print(f"{str('-'*40):40s}");
-			
-
-def display_segment(T,area,bb,title,color):
-	tracks=[T[c] for c in sorted(color)];
-	cat=set([t.category() for t in tracks]);
-	catname="_".join(sorted(cat));
-	subtracks=statistics(T,area,color);
-	if subtracks:
-		print(title);	
-		plot.plot_boxes_and_tracks(area,subtracks,bb,f"/tmp/U-{catname:s}-{title:s}.gnuplot");
-
-def statistics(T,area,color):
-	assert(len(color)>1);
-	parts=dict();
-	subtracks=list();
-	for c in color:
-		parts=segmentization.parts(area,T[c].geometry());
-		for part in parts:
-			(first,last)=part;
-			subtrack=T[c].subtrack(first,last);
-			if subtrack.distance()<1000:
-				continue;
-			subtracks.append(T[c]);
-			subtrack.stats();
-	return subtracks;
-
 def processSingleTrack(Cells,T,index):
-	t0=datetime.datetime.now();	
 	L=getCellList(Cells,T,index);
-	t1=datetime.datetime.now();
-	print(T[index].distance(),t1-t0);
 	print("index:", index," cells:",L);
 	acc=gather.Accumulator();
 	assert(L);
@@ -139,28 +71,9 @@ def processSingleTrack(Cells,T,index):
 	# example:
 	# R[(1)] = {{1,3,4},{6}}
 	assert(acc.check(Cells,L));
-	for color in acc.result():
-		w=len(color);	
-		for g in R[color]:
-			A=cells.union([Cells[k] for k in g]);
-			S=segmentization.segments(A.area());
-			if len(S)!=1:
-				assert(len(S)==2);
-				# what !?
-				print("what? there should be one segment but there are",len(S));
-				acc.print();
-				bb=bbox.cells([A]);
-				plot.plot_boxes_and_tracks(A.area(),[T[k] for k in color],bb,f"/tmp/S.gnuplot");
-				plot.plot_boxes_and_tracks(S[0],[T[k] for k in color],bb,f"/tmp/s-0.gnuplot");
-				plot.plot_boxes_and_tracks(S[1],[T[k] for k in color],bb,f"/tmp/s-1.gnuplot");
-				plot_trackarea(Cells,T,index,bb);
-				assert(0);
-			assert(len(S)==1);
-			a=len(A.area());
-			print(f"{str(set(color)):50s} weigth:{w:3d} area:{a:4d}");
+	output.output(Cells,T,acc.result(),index);
 
 def processtracks(T):
-	#print("#tracks:",len(T));
 	B=dict();
 	for k in range(len(T)):
 		B[k]=boxes.boxes(T[k]);
@@ -217,6 +130,7 @@ def main():
 			if not t.distance() in S:	
 				S[t.distance()]=set();	
 			S[t.distance()].add(t);
+		print("category",cat);
 		for d in sorted(S):	
 			for t in S[d]:
 				t.stats();	
