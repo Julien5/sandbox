@@ -8,7 +8,6 @@ import cells;
 import coloredmap;
 import segmentization;
 import bbox;
-import segment;
 import neighboor;
 import datetime;
 import gather;

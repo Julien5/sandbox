@@ -3,7 +3,7 @@
 import geometry;
 import math;
 import copy;
-import segment;
+import boxhitline;
 
 def boxwidth():
 	return 50	
@@ -25,7 +25,7 @@ def hitlist(u,v):
 	ret=list();
 	for n in range(startn,stopn+stepn,stepn):
 		for m in range(startm,stopm+stepm,stepm):
-			if segment.hit(n,m,A,B):
+			if boxhitline.boxhitline(n,m,A,B):
 				ret.append((n,m));
 	return ret;
 

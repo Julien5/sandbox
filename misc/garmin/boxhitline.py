@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
 import geometry;
-import segment;
+import boxes;
+import sys;
 
 def W():
-	return segment.boxwidth();
+	return boxes.boxwidth();
 
 def inside(xm,x,xM):
 	return xm <= x <= xM;
@@ -82,7 +83,7 @@ def test():
 	(pn,pm)=(11216, 106325)
 	print(" pp0",pp0.string());
 	print(" pp1",pp1.string());
-	print("hit",boxhitline.boxhitline(pn,pm,pp0,pp1));
+	print("hit",boxhitline(pn,pm,pp0,pp1));
 
 def main():
 	test();	
