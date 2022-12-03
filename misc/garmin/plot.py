@@ -2,7 +2,20 @@
 
 import track
 import geometry;
-import segment;
+import boxes;
+
+def boxwidth():
+	return boxes.boxwidth();	
+
+def geomin(p):
+	(n,m)=p;
+	W=boxwidth();
+	return geometry.Point(n*W,m*W);
+
+def geomax(p):
+	(n,m)=p;
+	W=boxwidth();
+	return geometry.Point((n+1)*W,(m+1)*W);
 
 def center(point):
 	#(n,m)=(11138, 106351);
@@ -59,8 +72,8 @@ def plot_boxeset(boxset,filename,color=1):
 		border=False;
 		if not Np.issubset(boxset):
 			border=True;	
-		A=center(segment.geomin(p));
-		B=center(segment.geomax(p));
+		A=center(geomin(p));
+		B=center(geomax(p));
 		s+=f"set object {counter:d} rect from {A.x():d},{A.y():d} to {B.x():d},{B.y():d}\n"
 		if border:
 			# set object 1 back clip linewidth 5 fc rgb "blue" fillstyle solid border lc rgb "black"
@@ -88,8 +101,8 @@ def plot_boxesets(boxsets,colors,filename):
 			border=False;
 			if not Np.issubset(boxsets[k]):
 				border=True;	
-			A=center(segment.geomin(p));
-			B=center(segment.geomax(p));
+			A=center(geomin(p));
+			B=center(geomax(p));
 			s+=f"set object {counter:d} rect from {A.x():d},{A.y():d} to {B.x():d},{B.y():d}\n"
 			width=2;
 			if True or border:
@@ -127,10 +140,10 @@ def plot_boxes_and_tracks(indexset,tracks,bbox,filename):
 	tmpl=tmpl.replace("{tracksplot}",tracksplot);
 	(xmin,xmax,ymin,ymax)=bbox;
 	margin=max([(xmax-xmin),(ymax-ymin)])*10;
-	tmpl=tmpl.replace("{xmin}",str(segment.geomin((xmin,ymin)).x()-margin));
-	tmpl=tmpl.replace("{ymin}",str(segment.geomin((xmin,ymin)).y()-margin));
-	tmpl=tmpl.replace("{xmax}",str(segment.geomin((xmax,ymax)).x()+margin));
-	tmpl=tmpl.replace("{ymax}",str(segment.geomin((xmax,ymax)).y()+margin));
+	tmpl=tmpl.replace("{xmin}",str(geomin((xmin,ymin)).x()-margin));
+	tmpl=tmpl.replace("{ymin}",str(geomin((xmin,ymin)).y()-margin));
+	tmpl=tmpl.replace("{xmax}",str(geomin((xmax,ymax)).x()+margin));
+	tmpl=tmpl.replace("{ymax}",str(geomin((xmax,ymax)).y()+margin));
 	open(filename,'w').write(tmpl);
 
 
@@ -146,9 +159,9 @@ def plot_areas(areas,colors,tracks,bbox,filename):
 	tmpl=tmpl.replace("{tracksplot}",tracksplot);
 	(xmin,xmax,ymin,ymax)=bbox;
 	margin=max([(xmax-xmin),(ymax-ymin)])*10;
-	tmpl=tmpl.replace("{xmin}",str(segment.geomin((xmin,ymin)).x()-margin));
-	tmpl=tmpl.replace("{ymin}",str(segment.geomin((xmin,ymin)).y()-margin));
-	tmpl=tmpl.replace("{xmax}",str(segment.geomin((xmax,ymax)).x()+margin));
-	tmpl=tmpl.replace("{ymax}",str(segment.geomin((xmax,ymax)).y()+margin));
+	tmpl=tmpl.replace("{xmin}",str(geomin((xmin,ymin)).x()-margin));
+	tmpl=tmpl.replace("{ymin}",str(geomin((xmin,ymin)).y()-margin));
+	tmpl=tmpl.replace("{xmax}",str(geomin((xmax,ymax)).x()+margin));
+	tmpl=tmpl.replace("{ymax}",str(geomin((xmax,ymax)).y()+margin));
 	open(filename,'w').write(tmpl);
 

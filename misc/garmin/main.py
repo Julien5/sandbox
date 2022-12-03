@@ -87,11 +87,6 @@ def processtracks(T):
 			#	continue;
 			Cells.append(cells.Cell(s,set(color)));
 	assert(Cells);		
-	#print("#cells",len(Cells)," area:",sum([len(c.area()) for c in Cells]));
-	# cleanup is evil
-	# Cells=cells.cleanup(Cells);
-	#print("#cells",len(Cells)," area:",sum([len(c.area()) for c in Cells]));
-	groups=set();
 	#A=[c.area() for c in Cells];
 	#C=[len(c.color()) for c in Cells];
 	#plot.plot_areas(A,C,T,bbox.cells(Cells),"/tmp/map.gnuplot");
@@ -104,8 +99,8 @@ def main():
 	#test=True;
 	print("read files..");
 	if not test:
-		T=readgpx.tracksfromdir("/home/julien/tracks/");
-		#T=readgpx.tracksfromdir("/home/julien/tracks/2022.11.25");
+		#T=readgpx.tracksfromdir("/home/julien/tracks/");
+		T=readgpx.tracksfromdir("/home/julien/tracks/2022.11.25");
 		#T=T[0:20];
 	else:	
 		T=readgpx.tracksfromdir("test");

@@ -14,7 +14,7 @@ def bigcell(Cells,g):
 		# what !?
 		print("what? there should be one segment but there are",len(S));
 		acc.print();
-		bb=bbox.cells([A]);
+		bb=bbox.cell(A);
 		plot.plot_boxes_and_tracks(A.area(),[T[k] for k in color],bb,f"/tmp/S.gnuplot");
 		plot.plot_boxes_and_tracks(S[0],[T[k] for k in color],bb,f"/tmp/s-0.gnuplot");
 		plot.plot_boxes_and_tracks(S[1],[T[k] for k in color],bb,f"/tmp/s-1.gnuplot");
@@ -26,14 +26,13 @@ def display(Cells,T,result):
 	counter=0;
 	for BigCell in result:
 		S=segmentization.segments(BigCell.area());
-		bb=bbox.cells([BigCell]);
+		bb=bbox.cell(BigCell);
 		for k in range(len(S)):
 			s=S[k];
 			title=f"segment-{counter:d}";
 			display_segment(T,s,bb,title,BigCell.color());
 			counter=counter+1;
 		print(f"{str('-'*40):40s}");
-			
 
 def display_segment(T,area,title,color):
 	cat=set([t.category() for t in tracks]);
@@ -84,7 +83,7 @@ def output(Cells,T,result,index):
 			cat=set([t.category() for t in subtracks]);
 			catname=".".join(sorted(cat));
 			title=f"segment-{counter:d}";
-			bb=bbox.cells([A]);
+			bb=bbox.cell(A);
 			plot.plot_boxes_and_tracks(A.area(),T,bb,f"/tmp/U-{catname:s}-{title:s}.gnuplot");
 			counter=counter+1;
 	

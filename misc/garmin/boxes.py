@@ -5,8 +5,11 @@ import math;
 import copy;
 import segment;
 
+def boxwidth():
+	return 50	
+
 def hitlist(u,v):
-	W=segment.boxwidth();	
+	W=boxwidth();	
 	startn=math.floor(u.x()/W);
 	stopn=math.floor(v.x()/W);
 	stepn=1;
@@ -30,20 +33,12 @@ def hitset(u,v):
 	return set(hitlist(u,v));	
 
 class Boxes:
-	W=segment.boxwidth();
+	W=boxwidth();
 	def __init__(self,track=None):
 		self.tracks=set();
 		if track:
 			self.tracks=set([track]);
 		self._boxes=set();
-
-	def min(self,p):
-		(n,m)=p;
-		return geometry.Point(n*self.W,m*self.W);
-
-	def max(self,p):
-		(n,m)=p;
-		return geometry.Point((n+1)*self.W,(m+1)*self.W);
 
 	def add(self,u,v):
 		S=hitset(u,v);
@@ -64,24 +59,6 @@ class Boxes:
 			
 	def boxes(self):
 		return self._boxes;
-
-	def intersection(A,B):
-		R=Boxes();
-		R.tracks=set();
-		R.tracks.update(A.tracks);
-		R.tracks.update(B.tracks);
-		R._boxes=A._boxes.intersection(B._boxes);
-		return R;
-
-	def union(self,B):
-		self.tracks.update(B.tracks);
-		self._boxes=self._boxes.union(B._boxes);
-
-	def distance(self,other):
-		I=self._boxes.intersection(other._boxes);
-		U=self._boxes.union(other._boxes);
-		return len(U-I)/len(U);
-
 
 def boxes(track):
 	B=Boxes(track);

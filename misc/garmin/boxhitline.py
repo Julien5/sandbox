@@ -69,10 +69,24 @@ def boxhitline(n,m,u,v):
 		yF=a*xF+b;
 		if inside(ymin,yF,ymax):
 			return True;
-
 		
 	# horizontal hit test
 	for yF in [ymin,ymax]:
 		xF=(yF-b)/a;
 		if inside(xmin, xF, xmax):
 			return True;
+
+def test():
+	pp0=geometry.Point(555242.977,5317260.078)
+	pp1=geometry.Point(555243.978,5317259.899)
+	(pn,pm)=(11216, 106325)
+	print(" pp0",pp0.string());
+	print(" pp1",pp1.string());
+	print("hit",boxhitline.boxhitline(pn,pm,pp0,pp1));
+
+def main():
+	test();	
+
+if __name__ == '__main__':
+	sys.exit(main())  
+	
