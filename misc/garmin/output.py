@@ -77,7 +77,7 @@ def output(Cells,T,result,index):
 	# we keep only two results.
 	sortedareas=sorted(S,reverse=True);
 	counter=0;
-	for a in sortedareas[0:-1]:
+	for a in sortedareas[0:3]:
 		for A in S[a]:
 			print(f"{str(A.color()):50s} weigth:{len(A.color()):3d} area:{a:4d}");
 			subtracks=statistics(T,A.area(),A.color());

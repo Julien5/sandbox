@@ -5,7 +5,6 @@ import sys;
 import plot;
 import boxes;
 import cells;
-import potatoes;
 import coloredmap;
 import segmentization;
 import bbox;
