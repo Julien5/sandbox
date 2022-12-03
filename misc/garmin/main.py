@@ -127,9 +127,10 @@ def main():
 				S[t.distance()]=set();	
 			S[t.distance()].add(t);
 		print("# category",cat);
-		for d in sorted(S):	
-			for t in S[d]:
-				t.stats();	
+		#for d in sorted(S):	
+		#	for t in S[d]:
+		for t in C[cat]:
+			t.stats();	
 		L=sum([t.distance() for t in C[cat]]);
 		D=sum([t.duration().total_seconds() for t in C[cat]]);
 		print(f"total {cat:10s}: {L/1000:6.1f} km | {D/3600:4.1f}h");

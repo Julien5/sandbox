@@ -9,6 +9,7 @@ import sys;
 import os;
 import xml.etree.cElementTree as mod_etree
 import projection;
+import statistics;
 
 def cleansegment(segment):
 	N=len(segment.points);
@@ -65,8 +66,8 @@ def home(T):
 	points=list();	
 	for t in T:
 		points.extend(t.geometry()[0:5]);
-	x=sum([p.x() for p in points])/len(points);
-	y=sum([p.y() for p in points])/len(points);
+	x=statistics.median([p.x() for p in points]);
+	y=statistics.median([p.y() for p in points]);
 	return geometry.Point(x,y);	
 
 def clean(tracks):
@@ -82,6 +83,7 @@ def clean(tracks):
 	T=None;
 	N=len(times);
 	ends=list();
+	homepoint=home(tracks);
 	for k in range(N-1):
 		t0=times[k];
 		t1=times[k+1];
@@ -91,12 +93,18 @@ def clean(tracks):
 		# sometimes, there is no point for 1 minute.
 		# no points for 10 minutes -> cut.
 		if d > 600:
-			ends.append(k);
+			if d < 3600 and points[t0].distance(homepoint)>1000:
+				# if the gap is less than one hour and far from home
+				# => this is a break and i turned off the GPS.
+				print("[break] time gap:",t0,t1,d,"distance:",points[t0].distance(homepoint));
+			else:
+				print("[cut] time gap:",t0,t1,d);
+				ends.append(k);
 		elif d > 200:
-			print("[warning] time gap at:",t0,t1,d);
+			print("[warning] time gap:",t0,t1,d);
 	kstart=0;
 	kend=-1;
-	#homepoint=home(tracks); 
+	
 	while True:
 		kstart=kend+1;
 		if kstart >= len(times):
