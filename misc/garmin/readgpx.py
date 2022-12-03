@@ -93,15 +93,19 @@ def clean(tracks):
 		# sometimes, there is no point for 1 minute.
 		# no points for 10 minutes -> cut.
 		if d > 600:
-			if d < 3600 and points[t0].distance(homepoint)>1000:
-				# if the gap is less than one hour and far from home
+			p0=points[t0];
+			p1=points[t1];
+			distance=p0.distance(p1);
+			if d < 3600 and distance<100 and points[t0].distance(homepoint)>1000:
+				# if the gap is less than one hour and there was no movement
+				# and i am far from home	
 				# => this is a break and i turned off the GPS.
-				print("[break] time gap:",t0,t1,d,"distance:",points[t0].distance(homepoint));
+				print("[coffee] time gap:",t0,t1,d,"distance:",distance);
 			else:
 				print("[cut] time gap:",t0,t1,d);
 				ends.append(k);
 		elif d > 200:
-			print("[warning] time gap:",t0,t1,d);
+			print("[warning] large time gap:",t0,t1,d);
 	kstart=0;
 	kend=-1;
 	
