@@ -3,9 +3,13 @@
 set -e
 set -x
 
-mkdir -p /tmp/build_pc
+BUILDDIR=/tmp/build_pc
+mkdir -p $BUILDDIR
 DIR=$(pwd)
-pushd /tmp/build_pc
+pushd $BUILDDIR
 cmake $DIR
 make
-./app
+echo jbo
+$BUILDDIR/jbo/jbo 10 10 10
+echo msa
+$BUILDDIR/msa/msa 10 10 10
