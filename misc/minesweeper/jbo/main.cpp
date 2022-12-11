@@ -107,36 +107,33 @@ class Neighbors {
     void set(const Position &pos, const int &count) { m_map[pos] = count; }
     void print() const {
         printf("neighbors()\n");
-        //#define JUMP
-#ifdef JUMP
-        for (auto it = m_map.begin(); it != m_map.end(); ++it) {
-            const Position pos = it->first;
-            const int count = it->second;
-            if (count != 0) {
-                printf("%d", count);
-            } else {
-                printf("*");
-            }
-        }
-#else
         using namespace global;
+        std::string s;
+        char buf[12] = {0};
         for (size x = 0; x < XSIZE; ++x) {
             for (size y = 0; y < YSIZE; ++y) {
                 const Position pos(x, y);
                 auto it = m_map.find(pos);
                 if (it != m_map.end()) {
-                    if (it->second != 0) {
-                        printf("%d", it->second);
+                    const auto count = it->second;
+                    if (count != 0) {
+                        std::snprintf(buf, 12, "%d", count);
+                        s += std::string(buf, buf + 1);
                     } else {
-                        printf("*");
+                        s += "*";
                     }
                 } else {
-                    printf(".");
+                    s += ".";
                 }
             }
-            printf("\n");
+            s += "\n";
+            if (s.size() > XSIZE * YSIZE / 10) {
+                printf("%s", s.c_str());
+                s = "";
+            }
         }
-#endif
+        printf("%s", s.c_str());
+        s = "";
     }
 };
 
@@ -225,15 +222,22 @@ class Board {
         using namespace global;
         //for (auto b : m_bombs)
         //   printf("bomb at: %lu %lu\n", b.position().x(), b.position().y());
+        std::string s;
         for (size x = 0; x < XSIZE; ++x) {
             for (size y = 0; y < YSIZE; ++y) {
                 if (bomb_at(x, y))
-                    printf("%s", "*");
+                    s += "*";
                 else
-                    printf("%s", ".");
+                    s += ".";
             }
-            printf("\n");
+            s += "\n";
+            if (s.size() > XSIZE * YSIZE / 10) {
+                printf("%s", s.c_str());
+                s = "";
+            }
         }
+        printf("%s", s.c_str());
+        s = "";
     }
 };
 
