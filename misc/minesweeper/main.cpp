@@ -15,12 +15,12 @@
         printf("[%d]\n", __LINE__); \
     } while (0)
 
-#define DBG(...)                  \
-    do {                          \
-        printf("[%d]", __LINE__); \
-        printf(__VA_ARGS__);      \
-        printf("\n");             \
-        fflush(stdout);           \
+#define DBG(...)                   \
+    do {                           \
+        printf("[%d] ", __LINE__); \
+        printf(__VA_ARGS__);       \
+        printf("\n");              \
+        fflush(stdout);            \
     } while (0)
 
 typedef size_t size;
@@ -91,19 +91,33 @@ class Neighbors {
             const auto &pos = b.first;
             const auto &count = b.second;
             auto it = m_map.find(pos);
+            auto other_is_bomb = count == 0;
             if (it != m_map.end()) {
-                if (it->second != 0 && count != 0) {
-                    it->second += count;
-                }
+                it->second += count;
             } else {
                 m_map[pos] = count;
             }
         }
     }
+    void indicate_bombs(const std::vector<Position> bombs) {
+        for (auto bomb : bombs) {
+            m_map[bomb] = 0;
+        }
+    }
     void set(const Position &pos, const int &count) { m_map[pos] = count; }
     void print() const {
-        return;
         printf("neighbors()\n");
+#ifdef JUMP
+        for (auto it = m_map.begin(); it != m_map.end(); ++it) {
+            const Position pos = it->first;
+            const int count = it->second;
+            if (count != 0) {
+                printf("%d", count);
+            } else {
+                printf("*");
+            }
+        }
+#else
         using namespace global;
         for (size x = 0; x < XSIZE; ++x) {
             for (size y = 0; y < YSIZE; ++y) {
@@ -116,11 +130,12 @@ class Neighbors {
                         printf("*");
                     }
                 } else {
-                    printf("*");
+                    printf(".");
                 }
             }
             printf("\n");
         }
+#endif
     }
 };
 
@@ -157,8 +172,6 @@ class Bomb {
                 ret.set(Position(x + k, y + l), 1);
             }
         }
-        // indicate bomb position
-        ret.set(Position(x, y), 0);
         return ret;
     }
 };
@@ -198,12 +211,19 @@ class Board {
     }
 
     std::set<Bomb> bombs() const { return m_bombs; }
+    std::vector<Position> bombpositions() const {
+        std::vector<Position> ret;
+        ret.reserve(m_bombs.size());
+        for (auto b : m_bombs) {
+            ret.push_back(b.position());
+        }
+        return ret;
+    }
 
     void print() {
-        return;
         using namespace global;
-        for (auto b : m_bombs)
-            printf("bomb at: %lu %lu\n", b.position().x(), b.position().y());
+        //for (auto b : m_bombs)
+        //   printf("bomb at: %lu %lu\n", b.position().x(), b.position().y());
         for (size x = 0; x < XSIZE; ++x) {
             for (size y = 0; y < YSIZE; ++y) {
                 if (bomb_at(x, y))
@@ -225,6 +245,7 @@ int run(const std::vector<std::string> &arguments) {
     for (auto bomb : b.bombs()) {
         N.merge(bomb.neighbors());
     }
+    N.indicate_bombs(b.bombpositions());
     TRACE();
     N.print();
     return EXIT_SUCCESS;
