@@ -107,6 +107,7 @@ class Neighbors {
     void set(const Position &pos, const int &count) { m_map[pos] = count; }
     void print() const {
         printf("neighbors()\n");
+#define JUMP
 #ifdef JUMP
         for (auto it = m_map.begin(); it != m_map.end(); ++it) {
             const Position pos = it->first;
