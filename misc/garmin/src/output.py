@@ -35,7 +35,6 @@ def statistics(T,area,color):
 			subtrack.stats();
 	return subtracks;
 
-
 def output(Cells,T,result,index):
 	S=dict();
 	for color in result:
@@ -53,7 +52,7 @@ def output(Cells,T,result,index):
 	# we keep only two results.
 	sortedareas=sorted(S,reverse=True);
 	counter=0;
-	for a in sortedareas[0:3]:
+	for a in sortedareas[0:5]:
 		for A in S[a]:
 			subtracks=statistics(T,A.area(),A.color());	
 			category=".".join(sorted(set([t.category() for t in subtracks])));
@@ -62,7 +61,7 @@ def output(Cells,T,result,index):
 			print(f"{filename:28s} #visits:{len(A.color()):3d}");
 			print("-"*60)
 			bb=bbox.cell(A);
-			plot.plot_boxes_and_tracks(A.area(),T,bb,filename);
+			plot.plot_boxes_and_tracks(A.area(),[T[k] for k in A.color()],bb,filename);
 			counter=counter+1;
 	
 def main():

@@ -59,6 +59,7 @@ def parts(area,P):
 			rets.append([first,last+1]);
 			first=None;
 			last=None;
+	print("|inside|=",sum([1 for k in inside if inside[k]])," total=",len(P)," #=",len(rets));		
 	return rets;	
 
 if __name__ == '__main__':

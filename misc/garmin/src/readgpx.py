@@ -36,6 +36,7 @@ def to_track(segment,filename):
 		longitude=point.longitude;
 		elevation=point.elevation;
 		time = point.time;
+		assert(time);
 		(x,y)=projection.convert(latitude,longitude);
 		ret.append(time,geometry.Point(x,y,latitude,longitude,elevation));
 	return ret;	
@@ -76,6 +77,7 @@ def clean(tracks):
 	for T in tracks:
 		P=T.points();
 		for p in P:
+			assert(p);
 			points[p]=P[p]
 	# as list
 	times=sorted(list(points));
@@ -102,7 +104,7 @@ def clean(tracks):
 				# => this is a break and i turned off the GPS.
 				print("[coffee] time gap:",t0,t1,d,"distance:",distance);
 			else:
-				print("[cut] time gap:",t0,t1,d);
+				#print("[cut] time gap:",t0,t1,d);
 				ends.append(k);
 		elif d > 200:
 			print("[warning] large time gap:",t0,t1,d);
