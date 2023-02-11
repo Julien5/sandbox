@@ -2,6 +2,7 @@
 
 import sys
 
+# ret: box(n,m) -> {tour1, tour3, etc.}
 def colors(B):
 	ret=dict();
 	for k in range(len(B)):
