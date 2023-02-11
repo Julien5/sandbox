@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import readgpx;
+import os;
 import sys;
 import plot;
 import boxes;
@@ -71,7 +72,7 @@ def processSingleTrack(Cells,T,index):
 	assert(acc.check(Cells,L));
 	output.output(Cells,T,acc.result(),index);
 
-def processtracks(T):
+def computeCells(T):
 	B=dict();
 	for k in range(len(T)):
 		B[k]=boxes.boxes(T[k]);
@@ -86,14 +87,43 @@ def processtracks(T):
 			#	continue;
 			Cells.append(cells.Cell(s,set(color)));
 	assert(Cells);		
+	return Cells;		
+
+def processtracks(Cells,T):
 	#A=[c.area() for c in Cells];
 	#C=[len(c.color()) for c in Cells];
 	#plot.plot_areas(A,C,T,bbox.cells(Cells),"/tmp/map.gnuplot");
 	for color in [len(T)-1]:#range(len(T)):
 		processSingleTrack(Cells,T,color);	
-			
-		
-def main():
+
+class Book:
+	def __init__(self,Cells,C):
+		self._cells=Cells;
+		self._C=C;
+
+	def cells(self,cat):
+		if not cat in self._cells:
+			return None;
+		return self._cells[cat];
+
+	def C(self,cat):
+		if not cat in self._C:
+			return None;
+		return self._C[cat];
+
+import pickle
+def writebook_tocache(b):
+	with open('book.cache', 'wb') as f:
+		pickle.dump(b, f);
+
+def loadbook_fromcache():
+	if not os.path.exists("book.cache"):
+		return None;
+	with open('book.cache', 'rb') as f:
+		return pickle.load(f);
+	assert(0);
+
+def loadbook_fromdata():
 	test=False;
 	#test=True;
 	print("read files..");
@@ -117,25 +147,47 @@ def main():
 		if not t.category() in C:
 			C[t.category()]=list();
 		C[t.category()].append(t);
-	print("OK");	
+	print("OK");
+	Cells=dict();
+	for cat in ["cycling","running"]:
+		Cells[cat]=computeCells(C[cat]);
+	return Book(Cells,C);
+
+def readbook():
+	d_cache=None;
+	if os.path.exists("book.cache"):
+		d_cache=datetime.datetime.fromtimestamp(os.path.getmtime("book.cache"));
+	if not d_cache:
+		print("from data");
+		book=loadbook_fromdata();
+		writebook_tocache(book);
+	else:
+		print("from cache");
+		book=loadbook_fromcache();
+	return book;
+		
+def main():
+	book=readbook();
 	for cat in ["cycling","running"]:
 		S=dict();
-		if not cat in C:
+		C=book.C(cat);
+		if not C:
+			print("ignore",cat);
 			continue;
-		for t in C[cat]:
+		for t in C:
 			if not t.distance() in S:	
 				S[t.distance()]=set();	
 			S[t.distance()].add(t);
 		print("# category",cat);
 		#for d in sorted(S):	
 		#	for t in S[d]:
-		for t in C[cat]:
+		for t in C:
 			t.stats();	
-		L=sum([t.distance() for t in C[cat]]);
-		D=sum([t.duration().total_seconds() for t in C[cat]]);
+		L=sum([t.distance() for t in C]);
+		D=sum([t.duration().total_seconds() for t in C]);
 		print(f"total {cat:10s}: {L/1000:6.1f} km | {D/3600:4.1f}h");
 		print("-"*55)
-		processtracks(C[cat]);
+		processtracks(book.cells(cat),C);
 		print()
 		
 if __name__ == '__main__':
