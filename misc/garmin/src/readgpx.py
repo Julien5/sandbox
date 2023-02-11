@@ -7,9 +7,12 @@ import gpxpy
 import gpxpy.gpx
 import sys;
 import os;
+import datetime;
 import xml.etree.cElementTree as mod_etree
+
 import projection;
 import statistics;
+
 
 def cleansegment(segment):
 	N=len(segment.points);
@@ -50,12 +53,21 @@ def tracks(filename):
 			ret.append(to_track(S,filename));
 	return ret;
 
+def old(filename):
+	return False;
+	now=datetime.datetime.now();
+	filetime=datetime.datetime.fromtimestamp(os.path.getmtime(filename));
+	d=now-filetime;
+	return d.days > 30;
+
 def tracksfromdir(dirname):
 	ret=list();
 	for root, dirs, files in os.walk(dirname):
 		for file in files:
 			if file.endswith(".gpx") and ("Track_" in file or "Current.gpx" in file):
 				filename=os.path.join(root, file);
+				if old(filename):
+					continue;
 				try:	
 					ret.extend(tracks(filename));
 				except Exception as e:
