@@ -3,6 +3,7 @@
 import sys
 import copy;
 import math;
+import copy;
 
 def neighbours(a):
 	(n,m)=a;
@@ -42,6 +43,29 @@ def containspoint(area,u):
 	my=math.floor(u.y()/50);
 	return (nx,my) in area;
 
+def cleanup(I):
+	P=copy.deepcopy(I);
+	clean=[P[0]];
+	# remove small gaps:
+	for k in range(len(P)):
+		if k==0:
+			continue;
+		[a0,b0]=P[k-1];
+		[a1,b1]=P[k];
+		assert(a1>=b0);
+		d=a1-b0;
+		if d<10:
+			clean[-1][1]=b1;
+		else:
+			clean.append(P[k]);
+	# remove small section
+	ret=list();
+	for k in range(len(clean)):
+		[a,b]=clean[k];
+		#if b-a>20:
+		ret.append(clean[k])
+	return ret;		
+
 def parts(area,P):
 	first=None;
 	last=None;
@@ -50,19 +74,21 @@ def parts(area,P):
 	for k in range(len(P)):
 		p=P[k];	
 		inside[k]=containspoint(area,P[k]);
-		if k==0:
-			continue;	
 		if not first and inside[k]:
 			first=k;
 		if first and (not inside[k] or k==len(P)-1):
-			last=k;	
-			rets.append([first,last+1]);
+			last=k;
+			#print(first,"-->",last);
+			rets.append([first,last]);
 			first=None;
 			last=None;
-	for r in rets:
-		[a,b]=r;
-		print(a,"->",b);
-	return rets;	
+	rets2=cleanup(rets)
+	R=rets2;
+	#print("--")
+	#for r in R:
+	#	[a,b]=r;
+	#	print(a,"->",b);
+	return R;	
 
 if __name__ == '__main__':
 	sys.exit(main())  

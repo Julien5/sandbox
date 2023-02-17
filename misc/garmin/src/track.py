@@ -50,29 +50,6 @@ class Track:
 			return "cycling";
 		return "running";
 
-	def stats(self):
-		print(f"{self.name():10s} ",end=" | ");
-		if not self.points():
-			print("empty");
-			return;
-		if self.distance()>500000:
-			print(self.string())	
-			assert(False);	
-		t0=(sorted(self.points())[0]+datetime.timedelta(hours=2)).strftime("%H:%M");
-		print(f"{t0:5s}",end=" | ");
-		#print(f"#{len(self.points()):5d}",end=" | ");
-		print(f"{self.distance()/1000:5.1f} km",end=" | ");
-		ds=self.duration().total_seconds();
-		hours=math.floor(ds/3600);
-		seconds=ds-3600*hours;
-		minutes=math.floor(seconds/60);
-		print(f"{hours:02d}:{minutes:02d}",end=" | ");
-		speed=0;
-		if self.speed():
-			speed=3600*self.speed()/1000;
-		print(f"{speed:4.1f} kmh",end=" |");
-		print("");
-
 	def points(self):
 		return self._points;
 
