@@ -23,7 +23,7 @@ def color(Cells):
 
 def union(Cells):
 	if len(Cells)==1:
-		return Cells[0];
+		return list(Cells)[0];
 	areas=[c.area() for c in Cells];
 	area=set().union(*areas);
 	return Cell(area,color(Cells));

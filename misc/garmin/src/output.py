@@ -64,27 +64,97 @@ def statistics(T,area,color):
 			stats(subtrack);
 	return subtracks;
 
-def output(Cells,T,result,index):
-	S=dict();
+def similarity(Cells,I1,I2):
+	a1=[Cells[i] for i in I1];
+	a2=[Cells[i] for i in I2];
+	s1=cells.union(a1).area();
+	s2=cells.union(a2).area();
+	if len(s1) < 100 or len(s2) < 100:
+		return -1;
+	diff=s1.symmetric_difference(s2);
+	u=s1.union(s2);
+	return 1-(len(diff)/len(u));
+
+def similar(Cells,I1,I2):
+	return similarity(Cells,I1,I2)>0.7;
+
+def similar_groups(Cells,A):
+	ret=dict();
+	R=range(len(A))
+	for k in R:
+		ret[k]=set();
+		# TODO: do not compute A[k]~A[l] and A[l]~A[k]
+		for l in R:
+			if similar(Cells,A[k],A[l]):
+				ret[k].add(l);
+	return ret;			
+	
+def crosssimilarities(Cells,A):
+	R=range(len(A))
+	for k in R:
+		# k is an index
+		# A[k] is a set of index of cells, like g
+		# => A iso G
+		for l in range(k):
+			sim=similarity(Cells,A[k],A[l]);
+			if sim>=0:
+				print(k,l,sim);
+	return similar_groups(Cells,A);			
+
+def total_area(Cells,g):
+	return len(bigcell(Cells,g).area());
+
+def filter_list(Cells,G,threshold):
+	ret=list();
+	for g in G:
+		if total_area(Cells,g)>threshold:
+			ret.append(g);
+	return ret;		
+
+def interesting_areas(Cells,result):
+	# remove small areas
+	C=list(result.keys());
+	for color in C:
+		result[color]=filter_list(Cells,result[color],100);
+		if not result[color]:
+			del result[color];
+
+	# inverse the dict.
+	tours=dict();
 	for color in result:
-		w=len(color);
-		if w == 1:
-			assert(index in color);
-			continue;
-		for g in result[color]:
-			A=bigcell(Cells,g);
-			assert(A.color()==set(color));
-			a=len(A.area());
-			if not a in S:
-				S[a]=set();
-			S[a].add(A);
-	# we keep only two results.
-	sortedareas=sorted(S,reverse=True);
+		G=result[color];
+		for g in G:
+			print("color:",set(color),"#:",len(result[color]),"indexes:",g);
+			tours[g]=color;
+
+	G=list(tours.keys());
+	D=crosssimilarities(Cells,G);
+	# D is a dict
+	# D[k] contains the l s.t. G[k] and G[l] are similar
+	# "we gather them together" (make equivalence classes)
+	U=set();
+	for k in D:
+		U.add(tuple(D[k]));
+		
+	# and repack to fit the input. 	(bug)
+	ret=dict();	
+	for u in U:
+		# u = {1,2} (for example)
+		# => we need to group them like union, or intersection, or something
+		# and make ONE element.
+		for k in set(u):
+			g=G[k];
+			color=tours[g];
+			ret[color]={g};
+	return ret;		
+
+def output(Cells,T,result,index):
+	result2=interesting_areas(Cells,result);
 	counter=0;
-	for a in sortedareas:
-		for A in S[a]:
-			# small areas are not interesting
-			if len(A.area()) < 100:
+	for color in result2:
+		for g in result2[color]:
+			A=bigcell(Cells,g);
+			if len(A.color())==1:
 				continue;
 			subtracks=statistics(T,A.area(),A.color());	
 			category=".".join(sorted(set([t.category() for t in subtracks])));
