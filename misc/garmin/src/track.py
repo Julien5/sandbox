@@ -55,6 +55,7 @@ class Track:
 
 	def subtrack(self,k0,kend):
 		ret=Track(self._name);
+		ret._name+=".sub";
 		P=self.points();
 		times=sorted(self._points.keys());
 		K=range(len(P));

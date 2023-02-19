@@ -7,6 +7,7 @@ import plot;
 import bbox;
 import datetime;
 import math;
+import readgpx;
 
 def bigcell(Cells,g):
 	A=cells.union([Cells[k] for k in g]);
@@ -47,11 +48,28 @@ def stats(track):
 	print(f"{speed:4.1f} kmh",end=" |");
 	print("");
 
+def refsubstrack(track,area):
+	parts=segmentization.parts(area,track.geometry());
+	D=dict();
+	for (first,last) in parts:
+		sub=track.subtrack(first,last)
+		dist=sub.distance();
+		D[dist]=sub;
+	dmax=max(D);
+	return D[dmax];
 
-def statistics(T,area,color):
+def isgood(subtrack_ref,subtrack):
+	D0=subtrack_ref.distance();
+	D=subtrack.distance();
+	r=abs(D0-D)/D0;
+	#print(D0,D,r);
+	return r<0.15;
+
+def statistics(T,area,color,index):
 	assert(len(color)>1);
 	parts=dict();
 	subtracks=list();
+	ref=refsubstrack(T[index],area)
 	for c in color:
 		#if not "090" in T[c].name():
 		#	continue;
@@ -60,8 +78,14 @@ def statistics(T,area,color):
 		for part in parts:
 			(first,last)=part;
 			subtrack=T[c].subtrack(first,last);
+			if not isgood(ref,subtrack):
+				continue;
 			subtracks.append(T[c]);
 			stats(subtrack);
+			t=subtrack;
+			filename=f"/tmp/{t.category():s}-{t.name():s}.gpx";
+			#print("write",c,"as",filename);
+			readgpx.write(t,filename);
 	return subtracks;
 
 def similarity(Cells,I1,I2):
@@ -90,15 +114,6 @@ def similar_groups(Cells,A):
 	return ret;			
 	
 def crosssimilarities(Cells,A):
-	R=range(len(A))
-	for k in R:
-		# k is an index
-		# A[k] is a set of index of cells, like g
-		# => A iso G
-		for l in range(k):
-			sim=similarity(Cells,A[k],A[l]);
-			if sim>=0:
-				print(k,l,sim);
 	return similar_groups(Cells,A);			
 
 def total_area(Cells,g):
@@ -124,7 +139,6 @@ def interesting_areas(Cells,result):
 	for color in result:
 		G=result[color];
 		for g in G:
-			print("color:",set(color),"#:",len(result[color]),"indexes:",g);
 			tours[g]=color;
 
 	G=list(tours.keys());
@@ -142,10 +156,19 @@ def interesting_areas(Cells,result):
 		# u = {1,2} (for example)
 		# => we need to group them like union, or intersection, or something
 		# and make ONE element.
-		for k in set(u):
-			g=G[k];
-			color=tours[g];
-			ret[color]={g};
+		Gu={G[k] for k in u};
+		Cu={tours[G[k]] for k in u};
+		#print("U1.",Cu,Gu)
+		S=[set(u) for u in Gu];
+		#print("U2.",set().union(*Cu),set.intersection(*S))
+		color=set().union(*Cu);
+		g=set.union(*S);
+		if not g:
+			continue;
+		assert(len(color)>=1);
+		if len(color) == 1:
+			continue;
+		ret[tuple(color)]={tuple(g)};
 	return ret;		
 
 def output(Cells,T,result,index):
@@ -153,17 +176,17 @@ def output(Cells,T,result,index):
 	counter=0;
 	for color in result2:
 		for g in result2[color]:
-			A=bigcell(Cells,g);
-			if len(A.color())==1:
+			area=bigcell(Cells,g).area();
+			if len(color)==1:
 				continue;
-			subtracks=statistics(T,A.area(),A.color());	
+			subtracks=statistics(T,area,color,index);	
 			category=".".join(sorted(set([t.category() for t in subtracks])));
 			title=f"segment-{counter:d}";
 			filename=f"/tmp/{category:s}-{title:s}.gnuplot";
-			print(f"{filename:28s} #visits:{len(A.color()):3d}");
+			print(f"{filename:28s} #visits:{len(color):d}  #area:{len(area):d}");
 			print("-"*60)
-			bb=bbox.cell(A);
-			plot.plot_boxes_and_tracks(A.area(),[T[k] for k in A.color()],bb,filename);
+			bb=bbox.cell(bigcell(Cells,g));
+			plot.plot_boxes_and_tracks(area,[T[k] for k in color],bb,filename);
 			counter=counter+1;
 	
 def main():

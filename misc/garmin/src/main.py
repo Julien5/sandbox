@@ -139,8 +139,6 @@ def loadbook_fromdata():
 	print("clean tracks..");
 	T=readgpx.clean(T);
 	print("categorizing..");
-	for t in T:
-		readgpx.write(t,f"/tmp/{t.category():s}-{t.name():s}.gpx");
 	C=dict();
 	for t in T:
 		#t.stats();
@@ -182,7 +180,8 @@ def main():
 		#for d in sorted(S):	
 		#	for t in S[d]:
 		for t in C:
-			output.stats(t);	
+			output.stats(t);
+			# readgpx.write(t,f"/tmp/{t.category():s}-{t.name():s}.gpx");
 		L=sum([t.distance() for t in C]);
 		D=sum([t.duration().total_seconds() for t in C]);
 		print(f"total {cat:10s}: {L/1000:6.1f} km | {D/3600:4.1f}h");
