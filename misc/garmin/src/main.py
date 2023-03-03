@@ -70,7 +70,7 @@ def processSingleTrack(Cells,T,index):
 	# example:
 	# R[(1)] = {{1,3,4},{6}}
 	assert(acc.check(Cells,L));
-	output.output(Cells,T,acc.result(),index);
+	output.output(Cells,T,cells.SegmentsDictionary(acc.result()),index);
 
 def computeCells(T):
 	B=dict();

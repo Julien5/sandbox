@@ -13,7 +13,7 @@ def neighbours(a):
 			R.add((n+k,m+l));
 	return R;
 
-def segments(indexset):
+def subgroups(indexset):
 	R=list();
 	A=copy.deepcopy(indexset);
 	C=set();
@@ -43,7 +43,7 @@ def containspoint(area,u):
 	my=math.floor(u.y()/50);
 	return (nx,my) in area;
 
-def cleanup(I):
+def denoise(I):
 	P=copy.deepcopy(I);
 	clean=[P[0]];
 	# remove small gaps:
@@ -82,7 +82,7 @@ def parts(area,P):
 			rets.append([first,last]);
 			first=None;
 			last=None;
-	rets2=cleanup(rets)
+	rets2=denoise(rets)
 	R=rets2;
 	#print("--")
 	#for r in R:

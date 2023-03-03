@@ -11,7 +11,7 @@ import readgpx;
 
 def bigcell(Cells,g):
 	A=cells.union([Cells[k] for k in g]);
-	S=segmentization.segments(A.area());
+	S=segmentization.subgroups(A.area());
 	if len(S)!=1:
 		assert(len(S)==2);
 		# what !?
@@ -89,8 +89,8 @@ def statistics(T,area,color,index):
 	return subtracks;
 
 def similarity(Cells,I1,I2):
-	a1=[Cells[i] for i in I1];
-	a2=[Cells[i] for i in I2];
+	a1=[Cells[i] for i in I1.indices()];
+	a2=[Cells[i] for i in I2.indices()];
 	s1=cells.union(a1).area();
 	s2=cells.union(a2).area();
 	if len(s1) < 100 or len(s2) < 100:
@@ -116,63 +116,56 @@ def similar_groups(Cells,A):
 def crosssimilarities(Cells,A):
 	return similar_groups(Cells,A);			
 
-def total_area(Cells,g):
-	return len(bigcell(Cells,g).area());
+def total_area(Cells,segment):
+	return len(segment.bigCell(Cells).area());
 
-def filter_list(Cells,G,threshold):
+def filter_list(Cells,segments,threshold):
 	ret=list();
-	for g in G:
-		if total_area(Cells,g)>threshold:
-			ret.append(g);
+	for seg in segments:
+		if total_area(Cells,seg)>threshold:
+			ret.append(seg);
 	return ret;		
 
-def interesting_areas(Cells,result):
+def interesting_areas(Cells,segments_dictionary):
 	# remove small areas
-	C=list(result.keys());
-	for color in C:
-		result[color]=filter_list(Cells,result[color],100);
-		if not result[color]:
-			del result[color];
+	all_segments=list();
+	for color in segments_dictionary.colors():
+		segs=filter_list(Cells,segments_dictionary.segments(color),100);
+		for seg in segs:
+			all_segments.append(seg);
 
-	# inverse the dict.
-	tours=dict();
-	for color in result:
-		G=result[color];
-		for g in G:
-			tours[g]=color;
-
-	G=list(tours.keys());
-	D=crosssimilarities(Cells,G);
+	D=crosssimilarities(Cells,all_segments);
 	# D is a dict
-	# D[k] contains the l s.t. G[k] and G[l] are similar
+	# D[k] contains the l s.t. seg[k] and seg[l] are similar
+	# (seg[i] stands for all_segments[i]).
 	# "we gather them together" (make equivalence classes)
 	U=set();
 	for k in D:
 		U.add(tuple(D[k]));
-		
-	# and repack to fit the input. 	(bug)
+	# U is a set
+	# its elements are the equivalence classes defined per D.
+
+	# repack so that the output type equals the input type
 	ret=dict();	
-	for u in U:
-		# u = {1,2} (for example)
+	for C in U:
+		# C = {1,2} (for example)
 		# => we need to group them like union, or intersection, or something
 		# and make ONE element.
-		Gu={G[k] for k in u};
-		Cu={tours[G[k]] for k in u};
-		#print("U1.",Cu,Gu)
-		S=[set(u) for u in Gu];
-		#print("U2.",set().union(*Cu),set.intersection(*S))
-		color=set().union(*Cu);
-		g=set.union(*S);
-		if not g:
+		domain={all_segments[k].indices() for k in C};
+		tours={segments_dictionary.color(all_segments[k]) for k in C};
+		U_domain=set().union(*domain);
+		U_tours=set().union(*tours);
+		# print("tours:",U_tours," -> domain:",U_domain);
+		if not U_domain:
 			continue;
 		assert(len(color)>=1);
-		if len(color) == 1:
+		if len(U_tours) == 1:
 			continue;
-		ret[tuple(color)]={tuple(g)};
+		ret[tuple(U_tours)]={tuple(U_domain)};
 	return ret;		
 
-def output(Cells,T,result,index):
-	result2=interesting_areas(Cells,result);
+def output(Cells,T,segments_dictionary,index):
+	result2=interesting_areas(Cells,segments_dictionary);
 	counter=0;
 	for color in result2:
 		for g in result2[color]:
