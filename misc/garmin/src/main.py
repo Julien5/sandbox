@@ -80,7 +80,7 @@ def computeCells(T):
 	Cells=list();
 	assert(Map);
 	for color in Map:
-		S=segmentization.segments(Map[color]);
+		S=segmentization.subgroups(Map[color]);
 		for s in S:
 			# ignore cells with one track only.	
 			#if len(s) == 1:
@@ -166,7 +166,7 @@ def readbook():
 		
 def main():
 	book=readbook();
-	for cat in ["running"]: # ["cycling","running"]:
+	for cat in ["cycling"]:#,"running"]:
 		S=dict();
 		C=book.C(cat);
 		if not C:
