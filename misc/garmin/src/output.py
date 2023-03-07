@@ -9,23 +9,7 @@ import datetime;
 import math;
 import readgpx;
 
-def bigcell(Cells,g):
-	A=cells.union([Cells[k] for k in g]);
-	S=segmentization.subgroups(A.area());
-	if len(S)!=1:
-		assert(len(S)==2);
-		# what !?
-		print("what? there should be one segment but there are",len(S));
-		acc.print();
-		bb=bbox.cell(A);
-		plot.plot_boxes_and_tracks(A.area(),[T[k] for k in color],bb,f"/tmp/S.gnuplot");
-		plot.plot_boxes_and_tracks(S[0],[T[k] for k in color],bb,f"/tmp/s-0.gnuplot");
-		plot.plot_boxes_and_tracks(S[1],[T[k] for k in color],bb,f"/tmp/s-1.gnuplot");
-		plot_trackarea(Cells,T,index,bb);
-		assert(0);
-	return A;
-
-def stats(track):
+def print_stats(track):
 	print(f"{track.name():10s} ",end=" | ");
 	if not track.points():
 		print("empty");
@@ -58,7 +42,7 @@ def refsubstrack(track,area):
 	dmax=max(D);
 	return D[dmax];
 
-def isgood(subtrack_ref,subtrack):
+def have_same_distance(subtrack_ref,subtrack):
 	D0=subtrack_ref.distance();
 	D=subtrack.distance();
 	r=abs(D0-D)/D0;
@@ -78,10 +62,10 @@ def statistics(T,area,color,index):
 		for part in parts:
 			(first,last)=part;
 			subtrack=T[c].subtrack(first,last);
-			if not isgood(ref,subtrack):
+			if not have_same_distance(ref,subtrack):
 				continue;
 			subtracks.append(T[c]);
-			stats(subtrack);
+			print_stats(subtrack);
 			t=subtrack;
 			filename=f"/tmp/{t.category():s}-{t.name():s}.gpx";
 			#print("write",c,"as",filename);
@@ -131,12 +115,12 @@ def filter_list(Cells,segments,threshold):
 def area(Cells,indices):
 	return len(cells.Segment(indices).bigCell(Cells).area());
 
-def interesting_areas(Cells,segments_dictionary):
+def interesting_areas(Cells,segments_dictionary,threshold):
 	debug=False;
 	# remove small areas
 	all_segments=list();
 	for color in segments_dictionary.colors():
-		segs=filter_list(Cells,segments_dictionary.segments(color),100);
+		segs=filter_list(Cells,segments_dictionary.segments(color),threshold);
 		for seg in segs:
 			all_segments.append(seg);
 	if debug:		
@@ -195,21 +179,25 @@ def interesting_areas(Cells,segments_dictionary):
 	return ret;		
 
 def output(Cells,T,segments_dictionary,index):
-	result2=interesting_areas(Cells,segments_dictionary);
+	threshold = 100;
+	if T[index].category()=="cycling":
+		threshold = 400;
+	result2=interesting_areas(Cells,segments_dictionary,threshold);
 	counter=0;
 	for color in result2:
 		for g in result2[color]:
-			area=bigcell(Cells,g).area();
+			bigCell=cells.Segment(g).bigCell(Cells);
+			bigArea=bigCell.area();
 			if len(color)==1:
 				continue;
-			subtracks=statistics(T,area,color,index);	
+			subtracks=statistics(T,bigArea,color,index);	
 			category=".".join(sorted(set([t.category() for t in subtracks])));
 			title=f"segment-{counter:d}";
 			filename=f"/tmp/{category:s}-{title:s}.gnuplot";
-			print(f"{filename:28s} #visits:{len(color):d}  #area:{len(area):d}");
+			print(f"{filename:28s} #visits:{len(color):d}  #area:{len(bigArea):d}");
 			print("-"*60)
-			bb=bbox.cell(bigcell(Cells,g));
-			plot.plot_boxes_and_tracks(area,[T[k] for k in color],bb,filename);
+			bb=bbox.cell(bigCell);
+			plot.plot_boxes_and_tracks(bigArea,[T[k] for k in color],bb,filename);
 			counter=counter+1;
 	
 def main():

@@ -44,6 +44,7 @@ def containspoint(area,u):
 	return (nx,my) in area;
 
 def denoise(I):
+	assert(I);
 	P=copy.deepcopy(I);
 	clean=[P[0]];
 	# remove small gaps:

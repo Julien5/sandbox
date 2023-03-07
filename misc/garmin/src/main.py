@@ -106,7 +106,7 @@ class Book:
 			return None;
 		return self._cells[cat];
 
-	def C(self,cat):
+	def tours(self,cat):
 		if not cat in self._C:
 			return None;
 		return self._C[cat];
@@ -163,30 +163,47 @@ def readbook():
 		print("from cache");
 		book=loadbook_fromcache();
 	return book;
-		
+
+def filter_tours(T,last_days=30):
+	D=dict();
+	for t in T:
+		time=t.begintime().replace(tzinfo=None)
+		D[time]=t;
+	ret=list();
+	now = datetime.datetime.now();
+	for d in D:
+		#print(d)
+		#print(now)
+		delta=now-d;
+		if delta.days>last_days:
+			continue;
+		ret.append(D[d]);
+	return ret;	
+
 def main():
 	book=readbook();
 	for cat in ["cycling"]:#,"running"]:
 		S=dict();
-		C=book.C(cat);
-		if not C:
+		T=book.tours(cat);
+		Tf=filter_tours(T)
+		if not T:
 			print("ignore",cat);
 			continue;
-		for t in C:
+		for t in Tf:
 			if not t.distance() in S:	
 				S[t.distance()]=set();	
 			S[t.distance()].add(t);
 		print("# category",cat);
 		#for d in sorted(S):	
 		#	for t in S[d]:
-		for t in C:
-			output.stats(t);
+		for t in T:
+			output.print_stats(t);
 			# readgpx.write(t,f"/tmp/{t.category():s}-{t.name():s}.gpx");
-		L=sum([t.distance() for t in C]);
-		D=sum([t.duration().total_seconds() for t in C]);
-		print(f"total {cat:10s}: {L/1000:6.1f} km | {D/3600:4.1f}h");
+		L=sum([t.distance() for t in Tf]);
+		D=sum([t.duration().total_seconds() for t in Tf]);
+		print(f"total-30 {cat:10s}: {L/1000:6.1f} km | {D/3600:4.1f}h");
 		print("-"*55)
-		processtracks(book.cells(cat),C);
+		processtracks(book.cells(cat),T);
 		print()
 		
 if __name__ == '__main__':
