@@ -85,11 +85,7 @@ def parts(area,P):
 			last=None;
 	rets2=denoise(rets)
 	R=rets2;
-	#print("--")
-	#for r in R:
-	#	[a,b]=r;
-	#	print(a,"->",b);
-	return R;	
+	return R;
 
 if __name__ == '__main__':
 	sys.exit(main())  
