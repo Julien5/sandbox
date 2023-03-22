@@ -32,7 +32,7 @@ def readgpx(filename):
 	return gpx;
 		
 
-def to_track_time(segment,filename):
+def to_track(segment,filename):
 	ret=track.Track(filename);
 	for point in segment.points:
 		latitude=point.latitude;
@@ -44,43 +44,13 @@ def to_track_time(segment,filename):
 		ret.append(geometry.Point(x,y,latitude,longitude,elevation,time));
 	return ret;
 
-def to_track_index(segment,filename,t0=datetime.datetime.now()):
-	ret=track.Track(filename);
-	delta=datetime.timedelta(seconds=1);
-	t=t0;
-	for k in range(len(segment.points)):
-		point=segment.points[k];
-		latitude=point.latitude;
-		longitude=point.longitude;
-		elevation=point.elevation;
-		time = point.time;
-		(x,y)=projection.convert(latitude,longitude);
-		g=geometry.Point(x,y,latitude,longitude,elevation)
-		#print(time,"->",t,g.string());
-		ret.append(t,g);
-		t=t+delta;
-	return t,ret;
-
-def tracks_index(filename):
-	gpx = readgpx(filename);
-	ret = list();
-	t=datetime.datetime.now();
-	for T in gpx.tracks:
-		for S in T.segments:
-			cleansegment(S);
-			t,ret_loc=to_track_index(S,filename,t)
-			ret.append(ret_loc);
-	return ret;
-		
-def tracks(filename,order="time"):
-	if order=="index":
-		return tracks_index(filename);
+def tracks(filename):
 	gpx = readgpx(filename);
 	ret = list();
 	for T in gpx.tracks:
 		for S in T.segments:
 			cleansegment(S);
-			ret.append(to_track_time(S,filename));
+			ret.append(to_track(S,filename));
 	return ret;
 
 def old(filename):

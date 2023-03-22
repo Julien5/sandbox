@@ -8,7 +8,7 @@ import geometry;
 import projection;
 
 def main():
-	T=readgpx.tracks("/home/julien/brevets/200/track.gpx",order="index");
+	T=readgpx.tracks("/home/julien/brevets/200/track.gpx");
 	# put the 4 seg together.
 	out=track.Track("processed");
 	for segment in T:
@@ -37,16 +37,11 @@ def main():
 			k_start=k;
 
 	print(k_start,p.string());
-	t=datetime.datetime.now();
-	delta=datetime.timedelta(seconds=1);
 	out2=track.Track("processed");
 	for k in range(len(Go)):
 		j=k_start+k;
-		out2.append(t,Go[j % len(Go)]);
-		t=t+delta;
-	readgpx.write(out2,"/home/julien/brevets/200/processed.gpx");	
-		
-
+		out2.append(Go[j % len(Go)]);
+	readgpx.write(out2,"/home/julien/brevets/200/processed-2.gpx");	
 		
 if __name__ == '__main__':
 	sys.exit(main())  
