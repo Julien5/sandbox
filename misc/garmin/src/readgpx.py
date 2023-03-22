@@ -41,7 +41,7 @@ def to_track_time(segment,filename):
 		time = point.time;
 		assert(time);
 		(x,y)=projection.convert(latitude,longitude);
-		ret.append(time,geometry.Point(x,y,latitude,longitude,elevation));
+		ret.append(geometry.Point(x,y,latitude,longitude,elevation,time));
 	return ret;
 
 def to_track_index(segment,filename,t0=datetime.datetime.now()):
@@ -101,7 +101,8 @@ def tracksfromdir(dirname):
 				try:	
 					ret.extend(tracks(filename));
 				except Exception as e:
-					#print(filename,e)
+					print(filename,e)
+					assert(0);
 					pass;	
 	return ret;
 
@@ -114,13 +115,15 @@ def home(T):
 	return geometry.Point(x,y);	
 
 def clean(tracks):
+	assert(tracks);
 	# first gather all distinct points
 	points=dict();
 	for T in tracks:
 		P=T.points();
 		for p in P:
 			assert(p);
-			points[p]=P[p]
+			points[p.time()]=p;
+	assert(points);		
 	# as list
 	times=sorted(list(points));
 	R=list();
@@ -164,23 +167,21 @@ def clean(tracks):
 		name0=times[kstart].strftime("%Y.%m.%d")
 		name=f"{name0:s}-{len(R):03d}";
 		T0=track.Track(name);
-		for i in range(kstart,min([kend+1,len(times)])):
-			ti = times[i];
-			T0.append(ti,points[ti]);
-		shrinktimes=sorted(T0.points().keys());
+		for k in range(kstart,min([kend+1,len(times)])):
+			T0.append(points[times[k]]);
 		G=T0.points();
 		threshold=50
 		# remove points near the house, considering they dont *really* belong
 		# to get the most accurage (and comparable) average speed data.
-		startpoint = G[shrinktimes[0]];
-		stoppoint = G[shrinktimes[-1]];
-		while(shrinktimes and startpoint.distance(G[shrinktimes[0]])<threshold):
-			shrinktimes.pop(0);
-		while(shrinktimes and stoppoint.distance(G[shrinktimes[-1]])<threshold):
-			shrinktimes.pop(-1);
+		startpoint = G[0];
+		stoppoint = G[-1];
+		while(G and startpoint.distance(G[0])<threshold):
+			G.pop(0);
+		while(G and stoppoint.distance(G[-1])<threshold):
+			G.pop(-1)
 		T=track.Track(name);
-		for t in shrinktimes:
-			T.append(t,G[t]);
+		for g in G:
+			T.append(g);
 		if T.points():	
 			R.append(T);	
 	# note: the last point of the last track is not inserted.
@@ -195,11 +196,11 @@ def write(track,filename):
 	gpx_track.segments.append(gpx_segment)
 	# Create points:
 	P=track.points();
-	for t in P:
-		lat=P[t].latitude();	
-		lon=P[t].longitude();
-		elev=P[t].elevation();
-		time=t;
+	for p in P:
+		lat=p.latitude();	
+		lon=p.longitude();
+		elev=p.elevation();
+		time=p.time();
 		gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(lat,lon,elev,time));
 	f=open(filename,'w');	
 	f.write(gpx.to_xml());

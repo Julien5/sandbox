@@ -17,8 +17,9 @@ def print_stats(track):
 		return;
 	if track.distance()>500000:
 		print(track.string())	
-		assert(False);	
-	t0=(sorted(track.points())[0]+datetime.timedelta(hours=2)).strftime("%H:%M");
+		assert(False);
+	points=track.points();
+	t0=(points[0].time()+datetime.timedelta(hours=2)).strftime("%H:%M");
 	print(f"{t0:5s}",end=" | ");
 	#print(f"#{len(track.points()):5d}",end=" | ");
 	print(f"{track.distance()/1000:5.1f} km",end=" | ");

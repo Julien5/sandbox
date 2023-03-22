@@ -7,12 +7,13 @@ def sqr(x):
 	return x*x;	
 
 class Point:
-	def __init__(self,x,y,latitude=None,longitude=None,elevation=0):
+	def __init__(self,x,y,latitude=None,longitude=None,elevation=0,time=None):
 		self._latitude=latitude;
 		self._longitude=longitude;
 		self._x=x;
 		self._y=y;
 		self._elevation=elevation; # todo
+		self._time=time;
 	
 	def string(self):
 		if False and self.latitude:
@@ -40,6 +41,9 @@ class Point:
 
 	def elevation(self):
 		return self._elevation;
+
+	def time(self):
+		return self._time;
 
 def main():
 	pass;	

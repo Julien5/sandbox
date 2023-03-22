@@ -6,23 +6,24 @@ import math;
 class Track:
 	def __init__(self,name):
 		self._name=name;
-		self._points=dict();
+		self._points=list();
 
-	def append(self,time,p):
-		self._points[time]=p;
+	def append(self,p):
+		self._points.append(p);
+
+	def time_sort(self):
+		self._points=sorted(self.points(), key=lambda x: x.time)
 
 	def append_subtrack(self,subtrack):
-		for time in subtrack._points:
-			if time in self._points:
-				print(time)
-				assert(0);
-			self._points[time]=subtrack._points[time];
+		self._points.extend(subtrack._points);
 
 	def string(self):
 		ret=list();
-		for time in self._points:
+		for k in range(len(self._points)):
+			point=self._points[k];
+			time=point.time();
 			t=time.strftime("%Y.%m.%d-%H:%M:%S");
-			p=self._points[time].string();
+			p=point.string();
 			s=f"{t:s}:{p:s}"
 			ret.append(s);
 		return "\n".join(ret);
@@ -34,7 +35,7 @@ class Track:
 
 	def category(self):
 		assert(self._points);	
-		day=sorted(self._points)[0].strftime("%Y-%m-%d");
+		day=self._points[0].time().strftime("%Y-%m-%d");
 		if self.distance()<1000:
 			return "none";	
 		# en velo avec les enfants
@@ -64,21 +65,19 @@ class Track:
 		ret=Track(self._name);
 		ret._name+=".sub";
 		P=self.points();
-		times=sorted(self._points.keys());
 		K=range(len(P));
 		for k in K:
 			if k<k0 or k>=kend:
 				continue;
-			t=times[k];
-			ret.append(t,P[t]);
+			ret.append(P[k]);
 		return ret;
 
 	def subtrack_time(self,time_start,time_end):
 		ret=Track(self._name);
-		P=self.points();
-		for t in P:
-			if time_start <= t <= time_end:
-				ret.append(t,P[t]);
+		P=sorted(self.points(), key=lambda x: x.time)
+		for p in P:
+			if time_start <= p.time() <= time_end:
+				ret.append(p);
 		return ret;
 
 	def bbox(self):
@@ -90,35 +89,34 @@ class Track:
 		return (xmin,xmax,ymin,ymax);
 
 	def geometry(self):
-		P=self._points;
-		return [P[t] for t in sorted(P.keys())];
+		return copy.deepcopy(self._points);
 
 	def name(self):
 		return self._name;
 
 	def distance(self):
 		d=0;
-		times = list(self._points.keys());
-		for k in range(len(times)-1):
-			p1=self._points[times[k]];
-			p2=self._points[times[k+1]];
+		for k in range(len(self._points)-1):
+			p1=self._points[k];
+			p2=self._points[k+1];
 			delta=p1.distance(p2);
 			d+=delta;
 		return d;
 
+	def times(self):
+		return [p.time() for p in self._points];
+
 	def duration(self):
-		if len(self._points)<2:
-			return datetime.timedelta(0);
-		times = sorted(list(self._points.keys()));
-		return times[-1]-times[0];
+		T=self.times();
+		return max(T)-min(T);
 
 	def begintime(self):
-		times = sorted(list(self._points.keys()));
-		return times[0];	
+		T=self.times();
+		return min(T);
 
 	def endtime(self):
-		times = sorted(list(self._points.keys()));
-		return times[-1];
+		T=self.times();
+		return max(T);
 
 	def __hash__(self):
 		return hash((self._name))

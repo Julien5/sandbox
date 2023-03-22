@@ -138,6 +138,7 @@ def loadbook_fromdata():
 	else:	
 		T=readgpx.tracksfromdir("test");
 	print("clean tracks..");
+	assert(T);
 	T=readgpx.clean(T);
 	print("categorizing..");
 	C=dict();
