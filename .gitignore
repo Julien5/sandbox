@@ -10,3 +10,9 @@ private_ssid_config.h
 build
 a.out
 .cache
+.clangd
+screenlog.0
+
+delme
+*.pdf
+*.png

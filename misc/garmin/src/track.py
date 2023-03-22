@@ -11,6 +11,13 @@ class Track:
 	def append(self,time,p):
 		self._points[time]=p;
 
+	def append_subtrack(self,subtrack):
+		for time in subtrack._points:
+			if time in self._points:
+				print(time)
+				assert(0);
+			self._points[time]=subtrack._points[time];
+
 	def string(self):
 		ret=list();
 		for time in self._points:

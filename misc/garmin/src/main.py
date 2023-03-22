@@ -128,8 +128,9 @@ def loadbook_fromdata():
 	#test=True;
 	print("read files..");
 	if not test:
-		dir="/home/julien/tracks/";
+		# dir="/home/julien/tracks/";
 		# dir="/home/julien/tracks/2022.11.25";
+		dir="test";
 		if len(sys.argv)>1:
 			dir=sys.argv[1];
 		T=readgpx.tracksfromdir(dir);
@@ -182,7 +183,7 @@ def filter_tours(T,last_days=30):
 
 def main():
 	book=readbook();
-	for cat in ["cycling"]:#,"running"]:
+	for cat in ["cycling","running"]:
 		S=dict();
 		T=book.tours(cat);
 		Tf=filter_tours(T)
@@ -198,7 +199,7 @@ def main():
 		#	for t in S[d]:
 		for t in T:
 			output.print_stats(t);
-			# readgpx.write(t,f"/tmp/{t.category():s}-{t.name():s}.gpx");
+			readgpx.write(t,f"/tmp/{t.category():s}-{t.name():s}.gpx");
 		L=sum([t.distance() for t in Tf]);
 		D=sum([t.duration().total_seconds() for t in Tf]);
 		print(f"total-30 {cat:10s}: {L/1000:6.1f} km | {D/3600:4.1f}h");
