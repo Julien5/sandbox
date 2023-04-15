@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import sys
-import cells
+from . import cells
 
 def element(s):
 	assert(len(s)==1);

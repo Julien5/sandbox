@@ -2,7 +2,7 @@
 
 import track
 import geometry;
-import boxes;
+from . import boxes;
 
 def boxwidth():
 	return boxes.boxwidth();	

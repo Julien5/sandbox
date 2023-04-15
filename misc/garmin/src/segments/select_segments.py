@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-import cells;
-import segmentization;
+from . import cells;
+from . import segmentization;
 
 def similarity(Cells,I1,I2):
 	a1=[Cells[i] for i in I1.indices()];

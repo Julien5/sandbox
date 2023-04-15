@@ -2,7 +2,7 @@
 
 import sys
 import math;
-import coloredmap;
+from . import coloredmap;
 
 def boxwidth():
 	return 50

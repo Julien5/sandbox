@@ -3,7 +3,7 @@
 import geometry;
 import math;
 import copy;
-import boxhitline;
+from . import boxhitline;
 
 def boxwidth():
 	return 50	

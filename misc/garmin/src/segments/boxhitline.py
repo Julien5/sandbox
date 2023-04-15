@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import geometry;
-import boxes;
+from . import boxes;
 import sys;
 
 def W():

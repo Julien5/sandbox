@@ -1,39 +1,15 @@
 #!/usr/bin/env python3
 
 import sys
-import cells
-import segmentization;
-import plot;
-import bbox;
+from . import cells
+from . import segmentization;
+from . import plot;
+from . import bbox;
 import datetime;
 import math;
 import readgpx;
-import select_segments;
-
-def print_stats(track):
-	print(f"{track.name():10s} ",end=" | ");
-	if not track.points():
-		print("empty");
-		return;
-	if track.distance()>500000:
-		print(track.string())	
-		assert(False);
-	points=track.points();
-	t0=(points[0].time()+datetime.timedelta(hours=2)).strftime("%H:%M");
-	print(f"{t0:5s}",end=" | ");
-	#print(f"#{len(track.points()):5d}",end=" | ");
-	print(f"{track.distance()/1000:5.1f} km",end=" | ");
-	ds=track.duration().total_seconds();
-	hours=math.floor(ds/3600);
-	seconds=ds-3600*hours;
-	minutes=math.floor(seconds/60);
-	print(f"{hours:02d}:{minutes:02d}",end=" | ");
-	speed=0;
-	if track.speed():
-		speed=3600*track.speed()/1000;
-	print(f"{speed:4.1f} kmh",end=" |");
-	print("");
-
+import output;
+from . import select_segments;
 
 def refsubstrack(track,area):
 	parts=segmentization.parts(area,track.geometry());
@@ -68,14 +44,14 @@ def statistics(T,area,color,index):
 			if not have_same_distance(ref,subtrack):
 				continue;
 			subtracks.append(T[c]);
-			print_stats(subtrack);
+			output.print_stats(subtrack);
 			t=subtrack;
 			filename=f"/tmp/{t.category():s}-{t.name():s}.gpx";
 			#print("write",c,"as",filename);
 			readgpx.write(t,filename);
 	return subtracks;
 
-def output(Cells,T,segments_dictionary,index):
+def process(Cells,T,segments_dictionary,index):
 	threshold = 100;
 	if T[index].category()=="cycling":
 		threshold = 400;
