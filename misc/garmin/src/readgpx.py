@@ -71,8 +71,8 @@ def tracksfromdir(dirname):
 				try:	
 					ret.extend(tracks(filename));
 				except Exception as e:
-					print(filename,e)
-					assert(0);
+					print("ERROR",filename,"->",e)
+					#assert(0);
 					pass;	
 	return ret;
 
