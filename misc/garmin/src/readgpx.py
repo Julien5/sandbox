@@ -13,7 +13,6 @@ import xml.etree.cElementTree as mod_etree
 import projection;
 import statistics;
 
-
 def cleansegment(segment):
 	N=len(segment.points);
 	p_prev=None
@@ -23,14 +22,60 @@ def cleansegment(segment):
 			# this is what cause problems with gpsbabel
 			if "outdooractive" in e.tag:
 				e.tag="OA";
-				
+
+def isOAWaypoint(p):
+	if not p.name:
+		return False;
+	if p.description:
+		return True;
+	C=p.name.split(",");
+	if len(C) != 2:
+		return True;
+	try:
+		float(C[0]);
+		float(C[1]);
+	except ValueError:
+		# not a float
+		return True;
+	return False;
+
+def toWaypoint(p):
+	w = gpxpy.gpx.GPXWaypoint()
+	w.latitude=p.latitude;
+	w.longitude=p.longitude;
+	w.elevation=p.elevation;
+	w.time=p.time;
+	w.name=p.name;
+	w.description=p.description;
+	w.symbol = "Flag, Blue";
+	return w;
+	
+def getOAWaypoints(segment):
+	N=len(segment.points);
+	ret=list();
+	for i in range(N):
+		p=segment.points[i];
+		if isOAWaypoint(p):
+			ret.append(toWaypoint(p));
+	return ret;
+
+def remove_time_and_elevation(segment):
+	N=len(segment.points);
+	ret=list();
+	out=gpxpy.gpx.GPXTrackSegment();
+	for i in range(N):
+		p=segment.points[i];
+		p2=gpxpy.gpx.GPXTrackPoint()
+		p2.latitude=p.latitude;
+		p2.longitude=p.longitude;
+		out.points.append(p2);
+	return out;	
 
 def readgpx(filename):
 	gpx_file = open(filename, 'r');
 	gpx = gpxpy.parse(gpx_file);
 	gpx_file.close();
 	return gpx;
-		
 
 def to_track(segment,filename):
 	ret=track.Track(filename);
@@ -39,7 +84,7 @@ def to_track(segment,filename):
 		longitude=point.longitude;
 		elevation=point.elevation;
 		time = point.time;
-		assert(time);
+		#assert(time);
 		(x,y)=projection.convert(latitude,longitude);
 		ret.append(geometry.Point(x,y,latitude,longitude,elevation,time));
 	return ret;
@@ -68,7 +113,8 @@ def tracksfromdir(dirname):
 				filename=os.path.join(root, file);
 				if old(filename):
 					continue;
-				try:	
+				try:
+					print("read",filename);
 					ret.extend(tracks(filename));
 				except Exception as e:
 					print("ERROR",filename,"->",e)
@@ -158,6 +204,11 @@ def clean(tracks):
 	# TODO: fix that.
 	return R;
 
+def writegpx(filename,gpx):
+	f=open(filename,'w');	
+	f.write(gpx.to_xml());
+	f.close();
+
 def write(track,filename):
 	gpx = gpxpy.gpx.GPX();
 	gpx_track = gpxpy.gpx.GPXTrack()
@@ -172,9 +223,7 @@ def write(track,filename):
 		elev=p.elevation();
 		time=p.time();
 		gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(lat,lon,elev,time));
-	f=open(filename,'w');	
-	f.write(gpx.to_xml());
-	f.close();
+	writegpx(filename,gpx);	
 
 def main(filename):
 	tracks(filename);

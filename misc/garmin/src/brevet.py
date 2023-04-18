@@ -1,47 +1,31 @@
 #!/usr/bin/env python3
 
+import gpxpy;
+import gpxpy.gpx;
 import readgpx;
 import sys;
-import datetime;
-import track;
-import geometry;
-import projection;
 
 def main():
-	T=readgpx.tracks("/home/julien/brevets/200/track.gpx");
-	# put the 4 seg together.
-	out=track.Track("processed");
-	for segment in T:
-		print(len(segment.geometry()));
-		out.append_subtrack(segment);
-
-	G1=T[0].geometry();
-	Go=out.geometry();
-	for k in range(5):
-		print(G1[k].string(),Go[k].string());
-
-		
-	print(len(out.geometry()));
-	# start point= <trkpt lat="48.9817500" lon="10.9114220">
-	latitude=48.9817500;
-	longitude=10.9114220;
-	startpoint=geometry.Point(latitude, longitude);
-	(x,y)=projection.convert(latitude, longitude);
-	startpoint=geometry.Point(x,y,latitude,longitude);
-
-	k_start=-1;
-	for k in range(len(Go)):
-		p=Go[k];
-		if p.latitude() == latitude and p.longitude() == longitude:
-			assert(k_start==-1);
-			k_start=k;
-
-	print(k_start,p.string());
-	out2=track.Track("processed");
-	for k in range(len(Go)):
-		j=k_start+k;
-		out2.append(Go[j % len(Go)]);
-	readgpx.write(out2,"/home/julien/brevets/200/processed-2.gpx");	
+	gpx=readgpx.readgpx("/home/julien/brevets/300/oa.gpx");
+	gpx_out = gpxpy.gpx.GPX();
+	gpx_out.name="300";
+	gpx_out.description="Brevet 300k";
+	print(len(gpx.tracks));
+	for T in gpx.tracks:
+		Tout = gpxpy.gpx.GPXTrack();
+		print("new track",len(gpx.tracks));
+		for S in T.segments:
+			if not S:
+				print("skip.");
+				continue;
+			for w in readgpx.getOAWaypoints(S):
+				gpx_out.waypoints.append(w);
+			readgpx.cleansegment(S);
+			S=readgpx.remove_time_and_elevation(S);
+			Tout.segments.append(S);
+		print("append");	
+		gpx_out.tracks.append(Tout);
+	readgpx.writegpx("/home/julien/brevets/300/processed.gpx",gpx_out);
 		
 if __name__ == '__main__':
 	sys.exit(main())  
