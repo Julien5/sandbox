@@ -13,6 +13,7 @@ def main():
 	print(len(gpx.tracks));
 	for T in gpx.tracks:
 		Tout = gpxpy.gpx.GPXTrack();
+		Tout.name = "300-processed"
 		print("new track",len(gpx.tracks));
 		for S in T.segments:
 			if not S:
