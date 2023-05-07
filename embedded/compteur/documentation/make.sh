@@ -17,7 +17,8 @@ function plot_adc() {
 
 function plot_sc() {
 	cd $SCRIPTDIR
-	gnuplot calibration.gnuplot 
+	gnuplot calibration.gnuplot
+	gnuplot calibration2.gnuplot 
 }
 
 function main() {

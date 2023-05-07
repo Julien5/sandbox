@@ -17,11 +17,17 @@ Unfortunately, my attempt with to use the TRCT500 with ESP8266 failed because th
 
 The second design is based around an ATmega328P. It includes a self-made sensor and a ESP-01 module that transmits the data when needed (that is, when the energy consumption changes by certain amount).
 
+![comp](documentation/camera/small/components.jpg)
+
 #### The Sensor
 
 I suspected the TRCT5000 failed because the infrared light is not particularly suitable for my Ferraris meter, because the mark is red, and the rest of the disc is metallic. Sending red light on it would result in reflected red light, with or without the mark, so the phototransistor would deliver the more or less the same signal. 
 
+![sensor](documentation/camera/small/sensor.jpg)
+
 So I had to work with any light, but not red. I ordered a bunch of LED and phototransistor with other wavelengths. I could get a nice contrast with the white LED and SFH 309-4 phototransistor. After tweaking the orientation of the LED and phototransistor, I could get a nice, clean signal. The orientation seems to play a significant role, maybe because the plastic front cover of the Ferraris meter reflects the light. 
+
+![sensor](documentation/camera/small/LED_off_on.jpg)
 
 ![adc](documentation/adc.png "ADC")
 
@@ -64,5 +70,15 @@ delta_max = alpha_3 * delta_max + (1 - alpha_3) * delta;
 The constant `alpha_3` is hard-coded, larger than `alpha_2`.
 
 ![adc](documentation/calibration.png "ADC")
-See the source code `detection.cpp` for details.    
+See the source code `detection.cpp` for details.
+Zoom on the short spike, the mark passed fast, the energy consumption was around 2000W:
+![adc](documentation/calibration2.png "ADC")
 
+### The Results
+
+Kettle turned off. 
+![sensor](documentation/camera/small/before.jpg)
+Kettle turned on, 30 seconds later.
+![hey](documentation/camera/small/after_1.jpg)
+Kettle turned on, 30 seconds later.
+![sensor](documentation/camera/small/after_2.jpg)
