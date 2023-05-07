@@ -55,7 +55,7 @@ function simulate() {
 }
 
 function replot() {
-	run truncate
+	run # truncate
 	plot
 	display
 }

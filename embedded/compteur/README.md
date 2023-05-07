@@ -15,22 +15,54 @@ Unfortunately, my attempt with to use the TRCT500 with ESP8266 failed because th
 
 #### Second Attempt With ATmega328P And Custom Phototransistor
 
-The second design is based around an ATmega328P. It includes a self-made [sensor](#the-sensor) and a ESP-01 module that transmits the data when needed (that is, when the energy consumption changes by certain amount).
+The second design is based around an ATmega328P. It includes a self-made sensor and a ESP-01 module that transmits the data when needed (that is, when the energy consumption changes by certain amount).
 
 #### The Sensor
 
-Probably the infrared light is not particularly suitable for my Ferraris meter, because the mark is red, and the rest of the disc is metallic. Sending red light on it would result in reflected red light, with or without the mark, so the phototransistor would deliver the more or less the same signal. I ordered a bunch of LED and phototransistor with other wavelengths. I could get a nice contrast with the white LED and SFH 309-4 phototransistor. After some tweaking of the orientations of the LED and phototransistor, I could get a nice, clean signal.
+I suspected the TRCT5000 failed because the infrared light is not particularly suitable for my Ferraris meter, because the mark is red, and the rest of the disc is metallic. Sending red light on it would result in reflected red light, with or without the mark, so the phototransistor would deliver the more or less the same signal. 
 
-![alt text](documentation/replay.png "Title")
+So I had to work with any light, but not red. I ordered a bunch of LED and phototransistor with other wavelengths. I could get a nice contrast with the white LED and SFH 309-4 phototransistor. After tweaking the orientation of the LED and phototransistor, I could get a nice, clean signal. The orientation seems to play a significant role, maybe because the plastic front cover of the Ferraris meter reflects the light. 
+
+![adc](documentation/adc.png "ADC")
+
+_Note_: The influence of ambient light can be compensated by removing an offset to the adc output:
+```
+adc - offset
+```
+where `offset` is the adc output when the LED is turned off.
 
 #### Self-Calibration
 
+To find the threshold, we exploit that there is an abrupt change of the adc values when the mark passes. So we use:
+- A simple low-pass filter of the adc output
+```
+xalpha = alpha_1 * xalpha + (1 - alpha_1) * adc;
+```
+Since the mark is only on a short section of the disc, `xalpha` will represent the `adc` value when the mark is not in front of the sensor. The constant `alpha_1` is hard-coded.
+- The difference `delta` between the adc and `xalpha` is large (and below zero) when the mark passes:
+```
+delta = adc - xalpha;
+```
 
-## Features:
-    
-- Low-Power 
-- Self-Calibrating
+Now the question: how large is "large" ? 
+Assuming we know the maximum value taken by `delta`, noted `delta_max`, `delta` would be large enough when it is closer to `delta_max` than `delta`.
 
-## 
-    
+In details, we track the mean and the maximum value of delta, `delta_mean` and `delta_max`, as: 
+- `delta_mean`
+```
+delta_mean = alpha_2 * delta_mean + (1 - alpha_2) * delta;
+```
+The constant `alpha_2` is hard-coded.
+- If `delta < delta_max`, then 
+```
+delta_max = delta
+```
+- otherwise
+```
+delta_max = alpha_3 * delta_max + (1 - alpha_3) * delta;
+```
+The constant `alpha_3` is hard-coded, larger than `alpha_2`.
+
+![adc](documentation/calibration.png "ADC")
+See the source code `detection.cpp` for details.    
 
