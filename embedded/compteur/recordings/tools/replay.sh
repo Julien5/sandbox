@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 set -e
-#set -x
+# set -x
 
 DIR=/tmp/replay/
 INPUTFILE="$1"
@@ -55,7 +55,7 @@ function simulate() {
 }
 
 function replot() {
-	run 
+	run truncate
 	plot
 	display
 }
@@ -71,5 +71,6 @@ function monitor() {
 	done
 }
 
-monitor
+replot
+#monitor
 #simulate

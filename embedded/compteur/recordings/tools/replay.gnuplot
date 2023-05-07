@@ -1,4 +1,4 @@
-set terminal pngcairo size 1200,600 enhanced font 'Courier,10'
+set terminal pngcairo size 1200,800 enhanced 
 set output 'replay.png'
 set multiplot layout 2,1 rowsfirst
 
