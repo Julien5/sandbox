@@ -106,7 +106,9 @@ etc.
 
 Kettle turned off. 
 ![sensor](documentation/camera/small/before.jpg)
+
 Kettle turned on, 30 seconds later.
 ![hey](documentation/camera/small/after_1.jpg)
+
 Kettle turned on, 30 seconds later.
 ![sensor](documentation/camera/small/after_2.jpg)
