@@ -20,5 +20,5 @@ set label 1 at 310,110 'no mark in front of the detector' center front
 set label 2 at 560,-10 'mark' center front
 set label 3 at 750,110 'no mark in front of the detector' center front
 
-plot '/tmp/replay/adc' using 1:2 title 'adc' with lines ls 1
+plot '/tmp/replay/adc' using 1:2 title 'x' with lines ls 1
 

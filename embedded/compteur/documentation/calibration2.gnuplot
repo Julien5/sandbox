@@ -7,11 +7,13 @@ set style line 2 lc rgb '#ff0000' lt 1 lw 2 pt 8 pi -1 ps 1.5
 set pointintervalbox 3
 set grid;
 
+set xlabel "time [seconds]"
 set xrange [1960:1980]
 set yrange [-70:400]
 set autoscale fix
-plot '/tmp/replay/x' using 1:2 title 'adc' with lines ls 1, \
-     '/tmp/replay/xa' using 1:2 title 'x_{alpha}}' with lines ls 2, \
+
+plot '/tmp/replay/x' using 1:2 title 'x (phototansistor signal)' with lines ls 1, \
+     '/tmp/replay/xa' using 1:2 title 'x_{alpha}' with lines ls 2, \
 	 '/tmp/replay/ticked' using 1:2 title 'ticks' with points ls 5
 
 set yrange [-300:200]
