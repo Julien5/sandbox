@@ -1,6 +1,6 @@
 # Energy Monitor Project
 
-The goal is to (have fun and) monitor and log the total electric energy consumption in my house. The vision: I stand in my kitchen, turn on the 2000 W kettle on, and see on my smartphone that 2000 more Watts are drawn, in real-time. 
+The goal of that project is to (have fun and) monitor and log the total electric energy consumption in my house. The vision: I stand in my kitchen, turn on the 2000 W kettle on, and see on my smartphone that 2000 more Watts are drawn, in real-time. 
 
 The requirements are the following:
 1. The electricy meter of my house is an old, analog, "Ferraris" meter. It has a rotating metallic disc with a mark on its edge, as shown [here](https://de.wikipedia.org/wiki/Ferraris-Z%C3%A4hler#/media/Datei:ElectricityMeterMechanism.jpg). We can estimate the speed of rotation of the disc by *detecting this mark*.
@@ -18,6 +18,12 @@ Unfortunately, my attempt with the TRCT500 with ESP8266 failed because the signa
 The second design is based around an ATmega328P. It includes a self-made sensor and a ESP-01 module that transmits the data when needed (that is, when the energy consumption changes by certain amount).
 
 ![comp](documentation/camera/small/components.jpg)
+
+- The ATMEGA block controls the sensor and the ESP8266 block: it turns the LED on, process ADC measures, sends data to the ESP8266 block.
+- The ESP8266 transmits the processed data per WLAN to a HTTP server (hosted locally on a RPI). 
+- The sensor block include the LED, the phototansistor, and some resistor.
+
+See below for details.
 
 #### The Sensor
 
@@ -75,40 +81,68 @@ Zoom on the short spike, the mark passed fast, the energy consumption was around
 
 ### Low-Power
 
-The main power consumer of the circuit is the LED. It should be turned on as less as possible, just enough to detect the mark when it passes in front on the sensor, and then turned off again. The frequency with which the LED is turned on sets a limit on the speed of rotation of the mark: Assuming we turn the LED on every 100 ms, we might miss it if it remains less than 100ms in front of the sensor. 
+The main power consumer of the circuit is the LED. It should be turned on as less as possible, just enough to detect the mark when it passes in front on the sensor, and then turned off again. The frequency with which the LED is turned on sets a limit on the speed of rotation of the mark: Assuming we turn the LED on every 100 ms, we might miss it if it remains less than 100ms in front of the sensor. Considering a maximum power of 5kW and two measures in front of the mark at that power, I set the interval to 200ms. At higher power, the estimation of the speed of rotation will be less reliable.
+
+### The Results
+
+#### Kettle turned off. 
+![sensor](documentation/camera/small/before.jpg)
+
+I started the experiment at around 20:19. As can be seen, the last update was sent at 19:59.
+
+#### Kettle turned on, 30 seconds later.
+![hey](documentation/camera/small/after_1.jpg)
+
+#### Kettle turned on, 30 seconds later.
+![sensor](documentation/camera/small/after_2.jpg)
+
+The data are sent only when significant changes (larger than 200W) are detected. 
 
 ### Build Instructions
 
-Assuming the arduino toolchain is configured in `<path>/embedded/cmake/arduino/toolchain.cmake`, build with:
+
+#### Electronic
+
+The ATmega and ESP8266 have both their own power supply. (I tested with one power supply for both but the ESP8266 seems to draw much power at startup, occasionally causing a reset of the ATmega.) The power supply are 4 AA batteries, delivering 6V. Since both microcontrollers operate a 3.3 V, I used a HT7333 power regulator.
+![atmega](documentation/camera/small/regulator.jpg)
+
+#### ATMEGA
+![atmega](documentation/camera/small/atmega.jpg)
+
+#### Sensor Block
+![sensor](documentation/camera/small/sensor.jpg)
+
+#### ESP8266 Block
+![esp](documentation/camera/small/esp.jpg)
+
+
+#### Firmware
+The build instructions are configured for my setup, that looks like:
+```
+/opt/arduino/ArduinoCore-avr-1.8.2
+/opt/arduino/libraries/LowPower
+etc.
+```
+
+The cmake toolchain files are:
+```
+embedded/cmake/arduino/toolchain.cmake
+embedded/cmake/esp8266/toolchain.cmake
+embedded/cmake/pc/toolchain.cmake # for unit testing
+```
+
+##### ATmega328P
 ```
 BUILDDIR=/tmp/build/atmega
 mkdir -p $BUILDDIR 
 cmake -DCMAKE_TOOLCHAIN_FILE=$DIR/embedded/cmake/arduino/toolchain.cmake -B $BUILDDIR 
 make -j3 -C $BUILDDIR
 ```
-Please adapt the toolchain file for your setup.
-Similarly, the ESP8266 is build with:
+
+##### ESP8266
 ```
 BUILDDIR=/tmp/build/esp8266
 mkdir -p $BUILDDIR 
 cmake -DCMAKE_TOOLCHAIN_FILE=$DIR/embedded/cmake/esp8266/toolchain.cmake -B $BUILDDIR 
 make -j3 -C $BUILDDIR
 ```
-Disclaimer: the build instructions are configured for my setup, that looks like:
-```
-/opt/arduino/ArduinoCore-avr-1.8.2
-/opt/arduino/libraries
-/opt/arduino/libraries/LowPower
-etc.
-```
-
-### The Results
-
-Kettle turned off. 
-![sensor](documentation/camera/small/before.jpg)
-
-Kettle turned on, 30 seconds later.
-![hey](documentation/camera/small/after_1.jpg)
-
-Kettle turned on, 30 seconds later.
-![sensor](documentation/camera/small/after_2.jpg)
