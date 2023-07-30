@@ -8,24 +8,6 @@ import math;
 import segments;
 import output;
 
-def readtours_test():
-	test=False;
-	#test=True;
-	print("read files..");
-	if not test:
-		dir="/home/julien/tracks/";
-		#dir="/home/julien/tracks/2022.11.25";
-		# dir="test";
-		if len(sys.argv)>1:
-			dir=sys.argv[1];
-		T=readgpx.tracksfromdir(dir);
-		#T=T[0:20];
-	else:	
-		T=readgpx.tracksfromdir("test");
-	print("clean tracks..");
-	assert(T);
-	T=readgpx.clean(T);
-
 def readtours():
 	test=False;
 	#test=True;

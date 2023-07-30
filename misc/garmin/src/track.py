@@ -7,6 +7,7 @@ class Track:
 	def __init__(self,name,points=None):
 		self._name=name;
 		self._points=list();
+		self._cache=dict();
 		if points:
 			self._points=points;
 
@@ -20,18 +21,18 @@ class Track:
 		while(G and stoppoint.distance(G[-1])<threshold):
 			G.pop(-1);
 		self._points=G;
+		self._cache.clear();
 
 	def empty(self):
 		return len(self._points)==0;
 
 	def append(self,p):
 		self._points.append(p);
-
-	def time_sort(self):
-		self._points=sorted(self.points(), key=lambda x: x.time)
+		self._cache.clear();
 
 	def append_subtrack(self,subtrack):
 		self._points.extend(subtrack._points);
+		self._cache.clear();
 
 	def string(self):
 		ret=list();
@@ -111,20 +112,26 @@ class Track:
 		return self._name;
 
 	def distance(self):
-		d=0;
-		for k in range(len(self._points)-1):
-			p1=self._points[k];
-			p2=self._points[k+1];
-			delta=p1.distance(p2);
-			d+=delta;
-		return d;
+		if not "distance" in self._cache:
+			d=0;
+			for k in range(len(self._points)-1):
+				p1=self._points[k];
+				p2=self._points[k+1];
+				delta=p1.distance(p2);
+				d+=delta;
+			self._cache["distance"]=d;
+		return self._cache["distance"];
 
 	def times(self):
-		return [p.time() for p in self._points];
+		if not "times" in self._cache:
+			self._cache["times"]=[p.time() for p in self._points];
+		return self._cache["times"];
 
 	def duration(self):
-		T=self.times();
-		return max(T)-min(T);
+		if not "duration" in self._cache:
+			T=self.times();
+			self._cache["duration"]=max(T)-min(T);
+		return self._cache["duration"];	
 
 	def begintime(self):
 		T=self.times();
