@@ -90,9 +90,9 @@ def to_track(segment,filename):
 	return ret;
 
 import pickle;
-import hashlib;
+import hashfile;
 def tracks(filename):
-	Hash=hashlib.sha256(filename.encode("utf-8")).hexdigest();
+	Hash=hashfile.get(filename);
 	cache_file="cache/"+Hash;
 	if os.path.exists(cache_file):
 		with open(cache_file, 'rb') as f:
@@ -100,6 +100,7 @@ def tracks(filename):
 	gpx = readgpx(filename);
 	ret = list();
 	for T in gpx.tracks:
+		print("reading",os.path.basename(filename));
 		for S in T.segments:
 			cleansegment(S);
 			ret.append(to_track(S,filename));
@@ -108,19 +109,37 @@ def tracks(filename):
 	assert(os.path.exists(cache_file));	
 	return ret;
 
+import hashfile;
 def tracksfromdir(dirname):
-	ret=list();
+	D=dict();
 	for root, dirs, files in os.walk(dirname):
 		for file in files:
+			if "!" in file:
+				continue;
+			if file == "Current.gpx":
+				continue;
 			if file.endswith(".gpx") and ("Track_" in file or "Current.gpx" in file):
 				filename=os.path.join(root, file);
-				try:
-					print("read",filename);
-					ret.extend(tracks(filename));
-				except Exception as e:
-					print("ERROR",filename,"->",e)
-					#assert(0);
-					pass;	
+				H=hashfile.get(filename);
+				if H in D:
+					f1=D[H]
+					f2=filename;
+					ok=os.path.basename(f1)==os.path.basename(f2);
+					if not ok:
+						print(f1);
+						print(f2);
+						assert(False);
+				D[H]=filename;
+
+	ret=list();
+	for filename in D.values():		
+		try:
+			#print("read",filename);
+			ret.extend(tracks(filename));
+		except Exception as e:
+			print("ERROR",filename,"->",e)
+			#assert(0);
+			pass;	
 	return ret;
 
 def home(T):

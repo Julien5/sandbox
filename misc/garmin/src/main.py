@@ -66,7 +66,8 @@ def filter_tours(T,last_days=30):
 
 def main():
 	C=readtours();
-	for cat in ["cycling","running"]:
+	#for cat in ["cycling","running"]:
+	for cat in ["cycling"]:	
 		S=dict();
 		T=C[cat];
 		Tf=filter_tours(T)
