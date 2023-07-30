@@ -9,10 +9,6 @@ def print_stats(track):
 	if not track.points():
 		print("empty");
 		return;
-	if track.distance()>500000:
-		print(track.string())	
-		assert(False);
-		
 	points=track.points();
 	startdate=(points[0].time()+datetime.timedelta(hours=2)).strftime("%d.%m.%Y");
 	starttime=(points[0].time()+datetime.timedelta(hours=2)).strftime("%H:%M");
@@ -30,6 +26,29 @@ def print_stats(track):
 	if track.speed():
 		speed=3600*track.speed()/1000;
 	print(f"{speed:4.1f} kmh",end=" |");
-	print(f"{track.name():s}",end=" |");
+	#print(f"{track.name():s}",end=" |");
 	print("");
 
+def print_csv(track):
+	ret=str();
+	points=track.points();
+	startdate=(points[0].time()+datetime.timedelta(hours=2)).strftime("%d.%m.%Y");
+	starttime=(points[0].time()+datetime.timedelta(hours=2)).strftime("%H:%M");
+	ret=ret+"start;";
+	ret=ret+f"{startdate:8s};";
+	ret=ret+f"{starttime:5s};";
+	ret=ret+f"{track.distance()/1000:5.1f};";
+	ret=ret+"km;";	
+	ds=track.duration().total_seconds();
+	hours=math.floor(ds/3600);
+	seconds=ds-3600*hours;
+	minutes=math.floor(seconds/60);
+	ret=ret+f"{hours:02d}:{minutes:02d};";
+	ret=ret+"hh:mm;";	
+	speed=0;
+	if track.speed():
+		speed=3600*track.speed()/1000;
+	ret=ret+f"{speed:4.1f};"
+	ret=ret+"kmh;";	
+	ret=ret+f"{track.name():s};"
+	return ret;

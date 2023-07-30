@@ -13,6 +13,19 @@ class Track:
 
 	def strip(self):
 		G=self.points();
+		if False:
+			L=len(G);
+			k0=0;
+			for k in range(L-1):
+				p0=G[L-k-1];
+				p1=G[L-k-2];
+				delta=p0.time()-p1.time();
+				k0=L-k;
+				if delta.total_seconds()>3600:
+					break;
+			# k0 is the first
+			G=G[k0:];
+			print(self.name(),k0);
 		startpoint = G[0];
 		stoppoint = G[-1];
 		threshold=50
