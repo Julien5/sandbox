@@ -6,7 +6,7 @@ import readgpx;
 import sys;
 
 def main():
-	gpx=readgpx.readgpx("/home/julien/brevets/300/oa.gpx");
+	gpx=readgpx.readgpx("/home/julien/brevets/400/oa.gpx");
 	gpx_out = gpxpy.gpx.GPX();
 	gpx_out.name="300";
 	gpx_out.description="Brevet 300k";
@@ -26,7 +26,7 @@ def main():
 			Tout.segments.append(S);
 		print("append");	
 		gpx_out.tracks.append(Tout);
-	readgpx.writegpx("/home/julien/brevets/300/processed.gpx",gpx_out);
+	readgpx.writegpx("/home/julien/brevets/400/processed.gpx",gpx_out);
 		
 if __name__ == '__main__':
 	sys.exit(main())  

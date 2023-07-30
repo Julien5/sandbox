@@ -1,6 +1,6 @@
 # Energy Monitor Project
 
-The goal of that project is to (have fun and) monitor and log the total electric energy consumption in my house. The vision: I stand in my kitchen, turn on the 2000 W kettle on, and see on my smartphone that 2000 more Watts are drawn, in real-time. 
+The goal of that project is to (have fun, learn something, and) monitor and log the total electric energy consumption in my house. The vision: I stand in my kitchen, turn on the 2000 W kettle on, and see on my smartphone that 2000 more Watts are drawn, in real-time. 
 
 The requirements are the following:
 1. The electricy meter of my house is an old, analog, "Ferraris" meter. It has a rotating metallic disc with a mark on its edge, as shown [here](https://de.wikipedia.org/wiki/Ferraris-Z%C3%A4hler#/media/Datei:ElectricityMeterMechanism.jpg). We can estimate the speed of rotation of the disc by *detecting this mark*.
@@ -10,24 +10,24 @@ The requirements are the following:
 
 #### First Attempts With ESP8266 And TRCT5000
 
-As probably 99% of humanity, I started my project googling `Ferraris electricy meter arduino`. (That's a mistake. Don't do this, don't google.) In the first result (and many others), the mark is detected with a ready-to-use infrared [TRCT5000](https://www.az-delivery.de/products/linienfolger-modul-mit-tcrt5000-und-analog-ausgang) arduino module. This module has (1) an infrared LED, and (2) a phototransistor that measure the (reflected) light.  Assuming the mark reflects infrared light differently than the rest of the disc, we could detect the mark. And since we need WLAN connectivity, it seems obvious to try with a ESP8266 first.
+I started my project googling `Ferraris electricy meter arduino`. (That's a mistake. Don't do this, don't google.) In the first result (and many others), the mark is detected with a ready-to-use infrared [TRCT5000](https://www.az-delivery.de/products/linienfolger-modul-mit-tcrt5000-und-analog-ausgang) arduino module. This module has an infrared LED, and a phototransistor that measure the (reflected) light.  Assuming the mark reflects infrared light differently than the rest of the disc, we could detect the mark. And since we need WLAN connectivity, it seems obvious to try with a ESP8266 first.
 Unfortunately, my attempt with the TRCT500 with ESP8266 failed because the signal-to-noise ratio at the ADC was not good enough to detect the mark reliably. Moreover, the wake-up time of ESP8266 after deep-sleep is quite long (300ms, if I remember well), which make a low-power operation difficult.
 
-#### Second Attempt With ATmega328P And Custom Phototransistor
+#### Second Attempt With ATmega328P And Custom Sensor
 
 The second design is based around an ATmega328P. It includes a self-made sensor and a ESP-01 module that transmits the data when needed (that is, when the energy consumption changes by certain amount).
 
 ![comp](documentation/camera/small/components.jpg)
 
-- The ATMEGA block controls the sensor and the ESP8266 block: it turns the LED on, process ADC measures, sends data to the ESP8266 block.
-- The ESP8266 transmits the processed data per WLAN to a HTTP server (hosted locally on a RPI). 
+- The ATMEGA block controls the sensor and the ESP8266 block: it controls the LED, processes ADC measures, sends data to the ESP8266 block.
+- The ESP8266 transmits the processed data per WLAN to a HTTP server (hosted on a RPI). 
 - The sensor block include the LED, the phototansistor, and some resistor.
 
 See below for details.
 
 #### The Sensor
 
-I suspected the TRCT5000 failed because the infrared light is not particularly suitable for my Ferraris meter. Its mark is red, and the rest of the disc is metallic. Sending red light on it would result in reflected red light, with or without the mark, so the phototransistor would deliver the more or less the same signal, with or without the mark, offering a poor signal to detect the mark. 
+I suspect the TRCT5000 failed because the infrared light is not particularly suitable for my Ferraris meter. Its mark is red, and the rest of the disc is metallic. Sending red light on should result in reflected red light, with or without the mark, so the phototransistor would deliver the more or less the same signal, with or without the mark, offering a poor signal to detect the mark. 
 
 ![sensor](documentation/camera/small/sensor.jpg)
 
@@ -35,6 +35,8 @@ I ordered a bunch of LED and phototransistor with other wavelengths. I could get
 
 LED turned off (left) and on (right):
 ![LED turned off and on](documentation/camera/small/LED_off_on.jpg "LED turned off and on")
+
+For more reliability, 
 
 Phototansistor ADC output (noted `x` in the sequel)
 ![adc](documentation/adc.png "ADC")
@@ -81,7 +83,7 @@ Zoom on the short spike, the mark passed fast, the energy consumption was around
 
 ### Low-Power
 
-The main power consumer of the circuit is the LED. It should be turned on as less as possible, just enough to detect the mark when it passes in front on the sensor, and then turned off again. The frequency with which the LED is turned on sets a limit on the speed of rotation of the mark: Assuming we turn the LED on every 100 ms, we might miss it if it remains less than 100ms in front of the sensor. Considering a maximum power of 5kW and two measures in front of the mark at that power, I set the interval to 200ms. At higher power, the estimation of the speed of rotation will be less reliable.
+The main power consumer of the circuit is the LED. The LED should be turned on as less as possible, but enough to detect the mark when it passes in front on the sensor. I turn on/off the LED at a fixed frequency, which sets a limit on the speed of rotation of the mark. Considering a maximum power of 5kW and two measures in front of the mark at that power, I set the interval to 200ms. At higher power, the estimation of the speed of rotation will be less reliable.
 
 ### The Results
 
