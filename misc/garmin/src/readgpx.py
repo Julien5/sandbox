@@ -89,21 +89,24 @@ def to_track(segment,filename):
 		ret.append(geometry.Point(x,y,latitude,longitude,elevation,time));
 	return ret;
 
+import pickle;
+import hashlib;
 def tracks(filename):
+	Hash=hashlib.sha256(filename.encode("utf-8")).hexdigest();
+	cache_file="cache/"+Hash;
+	if os.path.exists(cache_file):
+		with open(cache_file, 'rb') as f:
+			return pickle.load(f);
 	gpx = readgpx(filename);
 	ret = list();
 	for T in gpx.tracks:
 		for S in T.segments:
 			cleansegment(S);
 			ret.append(to_track(S,filename));
+	with open(cache_file, 'wb') as f:
+		pickle.dump(ret, f);
+	assert(os.path.exists(cache_file));	
 	return ret;
-
-def old(filename):
-	return False;
-	now=datetime.datetime.now();
-	filetime=datetime.datetime.fromtimestamp(os.path.getmtime(filename));
-	d=now-filetime;
-	return d.days > 30;
 
 def tracksfromdir(dirname):
 	ret=list();
@@ -111,8 +114,6 @@ def tracksfromdir(dirname):
 		for file in files:
 			if file.endswith(".gpx") and ("Track_" in file or "Current.gpx" in file):
 				filename=os.path.join(root, file);
-				if old(filename):
-					continue;
 				try:
 					print("read",filename);
 					ret.extend(tracks(filename));
@@ -128,82 +129,22 @@ def home(T):
 		points.extend(t.geometry()[0:5]);
 	x=statistics.median([p.x() for p in points]);
 	y=statistics.median([p.y() for p in points]);
-	return geometry.Point(x,y);	
+	return geometry.Point(x,y);
+
+def clean_singletrack(track):
+	track.strip();
+	return track;
 
 def clean(tracks):
 	assert(tracks);
-	# first gather all distinct points
-	points=dict();
-	for T in tracks:
-		P=T.points();
-		for p in P:
-			assert(p);
-			points[p.time()]=p;
-	assert(points);		
-	# as list
-	times=sorted(list(points));
 	R=list();
-	T=None;
-	N=len(times);
-	ends=list();
-	homepoint=home(tracks);
-	for k in range(N-1):
-		t0=times[k];
-		t1=times[k+1];
-		d=(t1-t0).total_seconds();
-		# there is normally several points per minutes
-		# (2 points/minutes is the most common).
-		# sometimes, there is no point for 1 minute.
-		# no points for 10 minutes -> cut.
-		if d > 600:
-			p0=points[t0];
-			p1=points[t1];
-			distance=p0.distance(p1);
-			if d < 3600 and distance<100 and points[t0].distance(homepoint)>1000:
-				# if the gap is less than one hour and there was no movement
-				# and i am far from home	
-				# => this is a break and i turned off the GPS.
-				print("[coffee] time gap:",t0,t1,d,"distance:",distance);
-			else:
-				#print("[cut] time gap:",t0,t1,d);
-				ends.append(k);
-		elif d > 200:
-			print("[warning] large time gap:",t0,t1,d);
-	kstart=0;
-	kend=-1;
+	for t in tracks:
+		c=clean_singletrack(t)
+		if not c.empty():
+			R.append(c);
+	R=sorted(R, key=lambda track: track.endtime())
+	return R;	
 	
-	while True:
-		kstart=kend+1;
-		if kstart >= len(times):
-			break;	
-		if ends: # not empty
-			kend=ends.pop(0);
-		else:
-			kend=len(times);
-		name0=times[kstart].strftime("%Y.%m.%d")
-		name=f"{name0:s}-{len(R):03d}";
-		T0=track.Track(name);
-		for k in range(kstart,min([kend+1,len(times)])):
-			T0.append(points[times[k]]);
-		G=T0.points();
-		threshold=50
-		# remove points near the house, considering they dont *really* belong
-		# to get the most accurage (and comparable) average speed data.
-		startpoint = G[0];
-		stoppoint = G[-1];
-		while(G and startpoint.distance(G[0])<threshold):
-			G.pop(0);
-		while(G and stoppoint.distance(G[-1])<threshold):
-			G.pop(-1)
-		T=track.Track(name);
-		for g in G:
-			T.append(g);
-		if T.points():	
-			R.append(T);	
-	# note: the last point of the last track is not inserted.
-	# TODO: fix that.
-	return R;
-
 def writegpx(filename,gpx):
 	f=open(filename,'w');	
 	f.write(gpx.to_xml());

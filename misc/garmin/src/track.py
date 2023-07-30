@@ -4,9 +4,25 @@ import datetime;
 import copy;
 import math;
 class Track:
-	def __init__(self,name):
+	def __init__(self,name,points=None):
 		self._name=name;
 		self._points=list();
+		if points:
+			self._points=points;
+
+	def strip(self):
+		G=self.points();
+		startpoint = G[0];
+		stoppoint = G[-1];
+		threshold=50
+		while(G and startpoint.distance(G[0])<threshold):
+   			G.pop(0);
+		while(G and stoppoint.distance(G[-1])<threshold):
+			G.pop(-1);
+		self._points=G;
+
+	def empty(self):
+		return len(self._points)==0;
 
 	def append(self,p):
 		self._points.append(p);
