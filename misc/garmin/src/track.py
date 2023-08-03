@@ -11,21 +11,23 @@ class Track:
 		if points:
 			self._points=points;
 
-	def strip(self):
+	def sanity_check(self):
 		G=self.points();
-		if False:
-			L=len(G);
-			k0=0;
-			for k in range(L-1):
-				p0=G[L-k-1];
-				p1=G[L-k-2];
-				delta=p0.time()-p1.time();
-				k0=L-k;
-				if delta.total_seconds()>3600:
-					break;
-			# k0 is the first
-			G=G[k0:];
-			print(self.name(),k0);
+		L=len(G);
+		maxdelta=0;
+		assert(L);
+		for k in range(L-1):
+			p0=G[k];
+			p1=G[k+1];
+			delta=p1.time()-p0.time();
+			maxdelta=max(delta.total_seconds(),maxdelta);
+			if delta.total_seconds()>3600:
+				return False;
+		return True;
+	
+	def strip(self):
+		G=list(self.points());
+		self._cache.clear();
 		startpoint = G[0];
 		stoppoint = G[-1];
 		threshold=50
@@ -33,8 +35,11 @@ class Track:
    			G.pop(0);
 		while(G and stoppoint.distance(G[-1])<threshold):
 			G.pop(-1);
+		#n=len(self._points)-len(G);
+		#if n>0:
+		#	print("removed",n,"points from",len(self._points))
 		self._points=G;
-		self._cache.clear();
+
 
 	def empty(self):
 		return len(self._points)==0;

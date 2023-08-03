@@ -116,8 +116,8 @@ def tracksfromdir(dirname):
 		for file in files:
 			if "!" in file:
 				continue;
-			if file == "Current.gpx":
-				continue;
+			#if file == "Current.gpx":
+			#	continue;
 			if file.endswith(".gpx") and ("Track_" in file or "Current.gpx" in file):
 				filename=os.path.join(root, file);
 				H=hashfile.get(filename);
@@ -150,18 +150,89 @@ def home(T):
 	y=statistics.median([p.y() for p in points]);
 	return geometry.Point(x,y);
 
+def long_enough(track):
+	if track.empty():
+		return False;
+	G=track.points();
+	(xmin,xmax,ymin,ymax)=track.bbox();
+	dx=xmax-xmin;
+	dy=ymax-ymin;
+	if min(dx,dy)<1000:
+		return False;
+	duration=track.duration();
+	if duration.total_seconds()<600:
+		return False;
+	return True;
+
+def subsegments(t,maxdelta):
+	G=t.points();
+	L=len(G);
+	assert(L);
+	K=list();
+	for k in range(L-1):
+		p0=G[k];
+		p1=G[k+1];
+		delta=p1.time()-p0.time();
+		if delta.total_seconds()>maxdelta:
+			K.append(k);
+	K.append(L);
+	ret=list();
+	begin=0;
+	while K:
+		end=K.pop(0);
+		Gloc=G[begin:end];
+		Tloc=track.Track(t.name(),Gloc);
+		Tloc.strip();
+		if long_enough(Tloc):
+			ret.append(Tloc);
+		else:
+			print("squeeze segment in",t.name(),"length:",len(Tloc.points()));
+		begin=end;
+	return ret;
+	
 def clean_singletrack(track):
 	track.strip();
 	return track;
 
+def savetmp(t,n):
+	dir="/tmp/"+t.begintime().strftime("%Y.%m.%d");
+	if not os.path.exists(dir):
+		os.mkdir(dir);
+	gpx=dir+"/"+str(n)+".gpx";
+	txt=dir+"/"+str(n)+".txt"
+	write(t,gpx);
+	open(txt,'w').write(t.name()+"\n")
+
 def clean(tracks):
 	assert(tracks);
 	R=list();
-	for t in tracks:
-		c=clean_singletrack(t)
+	for k in range(len(tracks)):
+		t=tracks[k];
+		c=clean_singletrack(t);
 		if not c.empty():
-			R.append(c);
-	R=sorted(R, key=lambda track: track.endtime())
+			S=subsegments(c,600);
+			if len(S)>1:
+				print("file",c.name(),"#segments:",len(S));
+			for s in S:
+				if not s.sanity_check():
+					print("unsane",t.name());
+				else:
+					savetmp(s,len(R));
+					R.append(s);
+		else:
+			print("empty",t.name());
+	R=sorted(R, key=lambda track: track.begintime());
+	while k+1<len(R):
+		d=R[k+1].begintime()-R[k].endtime();
+		assert(d.total_seconds()>=0);
+		if d.total_seconds()<600:
+			print("merge:");
+			print(R[k].name());
+			print(R[k+1].name());
+			R[k].append_subtrack(R[k+1]);
+			R.pop(k+1);
+		else:
+			k=k+1;
 	return R;	
 	
 def writegpx(filename,gpx):
