@@ -203,11 +203,12 @@ def savetmp(t,n):
 	write(t,gpx);
 	open(txt,'w').write(t.name()+"\n")
 
-def clean(tracks):
-	assert(tracks);
+def clean(_tracks):
+	assert(_tracks);
 	R=list();
-	for k in range(len(tracks)):
-		t=tracks[k];
+	T=sorted(_tracks, key=lambda track: track.begintime());
+	for k in range(len(T)):
+		t=T[k];
 		c=clean_singletrack(t);
 		if not c.empty():
 			S=subsegments(c,600);
@@ -221,7 +222,7 @@ def clean(tracks):
 					R.append(s);
 		else:
 			print("empty",t.name());
-	R=sorted(R, key=lambda track: track.begintime());
+	k=0;
 	while k+1<len(R):
 		d=R[k+1].begintime()-R[k].endtime();
 		assert(d.total_seconds()>=0);
