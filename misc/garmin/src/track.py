@@ -68,28 +68,39 @@ class Track:
 			return None;	
 		return self.distance()/self.duration().total_seconds();
 
+	def moving_speed(self):
+		minspeed=4*1000.0/3600;
+		G=self.points()
+		N=len(G);
+		Dx=0;
+		Dt=0;
+		for n in range(N-1):
+			p1=G[n];
+			p2=G[n+1];
+			dx=p1.distance(p2);
+			dt=(p2.time()-p1.time()).total_seconds();
+			speed=dx/dt;
+			if speed>minspeed:
+				Dx+=dx;
+				Dt+=dt;
+		return Dx/Dt;
+	
 	def category(self):
 		assert(self._points);	
 		day=self._points[0].time().strftime("%Y-%m-%d");
 		if self.distance()<1000:
 			return "none";	
-		# en velo avec les enfants
-		if day=="2022-08-20":
-			return "cycling";
-		# en velo au tennis
-		if day=="2022-11-17":
-			return "cycling";
 		minrunningspeed=1*1000/3600;
 		maxrunningspeed=15*1000/3600;
 		if not self.speed():
 			return "none";
 		if self.speed()<=minrunningspeed:
 			return "none";
-		if self.distance()<=100:
-			return "none";	
 		if self.speed()>maxrunningspeed:
 			return "cycling";
 		if self.distance()>30000:
+			return "cycling";
+		if self.moving_speed()>maxrunningspeed:
 			return "cycling";
 		return "running";
 

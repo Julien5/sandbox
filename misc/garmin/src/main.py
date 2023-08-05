@@ -69,8 +69,12 @@ def getchain(track):
 	global ChainDict;
 	if not ChainDict:
 		for f in os.listdir("chain"):
-			d=datetime.datetime.strptime(f, "%d.%m.%Y");
-			ChainDict[d]=open("chain/"+f,"r").read().split("\n")[0].split("->")[1];
+			try:
+				d=datetime.datetime.strptime(f, "%d.%m.%Y");
+				ChainDict[d]=open("chain/"+f,"r").read().split("\n")[0].split("->")[1];
+			except Exception as e:
+				#print("skip",f,"because",e);
+				continue;
 	ret="?";
 	tourdate=track.begintime();
 	for chaindate in sorted(ChainDict):
@@ -81,8 +85,8 @@ def getchain(track):
 def main():
 	C=readtours();
 	chaindistance=dict();
-	#for cat in ["cycling","running"]:
-	for cat in ["cycling"]:	
+	for cat in ["cycling","running"]:
+	#for cat in ["cycling"]:	
 		S=dict();
 		T=C[cat];
 		Tf=filter_tours(T)

@@ -198,15 +198,42 @@ def savetmp(t,n):
 	dir="/tmp/"+t.begintime().strftime("%Y.%m.%d");
 	if not os.path.exists(dir):
 		os.mkdir(dir);
-	gpx=dir+"/"+str(n)+".gpx";
-	txt=dir+"/"+str(n)+".txt"
+	gpx=dir+"/"+t.category()+"-"+str(n)+".gpx";
+	txt=dir+"/"+t.category()+"-"+str(n)+".txt";
 	write(t,gpx);
 	open(txt,'w').write(t.name()+"\n")
+
+def remove_duplicates_(R):
+	D=dict();
+	for t in R:
+		beg=t.begintime();
+		if beg in D:
+			t1=D[beg];
+			t2=t;
+			assert(t1.begintime()==t2.begintime());
+			if t2.duration()>t1.duration():
+				D[beg]=t2;
+		else:
+			D[beg]=t;
+	return sorted(D.values(), key=lambda track: track.begintime());
+
+def remove_duplicates(R):
+	D=dict();
+	for t in R:
+		G=t.points();
+		for p in G:
+			D[p.time()]=p;
+	P=list();
+	for time in sorted(D):
+		P.append(D[time]);
+	t=track.Track("all",P);
+	return [t];
 
 def clean(_tracks):
 	assert(_tracks);
 	R=list();
 	T=sorted(_tracks, key=lambda track: track.begintime());
+	T=remove_duplicates(T);
 	for k in range(len(T)):
 		t=T[k];
 		c=clean_singletrack(t);
@@ -222,9 +249,13 @@ def clean(_tracks):
 					R.append(s);
 		else:
 			print("empty",t.name());
+	R=sorted(R, key=lambda track: track.begintime());
 	k=0;
 	while k+1<len(R):
 		d=R[k+1].begintime()-R[k].endtime();
+		print(R[k].begintime(),R[k].endtime());
+		print(R[k+1].begintime(),R[k+1].endtime());
+		print(k,k+1,d);
 		assert(d.total_seconds()>=0);
 		if d.total_seconds()<600:
 			print("merge:");
