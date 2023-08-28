@@ -164,6 +164,9 @@ class Track:
 
 	def begintime(self):
 		T=self.times();
+		if not T[0]:
+			print(self.name());
+		assert(T[0]);
 		return min(T);
 
 	def endtime(self):
