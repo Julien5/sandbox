@@ -10,7 +10,7 @@ def print_stats(track):
 	if not track.points():
 		print("empty");
 		return;
-	if track.distance()>500000:
+	if track.distance()>5000*1000:
 		print(track.string())	
 		assert(False);
 	points=track.points();
