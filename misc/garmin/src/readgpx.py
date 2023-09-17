@@ -157,7 +157,7 @@ def long_enough(track):
 	(xmin,xmax,ymin,ymax)=track.bbox();
 	dx=xmax-xmin;
 	dy=ymax-ymin;
-	if min(dx,dy)<1000:
+	if max(dx,dy)<1000:
 		return False;
 	duration=track.duration();
 	if duration.total_seconds()<600:
@@ -186,7 +186,9 @@ def subsegments(t,maxdelta):
 		if long_enough(Tloc):
 			ret.append(Tloc);
 		else:
-			print("squeeze segment in",t.name(),"length:",len(Tloc.points()));
+			length=len(Tloc.points());
+			if length>1:
+				print("remove short segment in",t.name(),"length:",length,Tloc.begintime());
 		begin=end;
 	return ret;
 	
@@ -219,10 +221,22 @@ def remove_duplicates_(R):
 
 def remove_duplicates(R):
 	D=dict();
+	for track in R:
+		G=track.points();
+		for p in G:
+			if not p.time() in D:
+				D[p.time()]=list();
+			D[p.time()].append(track.name());
+	for t in D:
+		if len(D[t])>1:
+			print(D[t]);
+
+	D=dict();		
 	for t in R:
 		G=t.points();
 		for p in G:
 			D[p.time()]=p;
+			
 	P=list();
 	for time in sorted(D):
 		P.append(D[time]);
