@@ -20,7 +20,7 @@ def readtours():
 			dir=sys.argv[1];
 		T=readgpx.tracksfromdir(dir);
 		#T=T[0:20];
-	else:	
+	else:
 		T=readgpx.tracksfromdir("test");
 	print("clean tracks..");
 	assert(T);
@@ -64,9 +64,29 @@ def filter_tours(T,last_days=30):
 		ret.append(D[d]);
 	return ret;	
 
+ChainDict=dict();
+def getchain(track):
+	global ChainDict;
+	if not ChainDict:
+		for f in os.listdir("chain"):
+			try:
+				d=datetime.datetime.strptime(f, "%d.%m.%Y");
+				ChainDict[d]=open("chain/"+f,"r").read().split("\n")[0].split("->")[1];
+			except Exception as e:
+				#print("skip",f,"because",e);
+				continue;
+	ret="?";
+	tourdate=track.begintime();
+	for chaindate in sorted(ChainDict):
+		if tourdate.date()>chaindate.date():
+			ret=ChainDict[chaindate];
+	return ret;		
+
 def main():
 	C=readtours();
+	chaindistance=dict();
 	for cat in ["cycling","running"]:
+	#for cat in ["cycling"]:	
 		S=dict();
 		T=C[cat];
 		Tf=filter_tours(T)
@@ -80,15 +100,30 @@ def main():
 		print("# category",cat);
 		#for d in sorted(S):	
 		#	for t in S[d]:
+		csv=str();
 		for t in T:
 			output.print_stats(t);
-			readgpx.write(t,f"/tmp/{t.category():s}-{t.name():s}.gpx");
+			chain=getchain(t);
+			if not chain in chaindistance:
+				chaindistance[chain]=0;
+			chaindistance[chain]+=t.distance()/1000;	
 		L=sum([t.distance() for t in Tf]);
 		D=sum([t.duration().total_seconds() for t in Tf]);
 		print(f"total-30 {cat:10s}: {L/1000:6.1f} km | {D/3600:4.1f}h");
 		print("-"*55)
-		segments.main(T);
-		print()
-		
+		for chain in chaindistance:
+			print(f"chain #{chain:s}: {chaindistance[chain]:05.1f} km");
+		csv=str();
+		for t in T:
+			csv+=output.print_csv(t);
+			csv+=";";
+			csv+=getchain(t)+";";
+			csv+="\n"
+		filename="/tmp/"+cat+".csv";
+		print("write",filename);
+		open(filename,'w').write(csv);
+		#segments.main(T);
+		print();
+
 if __name__ == '__main__':
 	sys.exit(main())  
