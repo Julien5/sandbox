@@ -221,12 +221,12 @@ def remove_duplicates_(R):
 
 def remove_duplicates(R):
 	D=dict();
-	for track in R:
-		G=track.points();
+	for t in R:
+		G=t.points();
 		for p in G:
 			if not p.time() in D:
 				D[p.time()]=list();
-			D[p.time()].append(track.name());
+			D[p.time()].append(t.name());
 	for t in D:
 		if len(D[t])>1:
 			print(D[t]);
