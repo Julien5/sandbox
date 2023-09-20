@@ -35,19 +35,6 @@ def readtours():
 	print("OK");
 	return C;
 
-def readbook():
-	d_cache=None;
-	if os.path.exists("book.cache"):
-		d_cache=datetime.datetime.fromtimestamp(os.path.getmtime("book.cache"));
-	if not d_cache:
-		print("from data");
-		book=loadtours();
-		writebook_tocache(book);
-	else:
-		print("from cache");
-		book=loadtours();
-	return book;
-
 def filter_tours(T,last_days=30):
 	D=dict();
 	for t in T:
