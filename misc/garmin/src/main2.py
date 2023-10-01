@@ -8,7 +8,9 @@ import math;
 import output;
 
 def readtours():
-	T=readgpx2.tracksfromdir("test");
+	dir="test";
+	dir="/home/julien/tracks/";
+	T=readgpx2.tracksfromdir(dir);
 	assert(T);
 	print("clean tracks..");
 	T=readgpx2.install(T);
