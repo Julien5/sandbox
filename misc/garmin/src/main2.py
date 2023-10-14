@@ -8,15 +8,31 @@ import math;
 import output;
 
 def readtours():
-	dir="test";
+	#dir="test";
 	dir="/home/julien/tracks/";
-	T=readgpx2.tracksfromdir(dir);
-	assert(T);
-	print("clean tracks..");
-	T=readgpx2.install(T);
+	newtracks=readgpx2.newtracksfromdir(dir);
+	installed=readgpx2.install(newtracks);
+	print("new:",len(installed));
+	print("read all installed");
+	T=readgpx2.read_all_installed();
+	print("all:",len(T));
+	C=dict();
+	for t in T:
+		if not t.category() in C:
+			C[t.category()]=list();
+		C[t.category()].append(t);
+	print("OK");
+	return C;
 
 def main():
-	readtours();
+	C=readtours();
+	for cat in C:
+		print("#",cat);
+		T=C[cat];
+		if not T:
+			continue;
+		for t in sorted(T, key=lambda t: t.begintime()):
+			output.print_stats(t);
 
 if __name__ == '__main__':
 	sys.exit(main())  

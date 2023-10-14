@@ -40,7 +40,7 @@ def tracks(filename):
 	cache_file="cache/"+Hash;
 	if os.path.exists(cache_file):
 		with open(cache_file, 'rb') as f:
-			print("hit cache",filename);
+			# print("hit cache",filename);
 			return pickle.load(f);
 	gpx = readgpx(filename);
 	ret = list();
@@ -53,17 +53,26 @@ def tracks(filename):
 	assert(os.path.exists(cache_file));	
 	return ret;
 
-import hashfile;
-def tracksfromdir(dirname):
+def is_relevant_track(f):
+	b=os.path.basename(f);
+	return b.endswith(".gpx") and ("Track_" in b or "Current.gpx" in b);
+
+def unique_new_files(dirname):
+	# ignore old files 
+	# remove duplicate files (content wise)
+	Recent=newfilesfromdir(dirname);
+	print(f"there are {len(Recent):d} new files");
 	D=dict();
 	for root, dirs, files in os.walk(dirname):
 		for file in files:
+			filename=os.path.join(root, file);
+			if not filename in Recent:
+				continue;
 			if "!" in file:
 				continue;
 			#if file == "Current.gpx":
 			#	continue;
-			if file.endswith(".gpx") and ("Track_" in file or "Current.gpx" in file):
-				filename=os.path.join(root, file);
+			if is_relevant_track(file):
 				H=hashfile.get(filename);
 				if H in D:
 					f1=D[H]
@@ -74,9 +83,13 @@ def tracksfromdir(dirname):
 						print(f2);
 						assert(False);
 				D[H]=filename;
+	return D.values();		
 
+import hashfile;
+def newtracksfromdir(dirname):
+	D=dict();
 	ret=list();
-	for filename in D.values():		
+	for filename in unique_new_files(dirname):		
 		try:
 			#print("read",filename);
 			ret.extend(tracks(filename));
@@ -94,11 +107,26 @@ def autoclean(t):
 class EmptySegment(Exception):
     pass
 
+class NotRecordedTrack(Exception):
+    pass
+
+def throw_if_bad(clean):
+	P=clean.points();
+	if not P:
+		raise EmptySegment();
+	if P[0].time() is None:
+		raise NotRecordedTrack();
+	if not clean.duration().total_seconds():
+		raise EmptySegment();
+	
+
 def starttime(track):
 	striped=autoclean(track);
 	P=striped.points();
 	if not P:
 		raise EmptySegment();
+	if P[0].time() is None:
+		raise NotRecordedTrack();
 	starttime=P[0].time()+datetime.timedelta(hours=2);
 	return starttime;
 
@@ -117,6 +145,19 @@ def dirname(track):
 def write(t,path):
 	os.makedirs(os.path.dirname(path),exist_ok=True);
 	writegpx.write(t,path);
+	cache_file=path.replace(".gpx",".cache");
+	with open(cache_file, 'wb') as f:
+		pickle.dump(t, f);
+
+def read_installed_path(path):
+	cache_file=path.replace(".gpx",".cache");
+	if os.path.exists(cache_file):
+		with open(cache_file, 'rb') as f:
+			return pickle.load(f);
+	gpx = readgpx(filename);
+	ret = list();
+	assert(size(gpx.tracks)==1);
+	return to_track(S,path);
 
 def	fixUTC(time):
 	return time+datetime.timedelta(hours=2);
@@ -126,6 +167,7 @@ def meta(t):
 	raw["name"]=t.name();
 	raw["points"]=str(len(t.points()));
 	raw["distance"]=str(t.distance());
+	raw["category"]=t.category();
 	P=t.points();
 	if P:
 		raw["start"]=fixUTC(P[0].time()).strftime("%Y.%m.%d %H:%M:%S");
@@ -141,16 +183,79 @@ def writemeta(t,clean,path):
 		f.write("\n".join(f"{key:20s} {content[key]:s}" for key in content));
 		f.write("\n\n");
 	f.close();
-	
 
+def installed(t):
+	return os.path.exists(dirname(t)+"/meta/info.txt");
+	
 def install(T):
 	dir="readgpx2";
+	ret=list();
 	for t in T:
 		try:
-			write(t,dirname(t)+"/raw/track.gpx");
+			if installed(t):
+				continue;
+			D=dirname(t);
 			clean=autoclean(t);
-			write(clean,dirname(t)+"/auto/track.gpx");
-			writemeta(t,clean,dirname(t)+"/meta/info.txt");
+			throw_if_bad(clean);
+			write(t,D+"/raw/track.gpx");
+			write(clean,D+"/auto/track.gpx");
+			writemeta(t,clean,D+"/meta/info.txt");
+			ret.append(D);
 		except EmptySegment:
-			print("empty segment in",t.name(),"=> skip it");
-		
+			pass;
+			#print("empty segment in",t.name(),"=> skip it");
+		except NotRecordedTrack:
+			pass;
+			#print("not recorded track in",t.name(),"=> skip it");
+	return ret;	
+
+def read_installed_tour(dir):
+	for name in ["manual","auto"]:
+		d=os.path.join(dir,name);
+		gpx=os.path.join(d,"track.gpx");
+		if os.path.exists(gpx):
+			return read_installed_path(gpx);
+	assert(0);
+
+def read_all_installed():
+	dir="readgpx2";
+	ret=list();
+	for d1 in sorted(os.listdir(dir)):
+		for d2 in sorted(os.listdir(os.path.join(dir,d1))):
+			root=os.path.join(dir,d1,d2);
+			ret.append(read_installed_tour(root));
+	return ret;
+
+def date(filename):
+	if filename:
+		return os.path.getctime(filename);
+	return None;
+
+def latest_file(dir):
+	L=list();
+	for root, dirs, files in os.walk(dir):
+		for f in files:
+			filename=os.path.join(root,f);
+			L.append(filename);
+	if L:
+		return max(L, key=os.path.getctime);
+	return None;
+
+def recent_files(dir,date):
+	L=list();
+	for root, dirs, files in os.walk(dir):
+		for f in files:
+			filename=os.path.join(root,f);
+			if not is_relevant_track(filename):
+				continue;
+			d=os.path.getctime(filename);
+			if date is None:
+				L.append(filename);
+			elif d > date:
+				L.append(filename);
+	return L;
+
+def newfilesfromdir(rawdir):
+	latest_dst=latest_file("readgpx2");
+	return recent_files(rawdir,date(latest_dst));
+	

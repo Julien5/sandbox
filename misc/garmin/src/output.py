@@ -10,8 +10,8 @@ def print_stats(track):
 		print("empty");
 		return;
 	points=track.points();
-	startdate=(points[0].time()+datetime.timedelta(hours=2)).strftime("%a-%d.%m.%Y");
-	starttime=(points[0].time()+datetime.timedelta(hours=2)).strftime("%H:%M");
+	startdate=(track.begintime()+datetime.timedelta(hours=2)).strftime("%d.%m.%Y (%a)");
+	starttime=(track.begintime()+datetime.timedelta(hours=2)).strftime("%H:%M");
 	
 	print(f"{startdate:8s}",end=" ");
 	print(f"{starttime:5s}",end=" | ");
