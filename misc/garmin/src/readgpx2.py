@@ -15,6 +15,33 @@ import statistics;
 
 import writegpx;
 
+def cache_root():
+	HOME=os.path.expanduser('~');
+	return os.path.join(HOME,".cache","readgpx2");
+
+def cache_file_hash(Hash):
+	return os.path.join(cache_root(),"hash",Hash);
+
+def cache_root_gpx():
+	return os.path.join(cache_root(),"gpx");
+
+def cache_file_gpx(gpx):
+	assert(not os.path.isabs(gpx));
+	D=gpx.split("/");
+	# readgpx2/2022.07.10/12.20.57/auto/track.gpx
+	# => 2022.07.10/12.20.57/auto
+	assert(len(D)==5);
+	dir=os.path.join(D[1],D[2],D[3]);
+	cache_dir=os.path.join(cache_root_gpx(),dir);
+	filename=os.path.basename(gpx);
+	cache_file=filename.replace(".gpx",".cache");
+	os.makedirs(cache_dir,exist_ok=True);
+	return os.path.join(cache_dir,cache_file);
+
+def create_cache_directories():
+	for a in ["gpx","hash"]:
+		os.makedirs(os.path.join(cache_root(),a),exist_ok=True);
+	
 def readgpx(filename):
 	gpx_file = open(filename, 'r');
 	gpx = gpxpy.parse(gpx_file);
@@ -37,7 +64,7 @@ import pickle;
 import hashfile;
 def tracks(filename):
 	Hash=hashfile.get(filename);
-	cache_file="cache/"+Hash;
+	cache_file=cache_file_hash(Hash);
 	if os.path.exists(cache_file):
 		with open(cache_file, 'rb') as f:
 			# print("hit cache",filename);
@@ -145,19 +172,21 @@ def dirname(track):
 def write(t,path):
 	os.makedirs(os.path.dirname(path),exist_ok=True);
 	writegpx.write(t,path);
-	cache_file=path.replace(".gpx",".cache");
+	cache_file=cache_file_gpx(path);
 	with open(cache_file, 'wb') as f:
 		pickle.dump(t, f);
 
 def read_installed_path(path):
-	cache_file=path.replace(".gpx",".cache");
+	cache_file=cache_file_gpx(path);
 	if os.path.exists(cache_file):
 		with open(cache_file, 'rb') as f:
+			print(" -> hit",cache_file);
 			return pickle.load(f);
-	gpx = readgpx(filename);
+	gpx = readgpx(path);
 	ret = list();
-	assert(size(gpx.tracks)==1);
-	return to_track(S,path);
+	assert(len(gpx.tracks)==1);
+	assert(len(gpx.tracks[0].segments)==1);
+	return to_track(gpx.tracks[0].segments[0],path);
 
 def	fixUTC(time):
 	return time+datetime.timedelta(hours=2);
@@ -188,6 +217,7 @@ def installed(t):
 	return os.path.exists(dirname(t)+"/meta/info.txt");
 	
 def install(T):
+	create_cache_directories();
 	dir="readgpx2";
 	ret=list();
 	for t in T:
@@ -203,10 +233,10 @@ def install(T):
 			ret.append(D);
 		except EmptySegment:
 			pass;
-			#print("empty segment in",t.name(),"=> skip it");
+			print("empty segment in",t.name(),"=> skip it");
 		except NotRecordedTrack:
 			pass;
-			#print("not recorded track in",t.name(),"=> skip it");
+			print("not recorded track in",t.name(),"=> skip it");
 	return ret;	
 
 def read_installed_tour(dir):
@@ -214,7 +244,9 @@ def read_installed_tour(dir):
 		d=os.path.join(dir,name);
 		gpx=os.path.join(d,"track.gpx");
 		if os.path.exists(gpx):
+			print("read",gpx);
 			return read_installed_path(gpx);
+	print("failed",dir);
 	assert(0);
 
 def read_all_installed():
@@ -256,6 +288,8 @@ def recent_files(dir,date):
 	return L;
 
 def newfilesfromdir(rawdir):
+	create_cache_directories();
 	latest_dst=latest_file("readgpx2");
-	return recent_files(rawdir,date(latest_dst));
+	d=date(latest_dst);
+	return recent_files(rawdir,d);
 	

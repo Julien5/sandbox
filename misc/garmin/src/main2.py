@@ -8,14 +8,15 @@ import math;
 import output;
 
 def readtours():
-	#dir="test";
-	dir="/home/julien/tracks/";
+	dir="test";
+	#dir="/home/julien/tracks/";
 	newtracks=readgpx2.newtracksfromdir(dir);
 	installed=readgpx2.install(newtracks);
 	print("new:",len(installed));
 	print("read all installed");
 	T=readgpx2.read_all_installed();
 	print("all:",len(T));
+	return;
 	C=dict();
 	for t in T:
 		if not t.category() in C:
@@ -26,6 +27,7 @@ def readtours():
 
 def main():
 	C=readtours();
+	return;
 	for cat in C:
 		print("#",cat);
 		T=C[cat];
