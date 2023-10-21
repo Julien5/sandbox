@@ -16,7 +16,6 @@ def readtours():
 	print("read all installed");
 	T=readgpx2.read_all_installed();
 	print("all:",len(T));
-	return;
 	C=dict();
 	for t in T:
 		if not t.category() in C:
@@ -27,7 +26,6 @@ def readtours():
 
 def main():
 	C=readtours();
-	return;
 	for cat in C:
 		print("#",cat);
 		T=C[cat];
@@ -35,6 +33,8 @@ def main():
 			continue;
 		for t in sorted(T, key=lambda t: t.begintime()):
 			output.print_stats(t);
+			output.plot_speed(t);
+			
 
 if __name__ == '__main__':
 	sys.exit(main())  

@@ -154,7 +154,7 @@ def starttime(track):
 		raise EmptySegment();
 	if P[0].time() is None:
 		raise NotRecordedTrack();
-	starttime=P[0].time()+datetime.timedelta(hours=2);
+	starttime=P[0].time();
 	return starttime;
 
 def dirname(track):
@@ -172,46 +172,88 @@ def dirname(track):
 def write(t,path):
 	os.makedirs(os.path.dirname(path),exist_ok=True);
 	writegpx.write(t,path);
-	cache_file=cache_file_gpx(path);
-	with open(cache_file, 'wb') as f:
-		pickle.dump(t, f);
 
-def read_installed_path(path):
+# name = auto or manual
+def read_installed_path(path,name):
 	cache_file=cache_file_gpx(path);
 	if os.path.exists(cache_file):
 		with open(cache_file, 'rb') as f:
-			print(" -> hit",cache_file);
 			return pickle.load(f);
 	gpx = readgpx(path);
-	ret = list();
 	assert(len(gpx.tracks)==1);
 	assert(len(gpx.tracks[0].segments)==1);
-	return to_track(gpx.tracks[0].segments[0],path);
+	ret=to_track(gpx.tracks[0].segments[0],path);
+	D=os.path.dirname(path);
+	writemeta(ret,D+f"/../meta/{name:s}.txt");
+	with open(cache_file, 'wb') as f:
+		pickle.dump(ret, f);
+	return ret;	
 
 def	fixUTC(time):
 	return time+datetime.timedelta(hours=2);
 
-def meta(t):
+def read_meta_fromfile(t):
+	path=t.name();
+	D=os.path.dirname(path);
+	name=os.path.basename(D);
+	filename=os.path.join(D,"..","meta",name+".txt");
+	L=open(filename,"r").readlines();
+	ret={};
+	for line in L:
+		key=line[0:20].strip();
+		value=line[21:-1].strip();
+		if not key:
+			continue;
+		ret[key]=value;
+		if key in {"start","end"}:
+			ret[key]=datetime.datetime.strptime(value,"%Y.%m.%d %H:%M:%S");
+		elif key in {"distance"}:
+			ret[key]=int(value);
+		elif key in {"points"}:
+			ret[key]=int(value);
+	return ret;	
+
+def meta_computed(t):
 	raw={};
 	raw["name"]=t.name();
-	raw["points"]=str(len(t.points()));
-	raw["distance"]=str(t.distance());
+	raw["points"]=len(t.points());
+	raw["distance"]=int(t.distance());
 	raw["category"]=t.category();
 	P=t.points();
 	if P:
-		raw["start"]=fixUTC(P[0].time()).strftime("%Y.%m.%d %H:%M:%S");
-		raw["end"]=fixUTC(P[-1].time()).strftime("%Y.%m.%d %H:%M:%S");
+		raw["start"]=fixUTC(P[0].time());
+		raw["end"]=fixUTC(P[-1].time());
 	return raw;
 
-def writemeta(t,clean,path):
+def meta(t):
+	try:
+		return read_meta_fromfile(t);
+	except FileNotFoundError as e:
+		print(e);
+		pass;
+	print("compute");
+	return meta_computed(t);
+
+def writemeta(t,path):
 	os.makedirs(os.path.dirname(path),exist_ok=True);
 	f=open(path,'w');
-	for pair in [("raw",meta(t)),("clean",meta(clean))]:
-		(name,content)=pair;
-		f.write(f"** {name:10s}\n");
-		f.write("\n".join(f"{key:20s} {content[key]:s}" for key in content));
-		f.write("\n\n");
+	M=meta_computed(t);
+	L=list();
+	ret={};
+	for k in M:
+		key=k;
+		value=M[k];
+		ret[key]=str(value);
+		if key in {"start","end"}:
+			ret[key]=value.strftime("%Y.%m.%d %H:%M:%S");
+	f.write("\n".join(f"{key:20s} {ret[key]:s}" for key in ret));
+	f.write("\n\n");
 	f.close();
+
+def readmeta(t,qualifier="auto"):
+	D=dirname(t);
+	filename=D+f"/meta/{qualifier:s}.txt"
+	
 
 def installed(t):
 	return os.path.exists(dirname(t)+"/meta/info.txt");
@@ -229,7 +271,8 @@ def install(T):
 			throw_if_bad(clean);
 			write(t,D+"/raw/track.gpx");
 			write(clean,D+"/auto/track.gpx");
-			writemeta(t,clean,D+"/meta/info.txt");
+			writemeta(t,D+"/meta/raw.txt");
+			writemeta(clean,D+"/meta/auto.txt");
 			ret.append(D);
 		except EmptySegment:
 			pass;
@@ -244,8 +287,8 @@ def read_installed_tour(dir):
 		d=os.path.join(dir,name);
 		gpx=os.path.join(d,"track.gpx");
 		if os.path.exists(gpx):
-			print("read",gpx);
-			return read_installed_path(gpx);
+			# print("read",gpx);
+			return read_installed_path(gpx,name);
 	print("failed",dir);
 	assert(0);
 
