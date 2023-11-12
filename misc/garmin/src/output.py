@@ -73,27 +73,40 @@ def plot_speed(track):
 		kmh=3600*mps/1000;
 		t=p0.time();
 		data.append((t,kmh));
-	filename="/tmp/plot.csv";
+	
 	content=str();
 	for n in range(len(data)):
 		(t,v)=data[n];
 		time=readgpx2.fixUTC(t).strftime("%H:%M");
 		secs=(t-starttime).total_seconds();
 		content+=f"{time:s}\t{round(secs):d}\t{v:5.2f}\n";
-	M=readgpx2.meta(track);	
-	open(filename,"w").write(content);
-	for m in M:
-		print("key",m,M[m]);
+	
+
+	name=track.name();
+	dt=name.split("/");
+	assert(len(dt)==5);
+	dirname="/".join(dt[1:3]);
+
+	datafile=os.path.join("/tmp/plots/",dirname,"speed.data");
+	os.makedirs(os.path.dirname(datafile),exist_ok=True);
+	open(datafile,"w").write(content);
+	
+	M=readgpx2.meta(track);
 	tmpl=open("speed.tmpl","r").read();
 	km=M["distance"]/1000;
 	time=(datetime.datetime(2000,1,1)+(M["end"]-M["start"])).strftime("%H:%M");
 	start=M["start"].strftime("%d.%m.%y - %H:%M");
-	name=track.name();
+	
 	tmpl=tmpl.replace("{km}",f"{km:1.1f}");
 	tmpl=tmpl.replace("{time}",f"{time:s}");
 	tmpl=tmpl.replace("{name}",f"{name:s}");
 	tmpl=tmpl.replace("{start}",f"{start:s}");
-	open("/tmp/speed.gnuplot","w").write(tmpl);
-	assert(0);
+	tmpl=tmpl.replace("{datafile}",f"{datafile:s}");
+	pngfile=os.path.join("/tmp/plots/images",track.category(),dirname.replace("/","-")+".png");
+	os.makedirs(os.path.dirname(pngfile),exist_ok=True);
+	tmpl=tmpl.replace("{pngfile}",f"{pngfile:s}");
+
+	gnuplotfile=os.path.join("/tmp/plots/",dirname,"speed.gnuplot");
+	open(gnuplotfile,"w").write(tmpl);
 		
 	

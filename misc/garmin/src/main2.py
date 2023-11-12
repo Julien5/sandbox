@@ -8,8 +8,8 @@ import math;
 import output;
 
 def readtours():
-	dir="test";
-	#dir="/home/julien/tracks/";
+	#dir="test";
+	dir="/home/julien/projects/tracks/";
 	newtracks=readgpx2.newtracksfromdir(dir);
 	installed=readgpx2.install(newtracks);
 	print("new:",len(installed));

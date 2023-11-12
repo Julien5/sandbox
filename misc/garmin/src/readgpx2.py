@@ -15,33 +15,8 @@ import statistics;
 
 import writegpx;
 
-def cache_root():
-	HOME=os.path.expanduser('~');
-	return os.path.join(HOME,".cache","readgpx2");
 
-def cache_file_hash(Hash):
-	return os.path.join(cache_root(),"hash",Hash);
 
-def cache_root_gpx():
-	return os.path.join(cache_root(),"gpx");
-
-def cache_file_gpx(gpx):
-	assert(not os.path.isabs(gpx));
-	D=gpx.split("/");
-	# readgpx2/2022.07.10/12.20.57/auto/track.gpx
-	# => 2022.07.10/12.20.57/auto
-	assert(len(D)==5);
-	dir=os.path.join(D[1],D[2],D[3]);
-	cache_dir=os.path.join(cache_root_gpx(),dir);
-	filename=os.path.basename(gpx);
-	cache_file=filename.replace(".gpx",".cache");
-	os.makedirs(cache_dir,exist_ok=True);
-	return os.path.join(cache_dir,cache_file);
-
-def create_cache_directories():
-	for a in ["gpx","hash"]:
-		os.makedirs(os.path.join(cache_root(),a),exist_ok=True);
-	
 def readgpx(filename):
 	gpx_file = open(filename, 'r');
 	gpx = gpxpy.parse(gpx_file);
@@ -78,52 +53,6 @@ def tracks(filename):
 	with open(cache_file, 'wb') as f:
 		pickle.dump(ret, f);
 	assert(os.path.exists(cache_file));	
-	return ret;
-
-def is_relevant_track(f):
-	b=os.path.basename(f);
-	return b.endswith(".gpx") and ("Track_" in b or "Current.gpx" in b);
-
-def unique_new_files(dirname):
-	# ignore old files 
-	# remove duplicate files (content wise)
-	Recent=newfilesfromdir(dirname);
-	print(f"there are {len(Recent):d} new files");
-	D=dict();
-	for root, dirs, files in os.walk(dirname):
-		for file in files:
-			filename=os.path.join(root, file);
-			if not filename in Recent:
-				continue;
-			if "!" in file:
-				continue;
-			#if file == "Current.gpx":
-			#	continue;
-			if is_relevant_track(file):
-				H=hashfile.get(filename);
-				if H in D:
-					f1=D[H]
-					f2=filename;
-					ok=os.path.basename(f1)==os.path.basename(f2);
-					if not ok:
-						print(f1);
-						print(f2);
-						assert(False);
-				D[H]=filename;
-	return D.values();		
-
-import hashfile;
-def newtracksfromdir(dirname):
-	D=dict();
-	ret=list();
-	for filename in unique_new_files(dirname):		
-		try:
-			#print("read",filename);
-			ret.extend(tracks(filename));
-		except Exception as e:
-			print("ERROR",filename,"->",e)
-			#assert(0);
-			pass;	
 	return ret;
 
 def autoclean(t):
@@ -231,7 +160,6 @@ def meta(t):
 	except FileNotFoundError as e:
 		print(e);
 		pass;
-	print("compute");
 	return meta_computed(t);
 
 def writemeta(t,path):

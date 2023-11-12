@@ -3,6 +3,7 @@
 import datetime;
 import copy;
 import math;
+
 class Track:
 	def __init__(self,name,points=None):
 		self._name=name;
@@ -39,7 +40,6 @@ class Track:
 		#if n>0:
 		#	print("removed",n,"points from",len(self._points))
 		self._points=G;
-
 
 	def empty(self):
 		return len(self._points)==0;
