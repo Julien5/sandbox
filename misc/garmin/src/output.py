@@ -86,11 +86,10 @@ def plot_speed(track):
 	dt=name.split("/");
 	assert(len(dt)==5);
 	dirname="/".join(dt[1:3]);
-
 	datafile=os.path.join("/tmp/plots/",dirname,"speed.data");
 	os.makedirs(os.path.dirname(datafile),exist_ok=True);
 	open(datafile,"w").write(content);
-	
+
 	M=readgpx2.meta(track);
 	tmpl=open("speed.tmpl","r").read();
 	km=M["distance"]/1000;
@@ -108,5 +107,4 @@ def plot_speed(track):
 
 	gnuplotfile=os.path.join("/tmp/plots/",dirname,"speed.gnuplot");
 	open(gnuplotfile,"w").write(tmpl);
-		
 	

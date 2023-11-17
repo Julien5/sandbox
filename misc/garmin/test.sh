@@ -1,11 +1,27 @@
 #!/usr/bin/env bash
 
-rm -f book.cache
+set -e
+# set -x
 
-python3 src/main.py &> /tmp/out
-if diff -q /tmp/out test/output; then
-	echo "outputs are the same. good."
-else
-	meld /tmp/out test/output;
-fi
-	
+function all() {
+	find ~/projects/tracks/ -mindepth 1 -maxdepth 1 -type d | sort | while read d; do
+		python3 src/readtracks.py $d;
+	done 
+}
+
+function one() {
+	python3 src/readtracks.py;
+}
+
+function main() {
+	rm -Rf /tmp/plots
+	if [ -z $1 ]; then
+		one
+	else
+		$1
+	fi
+	find /tmp/plots/ -name "*.gnuplot" -exec gnuplot "{}" \;
+	ristretto /tmp/plots/images/
+}
+
+main "$@"
