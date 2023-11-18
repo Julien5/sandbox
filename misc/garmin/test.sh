@@ -16,12 +16,13 @@ function one() {
 function main() {
 	rm -Rf /tmp/plots
 	if [ -z $1 ]; then
-		one
+		one | tee test.out
+		diff test.out test.reference
 	else
 		$1
 	fi
-	find /tmp/plots/ -name "*.gnuplot" -exec gnuplot "{}" \;
-	ristretto /tmp/plots/images/
+	# find /tmp/plots/ -name "*.gnuplot" -exec gnuplot "{}" \;
+	# ristretto /tmp/plots/images/
 }
 
 main "$@"

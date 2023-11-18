@@ -91,7 +91,7 @@ def pause_condition(points,n):
 	kmh=3600*speed/1000;
 	return kmh<3; 
 
-def findGaps(points):
+def find3hGaps(points):
 	gaps=list();
 	for n in range(len(points)-1):
 		p1=points[n];
@@ -245,7 +245,7 @@ def makesubtracks(directory):
 	points0=copy.deepcopy(points);
 	assert(points);
 	# first the gaps.
-	G=findGaps(points);
+	G=find3hGaps(points);
 	P=cuts(points,G);
 	assert(P);
 	subtracks=list();
