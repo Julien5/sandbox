@@ -127,9 +127,10 @@ def remove_intervals(points,intervals):
 		begin=I.begin - delta;
 		end=I.end - delta;
 		section=points[:begin];
-		print("remove",end,"points")
 		del points[:end];
-		ret.append(section);
+		if section:
+			ret.append(section);
+	assert(points)
 	ret.append(points);	
 	return ret;
 
@@ -140,7 +141,6 @@ def findIntervals(points,condition):
 	begin=None;
 	end=None;
 	intervals=list();
-	#print("L:",len(points));
 	N=len(points);
 	for n in range(N):
 		inside=condition(points,n);
@@ -176,19 +176,25 @@ def statistics(points):
 	ret["distance"]	= distance;
 	ret["duration"] = points[-1].time - points[0].time;
 	ret["seconds"] = seconds;
-	ret["meanspeed"] = distance/seconds;
-	ret["movingspeed"] = distance/moving_seconds;
+	ret["meanspeed"] = 0;
+	ret["movingspeed"] = 0;
+	if seconds>0:
+		ret["meanspeed"] = distance/seconds;
+	if moving_seconds>0:
+		ret["movingspeed"] = distance/moving_seconds;
 	return ret;
 
 def print_statistics(points,name):
 	S=statistics(points);
 	startdate=points[0].time.strftime("%d.%m.%Y (%a)");
 	starttime=(points[0].time+datetime.timedelta(hours=2)).strftime("%H:%M");
+	enddate=points[-1].time.strftime("%d (%a)");
 	endtime=(points[-1].time+datetime.timedelta(hours=2)).strftime("%H:%M");
 
 	print(f"{name:10s}",end="| ");
 	print(f"{startdate:8s}",end=" ");
 	print(f"{starttime:5s}",end=" - ");
+	print(f"{enddate:5s}",end=" - ");
 	print(f"{endtime:5s}",end=" | ");
 	distance=S["distance"];
 	print(f"{distance/1000:5.1f} km",end=" | ");
@@ -214,9 +220,6 @@ def strip(points):
    		G.pop(0);
 	while G and distance(stoppoint,G[-1]) < threshold:
 		G.pop(-1);
-	#n=len(self._points)-len(G);
-	#if n>0:
-	#	print("removed",n,"points from",len(self._points))
 	return G;
 
 def makesubtracks(directory):
@@ -228,7 +231,6 @@ def makesubtracks(directory):
 	startafter=points[0];
 	Nafter=len(points);
 	dtime=startafter.time - startbefore.time;
-	print(f"strip removed {Nbefore-Nafter:d} points = ",str(dtime));
 	points0=copy.deepcopy(points);
 	assert(points);
 	# first the gaps.
@@ -242,68 +244,23 @@ def makesubtracks(directory):
 		npauses+=len(I);
 		subtracks.extend(remove_intervals(p,I));
 	Nsum=sum([len(s) for s in subtracks]);
-	print(f"found {len(subtracks):d} segments");
 	return (points0,subtracks);
 
 		
-def plot_speed2(states,name,start,end):
-	data=[];
-	dtotal=0;
-	for n in range(len(states)):
-		(d,t,speed)=states[n];
-		dtotal+=d;
-		kmh=3600*speed/1000;
-		data.append((t,kmh));
-	
-	content=str();
-	secs=0;
-	for n in range(len(data)):
-		(t,v)=data[n];
-		secs+=t;
-		time=datetime.datetime.fromtimestamp(secs).strftime("%H:%M")
-		content+=f"{time:s}\t{round(secs):d}\t{v:5.2f}\n";
-	datafile=os.path.join("/tmp/plots/",name,"speed.data");
-	os.makedirs(os.path.dirname(datafile),exist_ok=True);
-	open(datafile,"w").write(content);
-
-	km=dtotal/1000;
-	time="foo"
-	startstr=start.strftime("%d.%m.%y - %H:%M");
-
-	tmpl=open("speed.tmpl","r").read();
-	tmpl=tmpl.replace("{km}",f"{km:1.1f}");
-	tmpl=tmpl.replace("{time}",f"{time:s}");
-	tmpl=tmpl.replace("{name}",f"{name:s}");
-	tmpl=tmpl.replace("{start}",f"{startstr:s}");
-	tmpl=tmpl.replace("{datafile}",f"{datafile:s}");
-	pngfile=os.path.join("/tmp/plots/images",name+".png");
-	os.makedirs(os.path.dirname(pngfile),exist_ok=True);
-	tmpl=tmpl.replace("{pngfile}",f"{pngfile:s}");
-
-	gnuplotfile=os.path.join("/tmp/plots/",name,"speed.gnuplot");
-	open(gnuplotfile,"w").write(tmpl);
-	
 def readtrack(directory):
-	print("read",directory)
 	if not os.path.exists(os.path.join(directory,"subtracks")):
 		name=os.path.basename(directory)[:6];
-		print(f"name {name:s}");
 		(points,S)=makesubtracks(directory);
 		states=[state(points,l) for l in range(len(points))];
 		start=points[0].time;
 		end=points[-1].time;
-		plot_speed2(states,name,start,end);
 		print_statistics(points,name);
 		for k in range(len(S)):
 			points=S[k];
-			if len(points)<20:
-				print("empty");
-				continue;
 			start=points[0].time;
 			end=points[-1].time;
 			states=[state(S[k],l) for l in range(len(S[k]))];
 			name_k = f"{name:s}-{k:d}";
-			plot_speed2(states,name_k,start,end);
 			print_statistics(points,name_k);
 		#print(len(S),"subtracks");
 
