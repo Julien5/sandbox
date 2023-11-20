@@ -77,6 +77,9 @@ class Interval:
 		self.begin=begin;
 		self.end=end;
 
+	def __str__(self):
+		return f"{self.begin:d}-{self.end:d}";
+
 class Pause:
 	def __init__(self,interval,points):
 		self.interval=interval;
@@ -134,36 +137,20 @@ def remove(points,n1,n2):
 	return [points[:n1],points[n2:]];
 
 def findIntervals(points,condition):
-	last=None;
 	begin=None;
 	end=None;
 	intervals=list();
 	#print("L:",len(points));
-	for n in range(len(points)):
+	N=len(points);
+	for n in range(N):
 		inside=condition(points,n);
-		# print(n,inside);
-		if not begin and inside:
-			#print("start (a)",n);
+		if begin is None and inside: # get in
 			begin=n;
-		if inside != last and not last is None:
-			if not inside:
-				#print("end (b)",n);
-				end=n;
-				intervals.append(Interval(begin,end));
-				b=points[begin].time;
-				e=points[end].time;
-				dmin=datetime.timedelta(minutes=10);
-				duration=e-b;
-				#print("begin:",begin," lasts",e-b,"#",end-begin,"points");
-			else:
-				#print("start (2)",n);
-				begin=n;
-				end=None;
-		last=inside;
-	if begin and not end:
-		#print("end (2)",n);
-		end=n;
-		intervals.append(Interval(begin,end));
+		if (not inside and not begin is None) or n==(N-1): # get out
+			end=n;
+			intervals.append(Interval(begin,end));
+			begin=None;
+			end=None;
 	return intervals;
 
 def findPausingIntervals(points):
@@ -250,7 +237,7 @@ def makesubtracks(directory):
 	assert(P);
 	subtracks=list();
 	npauses=0;
-	for p in P:	
+	for p in P:
 		I=long_pauses(p,findPausingIntervals(p));
 		npauses+=len(I);
 		subtracks.extend(remove_intervals(p,I));
