@@ -82,6 +82,19 @@ class Interval:
 
 class Pause:
 	def __init__(self,interval,points):
+		self._interval=interval;
+		start=points[interval.begin];
+		end=points[interval.end];
+		self._duration=end.time - start.time;
+
+	def interval(self):
+		return self._interval;
+		
+	def duration(self):
+		return self._duration;
+
+class Gap:
+	def __init__(self,interval,points):
 		self.interval=interval;
 		self.start=points[interval.begin];
 		self.end=points[interval.end];
@@ -127,6 +140,8 @@ def remove_intervals(points,intervals):
 		begin=I.begin - delta;
 		end=I.end - delta;
 		section=points[:begin];
+		print(f"remove {end:3d} points");	
+		ret.append(points[:end]);
 		del points[:end];
 		if section:
 			ret.append(section);
@@ -138,6 +153,7 @@ def remove(points,n1,n2):
 	return [points[:n1],points[n2:]];
 
 def findIntervals(points,condition):
+	assert(points);
 	begin=None;
 	end=None;
 	intervals=list();
@@ -159,7 +175,7 @@ def findPausingIntervals(points):
 def long_pauses(points,intervals):
 	minpause=datetime.timedelta(minutes=10);
 	Pauses=[Pause(i,points) for i in intervals if Pause(i,points).duration()>minpause];
-	return [p.interval for p in Pauses];
+	return [p.interval() for p in Pauses];
 
 def statistics(points):
 	ret={};
@@ -192,10 +208,11 @@ def print_statistics(points,name):
 	endtime=(points[-1].time+datetime.timedelta(hours=2)).strftime("%H:%M");
 
 	print(f"{name:10s}",end="| ");
+	print(f"{len(points):4d}",end=" |");
 	print(f"{startdate:8s}",end=" ");
 	print(f"{starttime:5s}",end=" - ");
 	print(f"{enddate:5s}",end=" - ");
-	print(f"{endtime:5s}",end=" | ");
+	print(f"{endtime:5s}",end=" |");
 	distance=S["distance"];
 	print(f"{distance/1000:5.1f} km",end=" | ");
 	ds=S["seconds"];
