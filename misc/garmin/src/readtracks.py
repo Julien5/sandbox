@@ -11,6 +11,7 @@ import sys;
 import datetime;
 import copy;
 import math;
+import json;
 
 import output;
 
@@ -89,7 +90,7 @@ class Interval:
 	def __str__(self):
 		return f"{self.begin:d}-{self.end:d}";
 
-class Comparator:
+class StartTimeComparator:
 	def __init__(self,points):
 		self.points=points;
 
@@ -108,7 +109,7 @@ class NoInterval:
 
 class LongPauses:
 	def __init__(self,points,IP):
-		self.minpause=datetime.timedelta(minutes=10);
+		self.minpause=datetime.timedelta(minutes=120);
 		self.intervals=copy.deepcopy(IP);
 
 	def get(self,points,n):
@@ -145,9 +146,6 @@ def apply_intervals(points,intervals):
 		ret.append(p2);
 	return ret;
 
-def remove(points,n1,n2):
-	return [points[:n1],points[n2:]];
-
 def findIntervals(typename,points,condition):
 	assert(points);
 	begin=None;
@@ -170,16 +168,11 @@ def findIntervals(typename,points,condition):
 			end=None;
 	return intervals;
 
-def findPausingIntervals(points):
-	return findIntervals("pause",points,pause_condition);
+def serialize(D):
+	return json.dumps(D);
 
-def findGapIntervals(points):
-	return findIntervals("gap",points,gap_condition);
-
-def long_pauses(points,intervals):
-	minpause=datetime.timedelta(minutes=10);
-	Pauses=[Pause(i,points) for i in intervals if Pause(i,points).duration()>minpause];
-	return [p.interval() for p in Pauses];
+def deserialize(string):
+	return json.loads(string);
 
 def statistics(points,start=None,end=None):
 	ret={};
@@ -238,43 +231,25 @@ def print_statistics(S,name):
 	#print(f"{track.name():s}",end=" |");
 	print("");
 
-def print_interval_statistics(points,interval,name):
-	S=statistics(points,interval.begin,interval.end);
-	print_statistics(S,name);
-
-
-def strip(points):
-	G=points;
-	startpoint = G[0];
-	stoppoint = G[-1];
-	threshold=50
-	while G and distance(startpoint,G[0]) < threshold:
-   		G.pop(0);
-	while G and distance(stoppoint,G[-1]) < threshold:
-		G.pop(-1);
-	return G;
-
 def makesubtracks(directory):
 	origin=os.path.join(directory,"gpx","origin.gpx");
 	print(origin)
 	points=readpoints(origin);
-	Nbefore=len(points);
-	startbefore=points[0];
-	points=strip(points);
-	startafter=points[0];
-	Nafter=len(points);
-	dtime=startafter.time - startbefore.time;
 	assert(points);
 	print("N=",len(points));
+	
 	I=[];
 	Ipauses=findIntervals("tmp",points,pause_condition);
 	longPausesFinder=LongPauses(points,Ipauses);
+	
 	I.extend(findIntervals("pauses",points,longPausesFinder.get));
 	I.extend(findIntervals("gap",points,gap_condition));
+	
 	noIntervalFinder=NoInterval(I);
 	I.extend(findIntervals("moving",points,noIntervalFinder.get));
-	compare=Comparator(points);
-	I_sorted=sorted(I,key=compare.key);
+	
+	startTimeCompare=StartTimeComparator(points);
+	I_sorted=sorted(I,key=startTimeCompare.key);
 	MovingIntervals=list();
 	for i in I_sorted:
 		typename=i.typename;
@@ -300,7 +275,7 @@ def readtrack(directory):
 			name_k = f"{name:s}-{k:d}";
 			print_statistics(statistics(points),name_k);
 
-if __name__ == "__main__":
+def main():
 	if len(sys.argv)>1:
 		dirname=sys.argv[1];
 	else:
@@ -311,3 +286,6 @@ if __name__ == "__main__":
 		#dirname="/home/julien//projects/tracks/0378f791b6ff5cbfdd575600aca03ae5"
 		dirname="/home/julien//projects/tracks/0829577e9ff09026f7ae0d9e7eb30add"
 	readtrack(dirname);
+
+if __name__ == "__main__":
+	main();	
