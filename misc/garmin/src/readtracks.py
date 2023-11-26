@@ -73,34 +73,50 @@ def movement(points,n):
 	return (d,t,speed);
 
 class Interval:
-	def __init__(self,begin,end):
+	def __init__(self,typename,begin,end):
 		self.begin=begin;
 		self.end=end;
+		self.typename=typename;
+		assert(not self.begin is None);
+		assert(not self.end is None);
+
+	def contains(self,n):
+		return self.begin<=n and n<self.end;
+
+	def duration(self,points):
+		return points[self.end].time - points[self.begin].time;
 
 	def __str__(self):
 		return f"{self.begin:d}-{self.end:d}";
 
-class Pause:
-	def __init__(self,interval,points):
-		self._interval=interval;
-		start=points[interval.begin];
-		end=points[interval.end];
-		self._duration=end.time - start.time;
+class Comparator:
+	def __init__(self,points):
+		self.points=points;
 
-	def interval(self):
-		return self._interval;
-		
-	def duration(self):
-		return self._duration;
+	def key(self,interval):
+		return self.points[interval.begin].time;
 
-class Gap:
-	def __init__(self,interval,points):
-		self.interval=interval;
-		self.start=points[interval.begin];
-		self.end=points[interval.end];
+class NoInterval:
+	def __init__(self,I):
+		self.intervals=copy.deepcopy(I);
 
-	def duration(self):
-		return self.end.time - self.start.time;
+	def get(self,points,n):
+		for interval in self.intervals:
+			if interval.contains(n):
+				return False;
+		return True;
+
+class LongPauses:
+	def __init__(self,points,IP):
+		self.minpause=datetime.timedelta(minutes=10);
+		self.intervals=copy.deepcopy(IP);
+
+	def get(self,points,n):
+		for interval in self.intervals:
+			if interval.contains(n) and interval.duration(points)>self.minpause:
+				return True;
+		return False;	
+
 
 def pause_condition(points,n):
 	(d,t,speed)=movement(points,n);
@@ -117,32 +133,8 @@ def gap_condition(points,n):
 	maxdt=datetime.timedelta(hours=3);
 	return dt>maxdt;
 
-def moving_condition(points,n):
-	return not pause_condition(points,n) and not gap_condition(points,n);
-
-def find3hGaps(points):
-	gaps=list();
-	for n in range(len(points)-1):
-		p1=points[n];
-		p2=points[n+1];
-		dt=p2.time - p1.time;
-		maxdt=datetime.timedelta(hours=3);
-		if dt>maxdt:
-			gaps.append(n);
-	return gaps;
-
-def cuts(points,N):
-	if not N:
-		return [points];
-	if N[0] != 0:
-		N.insert(0,0);
-	ret=list();	
-	for k in range(1,len(N)):
-		d=N[k]-N[k-1];
-		ret.append(points[:d]);
-		del points[:d];
-	ret.append(points);
-	return ret;
+#def moving_condition(points,n):
+#	return not pause_condition(points,n) and not gap_condition(points,n);
 
 def remove_intervals(points,intervals):
 	Ninit=len(points);
@@ -162,10 +154,19 @@ def remove_intervals(points,intervals):
 	ret.append(points);	
 	return ret;
 
+def apply_intervals(points,intervals):
+	ret=list();
+	for I in intervals:
+		begin=I.begin;
+		end=I.end;
+		p2=points[begin:end]
+		ret.append(p2);
+	return ret;
+
 def remove(points,n1,n2):
 	return [points[:n1],points[n2:]];
 
-def findIntervals(points,condition):
+def findIntervals(typename,points,condition):
 	assert(points);
 	begin=None;
 	end=None;
@@ -182,16 +183,16 @@ def findIntervals(points,condition):
 			end=n;
 			assert(not begin is None);
 			assert(end);
-			intervals.append(Interval(begin,end));
+			intervals.append(Interval(typename,begin,end));
 			begin=None;
 			end=None;
 	return intervals;
 
 def findPausingIntervals(points):
-	return findIntervals(points,pause_condition);
+	return findIntervals("pause",points,pause_condition);
 
 def findGapIntervals(points):
-	return findIntervals(points,gap_condition);
+	return findIntervals("gap",points,gap_condition);
 
 def long_pauses(points,intervals):
 	minpause=datetime.timedelta(minutes=10);
@@ -284,32 +285,30 @@ def makesubtracks(directory):
 	points0=copy.deepcopy(points);
 	points2=copy.deepcopy(points);
 	assert(points);
-	
-	# first the gaps.
-	G=find3hGaps(points);
-	print(G);
-	P=cuts(points,G);
-	
 	print("N=",len(points2));
-	GI=findGapIntervals(points2);
-	for g in GI:
-		S=statistics(points2,g.begin,g.end+1);
-		print_statistics(S,"gap");
-	print();
-	GI=findPausingIntervals(points2);
-	for g in GI:
-		S=statistics(points2,g.begin,g.end);
-		print_statistics(S,"pause");
-	print();
-
-	assert(P);
-	subtracks=list();
-	npauses=0;
-	for p in P:
-		I=long_pauses(p,findPausingIntervals(p));
-		npauses+=len(I);
-		subtracks.extend(remove_intervals(p,I));
-	Nsum=sum([len(s) for s in subtracks]);
+	I=[];
+	Ipauses=findIntervals("tmp",points2,pause_condition);
+	longPausesFinder=LongPauses(points2,Ipauses);
+	I.extend(findIntervals("pauses",points2,longPausesFinder.get));
+	#I.extend(findIntervals("pauses",points2,pause_condition));
+	I.extend(findIntervals("gap",points2,gap_condition));
+	NO=NoInterval(I);
+	I.extend(findIntervals("moving",points2,NO.get));
+	compare=Comparator(points2);
+	I_sorted=sorted(I,key=compare.key);
+	MI=list();
+	for i in I_sorted:
+		typename=i.typename;
+		begin=i.begin;
+		end=i.end;
+		if typename == "gap":
+			end=i.end+1;
+		S=statistics(points,begin,end);
+		print_statistics(S,typename);
+		if typename == "moving" and S["distance"]>1000:
+			MI.append(i);
+	print("found",len(MI),"moving intervals");
+	subtracks=apply_intervals(points0,MI);
 	return (points0,subtracks);
 		
 def readtrack(directory):
