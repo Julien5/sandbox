@@ -58,7 +58,7 @@ def distance(p1,p2):
 def time_seconds(p1,p2):
 	return (p2.time-p1.time).total_seconds();
 
-def state(points,n):
+def movement(points,n):
 	d=0;
 	t=0;
 	speed=0;
@@ -103,9 +103,22 @@ class Gap:
 		return self.end.time - self.start.time;
 
 def pause_condition(points,n):
-	(d,t,speed)=state(points,n);
+	(d,t,speed)=movement(points,n);
 	kmh=3600*speed/1000;
-	return kmh<3; 
+	return kmh<3;
+
+def gap_condition(points,n):
+	N=len(points);
+	if n>=(N-1):
+		return False;
+	p1=points[n];
+	p2=points[n+1];
+	dt=p2.time - p1.time;
+	maxdt=datetime.timedelta(hours=3);
+	return dt>maxdt;
+
+def moving_condition(points,n):
+	return not pause_condition(points,n) and not gap_condition(points,n);
 
 def find3hGaps(points):
 	gaps=list();
@@ -163,7 +176,12 @@ def findIntervals(points,condition):
 		if begin is None and inside: # get in
 			begin=n;
 		if (not inside and not begin is None) or n==(N-1): # get out
+			if n==(N-1) and begin is None:
+				# did not find any interval
+				continue;
 			end=n;
+			assert(not begin is None);
+			assert(end);
 			intervals.append(Interval(begin,end));
 			begin=None;
 			end=None;
@@ -172,43 +190,53 @@ def findIntervals(points,condition):
 def findPausingIntervals(points):
 	return findIntervals(points,pause_condition);
 
+def findGapIntervals(points):
+	return findIntervals(points,gap_condition);
+
 def long_pauses(points,intervals):
 	minpause=datetime.timedelta(minutes=10);
 	Pauses=[Pause(i,points) for i in intervals if Pause(i,points).duration()>minpause];
 	return [p.interval() for p in Pauses];
 
-def statistics(points):
+def statistics(points,start=None,end=None):
 	ret={};
 	N=len(points);
 	distance=0;
 	moving_seconds=0;
 	minspeed=4*1000.0/3600; # m/s
-	for k in range(N):
-		(d,t,speed)=state(points,k);
+	if start is None:
+		start=0;
+	if end is None:
+		end=N;
+	for k in range(start,end):
+		(d,t,speed)=movement(points,k);
 		distance += d;
 		if speed > minspeed:
 			moving_seconds += t;
-	seconds=time_seconds(points[0], points[-1]);
+	seconds=time_seconds(points[start], points[end-1]);
 	ret["distance"]	= distance;
-	ret["duration"] = points[-1].time - points[0].time;
+	ret["duration"] = points[end-1].time - points[start].time;
 	ret["seconds"] = seconds;
 	ret["meanspeed"] = 0;
 	ret["movingspeed"] = 0;
+	ret["startpoint"]=points[start];
+	ret["endpoint"]=points[end-1];
+	ret["N"]=end-start;
 	if seconds>0:
 		ret["meanspeed"] = distance/seconds;
 	if moving_seconds>0:
 		ret["movingspeed"] = distance/moving_seconds;
 	return ret;
 
-def print_statistics(points,name):
-	S=statistics(points);
-	startdate=points[0].time.strftime("%d.%m.%Y (%a)");
-	starttime=(points[0].time+datetime.timedelta(hours=2)).strftime("%H:%M");
-	enddate=points[-1].time.strftime("%d (%a)");
-	endtime=(points[-1].time+datetime.timedelta(hours=2)).strftime("%H:%M");
+def print_statistics(S,name):
+	startdate=S["startpoint"].time.strftime("%d.%m.%Y (%a)");
+	starttime=(S["startpoint"].time+datetime.timedelta(hours=2)).strftime("%H:%M");
+	enddate=S["endpoint"].time.strftime("%d (%a)");
+	endtime=(S["endpoint"].time+datetime.timedelta(hours=2)).strftime("%H:%M");
 
 	print(f"{name:10s}",end="| ");
-	print(f"{len(points):4d}",end=" |");
+	N=S["N"];
+	print(f"{N:4d}",end=" |");
 	print(f"{startdate:8s}",end=" ");
 	print(f"{starttime:5s}",end=" - ");
 	print(f"{enddate:5s}",end=" - ");
@@ -227,6 +255,10 @@ def print_statistics(points,name):
 	#print(f"{track.name():s}",end=" |");
 	print("");
 
+def print_interval_statistics(points,interval,name):
+	S=statistics(points,interval.begin,interval.end);
+	print_statistics(S,name);
+
 
 def strip(points):
 	G=points;
@@ -241,6 +273,7 @@ def strip(points):
 
 def makesubtracks(directory):
 	origin=os.path.join(directory,"gpx","origin.gpx");
+	print(origin)
 	points=readpoints(origin);
 	Nbefore=len(points);
 	startbefore=points[0];
@@ -249,10 +282,26 @@ def makesubtracks(directory):
 	Nafter=len(points);
 	dtime=startafter.time - startbefore.time;
 	points0=copy.deepcopy(points);
+	points2=copy.deepcopy(points);
 	assert(points);
+	
 	# first the gaps.
 	G=find3hGaps(points);
+	print(G);
 	P=cuts(points,G);
+	
+	print("N=",len(points2));
+	GI=findGapIntervals(points2);
+	for g in GI:
+		S=statistics(points2,g.begin,g.end+1);
+		print_statistics(S,"gap");
+	print();
+	GI=findPausingIntervals(points2);
+	for g in GI:
+		S=statistics(points2,g.begin,g.end);
+		print_statistics(S,"pause");
+	print();
+
 	assert(P);
 	subtracks=list();
 	npauses=0;
@@ -262,24 +311,26 @@ def makesubtracks(directory):
 		subtracks.extend(remove_intervals(p,I));
 	Nsum=sum([len(s) for s in subtracks]);
 	return (points0,subtracks);
-
 		
 def readtrack(directory):
 	if not os.path.exists(os.path.join(directory,"subtracks")):
 		name=os.path.basename(directory)[:6];
 		(points,S)=makesubtracks(directory);
-		states=[state(points,l) for l in range(len(points))];
+		movements=[movement(points,l) for l in range(len(points))];
 		start=points[0].time;
 		end=points[-1].time;
-		print_statistics(points,name);
+		stats=statistics(points);
+		print_statistics(stats,name);
 		for k in range(len(S)):
 			points=S[k];
 			start=points[0].time;
 			end=points[-1].time;
-			states=[state(S[k],l) for l in range(len(S[k]))];
+			movements=[movement(S[k],l) for l in range(len(S[k]))];
 			name_k = f"{name:s}-{k:d}";
-			print_statistics(points,name_k);
+			stats=statistics(points);
+			print_statistics(stats,name_k);
 		#print(len(S),"subtracks");
+
 
 if __name__ == "__main__":
 	if len(sys.argv)>1:
