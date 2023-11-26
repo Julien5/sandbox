@@ -136,24 +136,6 @@ def gap_condition(points,n):
 #def moving_condition(points,n):
 #	return not pause_condition(points,n) and not gap_condition(points,n);
 
-def remove_intervals(points,intervals):
-	Ninit=len(points);
-	ret=list();
-	for I in intervals:
-		N=len(points);
-		delta = Ninit - N;
-		begin=I.begin - delta;
-		end=I.end - delta;
-		section=points[:begin];
-		print(f"remove {end:3d} points");	
-		ret.append(points[:end]);
-		del points[:end];
-		if section:
-			ret.append(section);
-	assert(points)
-	ret.append(points);	
-	return ret;
-
 def apply_intervals(points,intervals):
 	ret=list();
 	for I in intervals:
@@ -282,21 +264,18 @@ def makesubtracks(directory):
 	startafter=points[0];
 	Nafter=len(points);
 	dtime=startafter.time - startbefore.time;
-	points0=copy.deepcopy(points);
-	points2=copy.deepcopy(points);
 	assert(points);
-	print("N=",len(points2));
+	print("N=",len(points));
 	I=[];
-	Ipauses=findIntervals("tmp",points2,pause_condition);
-	longPausesFinder=LongPauses(points2,Ipauses);
-	I.extend(findIntervals("pauses",points2,longPausesFinder.get));
-	#I.extend(findIntervals("pauses",points2,pause_condition));
-	I.extend(findIntervals("gap",points2,gap_condition));
-	NO=NoInterval(I);
-	I.extend(findIntervals("moving",points2,NO.get));
-	compare=Comparator(points2);
+	Ipauses=findIntervals("tmp",points,pause_condition);
+	longPausesFinder=LongPauses(points,Ipauses);
+	I.extend(findIntervals("pauses",points,longPausesFinder.get));
+	I.extend(findIntervals("gap",points,gap_condition));
+	noIntervalFinder=NoInterval(I);
+	I.extend(findIntervals("moving",points,noIntervalFinder.get));
+	compare=Comparator(points);
 	I_sorted=sorted(I,key=compare.key);
-	MI=list();
+	MovingIntervals=list();
 	for i in I_sorted:
 		typename=i.typename;
 		begin=i.begin;
@@ -306,30 +285,20 @@ def makesubtracks(directory):
 		S=statistics(points,begin,end);
 		print_statistics(S,typename);
 		if typename == "moving" and S["distance"]>1000:
-			MI.append(i);
-	print("found",len(MI),"moving intervals");
-	subtracks=apply_intervals(points0,MI);
-	return (points0,subtracks);
+			MovingIntervals.append(i);
+	print("found",len(MovingIntervals),"moving intervals");
+	subtracks=apply_intervals(points,MovingIntervals);
+	return (points,subtracks);
 		
 def readtrack(directory):
 	if not os.path.exists(os.path.join(directory,"subtracks")):
 		name=os.path.basename(directory)[:6];
 		(points,S)=makesubtracks(directory);
-		movements=[movement(points,l) for l in range(len(points))];
-		start=points[0].time;
-		end=points[-1].time;
-		stats=statistics(points);
-		print_statistics(stats,name);
+		print_statistics(statistics(points),name);
 		for k in range(len(S)):
 			points=S[k];
-			start=points[0].time;
-			end=points[-1].time;
-			movements=[movement(S[k],l) for l in range(len(S[k]))];
 			name_k = f"{name:s}-{k:d}";
-			stats=statistics(points);
-			print_statistics(stats,name_k);
-		#print(len(S),"subtracks");
-
+			print_statistics(statistics(points),name_k);
 
 if __name__ == "__main__":
 	if len(sys.argv)>1:
