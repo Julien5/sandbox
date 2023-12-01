@@ -97,7 +97,8 @@ function import-new-files() {
 }
 
 function remove-files-from-GPS() {
-	echo delete
+	local GPSDIR="$1"
+	shift
 	find "$GPSDIR" -type f -name "*.gpx" -print -delete 
 }
 
@@ -105,7 +106,7 @@ function main() {
 	local GPSDIR=/media/julien/GARMIN/Garmin/GPX
 	local TRACKSDIR=$HOME/tracks
 	import-from-gps "${GPSDIR}" "${TRACKSDIR}"
-	remove-files-from-gps
+	remove-files-from-GPS ${GPSDIR}
 	local HDIR=$(createH)
 	import-new-files "${TRACKSDIR}" "${HDIR}"
 }

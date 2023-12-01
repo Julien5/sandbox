@@ -12,8 +12,10 @@ import datetime;
 import copy;
 import math;
 import json;
+import builtins;
 
 import output;
+
 
 def readgpx(filename):
 	gpx_file = open(filename, 'r');
@@ -21,25 +23,54 @@ def readgpx(filename):
 	gpx_file.close();
 	return gpx;
 
+def writegpx(filename,gpx):
+	f=open(filename,'w');	
+	f.write(gpx.to_xml());
+	f.close();
+
 class Point:
-	def __init__(self,latitude,longitude=None,elevation=None,time=None):
-		if time:
-			self.latitude=latitude;
-			self.longitude=longitude;
-			self.elevation=elevation;
-			self.time=time;
-		else:
-			p=latitude;
-			self.latitude=p.latitude;
-			self.longitude=p.longitude;
-			self.elevation=p.elevation;
-			self.time=p.time;
-		
+	def __init__(self,la,lo,ele,time):
+		self.latitude=la;
+		self.longitude=lo;
+		self.elevation=ele;
+		self.time=time;
+
+	def __str__(self):
+		D={};
+		D["latitude"]=self.latitude;
+		D["longitude"]=self.longitude;
+		D["elevation"]=self.elevation;
+		D["time"]=serialize(self.time);
+		return json.dumps(D);
+
+def PointFromString(s):
+	D=json.loads(s);
+	return Point(D["latitude"],D["longitude"],D["elevation"],deserialize(D["time"]));
+
+def PointFromGPXPY(p):
+	return Point(p.latitude,p.longitude,p.elevation,p.time);
+	
+def writepoints(points,filename):
+	gpx = gpxpy.gpx.GPX();
+	gpx_track = gpxpy.gpx.GPXTrack()
+	gpx.tracks.append(gpx_track)
+	gpx_segment = gpxpy.gpx.GPXTrackSegment()
+	gpx_track.segments.append(gpx_segment)
+	# Create points:
+	for p in points:
+		lat=p.latitude;	
+		lon=p.longitude;
+		elev=p.elevation;
+		time=p.time;
+		gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(lat,lon,elev,time));
+	writegpx(filename,gpx);	
+			
 def segpoints(segment):
 	ret=list();
 	for point in segment.points:
 		assert(point.time);
-		ret.append(Point(point));
+		p=PointFromGPXPY(point);
+		ret.append(p);
 	return ret;
 
 def readpoints(path):
@@ -120,7 +151,7 @@ class LongPauses:
 
 
 def pause_condition(points,n):
-	(d,t,speed)=movement(points,n);
+	(d,dt,speed)=movement(points,n);
 	kmh=3600*speed/1000;
 	return kmh<3;
 
@@ -142,6 +173,8 @@ def apply_intervals(points,intervals):
 	for I in intervals:
 		begin=I.begin;
 		end=I.end;
+		#if I.typename=="gap":
+		#	end=I.end+1;
 		p2=points[begin:end]
 		ret.append(p2);
 	return ret;
@@ -168,11 +201,54 @@ def findIntervals(typename,points,condition):
 			end=None;
 	return intervals;
 
-def serialize(D):
-	return json.dumps(D);
+def serialize_stats(D):
+	return json.dumps(D,default=serialize);
 
-def deserialize(string):
-	return json.loads(string);
+
+def deserialize_stats_worker(jsn):
+	D=json.loads(jsn);
+	D2={};
+	for key in D:
+		if type(D[key]) is list:
+			D2[key]=deserialize(D[key]);
+		else:
+			D2[key]=D[key];
+	return D2;
+
+def deserialize_stats(jsn):
+	return deserialize_stats_worker(jsn);
+
+def writestats(D,filename):
+	f=open(filename,'w');
+	f.write(serialize_stats(D));
+	
+def readstats(filename):
+	f=open(filename,'r');
+	deserialize_stats(f.read());
+
+def deserialize(pair):
+	(typename,data)=pair;
+	if typename == "datetime":
+		return datetime.datetime.fromisoformat(data);
+	if typename == "timedelta":
+		days=0;
+		if "day" in data:
+			parts=data.split(",")
+			days=parts[0].split(" ")[0];
+			data=parts[1][1:];
+		(H,M,S)=data.split(":");
+		ret=datetime.timedelta(days=int(days),hours=int(H),minutes=int(M),seconds=int(S));
+		return ret;
+	if typename == "Point":
+		return PointFromString(data);
+	return getattr(builtins, typename)(data);
+
+def serialize(e):
+	typename=type(e).__name__;
+	data=str(e);
+	if type(e) is datetime:
+		data=e.isoformat();
+	return (typename,data);
 
 def statistics(points,start=None,end=None):
 	ret={};
@@ -195,6 +271,8 @@ def statistics(points,start=None,end=None):
 	ret["seconds"] = seconds;
 	ret["meanspeed"] = 0;
 	ret["movingspeed"] = 0;
+	ret["start"]=start;
+	ret["end"]=end;
 	ret["startpoint"]=points[start];
 	ret["endpoint"]=points[end-1];
 	ret["N"]=end-start;
@@ -213,6 +291,10 @@ def print_statistics(S,name):
 	print(f"{name:10s}",end="| ");
 	N=S["N"];
 	print(f"{N:4d}",end=" |");
+	start=S["start"];
+	end=S["end"];
+	print(f"{start:4d}",end="-");
+	print(f"{end:4d}",end=" |");
 	print(f"{startdate:8s}",end=" ");
 	print(f"{starttime:5s}",end=" - ");
 	print(f"{enddate:5s}",end=" - ");
@@ -223,7 +305,8 @@ def print_statistics(S,name):
 	hours=math.floor(ds/3600);
 	seconds=ds-3600*hours;
 	minutes=math.floor(seconds/60);
-	print(f"{hours:02d}:{minutes:02d}",end=" | ");
+	seconds=ds-3600*hours-60*minutes;
+	print(f"{hours:02d}:{minutes:02d}:{int(seconds):02d}",end=" | ");
 	speed=3600*S["meanspeed"]/1000;
 	mspeed=3600*S["movingspeed"]/1000;
 	print(f"{speed:4.1f} kmh",end=" |");
@@ -231,12 +314,15 @@ def print_statistics(S,name):
 	#print(f"{track.name():s}",end=" |");
 	print("");
 
-def makesubtracks(directory):
+def process(directory):
 	origin=os.path.join(directory,"gpx","origin.gpx");
 	print(origin)
 	points=readpoints(origin);
 	assert(points);
 	print("N=",len(points));
+
+	stats=statistics(points);
+	print_statistics(stats,"all");
 	
 	I=[];
 	Ipauses=findIntervals("tmp",points,pause_condition);
@@ -250,22 +336,33 @@ def makesubtracks(directory):
 	
 	startTimeCompare=StartTimeComparator(points);
 	I_sorted=sorted(I,key=startTimeCompare.key);
+
 	MovingIntervals=list();
-	for i in I_sorted:
-		typename=i.typename;
-		begin=i.begin;
-		end=i.end;
-		if typename == "gap":
-			end=i.end+1;
-		S=statistics(points,begin,end);
-		print_statistics(S,typename);
-		if typename == "moving" and S["distance"]>1000:
-			MovingIntervals.append(i);
-	print("found",len(MovingIntervals),"moving intervals");
-	subtracks=apply_intervals(points,MovingIntervals);
-	return (points,subtracks);
+	subtracks=apply_intervals(points,I_sorted);
+	assert(len(subtracks)==len(I_sorted));
+	N=len(subtracks);
+	for n in range(N):
+		interval=I_sorted[n];
+		typename=interval.typename;
+		if typename != "moving":
+			# skip
+			continue;
+		begin=interval.begin;
+		end=interval.end;
+		track=subtracks[n];
+		gpxfilename=f"{n:02d}-{interval.typename:s}.gpx";
+		writepoints(track,os.path.join(directory,"gpx",gpxfilename));
+		statsfilename=f"{n:02d}-{interval.typename:s}.txt";
+		stats=statistics(points,begin,end);
+		if stats["distance"]<1000:
+			# skip
+			continue;
+		s=serialize_stats(stats);
+		s2=deserialize_stats(s);
+		writestats(stats,os.path.join(directory,"gpx",statsfilename));
+		print_statistics(stats,typename);
 		
-def readtrack(directory):
+def processtrack(directory):
 	if not os.path.exists(os.path.join(directory,"subtracks")):
 		name=os.path.basename(directory)[:6];
 		(points,S)=makesubtracks(directory);
@@ -285,7 +382,7 @@ def main():
 		#dirname="/home/julien/projects/tracks/83fe50d8f8407a830507cd5ecfd0ce25"
 		#dirname="/home/julien//projects/tracks/0378f791b6ff5cbfdd575600aca03ae5"
 		dirname="/home/julien//projects/tracks/0829577e9ff09026f7ae0d9e7eb30add"
-	readtrack(dirname);
+	process(dirname);
 
 if __name__ == "__main__":
 	main();	
