@@ -11,10 +11,10 @@ import sys;
 import datetime;
 import copy;
 import math;
-import json;
 import builtins;
 
 import output;
+import pickle;
 
 
 def readgpx(filename):
@@ -34,18 +34,6 @@ class Point:
 		self.longitude=lo;
 		self.elevation=ele;
 		self.time=time;
-
-	def __str__(self):
-		D={};
-		D["latitude"]=self.latitude;
-		D["longitude"]=self.longitude;
-		D["elevation"]=self.elevation;
-		D["time"]=serialize(self.time);
-		return json.dumps(D);
-
-def PointFromString(s):
-	D=json.loads(s);
-	return Point(D["latitude"],D["longitude"],D["elevation"],deserialize(D["time"]));
 
 def PointFromGPXPY(p):
 	return Point(p.latitude,p.longitude,p.elevation,p.time);
@@ -202,53 +190,18 @@ def findIntervals(typename,points,condition):
 	return intervals;
 
 def serialize_stats(D):
-	return json.dumps(D,default=serialize);
+	return pickle.dumps(D);
 
-
-def deserialize_stats_worker(jsn):
-	D=json.loads(jsn);
-	D2={};
-	for key in D:
-		if type(D[key]) is list:
-			D2[key]=deserialize(D[key]);
-		else:
-			D2[key]=D[key];
-	return D2;
-
-def deserialize_stats(jsn):
-	return deserialize_stats_worker(jsn);
+def deserialize_stats(data):
+	return pickle.loads(data);
 
 def writestats(D,filename):
-	f=open(filename,'w');
+	f=open(filename,'wb');
 	f.write(serialize_stats(D));
 	
 def readstats(filename):
-	f=open(filename,'r');
+	f=open(filename,'rb');
 	deserialize_stats(f.read());
-
-def deserialize(pair):
-	(typename,data)=pair;
-	if typename == "datetime":
-		return datetime.datetime.fromisoformat(data);
-	if typename == "timedelta":
-		days=0;
-		if "day" in data:
-			parts=data.split(",")
-			days=parts[0].split(" ")[0];
-			data=parts[1][1:];
-		(H,M,S)=data.split(":");
-		ret=datetime.timedelta(days=int(days),hours=int(H),minutes=int(M),seconds=int(S));
-		return ret;
-	if typename == "Point":
-		return PointFromString(data);
-	return getattr(builtins, typename)(data);
-
-def serialize(e):
-	typename=type(e).__name__;
-	data=str(e);
-	if type(e) is datetime:
-		data=e.isoformat();
-	return (typename,data);
 
 def statistics(points,start=None,end=None):
 	ret={};
