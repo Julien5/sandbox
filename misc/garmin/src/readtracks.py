@@ -137,7 +137,6 @@ class LongPauses:
 				return True;
 		return False;	
 
-
 def pause_condition(points,n):
 	(d,dt,speed)=movement(points,n);
 	kmh=3600*speed/1000;
@@ -161,8 +160,6 @@ def apply_intervals(points,intervals):
 	for I in intervals:
 		begin=I.begin;
 		end=I.end;
-		#if I.typename=="gap":
-		#	end=I.end+1;
 		p2=points[begin:end]
 		ret.append(p2);
 	return ret;
@@ -201,67 +198,87 @@ def writestats(D,filename):
 	
 def readstats(filename):
 	f=open(filename,'rb');
-	deserialize_stats(f.read());
+	return deserialize_stats(f.read());
 
-def statistics(points,start=None,end=None):
-	ret={};
-	N=len(points);
-	distance=0;
-	moving_seconds=0;
-	minspeed=4*1000.0/3600; # m/s
-	if start is None:
-		start=0;
-	if end is None:
-		end=N;
-	for k in range(start,end):
-		(d,t,speed)=movement(points,k);
-		distance += d;
-		if speed > minspeed:
-			moving_seconds += t;
-	seconds=time_seconds(points[start], points[end-1]);
-	ret["distance"]	= distance;
-	ret["duration"] = points[end-1].time - points[start].time;
-	ret["seconds"] = seconds;
-	ret["meanspeed"] = 0;
-	ret["movingspeed"] = 0;
-	ret["start"]=start;
-	ret["end"]=end;
-	ret["startpoint"]=points[start];
-	ret["endpoint"]=points[end-1];
-	ret["N"]=end-start;
-	if seconds>0:
-		ret["meanspeed"] = distance/seconds;
-	if moving_seconds>0:
-		ret["movingspeed"] = distance/moving_seconds;
-	return ret;
+class Statistics:
+	def __init__(self,directory,points,interval=None):
+		N=len(points);
+		distance=0;
+		moving_seconds=0;
+		minspeed=4*1000.0/3600; # m/s
+		if interval is None:
+			interval=Interval("all",0,N);
+		for k in range(interval.begin,interval.end):
+			(d,t,speed)=movement(points,k);
+			distance += d;
+			if speed > minspeed:
+				moving_seconds += t;
+		seconds=time_seconds(points[interval.begin], points[interval.end-1]);
+		self.directory = directory;
+		self.typename	= interval.typename;
+		self.distance	= distance;
+		self.duration= points[interval.end-1].time - points[interval.begin].time;
+		self.seconds= seconds;
+		self.meanspeed= 0;
+		self.movingspeed= 0;
+		self.start = interval.begin;
+		self.end = interval.end;
+		self.startpoint=points[interval.begin];
+		self.endpoint=points[interval.end-1];
+		self.N =interval.end-interval.begin;
+		if seconds>0:
+			self.meanspeed= distance/seconds;
+		if moving_seconds>0:
+			self.movingspeed= distance/moving_seconds;
+		
 
-def print_statistics(S,name):
-	startdate=S["startpoint"].time.strftime("%d.%m.%Y (%a)");
-	starttime=(S["startpoint"].time+datetime.timedelta(hours=2)).strftime("%H:%M");
-	enddate=S["endpoint"].time.strftime("%d (%a)");
-	endtime=(S["endpoint"].time+datetime.timedelta(hours=2)).strftime("%H:%M");
+def category_speed(kmh,threshold):
+	if kmh>threshold:
+		return "cycling";
+	return "running";
 
-	print(f"{name:10s}",end="| ");
-	N=S["N"];
-	print(f"{N:4d}",end=" |");
-	start=S["start"];
-	end=S["end"];
-	print(f"{start:4d}",end="-");
-	print(f"{end:4d}",end=" |");
+def category(S):
+	if S.typename != "moving":
+		return "none";
+	distance=S.distance;
+	km=distance/1000;
+	kmh=3600*S.movingspeed/1000;
+	if km>40:
+		return category_speed(kmh,10);
+	if km>15:
+		return category_speed(kmh,15);
+	if km>10:
+		return category_speed(kmh,18);
+	return category_speed(kmh,20);
+	
+def print_statistics(S):
+	startdate=S.startpoint.time.strftime("%d.%m.%Y (%a)");
+	starttime=(S.startpoint.time+datetime.timedelta(hours=2)).strftime("%H:%M");
+	enddate=S.endpoint.time.strftime("%d (%a)");
+	endtime=(S.endpoint.time+datetime.timedelta(hours=2)).strftime("%H:%M");
+
+	name=S.typename;
+	cat=category(S);
+	print(f"{cat:8s}",end="| ");
+	#N=S.N;
+	#print(f"{N:4d}",end=" |");
+	#start=S.start;
+	#end=S.end;
+	#print(f"{start:4d}",end="-");
+	#print(f"{end:4d}",end=" |");
 	print(f"{startdate:8s}",end=" ");
 	print(f"{starttime:5s}",end=" - ");
-	print(f"{enddate:5s}",end=" - ");
 	print(f"{endtime:5s}",end=" |");
-	distance=S["distance"];
+	distance=S.distance;
 	print(f"{distance/1000:5.1f} km",end=" | ");
-	ds=S["seconds"];
+	ds=S.seconds;
 	hours=math.floor(ds/3600);
 	seconds=ds-3600*hours;
 	minutes=math.floor(seconds/60);
 	seconds=ds-3600*hours-60*minutes;
 	print(f"{hours:02d}:{minutes:02d}:{int(seconds):02d}",end=" | ");
-	speed=3600*S["meanspeed"]/1000;
-	mspeed=3600*S["movingspeed"]/1000;
+	speed=3600*S.meanspeed/1000;
+	mspeed=3600*S.movingspeed/1000;
 	print(f"{speed:4.1f} kmh",end=" |");
 	print(f"{mspeed:4.1f} kmh",end=" |");	
 	#print(f"{track.name():s}",end=" |");
@@ -269,18 +286,15 @@ def print_statistics(S,name):
 
 def process(directory):
 	origin=os.path.join(directory,"gpx","origin.gpx");
-	print(origin)
 	points=readpoints(origin);
 	assert(points);
-	print("N=",len(points));
 
-	stats=statistics(points);
-	print_statistics(stats,"all");
+	stats=Statistics(directory,points);
+	writestats(stats,os.path.join(directory,"gpx","all.txt"));
 	
 	I=[];
 	Ipauses=findIntervals("tmp",points,pause_condition);
 	longPausesFinder=LongPauses(points,Ipauses);
-	
 	I.extend(findIntervals("pauses",points,longPausesFinder.get));
 	I.extend(findIntervals("gap",points,gap_condition));
 	
@@ -306,36 +320,37 @@ def process(directory):
 		gpxfilename=f"{n:02d}-{interval.typename:s}.gpx";
 		writepoints(track,os.path.join(directory,"gpx",gpxfilename));
 		statsfilename=f"{n:02d}-{interval.typename:s}.txt";
-		stats=statistics(points,begin,end);
-		if stats["distance"]<1000:
+		stats=Statistics(directory,points,interval);
+		if stats.distance<1000:
 			# skip
 			continue;
 		s=serialize_stats(stats);
 		s2=deserialize_stats(s);
 		writestats(stats,os.path.join(directory,"gpx",statsfilename));
-		print_statistics(stats,typename);
-		
-def processtrack(directory):
-	if not os.path.exists(os.path.join(directory,"subtracks")):
-		name=os.path.basename(directory)[:6];
-		(points,S)=makesubtracks(directory);
-		print_statistics(statistics(points),name);
-		for k in range(len(S)):
-			points=S[k];
-			name_k = f"{name:s}-{k:d}";
-			print_statistics(statistics(points),name_k);
 
+from glob import glob
+def movingstatsfiles(dirname):
+	return glob(dirname+"/**/*-moving.txt", recursive=True);
+
+def readallstats():
+	D={};
+	for dirname in glob("/home/julien/projects/tracks/a*/", recursive=False):
+		alltxt=os.path.join(dirname,"gpx","all.txt")
+		if not os.path.exists(alltxt):
+			process(dirname);
+
+		stats=readstats(alltxt);
+		D[stats.startpoint.time]=readstats(alltxt);
+		for filename in movingstatsfiles(dirname):
+			stats=readstats(filename);
+			D[stats.startpoint.time]=stats;
+			
+	for time in sorted(D.keys()):
+		s=D[time];
+		print_statistics(s);
+		
 def main():
-	if len(sys.argv)>1:
-		dirname=sys.argv[1];
-	else:
-		#dirname="/home/julien/projects/tracks/a86483799d2afca78bde6e1662ad8281";
-		#dirname="/home/julien/projects/tracks/ba7d58fad784a0270d47cda199971a00"
-		#dirname="/home/julien/projects/tracks/bb2cc714674ef5fdb0c0423a593e0344"
-		#dirname="/home/julien/projects/tracks/83fe50d8f8407a830507cd5ecfd0ce25"
-		#dirname="/home/julien//projects/tracks/0378f791b6ff5cbfdd575600aca03ae5"
-		dirname="/home/julien//projects/tracks/0829577e9ff09026f7ae0d9e7eb30add"
-	process(dirname);
+	readallstats();
 
 if __name__ == "__main__":
 	main();	
