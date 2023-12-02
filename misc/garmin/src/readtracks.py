@@ -250,16 +250,31 @@ def category(S):
 	if km>10:
 		return category_speed(kmh,18);
 	return category_speed(kmh,20);
+
+def fixutc(time):
+	from dateutil import tz
+	# METHOD 1: Hardcode zones:
+	utc_zone = tz.gettz('UTC')
+	local_zone = tz.gettz('Europe/Berlin')
+
+
+	# Tell the datetime object that it's in UTC time zone since 
+	# datetime objects are 'naive' by default
+	utc = time.replace(tzinfo=utc_zone)
+
+	# Convert time zone
+	return utc.astimezone(local_zone)
 	
 def print_statistics(S):
 	startdate=S.startpoint.time.strftime("%d.%m.%Y (%a)");
-	starttime=(S.startpoint.time+datetime.timedelta(hours=2)).strftime("%H:%M");
+	starttime=fixutc(S.startpoint.time).strftime("%H:%M");
 	enddate=S.endpoint.time.strftime("%d (%a)");
-	endtime=(S.endpoint.time+datetime.timedelta(hours=2)).strftime("%H:%M");
+	endtime=fixutc(S.endpoint.time).strftime("%H:%M");
 
-	name=S.typename;
 	cat=category(S);
 	print(f"{cat:8s}",end="| ");
+	name=S.typename;
+	print(f"{name:8s}",end="| ");
 	#N=S.N;
 	#print(f"{N:4d}",end=" |");
 	#start=S.start;
@@ -281,10 +296,10 @@ def print_statistics(S):
 	mspeed=3600*S.movingspeed/1000;
 	print(f"{speed:4.1f} kmh",end=" |");
 	print(f"{mspeed:4.1f} kmh",end=" |");	
-	#print(f"{track.name():s}",end=" |");
+	print(f"{S.directory:s}",end=" |");
 	print("");
 
-def process(directory):
+def create_statistics(directory):
 	origin=os.path.join(directory,"gpx","origin.gpx");
 	points=readpoints(origin);
 	assert(points);
@@ -311,9 +326,9 @@ def process(directory):
 	for n in range(N):
 		interval=I_sorted[n];
 		typename=interval.typename;
-		if typename != "moving":
-			# skip
-			continue;
+		# if typename != "moving":
+		#	# skip
+		#	continue;
 		begin=interval.begin;
 		end=interval.end;
 		track=subtracks[n];
@@ -321,33 +336,41 @@ def process(directory):
 		writepoints(track,os.path.join(directory,"gpx",gpxfilename));
 		statsfilename=f"{n:02d}-{interval.typename:s}.txt";
 		stats=Statistics(directory,points,interval);
-		if stats.distance<1000:
-			# skip
-			continue;
+		#if stats.distance<1000:
+		#	# skip
+		#	continue;
 		s=serialize_stats(stats);
 		s2=deserialize_stats(s);
 		writestats(stats,os.path.join(directory,"gpx",statsfilename));
 
 from glob import glob
-def movingstatsfiles(dirname):
-	return glob(dirname+"/**/*-moving.txt", recursive=True);
+def statsfiles(dirname):
+	return glob(dirname+"/**/*-*.txt", recursive=True);
 
 def readallstats():
 	D={};
-	for dirname in glob("/home/julien/projects/tracks/a*/", recursive=False):
+	dirs=glob("/home/julien/projects/tracks/*/", recursive=False);
+	for n in range(len(dirs)):
+		dirname=dirs[n];
+		percent=100*n/len(dirs);
+		alltxt=os.path.join(dirname,"gpx","all.txt")
+		if not os.path.exists(alltxt):
+			print(f"{dirname:50s} [{percent:04.1f}%]",end="",flush=True);
+			create_statistics(dirname);
+			print("\r",end="",flush="True");
+		
+	for dirname in dirs:
 		alltxt=os.path.join(dirname,"gpx","all.txt")
 		if not os.path.exists(alltxt):
 			process(dirname);
-
-		stats=readstats(alltxt);
-		D[stats.startpoint.time]=readstats(alltxt);
-		for filename in movingstatsfiles(dirname):
+		for filename in statsfiles(dirname):
 			stats=readstats(filename);
 			D[stats.startpoint.time]=stats;
 			
 	for time in sorted(D.keys()):
 		s=D[time];
-		print_statistics(s);
+		if s.typename == "moving" and s.distance>1000:
+			print_statistics(s);
 		
 def main():
 	readallstats();

@@ -99,6 +99,8 @@ function import-new-files() {
 function remove-files-from-GPS() {
 	local GPSDIR="$1"
 	shift
+	# copy to tmp (just in case..)
+	cp -Rf "$GPSDIR" /tmp/
 	find "$GPSDIR" -type f -name "*.gpx" -print -delete 
 }
 
