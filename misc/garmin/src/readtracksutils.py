@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import copy;
+
 class Point:
 	def __init__(self,la,lo,ele,time):
 		self.latitude=la;
@@ -17,11 +19,11 @@ class Interval:
 	def contains(self,n):
 		return self.begin<=n and n<self.end;
 
-	def duration(self,points):
-		return points[self.end].time - points[self.begin].time;
-
 	def __str__(self):
-		return f"{self.typename:10s}:{self.begin:d}-{self.end:d}";
+		typename=self.typename;
+		if typename is None:
+			typename=str(None);
+		return f"{typename:10s}:{self.begin:d}-{self.end:d}";
 
 	def join(self,other):
 		b=min(self.begin,other.begin);
@@ -51,20 +53,97 @@ def filter_intervals(intervals,points,function):
 	return ret;
 
 def gap_condition(I):
-	return I.typename="gap";
+	return I.typename=="gap";
 
 def split(J,condition):
 	R=list();
 	packet=list();
 	for k in range(len(J)):
-		if condition(J[k]):
+		if condition(J[k]) or k==len(J)-1:
 			R.append(packet);
 			packet=list();
 		else:
 			packet.append(J[k]);
 	return R;
 
-def join_intervals(intervals,points,join_condition):
+def next_joinable_interval(intervals,startindex,join_condition):
+	N=len(intervals);
+	ref=intervals[startindex];
+	for k in range(startindex+1,N):
+		I2=intervals[k];
+		if join_condition(ref,I2):
+			return k;
+	return None;
+
+def next_interval(intervals,startindex,condition):
+	N=len(intervals);
+	for k in range(startindex,N):
+		I=intervals[k];
+		if condition(I):
+			return k;
+	return None;
+
+def join_far_intervals(intervals,start_condition,join_condition):
+	N=len(intervals);
+	k=next_interval(intervals,0,start_condition);
+	if k is None:
+		return copy.deepcopy(intervals);
+	assert(k<N);
+	ret=copy.deepcopy(intervals[:k+1]);
+	while True:
+		assert(start_condition(ret[-1]));
+		l=next_joinable_interval(intervals,k,join_condition);
+		if l is None:
+			break;
+		ret[-1].join(intervals[l]);
+		k=l
+	if k+1<N:
+		ret.extend(intervals[k+1:]);
+	return ret;
+
+def join_close_intervals(intervals,start_condition,join_condition):
+	k=-1;
+	ret=copy.deepcopy(intervals);
+	while True:
+		N=len(ret);
+		k=next_interval(ret,k+1,start_condition);
+		if k is None:
+			break;
+		if k<(N-1):
+			next=ret[k+1];
+			if join_condition(ret[k],next):
+				ret[k].join(next);
+				del ret[k+1];
+		if k>0:
+			prev=ret[k-1];
+			if join_condition(prev,ret[k]):
+				ret[k].join(prev);
+				del ret[k-1];
+				k=k-1;
+	return ret;
+
+def test_join_far_intervals():
+	print("*"*20);
+	intervals=list();
+	intervals.append(Interval("M", 1, 4));
+	intervals.append(Interval("T", 4,10));
+	intervals.append(Interval("M",10,11));
+	intervals.append(Interval("T",11,13));
+	intervals.append(Interval("P",13,14));
+	intervals.append(Interval("P",21,23));
+	intervals.append(Interval("T",51,53));
+	intervals.append(Interval("P",61,63));
+	for i in intervals:
+		print(i)
+	print("=>");
+	J=join_far_intervals(intervals, lambda I: I.typename == "T", lambda I1,I2: I1.typename=="T" and I2.typename=="T" and I2.begin-I1.end<10);
+	for i in intervals:
+		print(i)
+	print("=>");	
+	for i in J:
+		print(i);
+
+def join_intervals(intervals,join_condition):
 	ret=list();
 	N=len(intervals);
 	assert(intervals);
@@ -73,25 +152,12 @@ def join_intervals(intervals,points,join_condition):
 	for k in range(1,N):
 		tail=ret[-1]
 		nexti=intervals[k];
-		if join_condition(points,tail,nexti):
+		if join_condition(tail,nexti):
 			ret[-1].join(nexti);
 		else:
 			ret.append(nexti);
 		k=k+1;
 	return ret;
-
-def complement_intervals(typename,intervals,points):
-	# fixme
-	N=len(intervals);
-	ret=list();
-	for k in range(len(N)-1):
-		I1=intervals[k];
-		I2=intervals[k+1];
-		begin=I1.end;
-		end=I2.begin;
-		ret.append(Interval(typename,begin,end));
-	return ret;	
-
 
 def test_join_condition(points,I1,I2):
 	return I2.begin - I1.end < 3;
@@ -112,13 +178,12 @@ def test_join_intervals():
 	for r in R:
 		print(r)
 
-def annotate_intervals(points,annotation_function):
+def annotate(points,annotation_function):
 	assert(points);
 	intervals=[Interval(annotation_function(points,0),0,None)];
 	N=len(points);
 	for n in range(1,N):
 		annotation=annotation_function(points,n);
-		assert(not annotation is None);
 		change=intervals[-1].typename != annotation;
 		if not change:
 			continue;
@@ -127,9 +192,13 @@ def annotate_intervals(points,annotation_function):
 		# open new one 
 		intervals.append(Interval(annotation,n,None));
 	intervals[-1].end=N;
+	# remove None
+	# intervals=[intervals[k] for k in range(len(intervals)) if not intervals[k].typename is None];
 	return intervals;
 
 def test_annotation_function(points,n):
+	if points[n].elevation is None:
+		return None;
 	if points[n].elevation<1:
 		return "low";
 	if points[n].elevation>2:
@@ -145,9 +214,11 @@ def test_annotate():
 	points.append(Point(0,0,0.2,0));
 	points.append(Point(0,0,1.1,0));
 	points.append(Point(0,0,2.3,0));
+	points.append(Point(0,0,None,0));
+	points.append(Point(0,0,None,0));
 	points.append(Point(0,0,2.3,0));
 	points.append(Point(0,0,2.3,0));
-	J=annotate_intervals(points,test_annotation_function);
+	J=annotate(points,test_annotation_function);
 	assert(J);
 	for I in J:
 		print(I);
@@ -155,6 +226,7 @@ def test_annotate():
 def main():
 	test_annotate();
 	test_join_intervals();
+	test_join_far_intervals();
 
 if __name__ == "__main__":
 	main();	
