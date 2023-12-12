@@ -50,6 +50,9 @@ def filter_intervals(intervals,points,function):
 			ret.append(I);
 	return ret;
 
+def gap_condition(I):
+	return I.typename="gap";
+
 def split(J,condition):
 	R=list();
 	packet=list();
@@ -95,12 +98,12 @@ def test_join_condition(points,I1,I2):
 
 def test_join_intervals():
 	I=list();
-	I.append(Interval("",1,3));
-	I.append(Interval("",5,6))
-	I.append(Interval("",15,17))
-	I.append(Interval("",19,21))
-	I.append(Interval("",22,24))
-	I.append(Interval("",35,37))
+	I.append(Interval("a",1,3));
+	I.append(Interval("a",5,6))
+	I.append(Interval("b",15,17))
+	I.append(Interval("b",19,21))
+	I.append(Interval("b",22,24))
+	I.append(Interval("c",35,37))
 	points=None;
 	R=join_intervals(I,points,test_join_condition);
 	for r in I:
@@ -108,7 +111,6 @@ def test_join_intervals():
 	print("=>");
 	for r in R:
 		print(r)
-
 
 def annotate_intervals(points,annotation_function):
 	assert(points);
@@ -152,7 +154,7 @@ def test_annotate():
 
 def main():
 	test_annotate();
-	#test_join_intervals();
+	test_join_intervals();
 
 if __name__ == "__main__":
 	main();	

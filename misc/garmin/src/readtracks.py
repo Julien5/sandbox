@@ -16,6 +16,7 @@ import builtins;
 import output;
 import pickle;
 
+from readtracksutils import *;
 
 def readgpx(filename):
 	gpx_file = open(filename, 'r');
@@ -27,13 +28,6 @@ def writegpx(filename,gpx):
 	f=open(filename,'w');	
 	f.write(gpx.to_xml());
 	f.close();
-
-class Point:
-	def __init__(self,la,lo,ele,time):
-		self.latitude=la;
-		self.longitude=lo;
-		self.elevation=ele;
-		self.time=time;
 
 def PointFromGPXPY(p):
 	return Point(p.latitude,p.longitude,p.elevation,p.time);
@@ -78,11 +72,14 @@ def distance(p1,p2):
 def time_seconds(p1,p2):
 	return (p2.time-p1.time).total_seconds();
 
+def kmh(ms):
+	return ms*3600/1000;
+
 def movement(points,n):
 	d=0;
 	t=0;
 	speed=0;
-	if n >= len(points)-1:
+	if n<0 or n >= len(points)-1:
 		return (d,t,speed);
 	p1=points[n];
 	p2=points[n+1];
@@ -92,50 +89,25 @@ def movement(points,n):
 		speed=d/t;
 	return (d,t,speed);
 
-class Interval:
-	def __init__(self,typename,begin,end):
-		self.begin=begin;
-		self.end=end;
-		self.typename=typename;
-		assert(not self.begin is None);
-		assert(not self.end is None);
 
-	def contains(self,n):
-		return self.begin<=n and n<self.end;
+def long_pause_interval(points,interval):
+	minpause=datetime.timedelta(minutes=120);
+	return interval.duration(points)>minpause;
 
-	def duration(self,points):
-		return points[self.end].time - points[self.begin].time;
+def train_join_condition(points,I1,I2):
+	assert(I1.begin<I2.begin);
+	p1=points[I1.end];
+	p2=points[I2.begin];
+	assert(p2.time > p1.time);
+	dt=p2.time - p1.time
+	return dt<datetime.timedelta(minutes=60);
 
-	def __str__(self):
-		return f"{self.begin:d}-{self.end:d}";
-
-class StartTimeComparator:
-	def __init__(self,points):
-		self.points=points;
-
-	def key(self,interval):
-		return self.points[interval.begin].time;
-
-class NoInterval:
-	def __init__(self,I):
-		self.intervals=copy.deepcopy(I);
-
-	def get(self,points,n):
-		for interval in self.intervals:
-			if interval.contains(n):
-				return False;
-		return True;
-
-class LongPauses:
-	def __init__(self,points,IP):
-		self.minpause=datetime.timedelta(minutes=120);
-		self.intervals=copy.deepcopy(IP);
-
-	def get(self,points,n):
-		for interval in self.intervals:
-			if interval.contains(n) and interval.duration(points)>self.minpause:
-				return True;
-		return False;	
+def moving_train_join_condition(points,I1,I2):
+	assert(I1.begin<I2.begin);
+	T1=I1.typename;
+	T2=I2.typename;
+	TT={T1,T2};
+	return "train" in TT and "moving" in TT:
 
 def pause_condition(points,n):
 	(d,dt,speed)=movement(points,n);
@@ -150,10 +122,9 @@ def gap_condition(points,n):
 	p2=points[n+1];
 	dt=p2.time - p1.time;
 	maxdt=datetime.timedelta(hours=3);
-	return dt>maxdt;
+	maxdd=1000;
+	return dt>maxdt or distance(p1,p2)>maxdd;
 
-#def moving_condition(points,n):
-#	return not pause_condition(points,n) and not gap_condition(points,n);
 
 def apply_intervals(points,intervals):
 	ret=list();
@@ -164,27 +135,7 @@ def apply_intervals(points,intervals):
 		ret.append(p2);
 	return ret;
 
-def findIntervals(typename,points,condition):
-	assert(points);
-	begin=None;
-	end=None;
-	intervals=list();
-	N=len(points);
-	for n in range(N):
-		inside=condition(points,n);
-		if begin is None and inside: # get in
-			begin=n;
-		if (not inside and not begin is None) or n==(N-1): # get out
-			if n==(N-1) and begin is None:
-				# did not find any interval
-				continue;
-			end=n;
-			assert(not begin is None);
-			assert(end);
-			intervals.append(Interval(typename,begin,end));
-			begin=None;
-			end=None;
-	return intervals;
+
 
 def serialize_stats(D):
 	return pickle.dumps(D);
@@ -203,53 +154,91 @@ def readstats(filename):
 class Statistics:
 	def __init__(self,directory,points,interval=None):
 		N=len(points);
-		distance=0;
-		moving_seconds=0;
+		self.distance=0;
+		self.moving_seconds=0;
 		minspeed=4*1000.0/3600; # m/s
+		self.maxspeed=0;
 		if interval is None:
-			interval=Interval("all",0,N);
+			interval = Interval("all",0,N);
+
+		last_speed=None;
 		for k in range(interval.begin,interval.end):
-			(d,t,speed)=movement(points,k);
-			distance += d;
+			(d,t,speed) = movement(points,k);
+			#if t<5 or t>120:
+			#	# too short or too long.
+			#	continue;
+			delta_speed=0;
+			if not last_speed is None:
+				delta_speed = speed-last_speed;
+			#print(f"{str(interval):10s} {k:3d} {d:5.1f}m {t:5.1f}s {kmh(delta_speed):5.1f}kmh {kmh(speed):5.1f}kmh");
+
+			self.distance += d;
+			if kmh(delta_speed)<10:
+				self.maxspeed=max(self.maxspeed,speed);
 			if speed > minspeed:
-				moving_seconds += t;
-		seconds=time_seconds(points[interval.begin], points[interval.end-1]);
+				self.moving_seconds += t;
+			last_speed=speed;	
+		self.seconds = time_seconds(points[interval.begin], points[interval.end-1]);
 		self.directory = directory;
-		self.typename	= interval.typename;
-		self.distance	= distance;
-		self.duration= points[interval.end-1].time - points[interval.begin].time;
-		self.seconds= seconds;
-		self.meanspeed= 0;
-		self.movingspeed= 0;
+		self.typename = interval.typename;
+		self.duration = points[interval.end-1].time - points[interval.begin].time;
+		self.meanspeed = 0;
+		self.movingspeed = 0;
+		self.gpx = None;
 		self.start = interval.begin;
 		self.end = interval.end;
 		self.startpoint=points[interval.begin];
 		self.endpoint=points[interval.end-1];
 		self.N =interval.end-interval.begin;
-		if seconds>0:
-			self.meanspeed= distance/seconds;
-		if moving_seconds>0:
-			self.movingspeed= distance/moving_seconds;
-		
+		if self.seconds>0:
+			self.meanspeed= self.distance/self.seconds;
+		if self.moving_seconds>0:
+			self.movingspeed= self.distance/self.moving_seconds;
 
-def category_speed(kmh,threshold):
-	if kmh>threshold:
+	def accumulate(self,other):
+		self.directory = str();
+		assert(self.typename == other.typename);
+		self.distance += other.distance;
+		self.duration += other.duration;
+		self.seconds += other.seconds;
+		self.moving_seconds += other.moving_seconds;
+		self.meanspeed = 0;
+		self.movingspeed= 0;
+		#if kmh(other.maxspeed)>80:
+			#print("details:");
+			#print_statistics(other);
+			#readallstatsD(other.directory);
+		self.maxspeed=max(self.maxspeed,other.maxspeed);
+		self.start = None;
+		self.end = None;
+		if self.startpoint.time > other.startpoint.time:
+			self.startpoint=other.startpoint;
+		if self.endpoint.time < other.endpoint.time:
+			self.endpoint=other.endpoint;	
+		self.endpoint=other.endpoint;
+		self.N += other.N;
+		if self.seconds>0:
+			self.meanspeed = self.distance/self.seconds;
+		if self.moving_seconds>0:
+			self.movingspeed= self.distance/self.moving_seconds;
+
+def category_speed(msspeed,kmh_threshold):
+	if kmh(msspeed)>kmh_threshold:
 		return "cycling";
 	return "running";
 
 def category(S):
 	if S.typename != "moving":
 		return "none";
-	distance=S.distance;
-	km=distance/1000;
-	kmh=3600*S.movingspeed/1000;
+	km=S.distance/1000;
+	speed=S.movingspeed;
 	if km>40:
-		return category_speed(kmh,10);
+		return category_speed(speed,10);
 	if km>15:
-		return category_speed(kmh,15);
+		return category_speed(speed,15);
 	if km>10:
-		return category_speed(kmh,18);
-	return category_speed(kmh,20);
+		return category_speed(speed,16);
+	return category_speed(speed,17);
 
 def fixutc(time):
 	from dateutil import tz
@@ -294,10 +283,54 @@ def print_statistics(S):
 	print(f"{hours:02d}:{minutes:02d}:{int(seconds):02d}",end=" | ");
 	speed=3600*S.meanspeed/1000;
 	mspeed=3600*S.movingspeed/1000;
+	maxspeed=3600*S.maxspeed/1000;
 	print(f"{speed:4.1f} kmh",end=" |");
-	print(f"{mspeed:4.1f} kmh",end=" |");	
-	print(f"{S.directory:s}",end=" |");
+	print(f"{mspeed:4.1f} kmh",end=" |");
+	print(f"{maxspeed:4.1f} kmh",end=" |");
+	print(f"{S.gpx:s}",end=" |");
 	print("");
+
+
+def move_condition(points,n):
+	(d,dt,speed)=movement(points,n);
+	kmh=3600*speed/1000;
+	return kmh>3 and kmh<90;
+
+def trainspeed_condition(points,n):
+	(d,dt,speed)=movement(points,n);
+	return kmh(speed)>90;
+
+def find_train_intervals(directory,points):
+	ret=list();
+	
+	I0=findIntervals("train",points,trainspeed_condition);
+	I_trains=join_intervals(I0,points,train_join_condition);
+	ret=union(ret,I_trains);
+	
+	I_pauses=findIntervals("pause",points,pause_condition);
+	k3min=datetime.timedelta(minutes=3);
+	interval.duration(points)>k3min;
+	I_long_pauses=filter_intervals(Ipauses,points,lambda interval:interval.duration(points)>minpause);
+	ret=union(ret,I_long_pauses);
+
+	I_moving=complement_intervals("moving",ret);
+	I_trains=join_intervals(ret,points,moving_train_join_condition);
+	
+	
+	subtracks=apply_intervals(points,I_sorted);
+	N=len(subtracks);
+	for n in range(N):
+		interval=I_sorted[n];
+		typename=interval.typename;
+		track=subtracks[n];
+		gpxfilename=os.path.join(directory,"gpx",f"{n:02d}-{interval.typename:s}.gpx");
+		writepoints(track,gpxfilename);
+		stats=Statistics(directory,points,interval);
+		stats.gpx=gpxfilename;
+		statsfilename=os.path.join(directory,"gpx",f"{n:02d}-{interval.typename:s}.txt");
+		writestats(stats,statsfilename);
+		print_statistics(stats);
+	
 
 def create_statistics(directory):
 	origin=os.path.join(directory,"gpx","origin.gpx");
@@ -306,11 +339,16 @@ def create_statistics(directory):
 
 	stats=Statistics(directory,points);
 	writestats(stats,os.path.join(directory,"gpx","all.txt"));
+	find_train_intervals(directory,points);
+	return;	
 	
 	I=[];
+	
 	Ipauses=findIntervals("tmp",points,pause_condition);
-	longPausesFinder=LongPauses(points,Ipauses);
-	I.extend(findIntervals("pauses",points,longPausesFinder.get));
+	I.extend(filter_intervals(Ipauses,points,long_pause_interval));
+
+	print("Itrain",len(Itrain));
+	I.extend(Itrain);
 	I.extend(findIntervals("gap",points,gap_condition));
 	
 	noIntervalFinder=NoInterval(I);
@@ -332,45 +370,70 @@ def create_statistics(directory):
 		begin=interval.begin;
 		end=interval.end;
 		track=subtracks[n];
-		gpxfilename=f"{n:02d}-{interval.typename:s}.gpx";
-		writepoints(track,os.path.join(directory,"gpx",gpxfilename));
-		statsfilename=f"{n:02d}-{interval.typename:s}.txt";
+		gpxfilename=os.path.join(directory,"gpx",f"{n:02d}-{interval.typename:s}.gpx");
+		writepoints(track,gpxfilename);
 		stats=Statistics(directory,points,interval);
 		#if stats.distance<1000:
 		#	# skip
 		#	continue;
+		stats.gpx=gpxfilename;
+		statsfilename=os.path.join(directory,"gpx",f"{n:02d}-{interval.typename:s}.txt");
 		s=serialize_stats(stats);
 		s2=deserialize_stats(s);
-		writestats(stats,os.path.join(directory,"gpx",statsfilename));
+		writestats(stats,statsfilename);
+		print_statistics(stats);
 
 from glob import glob
-def statsfiles(dirname):
+def statsfilesH(dirname):
 	return glob(dirname+"/**/*-*.txt", recursive=True);
+
+def statsfilesD(dirname):
+	return glob(dirname+"/**/*-*.txt", recursive=True);
+
+def readallstatsD(directory):
+	D={};
+	for filename in statsfilesD(directory):
+		stats=readstats(filename);
+		D[stats.startpoint.time]=stats;
+	for time in sorted(D.keys()):
+		s=D[time];
+		print_statistics(s);
 
 def readallstats():
 	D={};
-	dirs=glob("/home/julien/projects/tracks/*/", recursive=False);
+	#dirs=glob("/home/julien/projects/tracks/*/", recursive=False);
+	dirs=glob("/home/julien/projects/tracks/5ccbb7d88e86ce7c0dfb83e31fd98622/", recursive=False);
+	# create statistics if needed
 	for n in range(len(dirs)):
 		dirname=dirs[n];
 		percent=100*n/len(dirs);
 		alltxt=os.path.join(dirname,"gpx","all.txt")
-		if not os.path.exists(alltxt):
-			print(f"{dirname:50s} [{percent:04.1f}%]",end="",flush=True);
+		if True or not os.path.exists(alltxt):
+			#print(f"{dirname:50s} [{percent:04.1f}%]",end="",flush=True);
 			create_statistics(dirname);
-			print("\r",end="",flush="True");
-		
+			#print("\r",end="",flush="True");
+
+	# gather statistics		
 	for dirname in dirs:
-		alltxt=os.path.join(dirname,"gpx","all.txt")
-		if not os.path.exists(alltxt):
-			process(dirname);
-		for filename in statsfiles(dirname):
+		for filename in statsfilesH(dirname):
 			stats=readstats(filename);
 			D[stats.startpoint.time]=stats;
-			
+
+	acc={};		
 	for time in sorted(D.keys()):
 		s=D[time];
-		if s.typename == "moving" and s.distance>1000:
-			print_statistics(s);
+		if False or (s.typename == "moving" and s.distance>1000):
+			if kmh(s.maxspeed)>100:
+				print_statistics(s);
+			key=category(s);#+s.typename;
+			if not key in acc:
+				acc[key]=s;
+			else:
+				acc[key].accumulate(s);
+
+	for key in acc.keys():
+		print(key);
+		print_statistics(acc[key]);
 		
 def main():
 	readallstats();
