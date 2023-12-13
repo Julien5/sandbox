@@ -162,6 +162,7 @@ class Statistics:
 			interval = Interval("all",0,N);
 
 		last_speed=None;
+		# this is slow:
 		for k in range(interval.begin,interval.end-1):
 			(d,t,speed) = movement(points,k);
 			delta_speed=None;
@@ -176,6 +177,7 @@ class Statistics:
 			if speed > minspeed:
 				self.moving_seconds += t;
 			last_speed=speed;
+			
 		self.seconds = time_seconds(points[interval.begin], points[interval.end-1]);
 		self.directory = directory;
 		self.typename = interval.typename;
@@ -395,7 +397,23 @@ def debug(banner,directory,k,points,J):
 	#print_subtracks(directory,k,points,J);
 	return;
 
+def formatdelta(dt):
+	t0=datetime.datetime(1970,1,1);
+	t1=t0+dt;
+	return t1.strftime("%S.%f");
+
+class Timer:
+	def __init__(self):
+		self.t0=datetime.datetime.now();
+
+	def elapsed(self,name):
+		t1=datetime.datetime.now();
+		dt=t1-self.t0;
+		print(f" [{name:10s} {formatdelta(dt):s}]");
+		self.t0=datetime.datetime.now();
+
 def process_intervals(directory,k,points,J):
+	timer=Timer();
 	debug("****** raw *****",directory,k,points,J);
 	withPoints=WithPoints(points);
 	J=join_far_intervals(J,train_start_condition,withPoints.train_join_condition)
@@ -409,20 +427,28 @@ def process_intervals(directory,k,points,J):
 
 	J=join_close_intervals(J,pause_start_condition,withPoints.pause_join_condition);
 	debug("****** long moving *****",directory,k,points,J);
+	timer.elapsed("process");
+
 	print_subtracks(directory,k,points,J,write_on_disk=True);
+	timer.elapsed("print");
 
 def create_statistics(directory):
 	origin=os.path.join(directory,"gpx","origin.gpx");
+	timer=Timer();
 	points=readpoints(origin);
+	timer.elapsed("read");
 	assert(points);
 	ret=list();
 
 	J=annotate(points,annotation_function);
+	timer.elapsed("annotate");
+	
 	R=split(J,lambda interval : interval.typename=="gap");
+	timer.elapsed("split");
+	
 	for k in range(len(R)):
 		J=R[k];
 		process_intervals(directory,k,points,J);
-		#print("*"*20);
 
 from glob import glob
 def statsfilesH(dirname):
@@ -443,6 +469,7 @@ def readallstatsD(directory):
 def readallstats():
 	D={};
 	dirs=glob("/home/julien/projects/tracks/*/", recursive=False);
+	#dirs=glob("test/H/*/", recursive=False);
 	#dirs=glob("/home/julien/projects/tracks/5ccbb7d88e86ce7c0dfb83e31fd98622/", recursive=False);
 	# create statistics if needed
 	for n in range(len(dirs)):
@@ -452,9 +479,9 @@ def readallstats():
 		#doit=False;
 		doit=False;
 		if doit or not os.path.exists(alltxt):
-			print(f"{dirname:50s} [{percent:04.1f}%]",end="",flush=True);
 			create_statistics(dirname);
-			print("\r",end="",flush="True");
+			print(f"{dirname:50s} [{percent:04.1f}%]",end="");
+			print("\n",end="",flush="True");
 
 	# gather statistics		
 	for dirname in dirs:
@@ -463,8 +490,21 @@ def readallstats():
 			D[stats.startpoint.time]=stats;
 			#print(stats.startpoint.time,filename,stats.typename,stats.distance);
 
-	acc={};		
-	for time in sorted(D.keys()):
+	last_month=None;		
+	acc={};
+	T=sorted(D.keys())
+	for k in range(len(T)):
+		time=T[k];
+		month=time.strftime("%m.%Y");
+		month_changed = month != last_month;
+
+		if month_changed or k==len(T)-1:
+			print("-"*10)
+			for key in sorted(acc.keys()):
+				print_statistics(acc[key]);
+			acc={};	
+			print();
+			
 		s=D[time];
 		if s.typename == "moving" and s.distance>1000:
 			print_statistics(s);
@@ -476,9 +516,7 @@ def readallstats():
 		#else:
 		#	print("skip",s.directory,s.typename,s.distance)
 
-	for key in acc.keys():
-		print(key);
-		print_statistics(acc[key]);
+		last_month=month;	
 		
 def main():
 	readallstats();

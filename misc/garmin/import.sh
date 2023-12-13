@@ -73,7 +73,9 @@ function import-to-H-file() {
 	if bad "$filename"; then
 		return;
 	fi
-	dstdir=${HDIR}/$(hash "${filename}")
+	local HDIR="$2"
+	shift
+	local dstdir=${HDIR}/$(hash "${filename}")
 	mkdir -p "${dstdir}"/{gpx,meta}
    	dst="${dstdir}/gpx/origin.gpx"
 	realpath "${filename}" > "${dstdir}"/meta/origin
@@ -88,11 +90,11 @@ function import-to-H-file() {
 function import-new-files() {
 	local SRCDIR="$1"
 	shift
-	local DSTDIR="$1"
+	local HDIR="$1"
 	shift
-	reference="$(newestfile "${DSTDIR}")"
+	reference="$(newestfile "${HDIR}")"
 	newfiles "${SRCDIR}" "${reference}" | sort | while read filename; do
-		import-to-H-file "${filename}"
+		import-to-H-file "${filename}" "${HDIR}"
 	done
 }
 
@@ -105,6 +107,8 @@ function remove-files-from-GPS() {
 }
 
 function main() {
+	import-new-files test/D test/H
+	return;
 	local GPSDIR=/media/julien/GARMIN/Garmin/GPX
 	local TRACKSDIR=$HOME/tracks
 	import-from-gps "${GPSDIR}" "${TRACKSDIR}"
