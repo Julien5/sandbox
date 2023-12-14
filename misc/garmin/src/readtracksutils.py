@@ -123,7 +123,6 @@ def join_close_intervals(intervals,start_condition,join_condition):
 	return ret;
 
 def test_join_far_intervals():
-	print("*"*20);
 	intervals=list();
 	intervals.append(Interval("M", 1, 4));
 	intervals.append(Interval("T", 4,10));
@@ -159,7 +158,7 @@ def join_intervals(intervals,join_condition):
 		k=k+1;
 	return ret;
 
-def test_join_condition(points,I1,I2):
+def test_join_condition(I1,I2):
 	return I2.begin - I1.end < 3;
 
 def test_join_intervals():
@@ -171,7 +170,7 @@ def test_join_intervals():
 	I.append(Interval("b",22,24))
 	I.append(Interval("c",35,37))
 	points=None;
-	R=join_intervals(I,points,test_join_condition);
+	R=join_intervals(I,test_join_condition);
 	for r in I:
 		print(r)
 	print("=>");
@@ -225,8 +224,11 @@ def test_annotate():
 
 def main():
 	test_annotate();
+	print("*"*20);
 	test_join_intervals();
+	print("*"*20);
 	test_join_far_intervals();
+	print("*"*20);
 
 if __name__ == "__main__":
 	main();	
