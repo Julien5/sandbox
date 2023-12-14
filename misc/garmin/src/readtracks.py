@@ -15,6 +15,7 @@ import builtins;
 
 import output;
 import pickle;
+import chain;
 
 from readtracksutils import *;
 
@@ -198,6 +199,9 @@ class Statistics:
 			self.meanspeed=0;
 		assert(self.moving_seconds<=self.seconds);
 		assert(self.movingspeed>=self.meanspeed);
+
+	def begintime(self):
+		return self.startpoint.time;
 		
 	def accumulate(self,other):
 		self.directory = str();
@@ -294,6 +298,44 @@ def print_statistics(S):
 	print(f"{S.gpx:s}",end=" |");
 	print("");
 
+def fr(day):
+	D=dict();
+	D["Mon"]="lun";
+	D["Tue"]="mar";
+	D["Wed"]="mer";
+	D["Thu"]="jeu";
+	D["Fri"]="ven";
+	D["Sat"]="sam";
+	D["Sun"]="dim";
+	return D[day];
+	
+def print_statistics_friendly(S):
+	startdayfr=fr(S.startpoint.time.strftime("%a"));
+	startdate=startdayfr+". "+S.startpoint.time.strftime("%d");
+	starttime=fixutc(S.startpoint.time).strftime("%H:%M");
+	enddate=S.endpoint.time.strftime("%d (%a)");
+	endtime=fixutc(S.endpoint.time).strftime("%H:%M");
+
+	cat=category(S);
+	print(f"{cat:8s}",end="| ");
+	print(f"{startdate:8s}",end=" ");
+	print(f"{starttime:5s}",end=" - ");
+	print(f"{endtime:5s}",end=" |");
+	distance=S.distance;
+	print(f"{distance/1000:6.1f} km",end=" | ");
+	ds=S.seconds;
+	hours=math.floor(ds/3600);
+	seconds=ds-3600*hours;
+	minutes=math.floor(seconds/60);
+	seconds=ds-3600*hours-60*minutes;
+	print(f"{hours:3d}:{minutes:02d}:{int(seconds):02d}",end=" | ");
+	avespeed=kmh(S.meanspeed);
+	movspeed=kmh(S.movingspeed);
+	maxspeed=kmh(S.maxspeed);
+	print(f"{avespeed:4.1f} kmh",end=" |");
+	print(f"{movspeed:4.1f} kmh",end=" |");
+	print(f"{maxspeed:4.1f} kmh",end=" |");
+	print("");
 
 def move_condition(points,n):
 	(d,dt,speed)=movement(points,n);
@@ -493,21 +535,25 @@ def readallstats():
 	last_month=None;		
 	acc={};
 	T=sorted(D.keys())
+	Tcycling=list();
 	for k in range(len(T)):
 		time=T[k];
 		month=time.strftime("%m.%Y");
 		month_changed = month != last_month;
 
-		if month_changed or k==len(T)-1:
+		if month_changed:
 			print("-"*10)
 			for key in sorted(acc.keys()):
-				print_statistics(acc[key]);
+				print_statistics_friendly(acc[key]);
 			acc={};	
 			print();
+			print(month);
 			
 		s=D[time];
 		if s.typename == "moving" and s.distance>1000:
-			print_statistics(s);
+			print_statistics_friendly(s);
+			if category(s) == "cycling":
+				Tcycling.append(s);
 			key=category(s);#+s.typename;
 			if not key in acc:
 				acc[key]=s;
@@ -516,7 +562,14 @@ def readallstats():
 		#else:
 		#	print("skip",s.directory,s.typename,s.distance)
 
-		last_month=month;	
+		last_month=month;
+
+	if acc:
+		print("-"*10)
+		for key in sorted(acc.keys()):
+			print_statistics_friendly(acc[key]);
+
+	chain.chain_distances(Tcycling);	
 		
 def main():
 	readallstats();
