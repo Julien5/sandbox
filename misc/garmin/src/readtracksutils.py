@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import copy;
+import copy
 
 class Point:
 	def __init__(self,la,lo,ele,time):
@@ -9,7 +9,6 @@ class Point:
 		self.elevation=ele;
 		self.time=time;
 
-		
 class Interval:
 	def __init__(self,typename,begin,end):
 		self.begin=begin;
@@ -38,18 +37,11 @@ class StartTimeComparator:
 	def key(self,interval):
 		return self.points[interval.begin].time;
 
-def union(T1,T2):
-	startTimeCompare=StartTimeComparator(points);
-	ret=list();
-	ret.extend(T1);
-	ret.extend(T2);
-	return sorted(T,key=startTimeCompare.key);
-
 def filter_intervals(intervals,points,function):
 	ret=list();
-	for I in intervals:
-		if function(points,I):
-			ret.append(I);
+	for interval in intervals:
+		if function(points,interval):
+			ret.append(interval);
 	return ret;
 
 def gap_condition(I):

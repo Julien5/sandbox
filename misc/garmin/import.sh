@@ -107,8 +107,8 @@ function remove-files-from-GPS() {
 }
 
 function main() {
-	import-new-files test/D test/H
-	return;
+	# import-new-files test/D test/H
+	# return
 	local GPSDIR=/media/julien/GARMIN/Garmin/GPX
 	local TRACKSDIR=$HOME/tracks
 	import-from-gps "${GPSDIR}" "${TRACKSDIR}"

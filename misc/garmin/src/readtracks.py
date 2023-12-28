@@ -1,23 +1,16 @@
 #!/usr/bin/env python3
 
-import track;
-import geometry;
-
 import gpxpy
 import gpxpy.gpx
 
 import os;
-import sys;
 import datetime;
-import copy;
 import math;
-import builtins;
 
-import output;
 import pickle;
 import chain;
 
-from readtracksutils import *;
+import readtracksutils;
 
 def readgpx(filename):
 	gpx_file = open(filename, 'r');
@@ -31,8 +24,8 @@ def writegpx(filename,gpx):
 	f.close();
 
 def PointFromGPXPY(p):
-	return Point(p.latitude,p.longitude,p.elevation,p.time);
-	
+	return readtracksutils.Point(p.latitude,p.longitude,p.elevation,p.time);
+
 def writepoints(points,filename):
 	gpx = gpxpy.gpx.GPX();
 	gpx_track = gpxpy.gpx.GPXTrack()
@@ -46,8 +39,8 @@ def writepoints(points,filename):
 		elev=p.elevation;
 		time=p.time;
 		gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(lat,lon,elev,time));
-	writegpx(filename,gpx);	
-			
+	writegpx(filename,gpx);
+
 def segpoints(segment):
 	ret=list();
 	for point in segment.points:
@@ -130,9 +123,9 @@ def gap_condition(points,n):
 
 def apply_intervals(points,intervals):
 	ret=list();
-	for I in intervals:
-		begin=I.begin;
-		end=I.end;
+	for interval in intervals:
+		begin=interval.begin;
+		end=interval.end;
 		p2=points[begin:end]
 		ret.append(p2);
 	return ret;
@@ -146,7 +139,7 @@ def deserialize_stats(data):
 def writestats(D,filename):
 	f=open(filename,'wb');
 	f.write(serialize_stats(D));
-	
+
 def readstats(filename):
 	f=open(filename,'rb');
 	return deserialize_stats(f.read());
@@ -156,40 +149,39 @@ class Statistics:
 		N=len(points);
 		self.distance=0;
 		self.moving_seconds=0;
-		minspeed=3*1000.0/3600; # m/s
+		minspeed=3*1000.0/3600;   # m/s
 		assert(kmh(minspeed)==3);
 		self.maxspeed=0;
 		if interval is None:
-			interval = Interval("all",0,N);
+			interval = readtracksutils.Interval("all",0,N);
 
 		last_speed=None;
 		# this is slow:
-		for k in range(interval.begin,interval.end-1):
+		for k in range(interval.begin,interval.end - 1):
 			(d,t,speed) = movement(points,k);
 			delta_speed=None;
-			if not last_speed is None:
-				delta_speed = speed-last_speed;
+			if last_speed is not None:
+				delta_speed = speed - last_speed;
 
 			self.distance += d;
-			if not delta_speed is None and kmh(delta_speed)<5:
-				#print(f"{str(interval):10s} {k:3d} {d:5.1f}m {t:5.1f}s {kmh(delta_speed):5.1f}kmh {kmh(speed):5.1f}kmh");
-				#print(d,t,kmh(last_speed),kmh(delta_speed),kmh(speed));
+			if delta_speed is not None and kmh(delta_speed)<5:
+				# print(d,t,kmh(last_speed),kmh(delta_speed),kmh(speed));
 				self.maxspeed=max(self.maxspeed,speed);
 			if speed > minspeed:
 				self.moving_seconds += t;
 			last_speed=speed;
-			
-		self.seconds = time_seconds(points[interval.begin], points[interval.end-1]);
+
+		self.seconds = time_seconds(points[interval.begin], points[interval.end - 1]);
 		self.directory = directory;
 		self.typename = interval.typename;
-		self.duration = points[interval.end-1].time - points[interval.begin].time;
+		self.duration = points[interval.end - 1].time - points[interval.begin].time;
 		self.meanspeed = 0;
 		self.movingspeed = 0;
 		self.gpx = None;
 		self.start = interval.begin;
 		self.end = interval.end;
 		self.startpoint=points[interval.begin];
-		self.endpoint=points[interval.end-1];
+		self.endpoint=points[interval.end - 1];
 		self.N=interval.end-interval.begin;
 		if self.seconds>0:
 			self.meanspeed=self.distance/self.seconds;
@@ -202,7 +194,7 @@ class Statistics:
 
 	def begintime(self):
 		return self.startpoint.time;
-		
+
 	def accumulate(self,other):
 		self.directory = str();
 		assert(self.typename == other.typename);
@@ -265,7 +257,7 @@ def fixutc(time):
 def print_statistics(S):
 	startdate=S.startpoint.time.strftime("%d.%m.%Y (%a)");
 	starttime=fixutc(S.startpoint.time).strftime("%H:%M");
-	enddate=S.endpoint.time.strftime("%d (%a)");
+	# enddate=S.endpoint.time.strftime("%d (%a)");
 	endtime=fixutc(S.endpoint.time).strftime("%H:%M");
 
 	cat=category(S);
@@ -313,7 +305,7 @@ def print_statistics_friendly(S):
 	startdayfr=fr(S.startpoint.time.strftime("%a"));
 	startdate=startdayfr+". "+S.startpoint.time.strftime("%d");
 	starttime=fixutc(S.startpoint.time).strftime("%H:%M");
-	enddate=S.endpoint.time.strftime("%d (%a)");
+	# enddate=S.endpoint.time.strftime("%d (%a)");
 	endtime=fixutc(S.endpoint.time).strftime("%H:%M");
 
 	cat=category(S);
@@ -409,13 +401,13 @@ def print_subtracks(directory,gapk,points,J,write_on_disk=False):
 	subtracks=apply_intervals(points,J);
 	prefix=f"GAP{gapk:02d}-";
 	if write_on_disk:
-		stats=Statistics(directory,points,Interval("all",0,len(points)));
+		stats=Statistics(directory,points,readtracksutils.Interval("all",0,len(points)));
 		statsfilename=os.path.join(directory,"gpx",prefix+"all.txt");
 		writestats(stats,statsfilename);
 	N=len(subtracks);
 	for n in range(N):
 		interval=J[n];
-		typename=interval.typename;
+		# typename=interval.typename;
 		track=subtracks[n];
 		gpxfilename=os.path.join(directory,"gpx",prefix+f"{n:02d}-{interval.typename:s}.gpx");
 		if write_on_disk:
@@ -458,16 +450,16 @@ def process_intervals(directory,k,points,J):
 	timer=Timer();
 	debug("****** raw *****",directory,k,points,J);
 	withPoints=WithPoints(points);
-	J=join_far_intervals(J,train_start_condition,withPoints.train_join_condition)
+	J=readtracksutils.join_far_intervals(J,train_start_condition,withPoints.train_join_condition)
 	debug("****** far *****",directory,k,points,J);
 	
-	J=join_close_intervals(J,train_start_condition,lambda I1,I2: True);
+	J=readtracksutils.join_close_intervals(J,train_start_condition,lambda I1,I2: True);
 	debug("****** close *****",directory,k,points,J);
 
-	J=join_close_intervals(J,moving_start_condition,withPoints.moving_join_condition);
+	J=readtracksutils.join_close_intervals(J,moving_start_condition,withPoints.moving_join_condition);
 	debug("****** long pause *****",directory,k,points,J);
 
-	J=join_close_intervals(J,pause_start_condition,withPoints.pause_join_condition);
+	J=readtracksutils.join_close_intervals(J,pause_start_condition,withPoints.pause_join_condition);
 	debug("****** long moving *****",directory,k,points,J);
 	timer.elapsed("process");
 
@@ -480,12 +472,11 @@ def create_statistics(directory):
 	points=readpoints(origin);
 	timer.elapsed("read");
 	assert(points);
-	ret=list();
 
-	J=annotate(points,annotation_function);
+	J=readtracksutils.annotate(points,annotation_function);
 	timer.elapsed("annotate");
 	
-	R=split(J,lambda interval : interval.typename=="gap");
+	R=readtracksutils.split(J,lambda interval : interval.typename=="gap");
 	timer.elapsed("split");
 	
 	for k in range(len(R)):
@@ -548,19 +539,19 @@ def readallstats():
 			acc={};	
 			print();
 			print(month);
-			
+
 		s=D[time];
 		if s.typename == "moving" and s.distance>1000:
 			print_statistics_friendly(s);
+			if category(s) == "running":
+				print("gpx:",s.gpx);
 			if category(s) == "cycling":
 				Tcycling.append(s);
-			key=category(s);#+s.typename;
-			if not key in acc:
+			key=category(s);
+			if key not in acc:
 				acc[key]=s;
 			else:
 				acc[key].accumulate(s);
-		#else:
-		#	print("skip",s.directory,s.typename,s.distance)
 
 		last_month=month;
 
@@ -570,9 +561,11 @@ def readallstats():
 			print_statistics_friendly(acc[key]);
 
 	chain.chain_distances(Tcycling);	
-		
+
+
 def main():
 	readallstats();
+
 
 if __name__ == "__main__":
 	main();	

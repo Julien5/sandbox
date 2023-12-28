@@ -4,9 +4,8 @@ import readgpx;
 import os;
 import sys;
 import datetime;
-import math;
-import segments;
 import output;
+
 
 def readtours():
 	test=False;
@@ -14,12 +13,12 @@ def readtours():
 	print("read files..");
 	if not test:
 		dir="/home/julien/tracks/";
-		#dir="/home/julien/tracks/2022.11.25";
+		# dir="/home/julien/tracks/2022.11.25";
 		# dir="test";
 		if len(sys.argv)>1:
 			dir=sys.argv[1];
 		T=readgpx.tracksfromdir(dir);
-		#T=T[0:20];
+		# T=T[0:20];
 	else:
 		T=readgpx.tracksfromdir("test");
 	print("clean tracks..");
@@ -28,12 +27,12 @@ def readtours():
 	print("categorizing..");
 	C=dict();
 	for t in T:
-		#t.stats();
-		if not t.category() in C:
+		if t.category() not in C:
 			C[t.category()]=list();
 		C[t.category()].append(t);
 	print("OK");
 	return C;
+
 
 def filter_tours(T,last_days=30):
 	D=dict();
