@@ -503,7 +503,7 @@ def readallstats():
 	D={};
 	dirs=glob("/home/julien/projects/tracks/*/", recursive=False);
 	#dirs=glob("test/H/*/", recursive=False);
-	#dirs=glob("/home/julien/projects/tracks/5ccbb7d88e86ce7c0dfb83e31fd98622/", recursive=False);
+	dirs=glob("/home/julien/projects/tracks/5ccbb7d88e86ce7c0dfb83e31fd98622/", recursive=False);
 	# create statistics if needed
 	for n in range(len(dirs)):
 		dirname=dirs[n];
@@ -543,8 +543,6 @@ def readallstats():
 		s=D[time];
 		if s.typename == "moving" and s.distance>1000:
 			print_statistics_friendly(s);
-			if category(s) == "running":
-				print("gpx:",s.gpx);
 			if category(s) == "cycling":
 				Tcycling.append(s);
 			key=category(s);

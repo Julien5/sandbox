@@ -16,7 +16,6 @@ import statistics;
 import writegpx;
 
 
-
 def readgpx(filename):
 	gpx_file = open(filename, 'r');
 	gpx = gpxpy.parse(gpx_file);
