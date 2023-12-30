@@ -1,0 +1,2 @@
+# download: https://download.geofabrik.de/europe/germany.html
+# convert osmconvert ~/Downloads/tuebingen-regbez-latest.osm.pbf
