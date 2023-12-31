@@ -7,6 +7,6 @@ int x = 0;
 
 int main(int argc, char **argv) {
     f1();
-    f3();
+    f2();
     return 0;
 }
