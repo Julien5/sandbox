@@ -37,6 +37,36 @@ class StartTimeComparator:
 	def key(self,interval):
 		return self.points[interval.begin].time;
 
+
+def kmh(ms):
+	return ms*3600/1000;
+
+def distance(p1,p2):
+	import geopy.distance
+	pp1=(p1.latitude,p1.longitude);
+	pp2=(p2.latitude,p2.longitude);
+	return 1000*geopy.distance.geodesic(pp1,pp2).km;
+
+def time_seconds(p1,p2):
+	return (p2.time-p1.time).total_seconds();
+
+def duration(points,interval):
+	return points[interval.end].time - points[interval.begin].time;
+
+def movement(points,n):
+	d=0;
+	t=0;
+	speed=0;
+	if n<0 or n >= len(points)-1:
+		return (d,t,speed);
+	p1=points[n];
+	p2=points[n+1];
+	d=distance(p1,p2);
+	t=time_seconds(p1,p2);
+	if t != 0:
+		speed=d/t;
+	return (d,t,speed);
+
 def filter_intervals(intervals,points,function):
 	ret=list();
 	for interval in intervals:
@@ -161,13 +191,30 @@ def test_join_intervals():
 	I.append(Interval("b",19,21))
 	I.append(Interval("b",22,24))
 	I.append(Interval("c",35,37))
-	points=None;
 	R=join_intervals(I,test_join_condition);
 	for r in I:
 		print(r)
 	print("=>");
 	for r in R:
 		print(r)
+
+def category_speed(msspeed,kmh_threshold):
+	if kmh(msspeed)>kmh_threshold:
+		return "cycling";
+	return "running";
+
+def category(S):
+	if S.typename != "moving":
+		return "none";
+	km=S.distance/1000;
+	speed=S.movingspeed;
+	if km>40:
+		return category_speed(speed,10);
+	if km>15:
+		return category_speed(speed,15);
+	if km>10:
+		return category_speed(speed,16);
+	return category_speed(speed,17);
 
 def annotate(points,annotation_function):
 	assert(points);

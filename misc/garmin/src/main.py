@@ -1,115 +1,89 @@
 #!/usr/bin/env python3
 
-import readgpx;
+import readtracks;
 import os;
-import sys;
-import datetime;
-import output;
+import statistics;
+import utils;
+import chain;
 
+from glob import glob
 
-def readtours():
-	test=False;
-	#test=True;
-	print("read files..");
-	if not test:
-		dir="/home/julien/tracks/";
-		# dir="/home/julien/tracks/2022.11.25";
-		# dir="test";
-		if len(sys.argv)>1:
-			dir=sys.argv[1];
-		T=readgpx.tracksfromdir(dir);
-		# T=T[0:20];
-	else:
-		T=readgpx.tracksfromdir("test");
-	print("clean tracks..");
-	assert(T);
-	T=readgpx.clean(T);
-	print("categorizing..");
-	C=dict();
-	for t in T:
-		if t.category() not in C:
-			C[t.category()]=list();
-		C[t.category()].append(t);
-	print("OK");
-	return C;
+def create_statistics(dirs,force=False):
+	for n in range(len(dirs)):
+		dirname=dirs[n];
+		percent=100*n/len(dirs);
+		alltxt=os.path.join(dirname,"gpx","GAP00-all.txt")
+		if force or not os.path.exists(alltxt):
+			readtracks.create_statistics(dirname);
+			print(f"{dirname:50s} [{percent:04.1f}%]",end="");
+			print("\n",end="",flush="True");
 
+def statsfilesH(dirname):
+	return glob(dirname+"/**/GAP*-*-*.txt", recursive=True);
 
-def filter_tours(T,last_days=30):
-	D=dict();
-	for t in T:
-		time=t.begintime().replace(tzinfo=None)
-		D[time]=t;
-	ret=list();
-	now = datetime.datetime.now();
-	for d in D:
-		#print(d)
-		#print(now)
-		delta=now-d;
-		if delta.days>last_days:
-			continue;
-		ret.append(D[d]);
-	return ret;	
+def statsfilesD(dirname):
+	return glob(dirname+"/**/*-*.txt", recursive=True);
 
-ChainDict=dict();
-def getchain(track):
-	global ChainDict;
-	if not ChainDict:
-		for f in os.listdir("chain"):
-			try:
-				d=datetime.datetime.strptime(f, "%d.%m.%Y");
-				ChainDict[d]=open("chain/"+f,"r").read().split("\n")[0].split("->")[1];
-			except Exception as e:
-				#print("skip",f,"because",e);
-				continue;
-	ret="?";
-	tourdate=track.begintime();
-	for chaindate in sorted(ChainDict):
-		if tourdate.date()>chaindate.date():
-			ret=ChainDict[chaindate];
-	return ret;		
+def readallstatsD(directory):
+	D={};
+	for filename in statsfilesD(directory):
+		stats=statistics.readstats(filename);
+		D[stats.startpoint.time]=stats;
+	for time in sorted(D.keys()):
+		s=D[time];
+		statistics.print_statistics(s);
+
+def gather_statistics(dirs):
+	D={};
+	for dirname in dirs:
+		for filename in statsfilesH(dirname):
+			stats=statistics.readstats(filename);
+			D[stats.startpoint.time]=stats;
+			#print(stats.startpoint.time,filename,stats.typename,stats.distance);
+
+	last_month=None;		
+	acc={};
+	T=sorted(D.keys())
+	Tcycling=list();
+	for k in range(len(T)):
+		time=T[k];
+		month=time.strftime("%m.%Y");
+		month_changed = month != last_month;
+
+		if month_changed:
+			print("-"*10)
+			for key in sorted(acc.keys()):
+				statistics.print_statistics_friendly(acc[key]);
+			acc={};	
+			print();
+			print(month);
+
+		s=D[time];
+		if s.typename == "moving" and s.distance>1000:
+			statistics.print_statistics_friendly(s);
+			if utils.category(s) == "cycling":
+				Tcycling.append(s);
+			key=utils.category(s);
+			if key not in acc:
+				acc[key]=s;
+			else:
+				acc[key].accumulate(s);
+
+		last_month=month;
+	return D,acc,Tcycling;	
 
 def main():
-	C=readtours();
-	chaindistance=dict();
-	for cat in ["cycling","running"]:
-	#for cat in ["cycling"]:	
-		S=dict();
-		T=C[cat];
-		Tf=filter_tours(T)
-		if not T:
-			print("ignore",cat);
-			continue;
-		for t in Tf:
-			if not t.distance() in S:	
-				S[t.distance()]=set();	
-			S[t.distance()].add(t);
-		print("# category",cat);
-		#for d in sorted(S):	
-		#	for t in S[d]:
-		csv=str();
-		for t in T:
-			output.print_stats(t);
-			chain=getchain(t);
-			if not chain in chaindistance:
-				chaindistance[chain]=0;
-			chaindistance[chain]+=t.distance()/1000;	
-		L=sum([t.distance() for t in Tf]);
-		D=sum([t.duration().total_seconds() for t in Tf]);
-		print(f"total-30 {cat:10s}: {L/1000:6.1f} km | {D/3600:4.1f}h");
-		print("-"*55)
-		for chain in chaindistance:
-			print(f"chain #{chain:s}: {chaindistance[chain]:05.1f} km");
-		csv=str();
-		for t in T:
-			csv+=output.print_csv(t);
-			csv+=";";
-			csv+=getchain(t)+";";
-			csv+="\n"
-		filename="/tmp/"+cat+".csv";
-		print("write",filename);
-		open(filename,'w').write(csv);
-		#segments.main(T);
-		print();
+	dirs=glob("/home/julien/projects/tracks/*/", recursive=False);
+	#dirs=glob("test/H/*/", recursive=False);
+	create_statistics(dirs,force=False);
+	all,acc,Tcycling=gather_statistics(dirs);
+	if acc:
+		print("-"*10)
+		for key in sorted(acc.keys()):
+			statistics.print_statistics_friendly(acc[key]);
 
-if __name__ == '__main__':
-	sys.exit(main())  
+	chain.chain_distances(Tcycling);	
+
+if __name__ == "__main__":
+	main();	
+
