@@ -15,7 +15,7 @@ function newfiles() {
 	local srcdir="$1"
 	local reference="$2"
 	if [ ! -z "${reference}" ]; then
-		find "${srcdir}" -anewer "${reference}" -type f
+		find "${srcdir}" -cnewer "${reference}" -type f
 		return
 	fi
 	find "${srcdir}" -type f

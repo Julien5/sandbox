@@ -85,5 +85,4 @@ def main():
 	chain.chain_distances(Tcycling);	
 
 if __name__ == "__main__":
-	main();	
-
+	main();
