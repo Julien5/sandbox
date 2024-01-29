@@ -48,6 +48,8 @@ def distance(p1,p2):
 	return 1000*geopy.distance.geodesic(pp1,pp2).km;
 
 def time_seconds(p1,p2):
+	# print(p1.time);
+	# print(p2.time);
 	return (p2.time-p1.time).total_seconds();
 
 def duration(points,interval):

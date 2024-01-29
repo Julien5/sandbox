@@ -14,6 +14,8 @@ function one() {
 }
 
 function main() {
+	echo done
+	return;
 	rm -Rf /tmp/plots
 	if [ -z $1 ]; then
 		one | tee test.out

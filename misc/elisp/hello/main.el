@@ -1,9 +1,17 @@
-(message "hello")
+(message "ok")
+;;(setq shell-command "pwd")
 
-(defun print (a)
-  (message "%s" a)
-  )
+(load "jbo-utils")
+(message "* project-current()")
+(setq pcurrent (project-current t))
+(message "* project-current %s" pcurrent)
 
+(message "* project-root()")
+(setq proot (project-root pcurrent))
+(message "* project-root %s" proot)
+
+;;(project-shell-command)
+;;(project-search "(print*")
 
 (message "* hash table")
 (setq L1 '((k1 v1) (k2  "v2")))
@@ -44,4 +52,7 @@
 (message "done")
 
 
-;;(with-current-buffer (get-buffer "*Messages*") (goto-char (point-max)))
+(message "%s" 
+		 `("John" "Jane" "Chad" ,(current-time-string)))
+
+(message "* project-current %s" (project-root (project-current t)))

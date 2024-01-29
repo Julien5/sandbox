@@ -30,5 +30,5 @@ function times() {
 }
 
 # times
-checkgaps "$@"
+#checkgaps "$@"
 
