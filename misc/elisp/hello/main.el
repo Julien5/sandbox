@@ -1,3 +1,7 @@
+;; -*- lexical-binding: t -*-
+;;(setq lexical-binding t)
+(setq lexical-binding t)
+
 (message "ok")
 ;;(setq shell-command "pwd")
 
@@ -56,3 +60,89 @@
 		 `("John" "Jane" "Chad" ,(current-time-string)))
 
 (message "* project-current %s" (project-root (project-current t)))
+
+(setq goodbye
+	  (lambda () (message "%s" "hello lambda"))
+  )
+(funcall goodbye)
+
+((lambda (a b c) (+ a b c))
+ 1 (* 2 3) (- 5 4))
+
+
+(defun foo () (print "bar"))
+(foo)
+
+(setf (symbol-function 'foo) (lambda () (print "fun")))
+(foo)
+
+(defun create-counter ()
+  (let ((c 0))
+    (lambda ()
+      (setq c (+ c 1))
+      c)))
+
+(setq counter (create-counter))
+
+(message "%s" (funcall counter)) 
+(message "%s" (funcall counter)) 
+(message "%s" (funcall counter))
+
+(defun length (x)
+  (if (not x)
+	  0
+	(+ (length (cdr x)) 1)
+	)
+  )
+
+(message "l=%d" (length '(a b c d)))
+
+(setq f "embedded/compteur/application.cpp")
+(setq L (projectile-get-other-files f))
+(message "%s" L)
+
+(defun distance (f1 f2)
+  (defun common (A B)
+	(let ((a (car A))
+		  (b (car B))
+		  )
+	  (if (and (string= a b) (and a b))
+		  (+ (common (cdr A) (cdr B)) 1)
+		0
+		)
+	  )
+	)
+  
+  (let ((L1 (split-string (file-name-directory f1) "/"))
+		(L2 (split-string (file-name-directory f2) "/"))
+		)
+	(let ((ret (common L1 L2)))
+	  (message "%s %s %d" f1 f2 ret)
+	  ret
+	  ))
+  )
+
+(let
+	((numbers (list ())))
+  (setq numbers (append (list (cons 'two 2)) numbers))
+  (message "numbers=%s" numbers))
+
+
+;;(message "%s" (common '("a" "b" "c") '("a" "b" "d")))
+;;(message "%s" (common '("a" "b" "c" "d") '("a" "b" "c" "e")))
+;;(distance f (car L))
+;;(message "%s" (distance f (car L)))
+(setq Q nil)
+(dolist (o L)
+  (setq d (distance f o))
+  (if (not Q)
+	  (setq Q (list (cons o d)))
+	(setq Q (append (list (cons o d)) Q))
+	)
+  )
+
+(message "Q=%s" Q)
+
+(sort Q (lambda (od1 od2) (> (cdr od1) (cdr od2))))
+(message "Q=%s" Q)
+(message "winner=%s" (car (car Q)))
