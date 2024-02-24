@@ -28,7 +28,7 @@ def getchain(s):
 	tourdate=s.begintime();
 	ret="?";
 	for chaindate in sorted(ChainDict):
-		if tourdate.date()>chaindate.date():
+		if tourdate.date()>=chaindate.date():
 			ret=ChainDict[chaindate];
 	return ret;
 
@@ -41,7 +41,7 @@ def distance_current_chain(T):
 	# cycling tours since last date
 	ret=0;
 	for t in T:
-		if t.begintime() < last_date:
+		if t.begintime().date() < last_date.date():
 			continue;
 		chain=getchain(t);
 		assert(chain==last_chain);
