@@ -82,7 +82,8 @@ def main():
 		for key in sorted(acc.keys()):
 			statistics.print_statistics_friendly(acc[key]);
 
-	chain.chain_distances(Tcycling);	
+	chain.chain_distances(Tcycling);
+	chain.distance_current_chain(Tcycling);
 
 if __name__ == "__main__":
 	main();

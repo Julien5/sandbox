@@ -13,6 +13,7 @@ def CreateChainDict():
 				continue;
 			filename=os.path.join("chain",f);
 			date=datetime.datetime.strptime(f, "%d.%m.%Y");
+			date=date.replace(tzinfo=datetime.timezone(datetime.timedelta(hours=0)));
 			D[date]=open(filename,"r").read().split("\n")[0].split("->")[1];
 		except ValueError as e:
 			print("skip",f,"because",e,type(e));
@@ -29,7 +30,25 @@ def getchain(s):
 	for chaindate in sorted(ChainDict):
 		if tourdate.date()>chaindate.date():
 			ret=ChainDict[chaindate];
-	return ret;		
+	return ret;
+
+def distance_current_chain(T):
+	global ChainDict;
+	if not ChainDict:
+		ChainDict=CreateChainDict();
+	last_date=sorted(ChainDict)[-1];
+	last_chain=ChainDict[last_date];
+	# cycling tours since last date
+	ret=0;
+	for t in T:
+		if t.begintime() < last_date:
+			continue;
+		chain=getchain(t);
+		assert(chain==last_chain);
+		ret+=t.distance;
+	print("last chain change:",last_date.strftime("%d.%m.%Y"));
+	print(f"current #{last_chain:s}: {ret/1000:05.1f} km");		
+	
 
 def chain_distances(T):
 	ret=dict();
