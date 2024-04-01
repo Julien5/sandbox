@@ -60,7 +60,8 @@ def gather_statistics(dirs):
 
 		s=D[time];
 		if s.typename == "moving" and s.distance>1000:
-			statistics.print_statistics_friendly(s);
+			#statistics.print_statistics_friendly(s);
+			statistics.print_statistics(s);
 			if utils.category(s) == "cycling":
 				Tcycling.append(s);
 			key=utils.category(s);
