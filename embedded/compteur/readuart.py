@@ -49,7 +49,7 @@ def main():
 			except ValueError as e:
 				print("error:",e);
 				continue;
-			if len(xk)<10:
+			if len(xk)<2:
 				continue;
 			x=x[1:len(x)];
 			x.append(statistics.mean(xk));
@@ -57,7 +57,6 @@ def main():
 			y.append(statistics.mean(yk));
 			xk=[];
 			yk=[];
-			print(line,"len=",len(x));
 			M=M-1;
 			if M==0:
 				plot(x,y);

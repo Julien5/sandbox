@@ -15,7 +15,8 @@ function ispport() {
 }
 
 function ftdiport() {
-	catusb | grep "Future Technology Devices International" | grep FT232 | cut -f1 -d: | sort | head -1
+	#catusb | grep "Future Technology Devices International" | grep FT232 | cut -f1 -d: | sort | head -1
+	catusb | grep "HL-340" | cut -f1 -d: | sort | head -1
 }
 
 function arduinoport() {
@@ -66,22 +67,24 @@ function burn.bootloader() {
 
 function burn.application() {
 	dude.isp -U flash:w:$1:i
+	#dude.arduino -U flash:w:$1:i
 }
 
 function monitor.isp() {
 	mkdir -p oldlogs
 	find -name "*.log" -exec mv "{}" oldlogs/ \;
-	screen  -Logfile log-$(date +%Y.%m.%d.%H.%M.%S).log  -L /dev/$(ispport "tail -1") 9600
+	screen -Logfile log-$(date +%Y.%m.%d.%H.%M.%S).log -L /dev/$(ispport "tail -1") 9600 
 }
 
 function monitor.ftdi() {
 	mkdir -p oldlogs
 	find -name "*.log" -exec mv "{}" oldlogs/ \;
-	screen  -Logfile log-$(date +%Y.%m.%d.%H.%M.%S).log  -L /dev/$(ftdiport) 9600
+	screen  -Logfile log-$(date +%Y.%m.%d.%H.%M.%S).log  -L /dev/$(ftdiport) 9600 
 }
 
 function monitor() {
-	monitor.ftdi
+	#monitor.ftdi
+	monitor.isp
 }
 
 function burn.test {

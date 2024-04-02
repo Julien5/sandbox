@@ -55,10 +55,14 @@ int debug::freeMemory() {
 #endif
 
 #ifdef ARDUINO
-#include "SoftwareSerial.h"
-
-SoftwareSerial SOFT_UART(2, 3);
-#define TXCHANNEL SOFT_UART
+/*
+ * use hardware serial instead of software serial
+ *
+ * #include "SoftwareSerial.h"
+ * SoftwareSerial SOFT_UART(2, 3);
+ * #define TXCHANNEL SOFT_UART
+ */
+#define TXCHANNEL Serial
 void serialprint(const char *buffer) {
     TXCHANNEL.print(buffer);
 }

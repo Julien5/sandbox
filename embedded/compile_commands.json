@@ -141,6 +141,11 @@
 },
 {
   "directory": "/tmp/build_pc/compteur",
+  "command": "/usr/bin/g++  -DPC=1 -DSIMULATION=1 -I/home/julien/projects/sandbox/embedded/common/include  -g   -o CMakeFiles/compteur.dir/softdebug.cpp.obj -c /home/julien/projects/sandbox/embedded/compteur/softdebug.cpp",
+  "file": "/home/julien/projects/sandbox/embedded/compteur/softdebug.cpp"
+},
+{
+  "directory": "/tmp/build_pc/compteur",
   "command": "/usr/bin/g++  -DPC=1 -DSIMULATION=1 -I/home/julien/projects/sandbox/embedded/common/include  -g   -o CMakeFiles/compteur.dir/main_pc.cpp.obj -c /home/julien/projects/sandbox/embedded/compteur/main_pc.cpp",
   "file": "/home/julien/projects/sandbox/embedded/compteur/main_pc.cpp"
 },
