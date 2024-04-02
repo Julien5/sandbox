@@ -1,11 +1,6 @@
 ;; -*- lexical-binding: t -*-
 ;;(setq lexical-binding t)
-(setq lexical-binding t)
 
-(message "ok")
-;;(setq shell-command "pwd")
-
-(load "jbo-utils")
 (message "* project-current()")
 (setq pcurrent (project-current t))
 (message "* project-current %s" pcurrent)
@@ -88,18 +83,14 @@
 (message "%s" (funcall counter)) 
 (message "%s" (funcall counter))
 
-(defun length (x)
+(defun jbo/length (x)
   (if (not x)
 	  0
-	(+ (length (cdr x)) 1)
+	(+ (jbo/length (cdr x)) 1)
 	)
   )
 
-(message "l=%d" (length '(a b c d)))
-
-(setq f "embedded/compteur/application.cpp")
-(setq L (projectile-get-other-files f))
-(message "%s" L)
+(message "l=%d" (jbo/length '(a b c d)))
 
 (defun distance (f1 f2)
   (defun common (A B)
@@ -122,27 +113,24 @@
 	  ))
   )
 
-(let
-	((numbers (list ())))
-  (setq numbers (append (list (cons 'two 2)) numbers))
-  (message "numbers=%s" numbers))
-
-
-;;(message "%s" (common '("a" "b" "c") '("a" "b" "d")))
-;;(message "%s" (common '("a" "b" "c" "d") '("a" "b" "c" "e")))
-;;(distance f (car L))
-;;(message "%s" (distance f (car L)))
-(setq Q nil)
-(dolist (o L)
-  (setq d (distance f o))
-  (if (not Q)
-	  (setq Q (list (cons o d)))
-	(setq Q (append (list (cons o d)) Q))
+(defun my-other-file ()
+  (setq f "embedded/compteur/application.cpp")
+  (setq L (projectile-get-other-files f))
+  (setq Q nil)
+  (dolist (o L)
+	(let ((d (distance f o)))
+	  (if (not Q)
+		  (setq Q (list (cons o d)))
+		(setq Q (append (list (cons o d)) Q))
+		)
+	  )
 	)
+  (sort Q (lambda (od1 od2) (> (cdr od1) (cdr od2))))
+  (message "Q=%s" Q)
+  (message "file=%s other=%s" f (car (car Q)))
+  f
   )
 
-(message "Q=%s" Q)
+(my-other-file)
 
-(sort Q (lambda (od1 od2) (> (cdr od1) (cdr od2))))
-(message "Q=%s" Q)
-(message "winner=%s" (car (car Q)))
+
