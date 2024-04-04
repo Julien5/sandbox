@@ -106,8 +106,8 @@
 },
 {
   "directory": "/tmp/build_pc/compteur",
-  "command": "/usr/bin/g++  -DPC=1 -DSIMULATION=1 -I/home/julien/projects/sandbox/embedded/common/include  -g   -o CMakeFiles/compteur.dir/application.cpp.obj -c /home/julien/projects/sandbox/embedded/compteur/application.cpp",
-  "file": "/home/julien/projects/sandbox/embedded/compteur/application.cpp"
+  "command": "/usr/bin/g++  -DPC=1 -DSIMULATION=1 -I/home/julien/projects/sandbox/embedded/common/include  -g   -o CMakeFiles/compteur.dir/application-alt.cpp.obj -c /home/julien/projects/sandbox/embedded/compteur/application-alt.cpp",
+  "file": "/home/julien/projects/sandbox/embedded/compteur/application-alt.cpp"
 },
 {
   "directory": "/tmp/build_pc/compteur",

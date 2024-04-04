@@ -78,5 +78,6 @@ bool simulation::tick() {
     auto new_value = seconds % tick_period() == 0;
     auto ret = last_value != new_value && new_value == true;
     last_value = new_value;
+    TRACE();
     return ret;
 }

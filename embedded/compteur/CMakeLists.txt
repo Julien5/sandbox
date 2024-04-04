@@ -2,7 +2,8 @@ add_avr_executable(compteur)
 
 target_sources(compteur PRIVATE
   adcfile.cpp
-  application.cpp
+  #application.cpp
+  application-alt.cpp
   capacity.cpp
   compteur.cpp
   detection.cpp
