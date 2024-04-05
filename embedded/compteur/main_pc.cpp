@@ -31,16 +31,19 @@ int main(int argc, char **argv) {
     if (!parameters::get().empty() && parameters::get().at(0) == "tests") {
         return tests();
     }
-    std::thread serial_thread(transmitter::run);
+
+    //std::thread serial_thread(transmitter::run);
     application::setup();
     while (1) {
         application::loop();
         common::time::simulate(common::time::us(10));
         const auto t = common::time::since_reset();
-        if (t > simulation::duration())
+        if (t > simulation::duration()) {
+            TRACE();
             break;
+        }
     }
     transmitter::stop();
-    serial_thread.join();
+    //serial_thread.join();
     return 0;
 }
