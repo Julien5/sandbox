@@ -34,7 +34,7 @@ class Statistics:
 		p1,p2=points[interval.begin], points[interval.end - 1];
 		print("p1.time=",p1.time,"p2.time=",p2.time);
 		print(interval,len(points),directory);
-		assert(p2.time>p1.time);
+		assert(p2.time>=p1.time);
 		self.seconds = utils.time_seconds(points[interval.begin], points[interval.end - 1]);
 		self.directory = directory;
 		self.typename = interval.typename;
