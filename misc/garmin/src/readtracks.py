@@ -41,7 +41,7 @@ def writepoints(points,filename):
 def segpoints(segment):
 	ret=list();
 	for point in segment.points:
-		assert(point.time);
+		# assert(point.time);
 		p=PointFromGPXPY(point);
 		ret.append(p);
 	return ret;
