@@ -13,6 +13,7 @@ import readtracks;
 from scipy import spatial
 import numpy as np
 
+
 def readsegments(filename):
 	gpx_file = open(filename, 'r');
 	gpx = gpxpy.parse(gpx_file);
@@ -189,6 +190,26 @@ def process_waypoints(waypoints,finder,start):
 		D[distance]=w;
 	return D;
 
+import pyproj
+def gnuplot_map(P,W):
+	myProj = pyproj.Proj("+proj=utm +zone=32K, +north +ellps=WGS84 +datum=WGS84 +units=m +no_defs")
+	f=open("map-track.csv","w");
+	for k in range(len(P)):
+		lon=P[k].longitude;
+		lat=P[k].latitude;
+		x, y = myProj(lon, lat)
+		f.write(f"{x:10.1f}\t{y:10.1f}\t{lat:10.6f}\t{lon:10.6f}\n");
+	f.close();
+	f=open("map-wpt.csv","w");
+	for distance in W.keys():
+		lon=W[distance].longitude;
+		lat=W[distance].latitude;
+		label=W[distance].name[:2];
+		x, y = myProj(lon, lat)
+		f.write(f"{x:10.1f}\t{y:10.1f}\t{lat:10.6f}\t{lon:10.6f}\t{label:s}\t{distance/1000:4.1f}\n");
+	f.close();	
+
+
 def gnuplot_profile(P,W):
 	x,y=elevation.load(P);
 	f=open("elevation.csv","w");
@@ -314,6 +335,7 @@ def main():
 	P=readtracks.readpoints(filename);
 	A=automatic_waypoints(P,start);
 	gnuplot_profile(P,A);
+	gnuplot_map(P,A);
 	return;
 
 	S,name=readsegments(filename);
