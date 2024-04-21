@@ -6,8 +6,10 @@ import numpy as np
 import readtracks;
 import utils;
 
-def load(filename):
-	P=readtracks.readpoints(filename);
+def readfile(filename):
+	return readtracks.readpoints(filename);
+
+def load(P):
 	x=[];
 	y=[];
 	pprev=None;
@@ -19,6 +21,7 @@ def load(filename):
 			x.append(x[k-1]+utils.distance(P[k-1],P[k])/1000);
 		y.append(P[k].elevation);
 	return x,y;	
+
 		
 def plot(x,y):
 	fig, axs = plt.subplots(1, 1, layout='constrained')
@@ -47,7 +50,7 @@ def print_elevation(e,prefix=None):
 
 def main(filename):
 	print("loading",filename);
-	x,y=load(filename);
+	x,y=load(readfile(filename));
 	# plot(x,y);
 	elevation=compute(x,y);
 	print_elevation(elevation,"computed");
