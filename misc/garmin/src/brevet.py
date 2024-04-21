@@ -149,10 +149,11 @@ class Finder:
 		[lat,longitude]=list(nearest);
 		return (lat,longitude);
 
-def toWaypoint(latitude,longitude,name,description):
+def toWaypoint(latitude,longitude,elevation,name,description):
 	w = gpxpy.gpx.GPXWaypoint()
 	w.latitude=latitude;
 	w.longitude=longitude;
+	w.elevation=elevation;
 	w.name=name;
 	w.description=description;
 	w.symbol = "Flag, Blue";
@@ -178,7 +179,7 @@ def process_waypoints(waypoints,finder,start):
 
 		description=point.name;
 		name=control_waypoint_name(start,time,s,len(D)+1);
-		w=toWaypoint(point.latitude,point.longitude,name,description);
+		w=toWaypoint(point.latitude,point.longitude,point.elevation,name,description);
 		if time in D:
 			if w.name == D[time].name:
 				continue;
@@ -188,12 +189,50 @@ def process_waypoints(waypoints,finder,start):
 		D[distance]=w;
 	return D;
 
-def gnuplot_profile(P):
+def gnuplot_profile(P,W):
 	x,y=elevation.load(P);
 	f=open("elevation.csv","w");
 	for k in range(len(x)):
 		f.write(f"{x[k]:5.2f}\t{y[k]:5.2f}\n");
-	f.close();	
+	f.close();
+	
+	g=open("profile.gnuplot","r");
+	labels_L=[];
+	content=g.read();
+	g.close();
+	for line in content.split("\n"):
+		if "#label " in line:
+			labels_L.append(line);
+	label_template="\n".join(labels_L);
+	label_template=label_template.replace("#label ","");
+	labels=list();
+	for distance in W.keys():
+		w=W[distance];
+		label=label_template;
+		wx=distance;
+		wy=w.elevation;
+		top=len(labels)%2 == 0;
+		D=200;
+		if top:
+			label=label.replace("{labelyT1}",str(wy+D));
+			label=label.replace("{labelyT2}",str(wy+(D-75)));
+			label=label.replace("{labelya1}",str(wy+(D-100)));
+			label=label.replace("{labelya2}",str(wy+5));
+		else:
+			label=label.replace("{labelyT1}",str(wy-D));
+			label=label.replace("{labelyT2}",str(wy-(D-75)));
+			label=label.replace("{labelya1}",str(wy-(D-100)));
+			label=label.replace("{labelya2}",str(wy-5));
+		label=label.replace("{labelname}",w.name[:2]);
+		label=label.replace("{labelinfo}",f"{wy:3.0f}");
+		label=label.replace("{labelx}",str(distance/1000));
+		label=label.replace("{arrown}",str(len(labels)+1));
+		labels.append(label);
+	content=content.replace("#labels","\n".join(labels));	
+	g=open("profile-out.gnuplot","w");
+	g.write(content);
+	g.close();
+
 
 def automatic_waypoints(P,start):
 	ret=dict();
@@ -213,7 +252,7 @@ def automatic_waypoints(P,start):
 
 		cumulative_x=1000*(x[k]-x[segment_begin]);
 
-		if cumulative_y>=100: #  or cumulative_x>10000:
+		if cumulative_y>=200: #  or cumulative_x>10000:
 			segment_end=k;
 			distance=1000*x[segment_end];
 			slope=100*cumulative_y/cumulative_x;
@@ -233,7 +272,7 @@ def automatic_waypoints(P,start):
 
 			name=f"A{counter%10:d}-{slope_f:>2}-{time_str:s}";
 			description="automatic"
-			wp=toWaypoint(P[k].latitude,P[k].longitude,name,description);
+			wp=toWaypoint(P[k].latitude,P[k].longitude,P[k].elevation,name,description);
 			ret[distance]=wp;
 
 			segment_end=-1;
@@ -273,9 +312,9 @@ def main():
 		start=datetime.datetime(tomorrow.year,tomorrow.month,tomorrow.day,hour=7);
 
 	P=readtracks.readpoints(filename);
-	gnuplot_profile(P);
-	return;
 	A=automatic_waypoints(P,start);
+	gnuplot_profile(P,A);
+	return;
 
 	S,name=readsegments(filename);
 	assert(len(S)==1);
@@ -287,7 +326,7 @@ def main():
 
 	waypoints=readwaypoints(filename);
 	last_point=segment.points[-1];
-	waypoints.append(toWaypoint(last_point.latitude,last_point.longitude,"END",""));
+	waypoints.append(toWaypoint(last_point.latitude,last_point.longitude,last_point.elevation,"END",""));
 	finder=Finder(segment);
 	B=process_waypoints(waypoints,finder,start);
 	W = {**A, **B};
