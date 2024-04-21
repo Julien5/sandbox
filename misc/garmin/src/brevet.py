@@ -185,8 +185,15 @@ def process_waypoints(waypoints,finder,start):
 			print("waypoint",w.name);
 			print("another waypoing with the same time:",time,"name:",D[time].name)
 			assert(not time in D);
-		D[time]=w;
+		D[distance]=w;
 	return D;
+
+def gnuplot_profile(P):
+	x,y=elevation.load(P);
+	f=open("elevation.csv","w");
+	for k in range(len(x)):
+		f.write(f"{x[k]:5.2f}\t{y[k]:5.2f}\n");
+	f.close();	
 
 def automatic_waypoints(P,start):
 	ret=dict();
@@ -208,7 +215,7 @@ def automatic_waypoints(P,start):
 
 		if cumulative_y>=100: #  or cumulative_x>10000:
 			segment_end=k;
-			
+			distance=1000*x[segment_end];
 			slope=100*cumulative_y/cumulative_x;
 			segment_begin=segment_end+1;
 			# print(f"{cumulative_x/1000:3.1f} km | {slope:4.2f}%");
@@ -219,7 +226,7 @@ def automatic_waypoints(P,start):
 			else:
 				slope_f="..";
 
-			total_hours=timehours_to(1000*x[segment_end]);
+			total_hours=timehours_to(distance);
 			time=waypoint_time(total_hours,start);
 			assert(not time in ret.keys());
 			time_str=fix_summer_winter_time(time).strftime("%H:%M");
@@ -227,7 +234,7 @@ def automatic_waypoints(P,start):
 			name=f"A{counter%10:d}-{slope_f:>2}-{time_str:s}";
 			description="automatic"
 			wp=toWaypoint(P[k].latitude,P[k].longitude,name,description);
-			ret[time]=wp;
+			ret[distance]=wp;
 
 			segment_end=-1;
 			cumulative_y=0;
@@ -242,10 +249,8 @@ def makegpx(segment,waypoints,name,filename):
 	gpx_track.segments.append(segment)
 
 	L=[];
-	for time in sorted(waypoints.keys()):
-		w=waypoints[time];
-		#distance=finder.find_distance(w);
-		distance=1000; # fixme
+	for distance in sorted(waypoints.keys()):
+		w=waypoints[distance];
 		total_hours=timehours_to(distance);
 		print(f"{waypoint_string(w):s};{distance/1000:5.1f};{total_hours:3.1f}");
 		L.append(w);
@@ -267,7 +272,11 @@ def main():
 		tomorrow=datetime.date.today() + datetime.timedelta(days=1);
 		start=datetime.datetime(tomorrow.year,tomorrow.month,tomorrow.day,hour=7);
 
-	A=automatic_waypoints(readtracks.readpoints(filename),start);
+	P=readtracks.readpoints(filename);
+	gnuplot_profile(P);
+	return;
+	A=automatic_waypoints(P,start);
+
 	S,name=readsegments(filename);
 	assert(len(S)==1);
 	segment=S[0];
