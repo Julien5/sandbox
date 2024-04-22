@@ -1,5 +1,5 @@
 set terminal pngcairo size 1600,400 enhanced font "sans,12"
-set output "profile.png"
+set output "/tmp/profile/profile.png"
 
 
 set key noautotitle
@@ -16,11 +16,11 @@ set mytics 2
 show grid
 
 set datafile separator '\t'
-set xrange [0:100]
-set yrange [0:1500];
+set xrange [{xmin}:{xmax}]
+set yrange [{ymin}:{ymax}];
 
-plot 'elevation.csv' using 1:2 with lines ls 10 lw 3 notitle, \
-	 'elevation-wpt.csv' using 1:2:4 with labels point pt 7 ps 1 \
+plot '/tmp/profile/elevation.csv' using 1:2 with lines ls 10 lw 3 notitle, \
+	 '/tmp/profile/elevation-wpt.csv' using 1:2:4 with labels point pt 7 ps 1 \
 	 					 offset character 0,character 1 tc rgb "black" font "sans,10", \
-	 'elevation-wpt.csv' using 1:2:3 with labels point pt 7 ps 1 \
+	 '/tmp/profile/elevation-wpt.csv' using 1:2:3 with labels point pt 7 ps 1 \
 	 					 offset character 0,character -1 tc rgb "black" font "sans,10"  

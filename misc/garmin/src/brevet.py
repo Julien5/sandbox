@@ -191,45 +191,108 @@ def process_waypoints(waypoints,finder,start):
 		D[distance]=w;
 	return D;
 
+def bbox(P,proj,d,dmin,dmax):
+	assert(len(P)==len(d));
+	kmin=None;
+	kmax=None;
+	for k in range(len(d)):
+		if kmin is None or d[k]<dmin:
+			kmin=k;
+		if kmax is None or d[k]<dmax:
+			kmax=k;
+	U=[proj(p.longitude,p.latitude) for p in P[kmin:kmax]];
+	margin=10000;
+	xmin=min([u[0] for u in U])-margin;
+	xmax=max([u[0] for u in U])+margin;
+	ymin=min([u[1] for u in U])-margin;
+	ymax=max([u[1] for u in U])+margin;
+	return xmin,xmax,ymin,ymax;
+
 import pyproj
 def gnuplot_map(P,W):
-	myProj = pyproj.Proj("+proj=utm +zone=32K, +north +ellps=WGS84 +datum=WGS84 +units=m +no_defs")
-	f=open("map-track.csv","w");
+	os.makedirs("/tmp/profile",exist_ok=True);
+	utm = pyproj.Proj("+proj=utm +zone=32K, +north +ellps=WGS84 +datum=WGS84 +units=m +no_defs")
+	d,dummy=elevation.load(P);
+	
+	L=[];
 	for k in range(len(P)):
 		lon=P[k].longitude;
 		lat=P[k].latitude;
-		x, y = myProj(lon, lat)
-		f.write(f"{x:10.1f}\t{y:10.1f}\t{lat:10.6f}\t{lon:10.6f}\n");
+		x, y = utm(lon, lat)
+		L.append(f"{x:10.1f}\t{y:10.1f}\t{lat:10.6f}\t{lon:10.6f}");
+	f=open("/tmp/profile/map-track.csv","w");
+	f.write("\n".join(L));
 	f.close();
-	f=open("map-wpt.csv","w");
+	
+	L=[]
 	for distance in W.keys():
 		lon=W[distance].longitude;
 		lat=W[distance].latitude;
 		label=W[distance].name[:2];
 		if not label in {"A0","A5"}:
 			continue;
-		x, y = myProj(lon, lat)
-		f.write(f"{x:10.1f}\t{y:10.1f}\t{lat:10.6f}\t{lon:10.6f}\t{label:s}\t{distance/1000:4.1f}\n");
+		x, y = utm(lon, lat)
+		L.append(f"{x:10.1f}\t{y:10.1f}\t{lat:10.6f}\t{lon:10.6f}\t{label:s}\t{distance/1000:4.1f}");
+	f=open("/tmp/profile/map-wpt.csv","w");
+	f.write("\n".join(L));
 	f.close();
-	subprocess.run(["gnuplot",os.path.abspath("map.gnuplot")])
 
+	f=open("map.gnuplot","r");
+	content0=f.read();
+	f.close();
+	for k in range(math.floor(d[-1]/100)+1):
+		xmin,xmax,ymin,ymax=bbox(P,utm,d,k*100,(k+1)*100);
+		content=content0;
+		content=content.replace("{xmin}",str(xmin));
+		content=content.replace("{xmax}",str(xmax));
+		content=content.replace("{ymin}",str(ymin));
+		content=content.replace("{ymax}",str(ymax));
+		filename=f"/tmp/profile/map-{k:d}.gnuplot";
+		f=open(filename,"w");
+		f.write(content);
+		f.close();
+		subprocess.run(["gnuplot",filename]);
+		os.rename("/tmp/profile/map.png",f"/tmp/profile/map-{k:d}.png");
 
+import math;
 def gnuplot_profile(P,W):
+	os.makedirs("/tmp/profile",exist_ok=True);
 	x,y=elevation.load(P);
-	f=open("elevation.csv","w");
+	f=open("/tmp/profile/elevation.csv","w");
 	for k in range(len(x)):
 		f.write(f"{x[k]:5.2f}\t{y[k]:5.2f}\n");
 	f.close();
-	f=open("elevation-wpt.csv","w");
+	f=open("/tmp/profile/elevation-wpt.csv","w");
 	for distance in W.keys():
 		w=W[distance];
-		x=distance/1000;
-		y=w.elevation;
+		wx=distance/1000;
+		wy=w.elevation;
 		label1=w.name[:2];
-		label2=f"{y:4.0f}";
-		f.write(f"{x:5.2f}\t{y:5.0f}\t{label1:s}\t{label2:s}\n");
+		label2=f"{wy:4.0f}";
+		f.write(f"{wx:5.2f}\t{wy:5.0f}\t{label1:s}\t{label2:s}\n");
 	f.close();
-	subprocess.run(["gnuplot",os.path.abspath("profile.gnuplot")])
+
+	f=open("profile.gnuplot","r");
+	content0=f.read();
+	f.close();
+	distance=x[-1];
+	
+	for xk in range(math.floor(distance/100)+1):
+		xmin=max(100*xk-10,0);
+		xmax=100*(xk+1)+10;
+		ymin=math.floor(min(y)/500)*500;
+		ymax=math.ceil(max(y)/500)*500;
+		content=content0;
+		content=content.replace("{xmin}",str(xmin));
+		content=content.replace("{xmax}",str(xmax));
+		content=content.replace("{ymin}",str(ymin));
+		content=content.replace("{ymax}",str(ymax));
+		filename=f"/tmp/profile/profile-{xk:d}.gnuplot";
+		f=open(filename,"w");
+		f.write(content);
+		f.close();
+		subprocess.run(["gnuplot",filename]);
+		os.rename("/tmp/profile/profile.png",f"/tmp/profile/profile-{xk:d}.png");
 
 def automatic_waypoints(P,start):
 	ret=dict();
