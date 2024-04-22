@@ -19,9 +19,8 @@ set datafile separator '\t'
 set xrange [0:100]
 set yrange [0:1500];
 
-#label set label "{labelname}" center at {labelx},{labelyT1}
-#label set label "{labelinfo}" center at {labelx},{labelyT2}
-#label set arrow "{arrown}" from first {labelx},{labelya1} to {labelx},{labelya2} lc rgb "black" lt 1 lw 1 front size .5, 30
-#labels
-
-plot 'elevation.csv' using 1:2 with lines ls 10 lw 3 notitle
+plot 'elevation.csv' using 1:2 with lines ls 10 lw 3 notitle, \
+	 'elevation-wpt.csv' using 1:2:4 with labels point pt 7 ps 1 \
+	 					 offset character 0,character 1 tc rgb "black" font "sans,10", \
+	 'elevation-wpt.csv' using 1:2:3 with labels point pt 7 ps 1 \
+	 					 offset character 0,character -1 tc rgb "black" font "sans,10"  

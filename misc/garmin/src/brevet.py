@@ -6,6 +6,7 @@ import datetime;
 import math;
 import sys;
 import os;
+import subprocess;
 
 import elevation;
 import readtracks;
@@ -205,9 +206,12 @@ def gnuplot_map(P,W):
 		lon=W[distance].longitude;
 		lat=W[distance].latitude;
 		label=W[distance].name[:2];
+		if not label in {"A0","A5"}:
+			continue;
 		x, y = myProj(lon, lat)
 		f.write(f"{x:10.1f}\t{y:10.1f}\t{lat:10.6f}\t{lon:10.6f}\t{label:s}\t{distance/1000:4.1f}\n");
-	f.close();	
+	f.close();
+	subprocess.run(["gnuplot",os.path.abspath("map.gnuplot")])
 
 
 def gnuplot_profile(P,W):
@@ -216,44 +220,16 @@ def gnuplot_profile(P,W):
 	for k in range(len(x)):
 		f.write(f"{x[k]:5.2f}\t{y[k]:5.2f}\n");
 	f.close();
-	
-	g=open("profile.gnuplot","r");
-	labels_L=[];
-	content=g.read();
-	g.close();
-	for line in content.split("\n"):
-		if "#label " in line:
-			labels_L.append(line);
-	label_template="\n".join(labels_L);
-	label_template=label_template.replace("#label ","");
-	labels=list();
+	f=open("elevation-wpt.csv","w");
 	for distance in W.keys():
 		w=W[distance];
-		label=label_template;
-		wx=distance;
-		wy=w.elevation;
-		top=len(labels)%2 == 0;
-		D=200;
-		if top:
-			label=label.replace("{labelyT1}",str(wy+D));
-			label=label.replace("{labelyT2}",str(wy+(D-75)));
-			label=label.replace("{labelya1}",str(wy+(D-100)));
-			label=label.replace("{labelya2}",str(wy+5));
-		else:
-			label=label.replace("{labelyT1}",str(wy-D));
-			label=label.replace("{labelyT2}",str(wy-(D-75)));
-			label=label.replace("{labelya1}",str(wy-(D-100)));
-			label=label.replace("{labelya2}",str(wy-5));
-		label=label.replace("{labelname}",w.name[:2]);
-		label=label.replace("{labelinfo}",f"{wy:3.0f}");
-		label=label.replace("{labelx}",str(distance/1000));
-		label=label.replace("{arrown}",str(len(labels)+1));
-		labels.append(label);
-	content=content.replace("#labels","\n".join(labels));	
-	g=open("profile-out.gnuplot","w");
-	g.write(content);
-	g.close();
-
+		x=distance/1000;
+		y=w.elevation;
+		label1=w.name[:2];
+		label2=f"{y:4.0f}";
+		f.write(f"{x:5.2f}\t{y:5.0f}\t{label1:s}\t{label2:s}\n");
+	f.close();
+	subprocess.run(["gnuplot",os.path.abspath("profile.gnuplot")])
 
 def automatic_waypoints(P,start):
 	ret=dict();
@@ -273,7 +249,7 @@ def automatic_waypoints(P,start):
 
 		cumulative_x=1000*(x[k]-x[segment_begin]);
 
-		if cumulative_y>=200: #  or cumulative_x>10000:
+		if cumulative_y>=100: #  or cumulative_x>10000:
 			segment_end=k;
 			distance=1000*x[segment_end];
 			slope=100*cumulative_y/cumulative_x;
@@ -312,7 +288,7 @@ def makegpx(segment,waypoints,name,filename):
 	for distance in sorted(waypoints.keys()):
 		w=waypoints[distance];
 		total_hours=timehours_to(distance);
-		print(f"{waypoint_string(w):s};{distance/1000:5.1f};{total_hours:3.1f}");
+		# print(f"{waypoint_string(w):s};{distance/1000:5.1f};{total_hours:3.1f}");
 		L.append(w);
 	gpx.waypoints=L;
 
@@ -320,6 +296,7 @@ def makegpx(segment,waypoints,name,filename):
 	open(filename,'w').write(gpx.to_xml());
 
 def main():
+	print("hello");
 	if len(sys.argv)>1:
 		filename=sys.argv[1];
 	else:
@@ -331,13 +308,16 @@ def main():
 	else:
 		tomorrow=datetime.date.today() + datetime.timedelta(days=1);
 		start=datetime.datetime(tomorrow.year,tomorrow.month,tomorrow.day,hour=7);
-
+	print("read disc");
 	P=readtracks.readpoints(filename);
+	print("make waypoints");
 	A=automatic_waypoints(P,start);
+	print("generate profile plot file");
 	gnuplot_profile(P,A);
+	print("generate map plot file");
 	gnuplot_map(P,A);
-	return;
 
+	print("read disc again (track)");
 	S,name=readsegments(filename);
 	assert(len(S)==1);
 	segment=S[0];
@@ -346,15 +326,17 @@ def main():
 		p.elevation=None;
 		p.time=None;
 
+	print("read disc again (wpt)");
 	waypoints=readwaypoints(filename);
 	last_point=segment.points[-1];
+	print("process waypoints");
 	waypoints.append(toWaypoint(last_point.latitude,last_point.longitude,last_point.elevation,"END",""));
 	finder=Finder(segment);
 	B=process_waypoints(waypoints,finder,start);
 	W = {**A, **B};
-	print(len(A),len(B),len(W));
 	if not os.path.exists("out"):
 		os.makedirs("out");
+	print("generate gpx");
 	makegpx(segment,W,name,"out/"+os.path.basename(filename));
 	
 main()
