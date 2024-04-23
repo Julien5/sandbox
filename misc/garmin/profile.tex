@@ -1,4 +1,5 @@
-\documentclass[a4paper]{article}
+%\documentclass[a4paper]{article}
+\documentclass[english,ms,12pt]{memoir}
 \usepackage[T1]{fontenc}
 \usepackage[a4paper, portrait, margin=10mm]{geometry}
 \usepackage{graphicx}
@@ -9,30 +10,29 @@
 \textheight	28cm
 \textwidth  20cm
 
-\fontsize{10pt}{12pt} 
+%\fontsize{10pt}{12pt} 
 
 \begin{document}
 HELLO
-\begin{center}
-  \includegraphics[width=19cm]{/tmp/profile/profile-0.png}
-\end{center}
 
-\begin{tabular*}{\columnwidth}[t]{lr}
-\begin{minipage}{7cm}
-\begin{tabbing}
-\hspace{5cm} \= \kill
-%\noindent 
-e          	\> geboren am 04.04.1977 \\
-Obere Gasse 7                      	    \> franz\"osische Staatsangeh\"origkeit \\
-88456 Ingoldingen                       \> getrennt lebend\\
-(+49)1577 5778 667                    	\> zwei Kinder
-\end{tabbing}
-\end{minipage}
-&
-\begin{minipage}{5cm}
-\centering
-\includegraphics[height=8cm]{/tmp/profile/map-0.png}
-\end{minipage}
+\begin{tabular*}{18cm}[b]{l|r}
+  \hline
+  \multicolumn{2}{c}{
+    \includegraphics[width=\textwidth]{/tmp/profile/profile-0.png}
+  }
+  \\
+  \hline
+  \vspace{0.5cm}
+    \begin{tabular}{|l|l|l|}
+      \hline
+      NAME & DISTANCE & ELEVATION  \\
+      \hline
+      A1-12-12:23 & 10 km & 105 m \\
+    \end{tabular}
+    &
+    \begin{tabular}{r}
+      \includegraphics[width=7cm]{/tmp/profile/map-0.png}
+    \end{tabular}
 \end{tabular*}
 
 \end{document}
