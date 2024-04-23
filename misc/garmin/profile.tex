@@ -3,25 +3,36 @@
 \usepackage[a4paper, portrait, margin=10mm]{geometry}
 \usepackage{graphicx}
 
+\oddsidemargin  -2cm
+\evensidemargin -2cm
+\topmargin 	-3cm
+\textheight	28cm
+\textwidth  20cm
+
+\fontsize{10pt}{12pt} 
+
 \begin{document}
+HELLO
 \begin{center}
   \includegraphics[width=19cm]{/tmp/profile/profile-0.png}
 \end{center}
-\begin{flushright}
-  \includegraphics[height=8cm]{/tmp/profile/map-0.png}
-\end{flushright}
 
-\begin{center}
-  \includegraphics[width=19cm]{/tmp/profile/profile-1.png}
-\end{center}
-\begin{flushright}
-  \includegraphics[height=8cm]{/tmp/profile/map-1.png}
-\end{flushright}
+\begin{tabular*}{\columnwidth}[t]{lr}
+\begin{minipage}{7cm}
+\begin{tabbing}
+\hspace{5cm} \= \kill
+%\noindent 
+e          	\> geboren am 04.04.1977 \\
+Obere Gasse 7                      	    \> franz\"osische Staatsangeh\"origkeit \\
+88456 Ingoldingen                       \> getrennt lebend\\
+(+49)1577 5778 667                    	\> zwei Kinder
+\end{tabbing}
+\end{minipage}
+&
+\begin{minipage}{5cm}
+\centering
+\includegraphics[height=8cm]{/tmp/profile/map-0.png}
+\end{minipage}
+\end{tabular*}
 
-\begin{center}
-  \includegraphics[width=19cm]{/tmp/profile/profile-2.png}
-\end{center}
-\begin{flushright}
-  \includegraphics[height=8cm]{/tmp/profile/map-2.png}
-\end{flushright}
 \end{document}
