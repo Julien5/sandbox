@@ -1,0 +1,43 @@
+%\documentclass[a4paper]{article}
+\documentclass[english,ms,10pt]{memoir}
+\usepackage[T1]{fontenc}
+\usepackage[a4paper, portrait]{geometry}
+\usepackage{graphicx}
+
+\oddsidemargin  -1cm
+\evensidemargin -1cm
+\topmargin 	-3cm
+\textheight	28cm
+\textwidth  19cm
+
+%\fontsize{10pt}{12pt}
+
+\begin{document}
+\begin{center}
+  FEUILLE DE ROUTE
+\end{center}
+
+% begin-template
+\begin{tabular}[b]{|r|c|}
+  \hline
+  \multicolumn{2}{c}{
+    \includegraphics[width=0.9\textwidth]{{profile-png}}
+  }
+  \\
+    \hline
+  \begin{tabular}{|l|l|l|}
+    \hline
+    NAME & DISTANCE & ELEVATION  \\
+    \hline
+        {pointlist}
+    \hline
+  \end{tabular} 
+  &
+  \begin{tabular}{r}
+    \includegraphics[width=7cm]{{map-png}}
+  \end{tabular} \\
+  \hline
+\end{tabular}
+% end-template
+
+\end{document}

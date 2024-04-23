@@ -1,32 +1,28 @@
 %\documentclass[a4paper]{article}
 \documentclass[english,ms,10pt]{memoir}
 \usepackage[T1]{fontenc}
-\usepackage[a4paper, portrait, margin=10mm]{geometry}
+\usepackage[a4paper, portrait]{geometry}
 \usepackage{graphicx}
 
-\oddsidemargin  -2cm
-\evensidemargin -2cm
+\oddsidemargin  -1cm
+\evensidemargin -1cm
 \topmargin 	-3cm
 \textheight	28cm
-%\textwidth  20cm
+\textwidth  19cm
 
-%\fontsize{10pt}{12pt} 
+%\fontsize{10pt}{12pt}
 
 \begin{document}
-HELLO
-
-\begin{tabular}[b]{rl}
+\begin{center}
+  FEUILLE DE ROUTE
+\end{center}
+\begin{tabular}[b]{|r|c|}
   \hline
   \multicolumn{2}{c}{
-    \includegraphics[width=\textwidth]{/tmp/profile/profile-0.png}
+    \includegraphics[width=0.9\textwidth]{/tmp/profile/profile-0.png}
   }
   \\
-  \hline
-  \begin{tabular}{r}
-    \includegraphics[width=7cm]{/tmp/profile/map-0.png}
-  \end{tabular}
-  
-  &
+    \hline
   \begin{tabular}{|l|l|l|}
     \hline
     NAME & DISTANCE & ELEVATION  \\
@@ -39,9 +35,13 @@ HELLO
     A1-12-12:23 & 10 km & 105 m \\
     A1-12-12:23 & 10 km & 105 m \\
     A1-12-12:23 & 10 km & 105 m \\
-    
     \hline
-  \end{tabular}
+  \end{tabular} 
+  &
+  \begin{tabular}{r}
+    \includegraphics[width=7cm]{/tmp/profile/map-0.png}
+  \end{tabular} \\
+  \hline
 \end{tabular}
 
 \end{document}

@@ -237,12 +237,14 @@ def gnuplot_map(P,W):
 	f.write("\n".join(L));
 	f.close();
 
-	f=open("map.gnuplot","r");
+	f=open("gnuplot/map.gnuplot","r");
 	content0=f.read();
 	f.close();
 	for k in range(math.floor(d[-1]/100)+1):
 		xmin,xmax,ymin,ymax=bbox(P,utm,d,k*100,(k+1)*100);
 		content=content0;
+		content=content.replace("{pngx}",str(10*int((xmax-xmin)/1000)));
+		content=content.replace("{pngy}",str(10*int((ymax-ymin)/1000)));
 		content=content.replace("{xmin}",str(xmin));
 		content=content.replace("{xmax}",str(xmax));
 		content=content.replace("{ymin}",str(ymin));
@@ -272,7 +274,7 @@ def gnuplot_profile(P,W):
 		f.write(f"{wx:5.2f}\t{wy:5.0f}\t{label1:s}\t{label2:s}\n");
 	f.close();
 
-	f=open("profile.gnuplot","r");
+	f=open("gnuplot/profile.gnuplot","r");
 	content0=f.read();
 	f.close();
 	distance=x[-1];
@@ -294,6 +296,42 @@ def gnuplot_profile(P,W):
 		subprocess.run(["gnuplot",filename]);
 		os.rename("/tmp/profile/profile.png",f"/tmp/profile/profile-{xk:d}.png");
 
+def index_with(L,string):
+	for k in range(len(L)):
+		if string in L[k]:
+			return k;
+	assert(False);	
+	return None;	
+
+def latex_profile(W):
+	f=open("tex/profile-template.tex","r");
+	L=f.read().split("\n");
+	f.close();
+	start=index_with(L,"% begin-template");
+	end=index_with(L,"% end-template");
+	template0="\n".join(L[start:end+1]);
+	filelist=os.listdir('/tmp/profile')
+	k=0;
+	out="\n".join(L);
+	assert(template0 in out);
+	parts=[];
+	while True:
+		template=template0;
+		profilepng=f"/tmp/profile/profile-{k:d}.png";
+		mappng=f"/tmp/profile/map-{k:d}.png";
+		if not os.path.exists(profilepng):
+			break;
+		template=template.replace("{profile-png}",profilepng);
+		template=template.replace("{map-png}",mappng);
+		# todo: pointlist
+		template=template.replace("{pointlist}","A & B & C \\\\");
+		parts.append(template);
+		k=k+1;
+	out=out.replace(template0,"\n".join(parts));
+	f=open("/tmp/profile/profile.tex","w");
+	f.write(out);
+	f.close();
+		
 def automatic_waypoints(P,start):
 	ret=dict();
 	x,y=elevation.load(P);
@@ -359,6 +397,8 @@ def makegpx(segment,waypoints,name,filename):
 	open(filename,'w').write(gpx.to_xml());
 
 def main():
+	latex_profile(None);
+	return;
 	print("hello");
 	if len(sys.argv)>1:
 		filename=sys.argv[1];
