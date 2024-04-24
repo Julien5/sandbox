@@ -4,44 +4,67 @@
 \usepackage[a4paper, portrait]{geometry}
 \usepackage{graphicx}
 
-\oddsidemargin  -1cm
-\evensidemargin -1cm
+\oddsidemargin  -2cm
+\evensidemargin -2cm
 \topmargin 	-3cm
 \textheight	28cm
 \textwidth  19cm
 
 %\fontsize{10pt}{12pt}
 
+\def\profileheight{5cm}
+\def\mapheight{8cm}
+
 \begin{document}
-\begin{center}
-  FEUILLE DE ROUTE
-\end{center}
-\begin{tabular}[b]{|r|c|}
-  \hline
-  \multicolumn{2}{c}{
-    \includegraphics[width=0.9\textwidth]{/tmp/profile/profile-0.png}
-  }
-  \\
+
+\begin{table}[h!]
+  \centering
+  \begin{tabular}{ | c | m{10cm} | }
     \hline
-  \begin{tabular}{|l|l|l|}
+    \multicolumn{2}{|l|}{
+    \includegraphics[height=\profileheight]{/tmp/profile/profile-0.png}
+    } \\
     \hline
-    NAME & DISTANCE & ELEVATION  \\
+    \begin{minipage}{.3\textwidth}
+      \includegraphics[height=\mapheight]{/tmp/profile/map-0.png}
+    \end{minipage}
+    &
+    %\begin{minipage}[t]{5cm}
+    \begin{tabular}{|l|l|l|}
+      \hline
+      NAME & DISTANCE & ELEVATION  \\
+      \hline
+      A & B & C \\
+      \hline
+    \end{tabular} 
+    %\end{minipage}
+    \\ \hline
+  \end{tabular}
+\end{table}
+
+\begin{table}[h!]
+  \centering
+  \begin{tabular}{ | c | m{10cm} | }
     \hline
-    A1-12-12:23 & 10 km & 105 m \\
-    A1-12-12:23 & 10 km & 105 m \\
-    A1-12-12:23 & 10 km & 105 m \\
-    A1-12-12:23 & 10 km & 105 m \\
-    A1-12-12:23 & 10 km & 105 m \\
-    A1-12-12:23 & 10 km & 105 m \\
-    A1-12-12:23 & 10 km & 105 m \\
-    A1-12-12:23 & 10 km & 105 m \\
+    \multicolumn{2}{|l|}{
+    \includegraphics[height=\profileheight]{/tmp/profile/profile-0.png}
+    } \\
     \hline
-  \end{tabular} 
-  &
-  \begin{tabular}{r}
-    \includegraphics[width=7cm]{/tmp/profile/map-0.png}
-  \end{tabular} \\
-  \hline
-\end{tabular}
+    \begin{minipage}{.3\textwidth}
+      \includegraphics[height=\mapheight]{/tmp/profile/map-0.png}
+    \end{minipage}
+    &
+    %\begin{minipage}[t]{5cm}
+    \begin{tabular}{|l|l|l|}
+      \hline
+      NAME & DISTANCE & ELEVATION  \\
+      \hline
+      A & B & C \\
+      \hline
+    \end{tabular} 
+    %\end{minipage}
+    \\ \hline
+  \end{tabular}
+\end{table}
 
 \end{document}
