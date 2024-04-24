@@ -4,40 +4,47 @@
 \usepackage[a4paper, portrait]{geometry}
 \usepackage{graphicx}
 
-\oddsidemargin  -1cm
-\evensidemargin -1cm
+\oddsidemargin  -2cm
+\evensidemargin -2cm
 \topmargin 	-3cm
 \textheight	28cm
 \textwidth  19cm
 
 %\fontsize{10pt}{12pt}
 
+\def\profileheight{5cm}
+\def\mapheight{8cm}
+
 \begin{document}
-\begin{center}
-  FEUILLE DE ROUTE
-\end{center}
+
 
 % begin-template
-\begin{tabular}[b]{|r|c|}
-  \hline
-  \multicolumn{2}{c}{
-    \includegraphics[width=0.9\textwidth]{{profile-png}}
-  }
-  \\
+\begin{table}[h!]
+  \centering
+  \begin{tabular}{ | c | c | }
     \hline
-  \begin{tabular}{|l|l|l|}
+    \multicolumn{2}{|l|}{
+    \includegraphics[height=\profileheight]{{profile-png}}
+    } \\
     \hline
-    NAME & DISTANCE & ELEVATION  \\
-    \hline
-        {pointlist}
-    \hline
-  \end{tabular} 
-  &
-  \begin{tabular}{r}
-    \includegraphics[width=7cm]{{map-png}}
-  \end{tabular} \\
-  \hline
-\end{tabular}
+    \begin{minipage}{10cm}
+      \centering
+      \includegraphics[height=\mapheight]{{map-png}}
+    \end{minipage}
+    &
+    \begin{minipage}[t]{9cm}
+      \centering
+    \begin{tabular}{|l|l|l|l|}
+      \hline
+      NAME & DISTANCE & TIME & ELEVATION  \\
+      \hline
+          {pointlist}
+      \hline
+    \end{tabular} 
+    \end{minipage}
+    \\ \hline
+  \end{tabular}
+\end{table}
 % end-template
 
 \end{document}

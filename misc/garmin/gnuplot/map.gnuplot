@@ -1,4 +1,4 @@
-set terminal pngcairo size {pngx},{pngy} enhanced font "sans,12"
+set terminal pngcairo size {pngx},{pngy} enhanced font "sans,18"
 set output "/tmp/profile/map.png"
 
 set datafile separator '\t'
@@ -17,4 +17,4 @@ set yrange [{ymin}:{ymax}];
 
 plot '/tmp/profile/map-track.csv' using 1:2 with lines ls 10 lw 3 notitle, \
 	 '/tmp/profile/map-wpt.csv' using 1:2:5 with labels point pt 7 ps 1 \
-	 							offset character 1,character 0 tc rgb "black" font "sans,10"  
+	 							offset character 1,character 0 tc rgb "black" 

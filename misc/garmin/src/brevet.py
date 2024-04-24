@@ -10,10 +10,30 @@ import subprocess;
 
 import elevation;
 import readtracks;
+import utils;
 
 from scipy import spatial
 import numpy as np
 
+def get_rwaypoints_at_page(k,W):
+	xmin=max(100*k-10,0);
+	xmax=100*(k+1)+10;
+	R=dict();
+	for distance in sorted(W.keys()):
+		km=distance/1000;
+		if xmin <= km and km <= xmax:
+			R[distance]=W[distance];
+	return R;	
+
+class RichWaypoint:
+	def __init__(self,waypoint,distance,time,t):
+		self.waypoint=waypoint;
+		self.distance=distance;
+		self.time=time;
+		self.type=t;
+
+	def isControlPoint(self):
+		return self.type == "K";
 
 def readsegments(filename):
 	gpx_file = open(filename, 'r');
@@ -188,7 +208,7 @@ def process_waypoints(waypoints,finder,start):
 			print("waypoint",w.name);
 			print("another waypoing with the same time:",time,"name:",D[time].name)
 			assert(not time in D);
-		D[distance]=w;
+		D[distance]=RichWaypoint(w,distance,time,"K");
 	return D;
 
 def bbox(P,proj,d,dmin,dmax):
@@ -208,6 +228,32 @@ def bbox(P,proj,d,dmin,dmax):
 	ymax=max([u[1] for u in U])+margin;
 	return xmin,xmax,ymin,ymax;
 
+def map_csv_waypoints(F,utm):
+	L=[];
+	for distance in F.keys():
+		lon=F[distance].waypoint.longitude;
+		lat=F[distance].waypoint.latitude;
+		label=F[distance].waypoint.name[:2];
+		x, y = utm(lon, lat)
+		L.append(f"{x:10.1f}\t{y:10.1f}\t{lat:10.6f}\t{lon:10.6f}\t{label:s}\t{distance/1000:4.1f}");
+	f=open("/tmp/profile/map-wpt.csv","w");
+	f.write("\n".join(L));
+	f.close();
+
+def profile_csv_waypoints(F):
+	L=list();
+	assert(F);
+	for distance in F.keys():
+		w=F[distance];
+		wx=w.distance/1000;
+		wy=w.waypoint.elevation;
+		label1=w.waypoint.name[:2];
+		label2=f"{wy:4.0f}";
+		L.append(f"{wx:5.2f}\t{wy:5.0f}\t{label1:s}\t{label2:s}");
+	f=open("/tmp/profile/elevation-wpt.csv","w");
+	f.write("\n".join(L));
+	f.close();
+
 import pyproj
 def gnuplot_map(P,W):
 	os.makedirs("/tmp/profile",exist_ok=True);
@@ -223,24 +269,14 @@ def gnuplot_map(P,W):
 	f=open("/tmp/profile/map-track.csv","w");
 	f.write("\n".join(L));
 	f.close();
-	
-	L=[]
-	for distance in W.keys():
-		lon=W[distance].longitude;
-		lat=W[distance].latitude;
-		label=W[distance].name[:2];
-		if not label in {"A0","A5"}:
-			continue;
-		x, y = utm(lon, lat)
-		L.append(f"{x:10.1f}\t{y:10.1f}\t{lat:10.6f}\t{lon:10.6f}\t{label:s}\t{distance/1000:4.1f}");
-	f=open("/tmp/profile/map-wpt.csv","w");
-	f.write("\n".join(L));
-	f.close();
 
 	f=open("gnuplot/map.gnuplot","r");
 	content0=f.read();
 	f.close();
 	for k in range(math.floor(d[-1]/100)+1):
+		Wk=get_rwaypoints_at_page(k,W);
+		F=filter_waypoints(Wk);
+		map_csv_waypoints(F,utm);
 		xmin,xmax,ymin,ymax=bbox(P,utm,d,k*100,(k+1)*100);
 		content=content0;
 		content=content.replace("{pngx}",str(10*int((xmax-xmin)/1000)));
@@ -255,31 +291,22 @@ def gnuplot_map(P,W):
 		f.close();
 		subprocess.run(["gnuplot",filename]);
 		os.rename("/tmp/profile/map.png",f"/tmp/profile/map-{k:d}.png");
+	return 	
 
 import math;
 def gnuplot_profile(P,W):
 	os.makedirs("/tmp/profile",exist_ok=True);
-	x,y=elevation.load(P);
+	d,y=elevation.load(P);
 	f=open("/tmp/profile/elevation.csv","w");
-	for k in range(len(x)):
-		f.write(f"{x[k]:5.2f}\t{y[k]:5.2f}\n");
-	f.close();
-	f=open("/tmp/profile/elevation-wpt.csv","w");
-	for distance in W.keys():
-		w=W[distance];
-		wx=distance/1000;
-		wy=w.elevation;
-		label1=w.name[:2];
-		label2=f"{wy:4.0f}";
-		f.write(f"{wx:5.2f}\t{wy:5.0f}\t{label1:s}\t{label2:s}\n");
+	for k in range(len(d)):
+		f.write(f"{d[k]:5.2f}\t{y[k]:5.2f}\n");
 	f.close();
 
 	f=open("gnuplot/profile.gnuplot","r");
 	content0=f.read();
 	f.close();
-	distance=x[-1];
 	
-	for xk in range(math.floor(distance/100)+1):
+	for xk in range(math.floor(d[-1]/100)+1):
 		xmin=max(100*xk-10,0);
 		xmax=100*(xk+1)+10;
 		ymin=math.floor(min(y)/500)*500;
@@ -293,6 +320,11 @@ def gnuplot_profile(P,W):
 		f=open(filename,"w");
 		f.write(content);
 		f.close();
+		Wk=get_rwaypoints_at_page(xk,W);
+		assert(Wk);
+		F=filter_waypoints(Wk);
+		assert(F);
+		profile_csv_waypoints(F);
 		subprocess.run(["gnuplot",filename]);
 		os.rename("/tmp/profile/profile.png",f"/tmp/profile/profile-{xk:d}.png");
 
@@ -301,7 +333,38 @@ def index_with(L,string):
 		if string in L[k]:
 			return k;
 	assert(False);	
-	return None;	
+	return None;
+
+def latex_waypoint(rwaypoint):
+	L=list();
+	L.append(rwaypoint.waypoint.name[:2]);
+	L.append(f"{rwaypoint.distance/1000:3.1f} km");
+	L.append(rwaypoint.time.strftime("%H:%M"));
+	L.append(f"{rwaypoint.waypoint.elevation:3.1f}");
+	separator=" & ";
+	return separator.join(L);
+
+
+def filter_waypoints(W):
+	K=[W[d] for d in W.keys() if W[d].isControlPoint()];
+	A=[W[d] for d in W.keys() if not W[d].isControlPoint()];
+	for k in K:
+		Aclose=[a for a in A if utils.distance(a.waypoint,k.waypoint)<5000];
+		for a in Aclose:
+			A.remove(a);
+	namax=max(12-len(K),0);
+	A2=[a for a in A if int(a.waypoint.name[1]) % 2 == 0];
+	A5=[a for a in A if int(a.waypoint.name[1]) % 5 == 0];
+	if len(A2)<namax:
+		A=A2;
+	else:
+		A=A5;
+	R=dict();
+	for w in A:
+		R[w.distance]=w;
+	for w in K:
+		R[w.distance]=w;
+	return R;
 
 def latex_profile(W):
 	f=open("tex/profile-template.tex","r");
@@ -324,7 +387,14 @@ def latex_profile(W):
 		template=template.replace("{profile-png}",profilepng);
 		template=template.replace("{map-png}",mappng);
 		# todo: pointlist
-		template=template.replace("{pointlist}","A & B & C \\\\");
+		Wk=get_rwaypoints_at_page(k,W);
+		pointlist=list();
+		F=filter_waypoints(Wk);
+		for d in sorted(F.keys()):
+			w=F[d];
+			pointlist.append(latex_waypoint(w));
+		newline="\\\\";	
+		template=template.replace("{pointlist}",f"{newline:s}\n\t".join(pointlist)+newline);
 		parts.append(template);
 		k=k+1;
 	out=out.replace(template0,"\n".join(parts));
@@ -357,7 +427,6 @@ def automatic_waypoints(P,start):
 			segment_begin=segment_end+1;
 			# print(f"{cumulative_x/1000:3.1f} km | {slope:4.2f}%");
 
-			counter+=1;
 			if slope<10:
 				slope_f=f"{slope*10:2.0f}";
 			else:
@@ -371,34 +440,37 @@ def automatic_waypoints(P,start):
 			name=f"A{counter%10:d}-{slope_f:>2}-{time_str:s}";
 			description="automatic"
 			wp=toWaypoint(P[k].latitude,P[k].longitude,P[k].elevation,name,description);
-			ret[distance]=wp;
+			ret[distance]=RichWaypoint(wp,distance,time,"A");
 
 			segment_end=-1;
 			cumulative_y=0;
+			counter+=1;
 	return ret;
 
 def makegpx(segment,waypoints,name,filename):
+	print("remove time and elevation before exporting to gpx");
+	for p in segment.walk(True):
+		p.elevation=None;
+		p.time=None;
+		
 	gpx = gpxpy.gpx.GPX();
 
 	gpx_track = gpxpy.gpx.GPXTrack()
 	gpx_track.name = name;
 	gpx.tracks.append(gpx_track)
 	gpx_track.segments.append(segment)
-
+	
 	L=[];
 	for distance in sorted(waypoints.keys()):
-		w=waypoints[distance];
-		total_hours=timehours_to(distance);
+		time=waypoints[distance].time;
 		# print(f"{waypoint_string(w):s};{distance/1000:5.1f};{total_hours:3.1f}");
-		L.append(w);
+		L.append(waypoints[distance].waypoint);
 	gpx.waypoints=L;
 
 	print("generate",filename);
 	open(filename,'w').write(gpx.to_xml());
 
 def main():
-	latex_profile(None);
-	return;
 	print("hello");
 	if len(sys.argv)>1:
 		filename=sys.argv[1];
@@ -415,20 +487,10 @@ def main():
 	P=readtracks.readpoints(filename);
 	print("make waypoints");
 	A=automatic_waypoints(P,start);
-	print("generate profile plot file");
-	gnuplot_profile(P,A);
-	print("generate map plot file");
-	gnuplot_map(P,A);
-
 	print("read disc again (track)");
 	S,name=readsegments(filename);
 	assert(len(S)==1);
 	segment=S[0];
-	
-	for p in segment.walk(True):
-		p.elevation=None;
-		p.time=None;
-
 	print("read disc again (wpt)");
 	waypoints=readwaypoints(filename);
 	last_point=segment.points[-1];
@@ -437,6 +499,11 @@ def main():
 	finder=Finder(segment);
 	B=process_waypoints(waypoints,finder,start);
 	W = {**A, **B};
+	print("generate profile plot file");
+	gnuplot_profile(P,W);
+	print("generate map plot file");
+	gnuplot_map(P,W);
+	latex_profile(W);
 	if not os.path.exists("out"):
 		os.makedirs("out");
 	print("generate gpx");
