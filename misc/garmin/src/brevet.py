@@ -355,10 +355,12 @@ def filter_waypoints(W):
 	namax=max(12-len(K),0);
 	A2=[a for a in A if int(a.waypoint.name[1]) % 2 == 0];
 	A5=[a for a in A if int(a.waypoint.name[1]) % 5 == 0];
-	if len(A2)<namax:
-		A=A2;
+	if len(A)<namax:
+		pass;
+	elif len(A2)<namax:
+		pass;#A=A2;
 	else:
-		A=A5;
+		pass;#A=A5;
 	R=dict();
 	for w in A:
 		R[w.distance]=w;
@@ -386,7 +388,6 @@ def latex_profile(W):
 			break;
 		template=template.replace("{profile-png}",profilepng);
 		template=template.replace("{map-png}",mappng);
-		# todo: pointlist
 		Wk=get_rwaypoints_at_page(k,W);
 		pointlist=list();
 		F=filter_waypoints(Wk);
@@ -401,50 +402,66 @@ def latex_profile(W):
 	f=open("/tmp/profile/profile.tex","w");
 	f.write(out);
 	f.close();
+
+def argmax(x,R):
+	return max(R, key=lambda i: x[i])
+
+def argmin(x,R):
+	return min(R, key=lambda i: x[i])
+
+def R20(x,start):
+	return [k for k in range(start,len(x)) if abs(x[start]-x[k])<10];
+
+def summits(x,y):
+	start=0;
+	ret=list();
+	while start<len(x):
+		R=R20(x,start);
+		kmax=argmax(y,R);
+		start=max(R)+1;
+		ret.append(kmax);
+	return ret;
+
+def dxdy(x,y,k1,k2):
+	cumulative_x=0;
+	cumulative_y=0;
+	for k in range(k1,k2):
+		# up
+		if y[k]>y[k-1] and k>0:
+			cumulative_y+=y[k]-y[k-1];
+			assert(x[k]>x[k-1]);
+			cumulative_x+=1000*(x[k]-x[k-1]);
+	return cumulative_x,cumulative_y;
 		
 def automatic_waypoints(P,start):
 	ret=dict();
 	x,y=elevation.load(P);
-	cumulative_y=0;
-	segment_begin=0;
-	segment_end=-1;
+	K=summits(x,y);
+	assert(not 0 in K);
+	assert(len(K)>=1);
+	kprev=0;
 	counter=0;
-	for k in range(len(x)):
-		if k == 0:
-			continue;
-		
-		dy=0;
-		if y[k]>y[k-1]:
-			dy=y[k]-y[k-1];
-		cumulative_y+=dy;
-
-		cumulative_x=1000*(x[k]-x[segment_begin]);
-
-		if cumulative_y>=100: #  or cumulative_x>10000:
-			segment_end=k;
-			distance=1000*x[segment_end];
-			slope=100*cumulative_y/cumulative_x;
-			segment_begin=segment_end+1;
-			# print(f"{cumulative_x/1000:3.1f} km | {slope:4.2f}%");
-
-			if slope<10:
-				slope_f=f"{slope*10:2.0f}";
-			else:
-				slope_f="..";
-
-			total_hours=timehours_to(distance);
-			time=waypoint_time(total_hours,start);
-			assert(not time in ret.keys());
-			time_str=fix_summer_winter_time(time).strftime("%H:%M");
-
-			name=f"A{counter%10:d}-{slope_f:>2}-{time_str:s}";
-			description="automatic"
-			wp=toWaypoint(P[k].latitude,P[k].longitude,P[k].elevation,name,description);
-			ret[distance]=RichWaypoint(wp,distance,time,"A");
-
-			segment_end=-1;
-			cumulative_y=0;
-			counter+=1;
+	for n in range(len(K)):
+		k=K[n];
+		dx,dy=dxdy(x,y,kprev,k);
+		assert(dy>=0);
+		assert(dx>0);
+		slope=100*dy/dx;
+		if slope<10:
+			slope_f=f"{slope*10:2.0f}";
+		else:
+			slope_f="..";
+		distance=x[k]*1000;
+		total_hours=timehours_to(distance);
+		time=waypoint_time(total_hours,start);
+		assert(not time in ret.keys());
+		time_str=fix_summer_winter_time(time).strftime("%H:%M");
+		name=f"A{counter%10:d}-{slope_f:>2}-{time_str:s}";
+		description="automatic"
+		wp=toWaypoint(P[k].latitude,P[k].longitude,P[k].elevation,name,description);
+		ret[distance]=RichWaypoint(wp,distance,time,"A");
+		kprev=k;
+		counter+=1;
 	return ret;
 
 def makegpx(segment,waypoints,name,filename):
@@ -471,7 +488,6 @@ def makegpx(segment,waypoints,name,filename):
 	open(filename,'w').write(gpx.to_xml());
 
 def main():
-	print("hello");
 	if len(sys.argv)>1:
 		filename=sys.argv[1];
 	else:

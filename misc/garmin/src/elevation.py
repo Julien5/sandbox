@@ -18,6 +18,7 @@ def load(P):
 		if k==0:
 			x.append(0);
 		else:
+			# todo: not divide by 1000.
 			x.append(x[k-1]+utils.distance(P[k-1],P[k])/1000);
 		y.append(P[k].elevation);
 	return x,y;	
