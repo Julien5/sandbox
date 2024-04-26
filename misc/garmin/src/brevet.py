@@ -344,29 +344,39 @@ def latex_waypoint(rwaypoint):
 	separator=" & ";
 	return separator.join(L);
 
+def value(rw):
+	if rw.isControlPoint():
+		return 10000; # "infinity"
+	return rw.waypoint.elevation;
+
+def sort_waypoints(W):
+	return sorted(W, key=lambda rw: value(rw), reverse=True)
+
+def closest(W,w0):
+	assert(len(W)>=2);
+	return sorted(W, key=lambda rw: abs(rw.distance-w0.distance))[1];
 
 def filter_waypoints(W):
 	K=[W[d] for d in W.keys() if W[d].isControlPoint()];
 	A=[W[d] for d in W.keys() if not W[d].isControlPoint()];
-	for k in K:
-		Aclose=[a for a in A if utils.distance(a.waypoint,k.waypoint)<5000];
-		for a in Aclose:
-			A.remove(a);
-	namax=max(12-len(K),0);
-	A2=[a for a in A if int(a.waypoint.name[1]) % 2 == 0];
-	A5=[a for a in A if int(a.waypoint.name[1]) % 5 == 0];
-	if len(A)<namax:
-		pass;
-	elif len(A2)<namax:
-		pass;#A=A2;
-	else:
-		pass;#A=A5;
-	R=dict();
-	for w in A:
-		R[w.distance]=w;
-	for w in K:
-		R[w.distance]=w;
-	return R;
+	W=A+K;
+	assert(W);
+	remove=list();
+	for w in W:
+		c=closest(W,w);
+		d=abs(c.distance-w.distance);
+		print(c.distance,w.distance,d);
+		if d<5000:
+			S=sort_waypoints([w,c]);
+			remove.append(S[-1]);
+	assert(len(remove)<len(W));		
+	W2=[w for w in W if not w in remove];
+	assert(W2);
+	S=sort_waypoints(W2);
+	ret=dict();
+	for rw in S[:12]:
+		ret[rw.distance]=rw;
+	return ret;
 
 def latex_profile(W):
 	f=open("tex/profile-template.tex","r");
