@@ -115,11 +115,11 @@ def control_waypoint_name(start,time,waypoint,counter):
 		short=f"{counter:2d}";
 	return f"{short[0:3]:3s}-{time_str:s}"
 
-def toWaypoint(latitude,longitude,elevation,name,description):
+def toGPXWaypoint(point,name,description):
 	w = gpxpy.gpx.GPXWaypoint()
-	w.latitude=latitude;
-	w.longitude=longitude;
-	w.elevation=elevation;
+	w.latitude=point.latitude;
+	w.longitude=point.longitude;
+	w.elevation=point.elevation;
 	w.name=name;
 	w.description=description;
 	w.symbol = "Flag, Blue";
@@ -145,7 +145,7 @@ def process_waypoints(waypoints,finder,start):
 
 		description=point.name;
 		name=control_waypoint_name(start,time,s,len(D)+1);
-		w=toWaypoint(point.latitude,point.longitude,point.elevation,name,description);
+		w=toGPXWaypoint(point,name,description);
 		if time in D:
 			if w.name == D[time].name:
 				continue;
@@ -412,7 +412,7 @@ def automatic_waypoints(P,start):
 		time_str=fix_summer_winter_time(time).strftime("%H:%M");
 		name=f"A{counter%10:d}-{slope_f:>2}-{time_str:s}";
 		description="automatic"
-		wp=toWaypoint(P[k].latitude,P[k].longitude,P[k].elevation,name,description);
+		wp=toGPXWaypoint(P[k],name,description);
 		ret[distance]=RichWaypoint(wp,distance,time,"A");
 		kprev=k;
 		counter+=1;
@@ -465,7 +465,7 @@ def main():
 	waypoints=readwaypoints(filename);
 	last_point=segment.points[-1];
 	print("process waypoints");
-	waypoints.append(toWaypoint(last_point.latitude,last_point.longitude,last_point.elevation,"END",""));
+	waypoints.append(toGPXWaypoint(last_point,"END",""));
 	wpfinder=finder.Finder(segment.points);
 	B=process_waypoints(waypoints,wpfinder,start);
 	W = {**A, **B};
