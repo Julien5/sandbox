@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import readtracks;
+import sorttracks;
 import os;
 import statistics;
 import utils;
@@ -14,7 +14,7 @@ def create_statistics(dirs,force=False):
 		percent=100*n/len(dirs);
 		alltxt=os.path.join(dirname,"gpx","GAP00-all.txt")
 		if force or not os.path.exists(alltxt):
-			readtracks.create_statistics(dirname);
+			sorttracks.create_statistics(dirname);
 			print(f"{dirname:50s} [{percent:04.1f}%]",end="");
 			print("\n",end="",flush="True");
 
