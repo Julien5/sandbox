@@ -87,14 +87,14 @@ def join_close_intervals(intervals,start_condition,join_condition):
 
 def test_join_far_intervals():
 	intervals=list();
-	intervals.append(Interval("M", 1, 4));
-	intervals.append(Interval("T", 4,10));
-	intervals.append(Interval("M",10,11));
-	intervals.append(Interval("T",11,13));
-	intervals.append(Interval("P",13,14));
-	intervals.append(Interval("P",21,23));
-	intervals.append(Interval("T",51,53));
-	intervals.append(Interval("P",61,63));
+	intervals.append(utils.Interval("M", 1, 4));
+	intervals.append(utils.Interval("T", 4,10));
+	intervals.append(utils.Interval("M",10,11));
+	intervals.append(utils.Interval("T",11,13));
+	intervals.append(utils.Interval("P",13,14));
+	intervals.append(utils.Interval("P",21,23));
+	intervals.append(utils.Interval("T",51,53));
+	intervals.append(utils.Interval("P",61,63));
 	for i in intervals:
 		print(i)
 	print("=>");
@@ -126,12 +126,12 @@ def test_join_condition(I1,I2):
 
 def test_join_intervals():
 	I=list();
-	I.append(Interval("a",1,3));
-	I.append(Interval("a",5,6))
-	I.append(Interval("b",15,17))
-	I.append(Interval("b",19,21))
-	I.append(Interval("b",22,24))
-	I.append(Interval("c",35,37))
+	I.append(utils.Interval("a",1,3));
+	I.append(utils.Interval("a",5,6))
+	I.append(utils.Interval("b",15,17))
+	I.append(utils.Interval("b",19,21))
+	I.append(utils.Interval("b",22,24))
+	I.append(utils.Interval("c",35,37))
 	R=join_intervals(I,test_join_condition);
 	for r in I:
 		print(r)
@@ -169,16 +169,16 @@ def test_annotation_function(points,n):
 def test_annotate():
 	I=list();
 	points=list();
-	points.append(Point(0,0,0.1,0));
-	points.append(Point(0,0,0.2,0));
-	points.append(Point(0,0,0.2,0));
-	points.append(Point(0,0,0.2,0));
-	points.append(Point(0,0,1.1,0));
-	points.append(Point(0,0,2.3,0));
-	points.append(Point(0,0,None,0));
-	points.append(Point(0,0,None,0));
-	points.append(Point(0,0,2.3,0));
-	points.append(Point(0,0,2.3,0));
+	points.append(utils.Point(0,0,0.1,0));
+	points.append(utils.Point(0,0,0.2,0));
+	points.append(utils.Point(0,0,0.2,0));
+	points.append(utils.Point(0,0,0.2,0));
+	points.append(utils.Point(0,0,1.1,0));
+	points.append(utils.Point(0,0,2.3,0));
+	points.append(utils.Point(0,0,None,0));
+	points.append(utils.Point(0,0,None,0));
+	points.append(utils.Point(0,0,2.3,0));
+	points.append(utils.Point(0,0,2.3,0));
 	J=annotate(points,test_annotation_function);
 	assert(J);
 	for I in J:
