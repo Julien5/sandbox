@@ -49,9 +49,11 @@ def segpoints(segment):
 def readpoints(path):
 	gpx = readgpx(path);
 	ret=list();
+	name=None;
 	for track in gpx.tracks:
+		name=track.name;
 		for seg in track.segments:
 			ret.extend(segpoints(seg));
-	return ret;		
+	return name,ret;		
 
 

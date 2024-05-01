@@ -7,7 +7,8 @@ import readtracks;
 import utils;
 
 def readfile(filename):
-	return readtracks.readpoints(filename);
+	name,R=readtracks.readpoints(filename);
+	return R;
 
 def load(P):
 	x=[];

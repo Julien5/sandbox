@@ -36,29 +36,7 @@ class RichWaypoint:
 	def isControlPoint(self):
 		return self.type == "K";
 
-def readsegments(filename):
-	gpx_file = open(filename, 'r');
-	gpx = gpxpy.parse(gpx_file);
-	gpx_file.close();
-	#assert(len(gpx.tracks)==1);
-	R=list();
-	for T in gpx.tracks:
-		assert(len(T.segments)==1);
-		name=T.name;
-		#print(name)
-		for segment in T.segments:
-			for p in segment.points:
-				p.extensions=None;
-			R.append(segment);
-	return R,name;
-
-def join(S):
-	R=gpxpy.gpx.GPXTrackSegment()
-	for s in S:
-		R.join(s);
-	return R;	
-
-def readwaypoints(filename):
+def readgpxwaypoints(filename):
 	gpx_file = open(filename, 'r');
 	gpx = gpxpy.parse(gpx_file);
 	gpx_file.close();
@@ -124,6 +102,18 @@ def toGPXWaypoint(point,name,description):
 	w.description=description;
 	w.symbol = "Flag, Blue";
 	return w;
+
+def toGPXSegment(points):
+	w = gpxpy.gpx.GPXTrackSegment()
+	for p in points:
+		g=gpxpy.gpx.GPXTrackPoint();
+		g.latitude=p.latitude;
+		g.longitude=p.longitude;
+		g.elevation=p.elevation;
+		#g.time=point.time;
+		w.points.append(g);
+	return w;
+
 
 def waypoint_string(w):
 	#return f"{w.name:11s} {w.description:30s} lat:{w.latitude:2.5f} long:{w.longitude:2.5f}";
@@ -418,8 +408,9 @@ def automatic_waypoints(P,start):
 		counter+=1;
 	return ret;
 
-def makegpx(segment,waypoints,name,filename):
+def makegpx(track,waypoints,name,filename):
 	print("remove time and elevation before exporting to gpx");
+	segment = toGPXSegment(track);
 	for p in segment.walk(True):
 		p.elevation=None;
 		p.time=None;
@@ -454,20 +445,18 @@ def main():
 		tomorrow=datetime.date.today() + datetime.timedelta(days=1);
 		start=datetime.datetime(tomorrow.year,tomorrow.month,tomorrow.day,hour=7);
 	print("read disc");
-	P=readtracks.readpoints(filename);
+	name,P=readtracks.readpoints(filename);
 	print("make waypoints");
 	A=automatic_waypoints(P,start);
 	print("read disc again (track)");
-	S,name=readsegments(filename);
-	assert(len(S)==1);
-	segment=S[0];
+	name,track=readtracks.readpoints(filename);
 	print("read disc again (wpt)");
-	waypoints=readwaypoints(filename);
-	last_point=segment.points[-1];
+	gpxWayPoints=readgpxwaypoints(filename);
+	last_point=track[-1];
 	print("process waypoints");
-	waypoints.append(toGPXWaypoint(last_point,"END",""));
-	wpfinder=finder.Finder(segment.points);
-	B=process_waypoints(waypoints,wpfinder,start);
+	gpxWayPoints.append(toGPXWaypoint(last_point,"END",""));
+	wpfinder=finder.Finder(track);
+	B=process_waypoints(gpxWayPoints,wpfinder,start);
 	W = {**A, **B};
 	print("generate profile plot file");
 	gnuplot_profile(P,W);
@@ -477,6 +466,6 @@ def main():
 	if not os.path.exists("out"):
 		os.makedirs("out");
 	print("generate gpx");
-	makegpx(segment,W,name,"out/"+os.path.basename(filename));
+	makegpx(track,W,name,"out/"+os.path.basename(filename));
 	
 main()
