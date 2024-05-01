@@ -125,7 +125,7 @@ def print_statistics_friendly(S):
 	# enddate=S.endpoint.time.strftime("%d (%a)");
 	endtime=fixutc(S.endpoint.time).strftime("%H:%M");
 
-	cat=utils.category(S);
+	cat=category(S);
 	print(f"{cat:8s}",end="| ");
 	print(f"{startdate:8s}",end=" ");
 	print(f"{starttime:5s}",end=" - ");
@@ -146,13 +146,32 @@ def print_statistics_friendly(S):
 	print(f"{maxspeed:4.1f} kmh",end=" |");
 	print("");
 
+
+def category_speed(msspeed,kmh_threshold):
+	if utils.kmh(msspeed)>kmh_threshold:
+		return "cycling";
+	return "running";
+
+def category(S):
+	if S.typename != "moving":
+		return "none";
+	km=S.distance/1000;
+	speed=S.movingspeed;
+	if km>40:
+		return category_speed(speed,10);
+	if km>15:
+		return category_speed(speed,15);
+	if km>10:
+		return category_speed(speed,16);
+	return category_speed(speed,17);
+
 def print_statistics(S):
 	startdate=S.startpoint.time.strftime("%d.%m.%Y (%a)");
 	starttime=fixutc(S.startpoint.time).strftime("%H:%M");
 	# enddate=S.endpoint.time.strftime("%d (%a)");
 	endtime=fixutc(S.endpoint.time).strftime("%H:%M");
 
-	cat=utils.category(S);
+	cat=category(S);
 	print(f"{cat:8s}",end="| ");
 	name=S.typename;
 	print(f"{name:8s}",end="| ");
