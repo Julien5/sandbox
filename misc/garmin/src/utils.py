@@ -3,11 +3,28 @@
 import copy
 
 class Point:
-	def __init__(self,la,lo,ele,time):
+	def __init__(self,la,lo,ele=None,time=None):
 		self.latitude=la;
 		self.longitude=lo;
 		self.elevation=ele;
 		self.time=time;
+
+	def dist(self,other):
+		return distance(self,other);
+
+class Points:
+	def __init__(self,P):
+		N=len(P);
+		self._points=copy.deepcopy(P);
+		self._dists=list(range(N));
+		for k in range(N-1):
+			self._dists[k+1] = self._dists[k] + P[k].dist(P[k+1]);
+
+	def dist(self,k):
+		return self._dists[k];
+
+	def point(self,k):
+		return self._points[k];
 
 class Interval:
 	def __init__(self,typename,begin,end):

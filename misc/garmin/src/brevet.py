@@ -11,6 +11,7 @@ import subprocess;
 import elevation;
 import readtracks;
 import utils;
+import finder;
 
 from scipy import spatial
 import numpy as np
@@ -114,63 +115,6 @@ def control_waypoint_name(start,time,waypoint,counter):
 		short=f"{counter:2d}";
 	return f"{short[0:3]:3s}-{time_str:s}"
 
-def argmax(iterable):
-    return max(enumerate(iterable), key=lambda x: x[1])[0]
-
-def argmin(iterable):
-    return min(enumerate(iterable), key=lambda x: x[1])[0]
-
-class Point:
-	def __init__(self,latitude,longitude):
-		self.point = (latitude,longitude);
-
-	def list(self):
-		return [self.point[0], self.point[1]];
-
-	def __hash__(self):
-		return hash(self.point);
-
-	def __eq__(self, other):
-		return (self.point) == (other.point)
-
-	def __ne__(self, other):
-		return not(self == other)
-
-	def dist(self,other):
-		lat1=self.point[0];
-		long1=self.point[1];
-		lat2=other.point[0];
-		long2=other.point[1];
-		return distlatlong(lat1,long1,lat2,long2);
-	
-class Finder:
-	def __init__(self,segment):
-		G=segment.points;
-		P=[Point(g.latitude,g.longitude) for g in G];
-		self.dist=dict();
-		self.dist[P[0]]=0;
-		for k in range(len(P)-1):
-			self.dist[P[k+1]] = self.dist[P[k]] + P[k].dist(P[k+1]);
-		self.A = np.array([p.list() for p in P]);
-		self.spatial = spatial.KDTree(self.A);
-
-	def segment_length(self):
-		return max(self.dist.values());
-
-	def find_distance(self,p):
-		pt=Point(p.latitude,p.longitude).list();
-		index=self.spatial.query(pt)[1];
-		nearest=self.A[index];
-		[lat,longitude]=list(nearest);
-		return self.dist[Point(lat,longitude)];
-
-	def project(self,p):
-		pt=Point(p.latitude,p.longitude).list();
-		index=self.spatial.query(pt)[1];
-		nearest=self.A[index];
-		[lat,longitude]=list(nearest);
-		return (lat,longitude);
-
 def toWaypoint(latitude,longitude,elevation,name,description):
 	w = gpxpy.gpx.GPXWaypoint()
 	w.latitude=latitude;
@@ -195,9 +139,9 @@ def process_waypoints(waypoints,finder,start):
 
 		# we project all points, even controls,
 		# because controls are exact points.
-		(lat,longitude)=finder.project(point);
-		point.latitude=lat;
-		point.longitude=longitude;
+		p=finder.project(point);
+		point.latitude=p.latitude;
+		point.longitude=p.longitude;
 
 		description=point.name;
 		name=control_waypoint_name(start,time,s,len(D)+1);
@@ -522,8 +466,8 @@ def main():
 	last_point=segment.points[-1];
 	print("process waypoints");
 	waypoints.append(toWaypoint(last_point.latitude,last_point.longitude,last_point.elevation,"END",""));
-	finder=Finder(segment);
-	B=process_waypoints(waypoints,finder,start);
+	wpfinder=finder.Finder(segment.points);
+	B=process_waypoints(waypoints,wpfinder,start);
 	W = {**A, **B};
 	print("generate profile plot file");
 	gnuplot_profile(P,W);
