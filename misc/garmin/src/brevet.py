@@ -27,11 +27,13 @@ def get_rwaypoints_at_page(k,W):
 	return R;	
 
 class RichWaypoint:
-	def __init__(self,waypoint,distance,time,t):
-		self.waypoint=waypoint;
-		self.distance=distance;
-		self.time=time;
-		self.type=t;
+	def __init__(self,point):
+		self.point=point;
+		self.name="";
+		self.description="";
+		self.distance=None;
+		self.time=None;
+		self.type=None;
 
 	def isControlPoint(self):
 		return self.type == "K";
@@ -40,15 +42,16 @@ def readgpxwaypoints(filename):
 	gpx_file = open(filename, 'r');
 	gpx = gpxpy.parse(gpx_file);
 	gpx_file.close();
+	ret=list();
 	for w in gpx.waypoints:
-		if not w.description:
-			w.description="";
-		if not w.name:
-			w.name="";
-		w.name=w.name.strip();	
-		w.description=w.description.replace("’","'");
-		w.extensions=None;
-	return gpx.waypoints;
+		rw=RichWaypoint(utils.Point(w.latitude,w.longitude,w.elevation));
+		rw.name=w.name;
+		if w.description:
+			rw.description=w.description.replace("’","'");
+		if w.name:
+			rw.name=w.name.strip();
+		ret.append(rw);	
+	return ret;
 
 def timedelta(hours):
 	tddays=math.floor(hours/24);
@@ -93,13 +96,13 @@ def control_waypoint_name(start,time,waypoint,counter):
 		short=f"{counter:2d}";
 	return f"{short[0:3]:3s}-{time_str:s}"
 
-def toGPXWaypoint(point,name,description):
+def toGPXWaypoint(rpoint):
 	w = gpxpy.gpx.GPXWaypoint()
-	w.latitude=point.latitude;
-	w.longitude=point.longitude;
-	w.elevation=point.elevation;
-	w.name=name;
-	w.description=description;
+	w.latitude=rpoint.point.latitude;
+	w.longitude=rpoint.point.longitude;
+	w.elevation=rpoint.point.elevation;
+	w.name=rpoint.name;
+	w.description=rpoint.description;
 	w.symbol = "Flag, Blue";
 	return w;
 
@@ -119,30 +122,31 @@ def waypoint_string(w):
 	#return f"{w.name:11s} {w.description:30s} lat:{w.latitude:2.5f} long:{w.longitude:2.5f}";
 	return f"{w.name:11s};{w.description:30s}";
 
-def process_waypoints(waypoints,finder,start):
+def process_waypoints(richpoints,finder,start):
 	D=dict();
-	for s in waypoints:
-		point=s;
-		distance=finder.find_distance(point);
+	for s in richpoints:
+		richpoint=s;
+		distance=finder.find_distance(richpoint.point);
 		total_hours=timehours_to(distance);
 		time=waypoint_time(total_hours,start);
 
 		# we project all points, even controls,
 		# because controls are exact points.
-		p=finder.project(point);
-		point.latitude=p.latitude;
-		point.longitude=p.longitude;
+		richpoint.point=finder.project(richpoint.point);
 
-		description=point.name;
-		name=control_waypoint_name(start,time,s,len(D)+1);
-		w=toGPXWaypoint(point,name,description);
-		if time in D:
-			if w.name == D[time].name:
+		# save the original name in the description
+		richpoint.description=richpoint.name;
+		richpoint.name=control_waypoint_name(start,time,s,len(D)+1);
+		if distance in D:
+			if w.name == D[distance].name:
 				continue;
 			print("waypoint",w.name);
-			print("another waypoing with the same time:",time,"name:",D[time].name)
-			assert(not time in D);
-		D[distance]=RichWaypoint(w,distance,time,"K");
+			print("another waypoing with the same time:",time,"name:",D[distance].name)
+			assert(not distance in D);
+		richpoint.distance=distance;
+		richpoint.time=time;
+		richpoint.name="K";
+		D[distance]=richpoint;
 	return D;
 
 def bbox(P,proj,d,dmin,dmax):
@@ -165,9 +169,9 @@ def bbox(P,proj,d,dmin,dmax):
 def map_csv_waypoints(F,utm):
 	L=[];
 	for distance in F.keys():
-		lon=F[distance].waypoint.longitude;
-		lat=F[distance].waypoint.latitude;
-		label=F[distance].waypoint.name[:2];
+		lon=F[distance].point.longitude;
+		lat=F[distance].point.latitude;
+		label=F[distance].name[:2];
 		x, y = utm(lon, lat)
 		L.append(f"{x:10.1f}\t{y:10.1f}\t{lat:10.6f}\t{lon:10.6f}\t{label:s}\t{distance/1000:4.1f}");
 	f=open("/tmp/profile/map-wpt.csv","w");
@@ -180,8 +184,8 @@ def profile_csv_waypoints(F):
 	for distance in F.keys():
 		w=F[distance];
 		wx=w.distance/1000;
-		wy=w.waypoint.elevation;
-		label1=w.waypoint.name[:2];
+		wy=w.point.elevation;
+		label1=w.name[:2];
 		label2=f"{wy:4.0f}";
 		L.append(f"{wx:5.2f}\t{wy:5.0f}\t{label1:s}\t{label2:s}");
 	f=open("/tmp/profile/elevation-wpt.csv","w");
@@ -271,17 +275,18 @@ def index_with(L,string):
 
 def latex_waypoint(rwaypoint):
 	L=list();
-	L.append(rwaypoint.waypoint.name[:2]);
+	L.append(rwaypoint.name[:2]);
 	L.append(f"{rwaypoint.distance/1000:3.1f} km");
 	L.append(rwaypoint.time.strftime("%H:%M"));
-	L.append(f"{rwaypoint.waypoint.elevation:3.1f}");
+	L.append(f"{rwaypoint.point.elevation:3.1f}");
 	separator=" & ";
 	return separator.join(L);
 
 def value(rw):
 	if rw.isControlPoint():
 		return 10000; # "infinity"
-	return rw.waypoint.elevation;
+	assert(rw.point.elevation);
+	return rw.point.elevation;
 
 def sort_waypoints(W):
 	return sorted(W, key=lambda rw: value(rw), reverse=True)
@@ -402,8 +407,13 @@ def automatic_waypoints(P,start):
 		time_str=fix_summer_winter_time(time).strftime("%H:%M");
 		name=f"A{counter%10:d}-{slope_f:>2}-{time_str:s}";
 		description="automatic"
-		wp=toGPXWaypoint(P[k],name,description);
-		ret[distance]=RichWaypoint(wp,distance,time,"A");
+		rw=RichWaypoint(P[k]);
+		rw.name=name;
+		rw.description=description;
+		rw.distance=distance;
+		rw.time=time;
+		rw.name=f"A{counter%10:d}";
+		ret[distance]=rw;
 		kprev=k;
 		counter+=1;
 	return ret;
@@ -426,7 +436,7 @@ def makegpx(track,waypoints,name,filename):
 	for distance in sorted(waypoints.keys()):
 		time=waypoints[distance].time;
 		# print(f"{waypoint_string(w):s};{distance/1000:5.1f};{total_hours:3.1f}");
-		L.append(waypoints[distance].waypoint);
+		L.append(toGPXWaypoint(waypoints[distance]));
 	gpx.waypoints=L;
 
 	print("generate",filename);
@@ -451,12 +461,19 @@ def main():
 	print("read disc again (track)");
 	name,track=readtracks.readpoints(filename);
 	print("read disc again (wpt)");
-	gpxWayPoints=readgpxwaypoints(filename);
-	last_point=track[-1];
+	gpxrichwaypoints=readgpxwaypoints(filename);
+	last_point=RichWaypoint(track[-1]);
+	last_point.name="END";
+	assert(last_point.point.elevation);
 	print("process waypoints");
-	gpxWayPoints.append(toGPXWaypoint(last_point,"END",""));
+	gpxrichwaypoints.append(last_point);
 	wpfinder=finder.Finder(track);
-	B=process_waypoints(gpxWayPoints,wpfinder,start);
+	B=process_waypoints(gpxrichwaypoints,wpfinder,start);
+	for w in A.values():
+		assert(w.point.elevation);
+	for w in B.values():
+		assert(w.point.elevation);
+
 	W = {**A, **B};
 	print("generate profile plot file");
 	gnuplot_profile(P,W);

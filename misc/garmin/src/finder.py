@@ -8,7 +8,7 @@ def point_as_list(p):
 
 class Finder:
 	def __init__(self,segment):
-		P=[utils.Point(g.latitude,g.longitude) for g in segment];
+		P=[utils.Point(g.latitude,g.longitude,g.elevation) for g in segment];
 		self.points=utils.Points(P);
 		self.A = np.array([point_as_list(p) for p in P]);
 		self.spatial = spatial.KDTree(self.A);
