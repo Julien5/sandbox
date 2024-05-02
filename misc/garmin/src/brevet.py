@@ -124,8 +124,7 @@ def waypoint_string(w):
 
 def process_waypoints(richpoints,finder,start):
 	D=dict();
-	for s in richpoints:
-		richpoint=s;
+	for richpoint in richpoints:
 		distance=finder.find_distance(richpoint.point);
 		total_hours=timehours_to(distance);
 		time=waypoint_time(total_hours,start);
@@ -136,12 +135,15 @@ def process_waypoints(richpoints,finder,start):
 
 		# save the original name in the description
 		richpoint.description=richpoint.name;
-		richpoint.name=control_waypoint_name(start,time,s,len(D)+1);
+		richpoint.name=control_waypoint_name(start,time,richpoint,len(D)+1);
 		if distance in D:
-			if w.name == D[distance].name:
+			if richpoint.name == D[distance].name:
 				continue;
-			print("waypoint",w.name);
-			print("another waypoing with the same time:",time,"name:",D[distance].name)
+			new=richpoint;
+			old=D[distance];
+			print("two waypoints with the same time:",time);
+			print("new:",new.name,"-",new.description);
+			print("old:",old.name,"-",old.description);
 			assert(not distance in D);
 		richpoint.distance=distance;
 		richpoint.time=time;
@@ -304,7 +306,6 @@ def filter_waypoints(W):
 	for w in W:
 		c=closest(W,w);
 		d=abs(c.distance-w.distance);
-		print(c.distance,w.distance,d);
 		if d<5000:
 			S=sort_waypoints([w,c]);
 			remove.append(S[-1]);
@@ -462,12 +463,11 @@ def main():
 	name,track=readtracks.readpoints(filename);
 	print("read disc again (wpt)");
 	gpxrichwaypoints=readgpxwaypoints(filename);
-	last_point=RichWaypoint(track[-1]);
-	last_point.name="END";
-	assert(last_point.point.elevation);
-	print("process waypoints");
-	gpxrichwaypoints.append(last_point);
+	#last_point=RichWaypoint(track[-1]);
+	#last_point.name="END";
+	#gpxrichwaypoints.append(last_point);
 	wpfinder=finder.Finder(track);
+	print("process waypoints");
 	B=process_waypoints(gpxrichwaypoints,wpfinder,start);
 	for w in A.values():
 		assert(w.point.elevation);
