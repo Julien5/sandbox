@@ -13,21 +13,10 @@ import elevation;
 import readtracks;
 import utils;
 import finder;
+import automatic;
+from richwaypoint import RichWaypoint;
 
-from brevet import output;
-
-class RichWaypoint:
-	def __init__(self,point):
-		self.point=point;
-		self.name="";
-		self.description="";
-		self.distance=None;
-		self.time=None;
-		self.label_on_profile=True;
-		self.type=None;
-
-	def isControlPoint(self):
-		return self.type == "K";
+import output;
 
 def read_control_waypoints(filename):
 	gpx_file = open(filename, 'r');
@@ -136,6 +125,31 @@ def project_waypoints(richpoints,finder):
 	return D;
 
 
+def dxdy(x,y,k1,k2):
+	cumulative_x=0;
+	cumulative_y=0;
+	for k in range(k1,k2):
+		# up
+		if y[k]>y[k-1] and k>0:
+			cumulative_y+=y[k]-y[k-1];
+			assert(x[k]>x[k-1]);
+			cumulative_x+=1000*(x[k]-x[k-1]);
+	return cumulative_x,cumulative_y;
+		
+
+# slope
+#	ret=dict();
+#	K=summits(x,y);
+#	assert(not 0 in K);
+#	assert(len(K)>=1);
+#	kprev=0;
+#	for n in range(len(K)):
+#		k=K[n];
+#		dx,dy=dxdy(x,y,kprev,k);
+#		assert(dy>=0);
+#		assert(dx>0);
+#		slope=100*dy/dx;
+
 def label_waypoints(richpoints,start):
 	D=dict();
 	K=set();
@@ -168,68 +182,6 @@ def label_waypoints(richpoints,start):
 		D[distance]=richpoint;
 	return D;
 
-def argmax(x,R):
-	return max(R, key=lambda i: x[i])
-
-def R20(x,start):
-	return [k for k in range(start,len(x)) if abs(x[start]-x[k])<10];
-
-def summits(x,y):
-	start=0;
-	ret=list();
-	while start<len(x):
-		R=R20(x,start);
-		kmax=argmax(y,R);
-		start=max(R)+1;
-		ret.append(kmax);
-	return ret;
-
-def dxdy(x,y,k1,k2):
-	cumulative_x=0;
-	cumulative_y=0;
-	for k in range(k1,k2):
-		# up
-		if y[k]>y[k-1] and k>0:
-			cumulative_y+=y[k]-y[k-1];
-			assert(x[k]>x[k-1]);
-			cumulative_x+=1000*(x[k]-x[k-1]);
-	return cumulative_x,cumulative_y;
-		
-def automatic_waypoints(P,start):
-	ret=dict();
-	x,y=elevation.load(P);
-	K=summits(x,y);
-	assert(not 0 in K);
-	assert(len(K)>=1);
-	kprev=0;
-	counter=0;
-	for n in range(len(K)):
-		k=K[n];
-		dx,dy=dxdy(x,y,kprev,k);
-		assert(dy>=0);
-		assert(dx>0);
-		slope=100*dy/dx;
-		if slope<10:
-			slope_f=f"{slope*10:2.0f}";
-		else:
-			slope_f="..";
-		distance=x[k]*1000;
-		total_hours=timehours_to(distance);
-		time=waypoint_time(total_hours,start);
-		assert(not time in ret.keys());
-		time_str=fix_summer_winter_time(time).strftime("%H:%M");
-		name=f"A{counter%10:d}-{slope_f:>2}-{time_str:s}";
-		description="automatic"
-		rw=RichWaypoint(P[k]);
-		rw.name=name;
-		rw.description=description;
-		rw.distance=distance;
-		rw.time=time;
-		rw.name=f"A{counter%10:d}";
-		ret[distance]=rw;
-		kprev=k;
-		counter+=1;
-	return ret;
 
 def makegpx(track,waypoints,name,filename):
 	print("remove time and elevation before exporting to gpx");
@@ -272,7 +224,7 @@ def main():
 	print("read disc (track)");
 	name,track=readtracks.readpoints(filename);
 	print("make waypoints");
-	A=automatic_waypoints(track,start);
+	A=automatic.waypoints(track,start);
 	
 	print("read disc (waypoints)");
 	Kgpx=read_control_waypoints(filename);
