@@ -35,9 +35,12 @@ def bbox(P,proj,d,dmin,dmax):
 def map_csv_waypoints(F,utm):
 	L=[];
 	for distance in F.keys():
-		lon=F[distance].point.longitude;
-		lat=F[distance].point.latitude;
-		label=F[distance].name[:2];
+		w=F[distance]
+		lon=w.point.longitude;
+		lat=w.point.latitude;
+		label=""
+		if w.label_on_profile:
+			label=w.name[:2];
 		x, y = utm(lon, lat)
 		L.append(f"{x:10.1f}\t{y:10.1f}\t{lat:10.6f}\t{lon:10.6f}\t{label:s}\t{distance/1000:4.1f}");
 	f=open("/tmp/profile/map-wpt.csv","w");
@@ -51,8 +54,11 @@ def profile_csv_waypoints(F):
 		w=F[distance];
 		wx=w.distance/1000;
 		wy=w.point.elevation;
-		label1=w.name[:2];
-		label2=f"{wy:4.0f}";
+		label1="";
+		label2=""
+		if w.label_on_profile:
+			label1=w.name[:2];
+			label2=f"{wy:4.0f}";
 		L.append(f"{wx:5.2f}\t{wy:5.0f}\t{label1:s}\t{label2:s}");
 	f=open("/tmp/profile/elevation-wpt.csv","w");
 	f.write("\n".join(L));
@@ -146,9 +152,9 @@ def index_with(L,string):
 def latex_waypoint(rwaypoint):
 	L=list();
 	L.append(rwaypoint.name[:2]);
-	L.append(f"{rwaypoint.distance/1000:3.1f} km");
+	L.append(f"{rwaypoint.distance/1000:3.0f}");
 	L.append(rwaypoint.time.strftime("%H:%M"));
-	L.append(f"{rwaypoint.point.elevation:3.1f}");
+	L.append(f"{rwaypoint.point.elevation:3.0f}");
 	separator=" & ";
 	return separator.join(L);
 
@@ -163,30 +169,21 @@ def sort_waypoints(W):
 
 def closest(W,w0):
 	assert(len(W)>=2);
-	return sorted(W, key=lambda rw: abs(rw.distance-w0.distance))[1];
+	return sorted(W.values(), key=lambda rw: abs(rw.distance-w0.distance))[1];
 
 def filter_waypoints(W):
 	if not W:
 		return W;
-	K=[W[d] for d in W.keys() if W[d].isControlPoint()];
-	A=[W[d] for d in W.keys() if not W[d].isControlPoint()];
-	W=A+K;
-	assert(W);
-	remove=list();
-	for w in W:
+	for d in W.keys():
+		w=W[d];
 		c=closest(W,w);
 		d=abs(c.distance-w.distance);
-		if d<5000:
-			S=sort_waypoints([w,c]);
-			remove.append(S[-1]);
-	assert(len(remove)<len(W));		
-	W2=[w for w in W if not w in remove];
-	assert(W2);
-	S=sort_waypoints(W2);
-	ret=dict();
-	for rw in S[:12]:
-		ret[rw.distance]=rw;
-	return ret;
+		if d<4000:
+			Sloc=sort_waypoints([w,c]);
+			d_hide=Sloc[-1].distance;
+			print(f"hide {Sloc[-1].name:s} because it is too close to {Sloc[0].name:s} (d={d:04.1f}m)");
+			W[d_hide].label_on_profile=False;
+	return W;
 
 def latex_profile(W):
 	f=open(findtemplate("tex","profile-template.tex"),"r");

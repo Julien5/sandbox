@@ -23,18 +23,20 @@ class RichWaypoint:
 		self.description="";
 		self.distance=None;
 		self.time=None;
+		self.label_on_profile=True;
 		self.type=None;
 
 	def isControlPoint(self):
 		return self.type == "K";
 
-def readgpxwaypoints(filename):
+def read_control_waypoints(filename):
 	gpx_file = open(filename, 'r');
 	gpx = gpxpy.parse(gpx_file);
 	gpx_file.close();
 	ret=list();
 	for w in gpx.waypoints:
 		rw=RichWaypoint(utils.Point(w.latitude,w.longitude,w.elevation));
+		rw.type="K";
 		rw.name=w.name;
 		if w.description:
 			rw.description=w.description.replace("’","'");
@@ -136,6 +138,8 @@ def project_waypoints(richpoints,finder):
 
 def label_waypoints(richpoints,start):
 	D=dict();
+	K=set();
+	A=set();
 	for distance in sorted(richpoints.keys()):
 		richpoint=richpoints[distance];
 		total_hours=timehours_to(distance);
@@ -155,7 +159,12 @@ def label_waypoints(richpoints,start):
 			assert(not distance in D);
 		richpoint.distance=distance;
 		richpoint.time=time;
-		richpoint.name="K";
+		if richpoint.isControlPoint():
+			K.add(richpoint);
+			richpoint.name=f"K{len(K):d}";
+		else:
+			A.add(richpoint);
+			richpoint.name=f"A{len(A)%10:d}";
 		D[distance]=richpoint;
 	return D;
 
@@ -266,7 +275,7 @@ def main():
 	A=automatic_waypoints(track,start);
 	
 	print("read disc (waypoints)");
-	Kgpx=readgpxwaypoints(filename);
+	Kgpx=read_control_waypoints(filename);
 	wpfinder=finder.Finder(track);
 	K=project_waypoints(Kgpx,wpfinder);
 	

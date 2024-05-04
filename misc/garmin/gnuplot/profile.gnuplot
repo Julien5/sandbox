@@ -20,7 +20,7 @@ set xrange [{xmin}:{xmax}]
 set yrange [{ymin}:{ymax}];
 
 plot '/tmp/profile/elevation.csv' using 1:2 with lines ls 10 lw 3 notitle, \
-	 '/tmp/profile/elevation-wpt.csv' using 1:2:4 with labels point pt 7 ps 1 \
+	 '/tmp/profile/elevation-wpt.csv' using 1:2:4 with labels point pt 7 ps 2 \
 	 					 offset character 0,character 1 tc rgb "black", \
-	 '/tmp/profile/elevation-wpt.csv' using 1:2:3 with labels point pt 7 ps 1 \
+	 '/tmp/profile/elevation-wpt.csv' using 1:2:3 with labels point pt 7 ps 2 \
 	 					 offset character 0,character -1 tc rgb "black"  
