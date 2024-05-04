@@ -40,10 +40,12 @@ def readgpxwaypoints(filename):
 			rw.description=w.description.replace("’","'");
 		if w.name:
 			rw.name=w.name.strip();
+		if not rw.name:
+			rw.name="";
 		ret.append(rw);	
 	return ret;
 
-def timedelta(hours):
+def time_as_delta(hours):
 	tddays=math.floor(hours/24);
 	tdseconds=hours*3600 - tddays*24*3600;
 	return datetime.timedelta(days=tddays,seconds=math.floor(tdseconds));
@@ -52,11 +54,9 @@ def timehours_to(distance):
 	km=distance/1000;
 	return km/15;
 
-def timedelta_to(distance):
-	return timedelta(timehours_to(distance));
 
 def waypoint_time(total_hours,start=None):
-	delta=timedelta(total_hours);
+	delta=time_as_delta(total_hours);
 	if start:
 		return start+delta;
 	secs=delta.total_seconds();
@@ -106,16 +106,40 @@ def waypoint_string(w):
 	#return f"{w.name:11s} {w.description:30s} lat:{w.latitude:2.5f} long:{w.longitude:2.5f}";
 	return f"{w.name:11s};{w.description:30s}";
 
-def process_waypoints(richpoints,finder,start):
+
+
+def project_waypoints(richpoints,finder):
 	D=dict();
 	for richpoint in richpoints:
 		distance=finder.find_distance(richpoint.point);
-		total_hours=timehours_to(distance);
-		time=waypoint_time(total_hours,start);
 
 		# we project all points, even controls,
 		# because controls are exact points.
-		richpoint.point=finder.project(richpoint.point);
+		pr=finder.project(richpoint.point);
+		d=utils.distance(pr,richpoint.point);
+		print(f"{richpoint.name:20s} {d:5.1f}");
+		richpoint.point=pr;
+
+		if distance in D:
+			if richpoint.name == D[distance].name:
+				continue;
+			new=richpoint;
+			old=D[distance];
+			print("two waypoints with the same time:",time);
+			print("new:",new.name,"-",new.description);
+			print("old:",old.name,"-",old.description);
+			assert(not distance in D);
+		richpoint.distance=distance;
+		D[distance]=richpoint;
+	return D;
+
+
+def label_waypoints(richpoints,start):
+	D=dict();
+	for distance in sorted(richpoints.keys()):
+		richpoint=richpoints[distance];
+		total_hours=timehours_to(distance);
+		time=waypoint_time(total_hours,start);
 
 		# save the original name in the description
 		richpoint.description=richpoint.name;
@@ -226,7 +250,8 @@ def main():
 	if len(sys.argv)>1:
 		filename=sys.argv[1];
 	else:
-		filename=os.path.join(os.path.dirname(__file__),"..","..","test/elevation.gpx");
+		#filename=os.path.join(os.path.dirname(__file__),"..","..","test/elevation.gpx");
+		filename=os.path.join(os.path.dirname(__file__),"..","..","test/blackforest.gpx");
 
 	if len(sys.argv)>2:
 		date_format='%Y-%m-%d-%H:%M:%S';
@@ -241,20 +266,18 @@ def main():
 	A=automatic_waypoints(track,start);
 	
 	print("read disc (waypoints)");
-	gpxrichwaypoints=readgpxwaypoints(filename);
+	Kgpx=readgpxwaypoints(filename);
+	wpfinder=finder.Finder(track);
+	K=project_waypoints(Kgpx,wpfinder);
+	
 	#last_point=RichWaypoint(track[-1]);
 	#last_point.name="END";
 	#gpxrichwaypoints.append(last_point);
-	wpfinder=finder.Finder(track);
-	print("process waypoints");
-	B=process_waypoints(gpxrichwaypoints,wpfinder,start);
 	
-	for w in A.values():
-		assert(w.point.elevation);
-	for w in B.values():
-		assert(w.point.elevation);
 
-	W = {**A, **B};
+	W = {**A, **K};
+	W=label_waypoints(W,start);
+	
 	print("generate profile plot file");
 	output.gnuplot_profile(track,W);
 	print("generate map plot file");
