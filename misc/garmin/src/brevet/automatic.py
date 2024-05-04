@@ -11,7 +11,12 @@ from richwaypoint import RichWaypoint;
 def argmax(x,R):
 	return max(R, key=lambda i: x[i])
 
+def argmin(x,R):
+	return min(R, key=lambda i: x[i])
+
 def RK(x,start,K):
+	if K<0:
+		return [k for k in range(0,start) if abs(x[start]-x[k])<abs(K)];
 	return [k for k in range(start,len(x)) if abs(x[start]-x[k])<K];
 
 def R100(x,start):
@@ -49,10 +54,31 @@ from rdp import rdp
 
 #>>> rdp([[1, 1], [2, 2], [3, 3], [4, 4]])
 #[[1, 1], [4, 4]]
-
 def waypoints_douglas_worker(X):
 	R=rdp(X,5);
 	return [r[0] for r in R];
+
+def fixup_extremas(x,y,indices):
+	I=sorted(list(indices));
+	rindices={0};
+	ret={I[0]};
+	for k in range(1,len(I)-1):
+		xprev=I[k-1];
+		xk=I[k];
+		domain=RK(x,xk,-3) + RK(x,xk,3);
+		assert(xk in domain);
+		if y[xprev] > y[xk]: # descending
+			xm=argmin(y,domain);
+			assert(y[xm]<=y[xk]);
+		else:
+			xm=argmax(y,domain);
+			print(xm,xk,y[xm],y[xk]);
+			assert(y[xm]>=y[xk]);
+		assert(xm in domain);	
+		#print(xk,"->",xm," -> diff",xk-xm);	
+		ret.add(xm);	
+	ret.add(I[-1]);
+	return ret;
 
 def decimate(y,indices):
 	# we observe 3-consecutive subsets
@@ -77,14 +103,13 @@ def waypoints_douglas(P):
 	X=[[x[k],y[k]] for k in range(len(x))];
 	start=0;
 	indices=set();
-	while start<len(x):
-		r100=R100(x,start);
-		begin=r100[0];
-		end=r100[-1];
-		D=waypoints_douglas_worker(X[begin:end]);
-		for d in D:
-			indices.add(x.index(d));
-		start=end+1;	
+	
+	r100=R100(x,start);
+	begin=0;
+	end=len(X)
+	D=waypoints_douglas_worker(X[begin:end]);
+	for d in D:
+		indices.add(x.index(d));
 	ret=dict();
 	rindices=indices;
 	while True:
@@ -93,6 +118,7 @@ def waypoints_douglas(P):
 		after=len(rindices);
 		if before==after:
 			break;
+	rindices=fixup_extremas(x,y,rindices);
 	print("removed",len(indices)-len(rindices),"points")
 	for k in rindices:
 		rw=RichWaypoint(P[k]);
