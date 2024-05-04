@@ -207,6 +207,40 @@ def makegpx(track,waypoints,name,filename):
 	print("generate",filename);
 	open(filename,'w').write(gpx.to_xml());
 
+def value(rw):
+	if rw.isControlPoint():
+		return 10000; # "infinity"
+	assert(rw.point.elevation);
+	return rw.point.elevation;
+
+def sort_waypoints(W):
+	return sorted(W, key=lambda rw: value(rw), reverse=True)
+
+def closest(W,w0):
+	assert(len(W)>=2);
+	return sorted(W.values(), key=lambda rw: abs(rw.distance-w0.distance))[1];
+
+import copy;
+
+def filter_waypoints(W):
+	if not W:
+		return W;
+	D=list(W.keys());
+	for d in D:
+		if not d in W:
+			continue;
+		w=W[d];
+		c=closest(W,w);
+		d=abs(c.distance-w.distance);
+		if d<4000:
+			Sloc=sort_waypoints([w,c]);
+			d_hide=Sloc[-1].distance;
+			print(f"hide {Sloc[-1].name:s} because it is too close to {Sloc[0].name:s} (d={d:04.1f}m)");
+			W[d_hide].label_on_profile=False;
+			if d<2000:
+				del W[d_hide];
+	return W;
+
 def main():
 	if len(sys.argv)>1:
 		filename=sys.argv[1];
@@ -224,19 +258,21 @@ def main():
 	print("read disc (track)");
 	name,track=readtracks.readpoints(filename);
 	print("make waypoints");
-	A=automatic.waypoints(track,start);
+	
 	
 	print("read disc (waypoints)");
 	Kgpx=read_control_waypoints(filename);
 	wpfinder=finder.Finder(track);
 	K=project_waypoints(Kgpx,wpfinder);
+	A=automatic.waypoints(track);
 	
 	#last_point=RichWaypoint(track[-1]);
 	#last_point.name="END";
 	#gpxrichwaypoints.append(last_point);
 	
 
-	W = {**A, **K};
+	W={**A, **K};
+	W=filter_waypoints(W);
 	W=label_waypoints(W,start);
 	
 	print("generate profile plot file");

@@ -88,8 +88,7 @@ def gnuplot_map(P,W):
 	content0=f.read();
 	f.close();
 	for k in range(math.floor(d[-1]/100)+1):
-		Wk=get_rwaypoints_at_page(k,W);
-		F=filter_waypoints(Wk);
+		F=get_rwaypoints_at_page(k,W);
 		map_csv_waypoints(F,utm);
 		xmin,xmax,ymin,ymax=bbox(P,utm,d,k*100,(k+1)*100);
 		content=content0;
@@ -134,9 +133,7 @@ def gnuplot_profile(P,W):
 		f=open(filename,"w");
 		f.write(content);
 		f.close();
-		Wk=get_rwaypoints_at_page(xk,W);
-		assert(Wk);
-		F=filter_waypoints(Wk);
+		F=get_rwaypoints_at_page(xk,W);
 		assert(F);
 		profile_csv_waypoints(F);
 		subprocess.run(["gnuplot",filename]);
@@ -158,32 +155,6 @@ def latex_waypoint(rwaypoint):
 	separator=" & ";
 	return separator.join(L);
 
-def value(rw):
-	if rw.isControlPoint():
-		return 10000; # "infinity"
-	assert(rw.point.elevation);
-	return rw.point.elevation;
-
-def sort_waypoints(W):
-	return sorted(W, key=lambda rw: value(rw), reverse=True)
-
-def closest(W,w0):
-	assert(len(W)>=2);
-	return sorted(W.values(), key=lambda rw: abs(rw.distance-w0.distance))[1];
-
-def filter_waypoints(W):
-	if not W:
-		return W;
-	for d in W.keys():
-		w=W[d];
-		c=closest(W,w);
-		d=abs(c.distance-w.distance);
-		if d<4000:
-			Sloc=sort_waypoints([w,c]);
-			d_hide=Sloc[-1].distance;
-			print(f"hide {Sloc[-1].name:s} because it is too close to {Sloc[0].name:s} (d={d:04.1f}m)");
-			W[d_hide].label_on_profile=False;
-	return W;
 
 def latex_profile(W):
 	f=open(findtemplate("tex","profile-template.tex"),"r");
@@ -205,10 +176,9 @@ def latex_profile(W):
 			break;
 		template=template.replace("{profile-png}",profilepng);
 		template=template.replace("{map-png}",mappng);
-		Wk=get_rwaypoints_at_page(k,W);
-		print(f"page:{k:d} waypoints:{len(Wk):d}");
+		F=get_rwaypoints_at_page(k,W);
+		print(f"page:{k:d} waypoints:{len(F):d}");
 		pointlist=list();
-		F=filter_waypoints(Wk);
 		for d in sorted(F.keys()):
 			w=F[d];
 			pointlist.append(latex_waypoint(w));
