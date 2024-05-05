@@ -146,21 +146,26 @@ def index_with(L,string):
 	assert(False);	
 	return None;
 
-def latex_waypoint(rwaypoint):
+def format(text,wp):
+	if wp.isControlPoint():
+		return "\\textbf{"+text+"}";
+	return f"{text:s}";
+
+def latex_waypoint(rw):
 	L=list();
-	L.append(rwaypoint.name[:2]);
-	L.append(f"{rwaypoint.distance/1000:3.0f}");
-	L.append(rwaypoint.time.strftime("%H:%M"));
-	L.append(f"{rwaypoint.point.elevation:3.0f}");
-	if rwaypoint.slope:
-		L.append(f"{rwaypoint.slope:3.0f}\%");
+	L.append(format(rw.name[:2],rw));
+	L.append(f"{rw.distance/1000:3.0f}");
+	L.append(rw.time.strftime("%H:%M"));
+	L.append(f"{rw.point.elevation:3.0f}");
+	if rw.slope:
+		L.append(f"{rw.slope:3.0f}\%");
 	else:
 		L.append("");
-	if rwaypoint.dy:
-		L.append(f"{rwaypoint.dy:3.0f} m");
+	if rw.dy:
+		L.append(f"{rw.dy:3.0f} m");
 	else:
 		L.append("");
-	L.append(f"{rwaypoint.description:s}");
+	L.append(f"{rw.description:s}");
 	separator=" & ";
 	return separator.join(L);
 

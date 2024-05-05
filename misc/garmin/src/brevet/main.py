@@ -93,12 +93,6 @@ def toGPXSegment(points):
 		w.points.append(g);
 	return w;
 
-def waypoint_string(w):
-	#return f"{w.name:11s} {w.description:30s} lat:{w.latitude:2.5f} long:{w.longitude:2.5f}";
-	return f"{w.name:11s};{w.description:30s}";
-
-
-
 def project_waypoints(richpoints,finder):
 	D=dict();
 	for richpoint in richpoints:
@@ -189,10 +183,7 @@ def label_waypoints(richpoints,start,track):
 		slope_str="  ";
 		if not (richpoint.slope is None):
 			slope_str=f"{richpoint.slope:2.0f}"
-		
 		richpoint.name=f"{prefix:s}-{slope_str:s}-{time_str:s}";
-		if not richpoint.description:
-			richpoint.description=richpoint.name;
 		print(f"{richpoint.name:s} at {richpoint.distance/1000:3.0f}");
 		richpoint.time=time;
 		
