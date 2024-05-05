@@ -220,8 +220,6 @@ def closest(W,w0):
 	assert(len(W)>=2);
 	return sorted(W.values(), key=lambda rw: abs(rw.distance-w0.distance))[1];
 
-import copy;
-
 def filter_waypoints(W):
 	if not W:
 		return W;

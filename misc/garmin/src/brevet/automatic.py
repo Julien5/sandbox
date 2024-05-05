@@ -2,7 +2,6 @@
 
 import sys
 import os
-import copy;
 
 sys.path.append(os.path.join(os.path.dirname(__file__),".."));
 
@@ -144,7 +143,7 @@ def waypoints_douglas(P):
 	for d in D:
 		indices.add(x.index(d));
 	ret=dict();
-	rindices=indices;#copy.deepcopy(indices);
+	rindices=indices;
 	while True:
 		before=len(rindices);
 		print(f"*** decimate [{len(rindices):3d}]***");
