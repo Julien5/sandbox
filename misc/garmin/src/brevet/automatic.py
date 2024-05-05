@@ -171,3 +171,21 @@ def waypoints(P):
 	#S=waypoints_summits(P);
 	D=waypoints_douglas(P);
 	return D;
+
+def slope(x,y,p1,p2):
+	cumulative_x=0;
+	cumulative_y=0;
+	start=p1.distance;
+	end=p2.distance;
+	for k in range(len(x)):
+		d=x[k]*1000;
+		if d<start:
+			continue;
+		if d>end:
+			break;
+		if y[k]>y[k-1] and k>0:
+			cumulative_y+=y[k]-y[k-1];
+			assert(x[k]>x[k-1]);
+			cumulative_x+=1000*(x[k]-x[k-1]);
+	return cumulative_x,cumulative_y;
+

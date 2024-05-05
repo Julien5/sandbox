@@ -63,7 +63,7 @@ def fix_summer_winter_time(summer):
 		return summer-hour;
 	return summer;
 
-def control_waypoint_name(start,time,waypoint,counter):
+def control_waypoint_name(time,waypoint,counter):
 	time_str=fix_summer_winter_time(time).strftime("%d-%H:%M");
 	time_str=time_str[1:];
 	short=waypoint.name;
@@ -150,36 +150,53 @@ def dxdy(x,y,k1,k2):
 #		assert(dx>0);
 #		slope=100*dy/dx;
 
-def label_waypoints(richpoints,start):
+def label_waypoints(richpoints,start,track):
+	x,y=elevation.load(track);
 	D=dict();
 	K=set();
 	A=set();
-	for distance in sorted(richpoints.keys()):
-		richpoint=richpoints[distance];
-		total_hours=timehours_to(distance);
-		time=waypoint_time(total_hours,start);
 
-		# save the original name in the description
-		richpoint.description=richpoint.name;
-		richpoint.name=control_waypoint_name(start,time,richpoint,len(D)+1);
-		if distance in D:
-			if richpoint.name == D[distance].name:
-				continue;
-			new=richpoint;
-			old=D[distance];
-			print("two waypoints with the same time:",time);
-			print("new:",new.name,"-",new.description);
-			print("old:",old.name,"-",old.description);
-			assert(not distance in D);
-		richpoint.distance=distance;
-		richpoint.time=time;
+	# as list
+	R=list();
+	for d in sorted(richpoints.keys()):
+		R.append(richpoints[d]);
+
+	D=dict();	
+	for k in range(len(R)):
+		richpoint=R[k];
+		prefix=None;
 		if richpoint.isControlPoint():
 			K.add(richpoint);
-			richpoint.name=f"K{len(K):d}";
+			prefix=f"K{len(K):d}";
 		else:
 			A.add(richpoint);
-			richpoint.name=f"A{len(A)%10:d}";
-		D[distance]=richpoint;
+			prefix=f"A{len(A)%10:d}";
+			
+		Wprev=None;
+		if k>0:
+			Wprev=R[k-1]
+		
+		total_hours=timehours_to(richpoint.distance);
+		time=waypoint_time(total_hours,start);
+		time_str=fix_summer_winter_time(time).strftime("%H:%M");
+
+		if not Wprev is None:
+			dx,dy=automatic.slope(x,y,Wprev,richpoint);
+			richpoint.dy=dy;
+			richpoint.slope=100*dy/dx;
+		# save the original name in the description
+		richpoint.description=richpoint.name;
+		slope_str="  ";
+		if not (richpoint.slope is None):
+			slope_str=f"{richpoint.slope:2.0f}"
+		
+		richpoint.name=f"{prefix:s}-{slope_str:s}-{time_str:s}";
+		if not richpoint.description:
+			richpoint.description=richpoint.name;
+		print(f"{richpoint.name:s} at {richpoint.distance/1000:3.0f}");
+		richpoint.time=time;
+		
+		D[richpoint.distance]=richpoint;
 	return D;
 
 
@@ -271,7 +288,7 @@ def main():
 
 	W={**A, **K};
 	W=filter_waypoints(W);
-	W=label_waypoints(W,start);
+	W=label_waypoints(W,start,track);
 	
 	print("generate profile plot file");
 	output.gnuplot_profile(track,W);

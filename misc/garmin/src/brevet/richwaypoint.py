@@ -8,6 +8,8 @@ class RichWaypoint:
 		self.distance=None;
 		self.time=None;
 		self.label_on_profile=True;
+		self.slope=None;
+		self.dy=None;
 		self.type=None;
 
 	def isControlPoint(self):

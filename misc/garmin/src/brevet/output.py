@@ -152,6 +152,15 @@ def latex_waypoint(rwaypoint):
 	L.append(f"{rwaypoint.distance/1000:3.0f}");
 	L.append(rwaypoint.time.strftime("%H:%M"));
 	L.append(f"{rwaypoint.point.elevation:3.0f}");
+	if rwaypoint.slope:
+		L.append(f"{rwaypoint.slope:3.0f}\%");
+	else:
+		L.append("");
+	if rwaypoint.dy:
+		L.append(f"{rwaypoint.dy:3.0f} m");
+	else:
+		L.append("");
+	L.append(f"{rwaypoint.description:s}");
 	separator=" & ";
 	return separator.join(L);
 
