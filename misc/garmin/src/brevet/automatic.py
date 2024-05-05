@@ -2,6 +2,7 @@
 
 import sys
 import os
+import copy;
 
 sys.path.append(os.path.join(os.path.dirname(__file__),".."));
 
@@ -80,21 +81,90 @@ def fixup_extremas(x,y,indices):
 	ret.add(I[-1]);
 	return ret;
 
-def decimate(y,indices):
+skipped=None;
+def decimate_flat_3(x,y,indices):
+	# we observe 3-consecutive subsets
+	if len(y)<3:
+		return y;
+	I=sorted(list(indices));
+	ret={0};
+	k=1;
+	global skipped;
+	while k<len(I)-1:
+		[ya,yb,yc]=[y[I[i]] for i in range(k-1,k+2)];
+		[xa,xb,xc]=[x[I[i]] for i in range(k-1,k+2)];
+		dy=max([ya,yb,yc])-min([ya,yb,yc]);
+		assert(dy>=0);
+		dx=xc-xa;
+		slope=dy/(dx*10); # dx is in kilometer
+		desc="unchanged"
+		if (slope<1 and dx<=12): # it is flat
+			if not skipped:
+				skipped=I[k];
+			desc=f"add {x[I[k+1]]:3.1f} at {x[I[k]]:3.1f} (skip {x[I[k]]:3.1f})"
+			ret.add(I[k+1]);
+			k=k+2;
+		else:
+			desc=f"add {x[I[k]]:3.0f} (in place)"
+			ret.add(I[k]);
+			k=k+1;
+		nextpos=-1;
+		if k<len(I):
+			nextpos=x[I[k]];
+		print(f"slope:{slope:2.1f} dy:{dy:3.1f} dx:{dx:3.1f} pos:{xb:3.0f} nextpos:{nextpos:3.0f}-{k:d} [{desc:10s}]");
+	ret.add(I[-1]);
+	return ret;
+
+def decimate_flat_2(x,y,indices):
+	# we observe 2-consecutive subsets
+	if len(y)<2:
+		return y;
+	I=sorted(list(indices));
+	ret={0};
+	k=1;
+	while k<len(I)-1:
+		[ya,yb]=[y[I[i]] for i in range(k-1,k+1)];
+		[xa,xb]=[x[I[i]] for i in range(k-1,k+1)];
+		dy=max([ya,yb])-min([ya,yb]);
+		assert(dy>=0);
+		dx=xc-xa;
+		slope=dy/(dx*10); # dx is in kilometer
+		print("slope=",slope,"dx=",dx)
+		if slope<1 and dx<13: # it is flat
+			ret.add(I[k]);
+			k=k+2;	
+		else:
+			ret.add(I[k]);
+			k=k+1;	
+	ret.add(I[-1]);
+	return ret;
+
+
+def decimate_flat(x,y,indices):
+	return decimate_flat_3(x,y,indices);
+
+def decimate_same_slope(x,y,indices):
 	# we observe 3-consecutive subsets
 	if len(y)<3:
 		return y;
 	I=sorted(list(indices));
 	rindices={0};
 	for k in range(1,len(I)-1):
-		[a,b,c]=[y[I[i]] for i in range(k-1,k+2)];
-		A=b>a;
-		B=c>b;
-		if A==B:
+		[ya,yb,yc]=[y[I[i]] for i in range(k-1,k+2)];
+		sA=yb>ya;
+		sB=yc>yb;
+		if sA==sB:
 			continue;
 		rindices.add(I[k]);
 	rindices.add(I[-1]);
 	return rindices;
+
+
+def decimate(x,y,indices):
+	r=decimate_same_slope(x,y,indices);
+	r=decimate_flat(x,y,r);
+	return r;
+
 
 def waypoints_douglas(P):
 	ret=dict();
@@ -111,18 +181,27 @@ def waypoints_douglas(P):
 	for d in D:
 		indices.add(x.index(d));
 	ret=dict();
-	rindices=indices;
+	rindices=indices;#copy.deepcopy(indices);
 	while True:
 		before=len(rindices);
-		rindices=decimate(y,rindices);
+		print(f"*** decimate [{len(rindices):3d}]***");
+		rindices=decimate_same_slope(x,y,rindices);
+		after=len(rindices);
+		if before==after:
+			break;
+	while True:
+		before=len(rindices);
+		print(f"*** decimate flat [{len(rindices):3d}]***");
+		rindices=decimate_flat(x,y,rindices);
 		after=len(rindices);
 		if before==after:
 			break;
 	rindices=fixup_extremas(x,y,rindices);
 	print("removed",len(indices)-len(rindices),"points")
-	for k in rindices:
+	for k in sorted(rindices):
 		rw=RichWaypoint(P[k]);
 		rw.distance=x[k]*1000;
+		print(f"waypoint at {x[k]:3.0f}");
 		ret[rw.distance]=rw;
 	return ret;
 

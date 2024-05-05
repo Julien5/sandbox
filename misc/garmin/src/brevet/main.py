@@ -265,7 +265,7 @@ def main():
 	wpfinder=finder.Finder(track);
 	K=project_waypoints(Kgpx,wpfinder);
 	A=automatic.waypoints(track);
-	
+	#return;
 	#last_point=RichWaypoint(track[-1]);
 	#last_point.name="END";
 	#gpxrichwaypoints.append(last_point);
