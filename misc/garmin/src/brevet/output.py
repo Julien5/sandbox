@@ -151,20 +151,20 @@ def format(text,wp):
 		return "\\textbf{"+text+"}";
 	return f"{text:s}";
 
+def formatFloat(f):
+	if f is None:
+		return "";
+	return f"{f:3.0f}";
+
 def latex_waypoint(rw):
 	L=list();
 	L.append(format(rw.name[:2],rw));
-	L.append(f"{rw.distance/1000:3.0f}");
+	L.append(formatFloat(rw.distance/1000));
 	L.append(rw.time.strftime("%H:%M"));
-	L.append(f"{rw.point.elevation:3.0f}");
-	if rw.slope:
-		L.append(f"{rw.slope:3.0f}\%");
-	else:
-		L.append("");
-	if rw.dy:
-		L.append(f"{rw.dy:3.0f} m");
-	else:
-		L.append("");
+	L.append(formatFloat(rw.point.elevation));
+	L.append(formatFloat(rw.dplus));
+	L.append(formatFloat(rw.xdplus/1000));
+	L.append(formatFloat(rw.slope)+"\%");
 	L.append(f"{rw.description:s}");
 	separator=" & ";
 	return separator.join(L);

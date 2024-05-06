@@ -176,7 +176,8 @@ def label_waypoints(richpoints,start,track):
 
 		if not Wprev is None:
 			dx,dy=automatic.slope(x,y,Wprev,richpoint);
-			richpoint.dy=dy;
+			richpoint.dplus=dy;
+			richpoint.xdplus=dx;
 			richpoint.slope=100*dy/dx;
 		# save the original name in the description
 		richpoint.description=richpoint.name;
