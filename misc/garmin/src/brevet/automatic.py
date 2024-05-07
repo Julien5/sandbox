@@ -139,6 +139,7 @@ def waypoints_douglas(P):
 	r100=R100(x,start);
 	begin=0;
 	end=len(X)
+	print("running douglas peucker");
 	D=waypoints_douglas_worker(X[begin:end]);
 	for d in D:
 		indices.add(x.index(d));

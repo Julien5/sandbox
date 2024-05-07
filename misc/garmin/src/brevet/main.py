@@ -43,7 +43,7 @@ def time_as_delta(hours):
 
 def timehours_to(distance):
 	km=distance/1000;
-	return km/15;
+	return km/10;
 
 
 def waypoint_time(total_hours,start=None):
@@ -178,7 +178,8 @@ def label_waypoints(richpoints,start,track):
 			dx,dy=automatic.slope(x,y,Wprev,richpoint);
 			richpoint.dplus=dy;
 			richpoint.xdplus=dx;
-			richpoint.slope=100*dy/dx;
+			if dx>0:
+				richpoint.slope=100*dy/dx;
 		# save the original name in the description
 		richpoint.description=richpoint.name;
 		slope_str="  ";
