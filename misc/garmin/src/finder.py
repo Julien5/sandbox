@@ -28,4 +28,7 @@ class Finder:
 		pt=[p.latitude,p.longitude];
 		index=self.spatial.query(pt)[1];
 		#nearest=self.A[index];
-		return self.points.point(index);
+		ret=self.points.point(index);
+		return ret;
+
+		

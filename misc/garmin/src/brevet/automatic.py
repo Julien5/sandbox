@@ -164,6 +164,7 @@ def waypoints_douglas(P):
 	for k in sorted(rindices):
 		rw=RichWaypoint(P[k]);
 		rw.distance=x[k]*1000;
+		rw.type="A";
 		print(f"waypoint at {x[k]:3.0f}");
 		ret[rw.distance]=rw;
 	return ret;

@@ -15,3 +15,6 @@ class RichWaypoint:
 
 	def isControlPoint(self):
 		return self.type == "K";
+
+	def isAutomatic(self):
+		return self.type == "A";

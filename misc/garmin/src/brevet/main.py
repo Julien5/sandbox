@@ -6,6 +6,7 @@ import datetime;
 import math;
 import sys;
 import os;
+import argparse;
 
 sys.path.append(os.path.join(os.path.dirname(__file__),".."));
 
@@ -18,14 +19,21 @@ from richwaypoint import RichWaypoint;
 
 import output;
 
+def is_automatic(w):
+	if w.type is None:
+		return False;
+	if w.type == "A":
+		return True;
+	return False;
+
 def read_control_waypoints(filename):
 	gpx_file = open(filename, 'r');
 	gpx = gpxpy.parse(gpx_file);
 	gpx_file.close();
-	ret=list();
+	K=list();
+	A=list();
 	for w in gpx.waypoints:
 		rw=RichWaypoint(utils.Point(w.latitude,w.longitude,w.elevation));
-		rw.type="K";
 		rw.name=w.name;
 		if w.description:
 			rw.description=w.description.replace("’","'");
@@ -33,8 +41,14 @@ def read_control_waypoints(filename):
 			rw.name=w.name.strip();
 		if not rw.name:
 			rw.name="";
-		ret.append(rw);	
-	return ret;
+		if not w.type is None:
+			assert(w.type == "K" or w.type == "A");
+			rw.type=w.type;
+		if is_automatic(w):
+			A.append(rw);
+		else:
+			K.append(rw);
+	return K,A;
 
 def time_as_delta(hours):
 	tddays=math.floor(hours/24);
@@ -79,6 +93,7 @@ def toGPXWaypoint(rpoint):
 	w.name=rpoint.name;
 	w.description=rpoint.description;
 	w.symbol = "Flag, Blue";
+	w.type=rpoint.type;
 	return w;
 
 def toGPXSegment(points):
@@ -99,7 +114,7 @@ def project_waypoints(richpoints,finder):
 		distance=finder.find_distance(richpoint.point);
 
 		# we project all points, even controls,
-		# because controls are exact points.
+		# because we want exact points
 		pr=finder.project(richpoint.point);
 		d=utils.distance(pr,richpoint.point);
 		print(f"{richpoint.name:20s} {d:5.1f}");
@@ -117,32 +132,6 @@ def project_waypoints(richpoints,finder):
 		richpoint.distance=distance;
 		D[distance]=richpoint;
 	return D;
-
-
-def dxdy(x,y,k1,k2):
-	cumulative_x=0;
-	cumulative_y=0;
-	for k in range(k1,k2):
-		# up
-		if y[k]>y[k-1] and k>0:
-			cumulative_y+=y[k]-y[k-1];
-			assert(x[k]>x[k-1]);
-			cumulative_x+=1000*(x[k]-x[k-1]);
-	return cumulative_x,cumulative_y;
-		
-
-# slope
-#	ret=dict();
-#	K=summits(x,y);
-#	assert(not 0 in K);
-#	assert(len(K)>=1);
-#	kprev=0;
-#	for n in range(len(K)):
-#		k=K[n];
-#		dx,dy=dxdy(x,y,kprev,k);
-#		assert(dy>=0);
-#		assert(dx>0);
-#		slope=100*dy/dx;
 
 def label_waypoints(richpoints,start,track):
 	x,y=elevation.load(track);
@@ -193,12 +182,15 @@ def label_waypoints(richpoints,start,track):
 	return D;
 
 
+
 def makegpx(track,waypoints,name,filename):
+	global arguments;
 	print("remove time and elevation before exporting to gpx");
 	segment = toGPXSegment(track);
-	for p in segment.walk(True):
-		p.elevation=None;
-		p.time=None;
+	if arguments.flat:
+		for p in segment.walk(True):
+			p.elevation=None;
+			p.time=None;
 		
 	gpx = gpxpy.gpx.GPX();
 
@@ -249,16 +241,26 @@ def filter_waypoints(W):
 				del W[d_hide];
 	return W;
 
-def main():
-	if len(sys.argv)>1:
-		filename=sys.argv[1];
-	else:
-		#filename=os.path.join(os.path.dirname(__file__),"..","..","test/elevation.gpx");
-		filename=os.path.join(os.path.dirname(__file__),"..","..","test/blackforest.gpx");
+arguments=None;
+def parse_arguments():
+	global arguments;
+	parser = argparse.ArgumentParser();
+	parser.add_argument('filename') 
+	parser.add_argument('-s', '--starttime', help="format: 2024-12-28-08:00:05");
+	# flat: default = false
+	parser.add_argument('-f', '--flat', action="store_true", help="removes time and elevation data")
+	parser.add_argument('-o', '--output', help="output filename")
+	arguments=parser.parse_args();
+	print(arguments);
 
-	if len(sys.argv)>2:
+def main():
+	global arguments;
+	parse_arguments();
+	filename=arguments.filename;
+
+	if arguments.starttime:
 		date_format='%Y-%m-%d-%H:%M:%S';
-		start=datetime.datetime.strptime(sys.argv[2], date_format);
+		start=datetime.datetime.strptime(arguments.starttime, date_format);
 	else:
 		tomorrow=datetime.date.today() + datetime.timedelta(days=1);
 		start=datetime.datetime(tomorrow.year,tomorrow.month,tomorrow.day,hour=7);
@@ -269,16 +271,15 @@ def main():
 	
 	
 	print("read disc (waypoints)");
-	Kgpx=read_control_waypoints(filename);
+	Kgpx,Agpx=read_control_waypoints(filename);
 	wpfinder=finder.Finder(track);
 	K=project_waypoints(Kgpx,wpfinder);
-	A=automatic.waypoints(track);
-	#return;
-	#last_point=RichWaypoint(track[-1]);
-	#last_point.name="END";
-	#gpxrichwaypoints.append(last_point);
-	
-
+	A=project_waypoints(Agpx,wpfinder);
+	if not A:
+		print("make automatic waypoints");
+		A=automatic.waypoints(track);
+	else:
+		print(f"gpx has {len(A):d} automatic waypoints");
 	W={**A, **K};
 	W=filter_waypoints(W);
 	W=label_waypoints(W,start,track);
@@ -292,6 +293,9 @@ def main():
 	if not os.path.exists("out"):
 		os.makedirs("out");
 	print("generate gpx");
-	makegpx(track,W,name,"out/"+os.path.basename(filename));
+	outfilename=arguments.output;
+	if not arguments.output:
+		outfilename="out/"+os.path.basename(filename);
+	makegpx(track,W,name,outfilename);
 	
 main()
