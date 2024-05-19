@@ -45,7 +45,7 @@ def waypoints_summits(P):
 	for n in range(len(summit_indices)):
 		k=summit_indices[n];
 		rw=RichWaypoint(P[k]);
-		rw.distance=x[k]*1000;
+		rw.distance=x[k];
 		ret[rw.distance]=rw;
 	return ret;
 
@@ -55,7 +55,7 @@ from rdp import rdp
 #>>> rdp([[1, 1], [2, 2], [3, 3], [4, 4]])
 #[[1, 1], [4, 4]]
 def waypoints_douglas_worker(X):
-	R=rdp(X,5);
+	R=rdp(X,50);
 	return [r[0] for r in R];
 
 def fixup_extremas(x,y,indices):
@@ -92,7 +92,7 @@ def decimate_flat_3(x,y,indices):
 		dy=max([ya,yb,yc])-min([ya,yb,yc]);
 		assert(dy>=0);
 		dx=xc-xa;
-		slope=dy/(dx*10); # dx is in kilometer
+		slope=dy/(dx/100); 
 		if (slope<1 and dx<=17): # it is flat
 			ret.append(I[k+1]);
 			k=k+2;
@@ -164,9 +164,10 @@ def waypoints_douglas(P):
 			break;
 	rindices=fixup_extremas(x,y,rindices);
 	print("removed",len(indices)-len(rindices),"points")
-	for k in sorted(rindices):
+	assert(rindices==sorted(rindices));
+	for k in rindices:
 		rw=RichWaypoint(P[k]);
-		rw.distance=x[k]*1000;
+		rw.distance=x[k];
 		rw.type="A";
 		print(f"waypoint at {x[k]:3.0f}");
 		ret[rw.distance]=rw;
@@ -183,7 +184,7 @@ def slope(x,y,p1,p2):
 	start=p1.distance;
 	end=p2.distance;
 	for k in range(len(x)):
-		d=x[k]*1000;
+		d=x[k];
 		if d<start:
 			continue;
 		if d>end:
@@ -191,6 +192,6 @@ def slope(x,y,p1,p2):
 		if y[k]>y[k-1] and k>0:
 			cumulative_y+=y[k]-y[k-1];
 			assert(x[k]>x[k-1]);
-			cumulative_x+=1000*(x[k]-x[k-1]);
+			cumulative_x+=(x[k]-x[k-1]);
 	return cumulative_x,cumulative_y;
 

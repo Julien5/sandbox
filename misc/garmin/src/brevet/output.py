@@ -87,10 +87,10 @@ def gnuplot_map(P,W):
 	f=open(findtemplate("gnuplot","map.gnuplot"),"r");
 	content0=f.read();
 	f.close();
-	for k in range(math.floor(d[-1]/100)+1):
+	for k in range(math.floor(d[-1]/100000)+1):
 		F=get_rwaypoints_at_page(k,W);
 		map_csv_waypoints(F,utm);
-		xmin,xmax,ymin,ymax=bbox(P,utm,d,k*100,(k+1)*100);
+		xmin,xmax,ymin,ymax=bbox(P,utm,d,k*100000,(k+1)*100000);
 		content=content0;
 		content=content.replace("{pngx}",str(10*int((xmax-xmin)/1000)));
 		content=content.replace("{pngy}",str(10*int((ymax-ymin)/1000)));
@@ -112,14 +112,14 @@ def gnuplot_profile(P,W):
 	d,y=elevation.load(P);
 	f=open("/tmp/profile/elevation.csv","w");
 	for k in range(len(d)):
-		f.write(f"{d[k]:5.2f}\t{y[k]:5.2f}\n");
+		f.write(f"{d[k]/1000:5.2f}\t{y[k]:5.2f}\n");
 	f.close();
 
 	f=open(findtemplate("gnuplot","profile.gnuplot"),"r");
 	content0=f.read();
 	f.close();
-	
-	for xk in range(math.floor(d[-1]/100)+1):
+	length_km=d[-1]/1000;
+	for xk in range(math.floor(length_km/100)+1):
 		xmin=max(100*xk-10,0);
 		xmax=100*(xk+1)+10;
 		ymin=math.floor(min(y)/500)*500;
@@ -135,6 +135,7 @@ def gnuplot_profile(P,W):
 		f.close();
 		F=get_rwaypoints_at_page(xk,W);
 		assert(F);
+		print("page",xk);
 		profile_csv_waypoints(F);
 		subprocess.run(["gnuplot",filename]);
 		os.rename("/tmp/profile/profile.png",f"/tmp/profile/profile-{xk:d}.png");

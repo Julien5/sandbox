@@ -287,6 +287,7 @@ def main():
 	print("generate profile plot file");
 	output.gnuplot_profile(track,W);
 	print("generate map plot file");
+	assert(track);
 	output.gnuplot_map(track,W);
 	assert(W);
 	output.latex_profile(W);
