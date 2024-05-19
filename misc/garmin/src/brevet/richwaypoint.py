@@ -7,6 +7,7 @@ class RichWaypoint:
 		self.description="";
 		self.distance=None;
 		self.time=None;
+		self.hide=False;
 		self.label_on_profile=True;
 		self.slope=None;
 		self.dplus=None;

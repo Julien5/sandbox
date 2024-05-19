@@ -8,11 +8,13 @@ import elevation;
 def get_rwaypoints_at_page(k,W):
 	xmin=max(100*k-10,0);
 	xmax=100*(k+1)+10;
-	R=dict();
-	for distance in sorted(W.keys()):
-		km=distance/1000;
+	R=list();
+	for w in W:
+		if w.hide:
+			continue;
+		km=w.distance/1000;
 		if xmin <= km and km <= xmax:
-			R[distance]=W[distance];
+			R.append(w);
 	return R;	
 
 def bbox(P,proj,d,dmin,dmax):
@@ -34,15 +36,14 @@ def bbox(P,proj,d,dmin,dmax):
 
 def map_csv_waypoints(F,utm):
 	L=[];
-	for distance in F.keys():
-		w=F[distance]
+	for w in F:
 		lon=w.point.longitude;
 		lat=w.point.latitude;
 		label=""
 		if w.label_on_profile:
 			label=w.name[:2];
 		x, y = utm(lon, lat)
-		L.append(f"{x:10.1f}\t{y:10.1f}\t{lat:10.6f}\t{lon:10.6f}\t{label:s}\t{distance/1000:4.1f}");
+		L.append(f"{x:10.1f}\t{y:10.1f}\t{lat:10.6f}\t{lon:10.6f}\t{label:s}\t{w.distance/1000:4.1f}");
 	f=open("/tmp/profile/map-wpt.csv","w");
 	f.write("\n".join(L));
 	f.close();
@@ -50,8 +51,7 @@ def map_csv_waypoints(F,utm):
 def profile_csv_waypoints(F):
 	L=list();
 	assert(F);
-	for distance in F.keys():
-		w=F[distance];
+	for w in F:
 		wx=w.distance/1000;
 		wy=w.point.elevation;
 		label1="";
@@ -194,8 +194,7 @@ def latex_profile(W):
 		F=get_rwaypoints_at_page(k,W);
 		print(f"page:{k:d} waypoints:{len(F):d}");
 		pointlist=list();
-		for d in sorted(F.keys()):
-			w=F[d];
+		for w in F:
 			pointlist.append(latex_waypoint(w));
 		#pointlist.append(latex_total());	
 		newline="\\\\";	

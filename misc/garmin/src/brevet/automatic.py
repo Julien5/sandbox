@@ -55,7 +55,7 @@ from rdp import rdp
 #>>> rdp([[1, 1], [2, 2], [3, 3], [4, 4]])
 #[[1, 1], [4, 4]]
 def waypoints_douglas_worker(X):
-	R=rdp(X,50);
+	R=rdp(X,100);
 	return [r[0] for r in R];
 
 def fixup_extremas(x,y,indices):
@@ -129,7 +129,6 @@ def decimate(x,y,indices):
 
 
 def waypoints_douglas(P):
-	ret=dict();
 	x,y=elevation.load(P);
 	assert(len(x)==len(y));
 	X=[[x[k],y[k]] for k in range(len(x))];
@@ -165,12 +164,14 @@ def waypoints_douglas(P):
 	rindices=fixup_extremas(x,y,rindices);
 	print("removed",len(indices)-len(rindices),"points")
 	assert(rindices==sorted(rindices));
+	ret=list();
+	assert(sorted(rindices)==rindices);
 	for k in rindices:
 		rw=RichWaypoint(P[k]);
 		rw.distance=x[k];
 		rw.type="A";
 		print(f"waypoint at {x[k]:3.0f}");
-		ret[rw.distance]=rw;
+		ret.append(rw);
 	return ret;
 
 def waypoints(P):

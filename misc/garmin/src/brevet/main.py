@@ -44,7 +44,9 @@ def read_control_waypoints(filename):
 		if not w.type is None:
 			assert(w.type == "K" or w.type == "A");
 			rw.type=w.type;
-		if is_automatic(w):
+		else: # assume control point
+			rw.type="K";
+		if is_automatic(rw):
 			A.append(rw);
 		else:
 			K.append(rw);
@@ -131,56 +133,52 @@ def project_waypoints(richpoints,finder):
 			assert(not distance in D);
 		richpoint.distance=distance;
 		D[distance]=richpoint;
-	return D;
+	return [D[d] for d in sorted(D.keys())];
 
 def label_waypoints(richpoints,start,track):
 	x,y=elevation.load(track);
-	D=dict();
 	K=set();
 	A=set();
 
-	# as list
-	R=list();
-	for d in sorted(richpoints.keys()):
-		R.append(richpoints[d]);
+	R=richpoints;
 
-	D=dict();	
+	D=dict();
 	for k in range(len(R)):
-		richpoint=R[k];
+		W=R[k];
 		prefix=None;
-		if richpoint.isControlPoint():
-			K.add(richpoint);
+		if W.isControlPoint():
+			K.add(W);
 			prefix=f"K{len(K):d}";
 		else:
-			A.add(richpoint);
+			A.add(W);
 			prefix=f"A{len(A)%10:d}";
 			
 		Wprev=None;
 		if k>0:
 			Wprev=R[k-1]
+			assert(W.distance>=Wprev.distance);
 		
-		total_hours=timehours_to(richpoint.distance);
+		total_hours=timehours_to(W.distance);
 		time=waypoint_time(total_hours,start);
 		time_str=fix_summer_winter_time(time).strftime("%H:%M");
 
 		if not Wprev is None:
-			dx,dy=automatic.slope(x,y,Wprev,richpoint);
-			richpoint.dplus=dy;
-			richpoint.xdplus=dx;
+			dx,dy=automatic.slope(x,y,Wprev,W);
+			W.dplus=dy;
+			W.xdplus=dx;
 			if dx>0:
-				richpoint.slope=100*dy/dx;
+				W.slope=100*dy/dx;
 		# save the original name in the description
-		richpoint.description=richpoint.name;
+		W.description=W.name;
 		slope_str="  ";
-		if not (richpoint.slope is None):
-			slope_str=f"{richpoint.slope:2.0f}"
-		richpoint.name=f"{prefix:s}-{slope_str:s}-{time_str:s}";
-		print(f"{richpoint.name:s} at {richpoint.distance/1000:3.0f}");
-		richpoint.time=time;
+		if not (W.slope is None):
+			slope_str=f"{W.slope:2.0f}"
+		W.name=f"{prefix:s}-{slope_str:s}-{time_str:s}";
+		print(f"{W.name:s} at {W.distance/1000:3.0f}");
+		W.time=time;
 		
-		D[richpoint.distance]=richpoint;
-	return D;
-
+		D[W.distance]=W;
+	return [D[d] for d in sorted(D.keys())];
 
 
 def makegpx(track,waypoints,name,filename):
@@ -200,10 +198,10 @@ def makegpx(track,waypoints,name,filename):
 	gpx_track.segments.append(segment)
 	
 	L=[];
-	for distance in sorted(waypoints.keys()):
-		time=waypoints[distance].time;
+	for w in waypoints:
+		# time=w.time;
 		# print(f"{waypoint_string(w):s};{distance/1000:5.1f};{total_hours:3.1f}");
-		L.append(toGPXWaypoint(waypoints[distance]));
+		L.append(toGPXWaypoint(w));
 	gpx.waypoints=L;
 
 	print("generate",filename);
@@ -220,26 +218,21 @@ def sort_waypoints(W):
 
 def closest(W,w0):
 	assert(len(W)>=2);
-	return sorted(W.values(), key=lambda rw: abs(rw.distance-w0.distance))[1];
+	return sorted(W, key=lambda rw: abs(rw.distance-w0.distance))[1];
 
 def filter_waypoints(W):
 	if not W:
 		return W;
-	D=list(W.keys());
-	for d in D:
-		if not d in W:
-			continue;
-		w=W[d];
+	for w in W:
 		c=closest(W,w);
 		d=abs(c.distance-w.distance);
 		if d<4000:
 			Sloc=sort_waypoints([w,c]);
-			d_hide=Sloc[-1].distance;
 			print(f"hide {Sloc[-1].name:s} because it is too close to {Sloc[0].name:s} (d={d:04.1f}m)");
-			W[d_hide].label_on_profile=False;
+			Sloc[-1].label_on_profile=False;
 			if d<2000:
-				del W[d_hide];
-	return W;
+				Sloc[-1].hide=True;
+	return [w for w in W if not w.hide];
 
 arguments=None;
 def parse_arguments():
@@ -280,7 +273,8 @@ def main():
 		A=automatic.waypoints(track);
 	else:
 		print(f"gpx has {len(A):d} automatic waypoints");
-	W={**A, **K};
+	Wak=A+K;
+	W=sorted(Wak, key=lambda w: w.distance);
 	W=filter_waypoints(W);
 	W=label_waypoints(W,start,track);
 	
