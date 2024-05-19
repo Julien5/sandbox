@@ -4,9 +4,6 @@
 \usepackage[a4paper, portrait]{geometry}
 \usepackage{graphicx}
 
-\oddsidemargin  -2cm
-\evensidemargin -2cm
-\topmargin 	-3cm
 \textheight	28cm
 \textwidth  19cm
 
@@ -16,7 +13,7 @@
 \def\mapheight{8cm}
 
 \begin{document}
-
+\newgeometry{left=5mm,right=5mm,top=10mm,bottom=0mm,bindingoffset=0mm}
 
 % begin-template
 \begin{table}[h!]
@@ -32,7 +29,7 @@
       \includegraphics[height=\mapheight,width=\mapheight,keepaspectratio]{{map-png}}
     \end{minipage}
     &
-    \begin{minipage}[t][65mm][t]{11cm}
+    \begin{minipage}[t][60mm][t]{11cm}
       \centering
     \begin{tabular}{|l|r|c|r|r|r|r|l|}
       \hline
@@ -45,6 +42,7 @@
     \\ \hline
   \end{tabular}
 \end{table}
+\vspace{-5mm}
 % end-template
 
 \end{document}

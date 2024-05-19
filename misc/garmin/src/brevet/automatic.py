@@ -59,9 +59,9 @@ def waypoints_douglas_worker(X):
 	return [r[0] for r in R];
 
 def fixup_extremas(x,y,indices):
-	I=sorted(list(indices));
-	rindices={0};
-	ret={I[0]};
+	I=indices;
+	rindices=[0];
+	ret=[I[0]];
 	for k in range(1,len(I)-1):
 		xprev=I[k-1];
 		xk=I[k];
@@ -75,16 +75,16 @@ def fixup_extremas(x,y,indices):
 			assert(y[xm]>=y[xk]);
 		assert(xm in domain);	
 		print(f"{x[xk]:3.1f}->{x[xm]:3.1f} -> delta={x[xk]-x[xm]:3.1f}");	
-		ret.add(xm);	
-	ret.add(I[-1]);
+		ret.append(xm);	
+	ret.append(I[-1]);
 	return ret;
 
 def decimate_flat_3(x,y,indices):
 	# we observe 3-consecutive subsets
 	if len(y)<3:
 		return y;
-	I=sorted(list(indices));
-	ret={0};
+	I=indices;
+	ret=[0];
 	k=1;
 	while k<len(I)-1:
 		[ya,yb,yc]=[y[I[i]] for i in range(k-1,k+2)];
@@ -94,12 +94,12 @@ def decimate_flat_3(x,y,indices):
 		dx=xc-xa;
 		slope=dy/(dx*10); # dx is in kilometer
 		if (slope<1 and dx<=17): # it is flat
-			ret.add(I[k+1]);
+			ret.append(I[k+1]);
 			k=k+2;
 		else:
-			ret.add(I[k]);
+			ret.append(I[k]);
 			k=k+1;
-	ret.add(I[-1]);
+	ret.append(I[-1]);
 	return ret;
 
 def decimate_flat(x,y,indices):
@@ -109,16 +109,16 @@ def decimate_same_slope(x,y,indices):
 	# we observe 3-consecutive subsets
 	if len(y)<3:
 		return y;
-	I=sorted(list(indices));
-	rindices={0};
+	I=indices;
+	rindices=[0];
 	for k in range(1,len(I)-1):
 		[ya,yb,yc]=[y[I[i]] for i in range(k-1,k+2)];
 		sA=yb>ya;
 		sB=yc>yb;
 		if sA==sB:
 			continue;
-		rindices.add(I[k]);
-	rindices.add(I[-1]);
+		rindices.append(I[k]);
+	rindices.append(I[-1]);
 	return rindices;
 
 
@@ -134,7 +134,7 @@ def waypoints_douglas(P):
 	assert(len(x)==len(y));
 	X=[[x[k],y[k]] for k in range(len(x))];
 	start=0;
-	indices=set();
+	indices=list();
 	
 	r100=R100(x,start);
 	begin=0;
@@ -142,8 +142,11 @@ def waypoints_douglas(P):
 	print("running douglas peucker");
 	D=waypoints_douglas_worker(X[begin:end]);
 	for d in D:
-		indices.add(x.index(d));
-	ret=dict();
+		indices.append(x.index(d));
+	print(indices);
+	print(sorted(indices));
+	assert(sorted(indices)==indices);
+
 	rindices=indices;
 	while True:
 		before=len(rindices);

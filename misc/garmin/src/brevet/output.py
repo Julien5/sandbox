@@ -196,6 +196,7 @@ def latex_profile(W):
 		for d in sorted(F.keys()):
 			w=F[d];
 			pointlist.append(latex_waypoint(w));
+		#pointlist.append(latex_total());	
 		newline="\\\\";	
 		template=template.replace("{pointlist}",f"{newline:s}\n\t".join(pointlist)+newline);
 		parts.append(template);
