@@ -200,6 +200,8 @@ def latex_profile(W):
 		template=template.replace("{pointlist}",f"{newline:s}\n\t".join(pointlist)+newline);
 		parts.append(template);
 		k=k+1;
+		if k>0 and k%2==0:
+			parts.append("\\pagebreak");
 	out=out.replace(template0,"\n".join(parts));
 	f=open("/tmp/profile/profile.tex","w");
 	f.write(out);
