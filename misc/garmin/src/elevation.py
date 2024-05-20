@@ -43,25 +43,20 @@ def round(x):
 	return int(x);
 
 def douglas_peucker(x,y,epsilon):
-	xm=[round(1000*x[k]) for k in range(len(x))];
-	Xi=[[xm[k],y[k]] for k in range(len(x))];
+	Xi=[[x[k],y[k]] for k in range(len(x))];
 	R=rdp(Xi,epsilon);
-	indices=list();
+	# Some ill-formed gpx track have the form
+	# (p1,e1) (p2,e2) (p3,e3) (p3,e3') (p4,e4) ...
+	# The same point is repeated with another elevation.
+	# This causes repetitions in the indices of DP output.
+	# => indices is a set, not a list.
+	indices=set();
+	last_index=0;
 	for r in R:
-		indices.append(xm.index(r[0]));
-	return indices;
-
-def compute(x,y,epsilon=0):
-	indices=douglas_peucker(x,y,epsilon);
-	ret=0;
-	for i in range(len(indices)):
-		if i==0:
-			continue;
-		k=indices[i];
-		kprev=indices[i-1];
-		if y[k]>y[kprev]:
-			ret+=(y[k]-y[kprev])
-	return ret;
+		index=x.index(r[0],last_index);
+		indices.add(index);
+		last_index=index;
+	return sorted(indices);
 
 class Elevation:
 	def __init__(self,track,douglas_peucker_epsilon=2):
@@ -73,11 +68,11 @@ class Elevation:
 				x.append(0);
 			else:
 				Pprev=track[k-1];
-				x.append(x[k-1]+utils.distance(Pprev,P));
+				d=utils.distance(Pprev,P);
+				x.append(x[k-1]+d);
 			y.append(P.elevation);
 		self._xy=(x,y);
 		self.douglas_peucker_epsilon=douglas_peucker_epsilon;
-		self.estimate_positive_elevation();
 
 	def setCreator(self,creator):
 		# adjust elevation filtering to the source
@@ -152,6 +147,7 @@ def print_elevation(e,prefix=None):
 def main(filename,epsilon):
 	track=readfile(filename);
 	E=Elevation(track,epsilon);
+	E.estimate_positive_elevation();
 	dx,dy=E.elevation_from_to(0,len(track)-1);
 	print(filename,dy);
 
