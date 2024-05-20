@@ -162,11 +162,12 @@ def label_waypoints(richpoints,start,E):
 		time_str=fix_summer_winter_time(time).strftime("%H:%M");
 
 		if not Wprev is None:
-			dx,dy=E.slope(Wprev.distance,W.distance);
+			dx,dy=E.slope(Wprev.index,W.index);
 			W.dplus=dy;
 			W.xdplus=dx;
 			if dx>0:
-				W.slope=100*dy/dx;
+				W.slope=100*dy/(W.distance-Wprev.distance);
+			print(f"slope: begin:{Wprev.index:d} end:{W.index:d} dx:{dx:3.1f} dy:{dy:3.1f}");	
 		if not W.description:
 			# save the original name in the description
 			W.description=W.name;
@@ -174,7 +175,10 @@ def label_waypoints(richpoints,start,E):
 		if not (W.slope is None):
 			slope_str=f"{W.slope:2.0f}"
 		W.name=f"{prefix:s}-{slope_str:s}-{time_str:s}";
-		print(f"{W.name:s} at {W.distance/1000:3.0f}");
+		dp=-1;
+		if not W.dplus is None:
+			dp=W.dplus;
+		print(f"{W.name:s} at {W.distance/1000:3.0f} [{W.point.elevation:3.0f}m] D+={dp:3.0f} index:{W.index:d}");
 		W.time=time;
 		
 		D[W.index]=W;
@@ -183,9 +187,9 @@ def label_waypoints(richpoints,start,E):
 
 def makegpx(track,waypoints,name,filename):
 	global arguments;
-	print("remove time and elevation before exporting to gpx");
 	segment = toGPXSegment(track);
 	if arguments.flat:
+		print("remove time and elevation before exporting to gpx");
 		for p in segment.walk(True):
 			p.elevation=None;
 			p.time=None;
@@ -227,6 +231,8 @@ def closest(W,w0):
 	assert(0);	
 	return None;	
 	
+def short(w):
+	return f"[{w.type:s}|{w.distance/1000:3.0f}km|{w.point.elevation:3.0f}m|{w.index:d}]"
 
 def filter_waypoints(W):
 	if not W:
@@ -239,7 +245,7 @@ def filter_waypoints(W):
 			assert(len(Sloc)==2);
 			winner=Sloc[0];
 			looser=Sloc[-1];
-			print(f"examine {w.index:d}/{w.type:s}: hide {looser.index:d}/{looser.type:s} because it is too close to {winner.index:d}/{winner.type:s} (d={d:04.1f}m)");
+			print(f"examine {short(w):s} => hide {short(looser):s} because it is too close to {short(winner):s} (d={d:04.1f}m)");
 			Sloc[-1].label_on_profile=False;
 			if d<2000:
 				Sloc[-1].hide=True;
@@ -271,11 +277,20 @@ def main():
 
 	print("read disc (track)");
 	name,track=readtracks.readpoints(filename);
-
+	print("compute elevation");
 	E=elevation.Elevation(track);
-
+	I=[1774,1791,1811,1821,1826];
+	E.estimate_positive_elevation(I);
+	print("***");
+	for i in I:
+		print(f"elevation[{i:d}]={E.y_at(i):3.1f} d+=[{E.positiv_elevation_at(i):3.2f}]");
+	print("***");
+	print(E.elevation_from_to(1774,1826));
+	print(E.slope(1774,1826));
+	
 	print("read disc (waypoints)");
 	Kgpx,Agpx=read_control_waypoints(filename);
+	print("project points");
 	wpfinder=finder.Finder(track);
 	K=project_waypoints(Kgpx,wpfinder);
 	A=project_waypoints(Agpx,wpfinder);
@@ -285,11 +300,10 @@ def main():
 	else:
 		print(f"gpx has {len(A):d} automatic waypoints");
 
-	print("A",[w.index for w in A]);
-	print("K",[w.index for w in K]);	
 	Wak=A+K;
 	W=sorted(Wak, key=lambda w: w.distance);
 	W=filter_waypoints(W);
+	E.estimate_positive_elevation([w.index for w in W]);
 	W=label_waypoints(W,start,E);
 	
 	print("generate profile plot file");

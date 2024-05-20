@@ -76,51 +76,69 @@ class Elevation:
 				Pprev=track[k-1];
 				x.append(x[k-1]+utils.distance(Pprev,P));
 			y.append(P.elevation);
-		self._xy=(x,y);	
-		indices=douglas_peucker(x,y,50);
+		self._xy=(x,y);
+		self.estimate_positive_elevation();
+
+	def estimate_positive_elevation(self,windices=None):
+		(x,y)=self.xy();
+		dindices=douglas_peucker(x,y,10);
+		assert(len(dindices)==len(set(dindices)));
+		assert(0 in dindices and len(x)-1 in dindices);
+		indices=dindices;
+		if not windices is None:
+			indices=dindices+windices;
+			print(f"estimate elevation using {len(indices):d} points");
+		indices=sorted(set(indices));
+		assert(len(indices)>=len(dindices));
 		self._positive_elevation=list();
+		dy=0;
+		dx=0;
+		print(f"estimate elevation using {len(indices):d} points");
+		print(indices);
+		self._positive_elevation=dict();
 		for i in range(len(indices)):
 			if i==0:
+				self._positive_elevation[0]=(0,dx,dy);
 				continue;
-			k=indices[i];
-			kprev=indices[i-1];
-			distance=x[k];
-			elevation=y[k];
-			if y[k] > y[kprev]:
-				elevation += y[k]-y[kprev];
-			for k in range(kprev+1,k+1):
-				self._positive_elevation.append((x[k],elevation));
-		last_k=len(self._positive_elevation)-1;
-		last_value=self._positive_elevation[-1];
-		for k in range(last_k+1,len(track)):
-			self._positive_elevation.append(last_value);
-		assert(len(self._positive_elevation)==len(track));
-			
+			kbegin=indices[i-1];
+			kend=indices[i];
+			if y[kend] > y[kbegin]:
+				dy += y[kend]-y[kbegin];
+				dx += x[kend]-x[kbegin];
+			self._positive_elevation[kend]=(x[kend],dx,dy)
+
+	def floor_index(self,index):
+		I=sorted(self._positive_elevation.keys());
+		for i in I:
+			if i>=index:
+				return i;
+		assert(False);	
+		return None;	
+		
 	def elevation_from_to(self,index1,index2):
-		xe1=next(filter(lambda xe: xe[0]==index1+1, self._positive_elevation));
-		xe2=next(filter(lambda xe: xe[0]==index2, self._positive_elevation));
+		print(index1,index2);
+		print(sorted(self._positive_elevation.keys()));
+		assert(index1 in self._positive_elevation);
+		assert(index2 in self._positive_elevation);
+		xe1=self._positive_elevation[index1];
+		xe2=self._positive_elevation[index2];
+		dx=xe2[1]-xe1[1]
+		dy=xe2[2]-xe1[2];
 		if xe1 and xe2:
-			return xe2[1]-xe1[1];
-		return None;
+			return dx,dy;
+		return None,None;
 
 	def xy(self):
 		return self._xy;
 
-	def slope(self,start,end):
-		cumulative_x=0;
-		cumulative_y=0;
-		(x,y)=self.xy();
-		for k in range(len(x)):
-			d=x[k];
-			if d<start:
-				continue;
-			if d>end:
-				break;
-			if y[k]>y[k-1] and k>0:
-				cumulative_y+=y[k]-y[k-1];
-				assert(x[k]>x[k-1]);
-				cumulative_x+=(x[k]-x[k-1]);
-		return cumulative_x,cumulative_y;
+	def slope(self,begin,end):
+		return self.elevation_from_to(begin,end);
+
+	def y_at(self,index):
+		return self._xy[1][index];
+
+	def positiv_elevation_at(self,index):
+		return self._positive_elevation[index][2];
 
 def print_elevation(e,prefix=None):
 	if prefix:
@@ -128,9 +146,15 @@ def print_elevation(e,prefix=None):
 	print(f"elevation={e:5.1f}");
 
 def main(filename,epsilon=0):
+	track=readfile(filename);
+	E=Elevation(track);
+	for k in range(len(track)):
+		print(k,E.elevation_from_to(0,k));
+	return;
 	x,y=load(readfile(filename));
 	# plot(x,y);
 	elevation=compute(x,y,epsilon);
+	Elevation();
 	print_elevation(elevation,"computed");
 
 def find_test_file(filename):

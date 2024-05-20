@@ -14,10 +14,11 @@ def argmax(x,R):
 def argmin(x,R):
 	return min(R, key=lambda i: x[i])
 
-def RK(x,start,K):
-	if K<0:
-		return [k for k in range(0,start) if abs(x[start]-x[k])<abs(K)];
-	return [k for k in range(start,len(x)) if abs(x[start]-x[k])<K];
+def RK(x,start,km):
+	m=1000*km;
+	if m<0:
+		return [k for k in range(0,start) if abs(x[start]-x[k])<abs(m)];
+	return [k for k in range(start,len(x)) if abs(x[start]-x[k])<m];
 
 def R100(x,start):
 	return RK(x,start,100);
