@@ -84,10 +84,10 @@ def findtemplate(dir,filename):
         return os.path.join(os.path.dirname(__file__),"..","..",dir,filename);
         
 import pyproj
-def gnuplot_map(P,W):
+def gnuplot_map(P,E,W):
 	os.makedirs("/tmp/profile",exist_ok=True);
 	utm = pyproj.Proj("+proj=utm +zone=32K, +north +ellps=WGS84 +datum=WGS84 +units=m +no_defs")
-	d,dummy=elevation.load(P);
+	d,dummy=E.xy();
 	
 	L=[];
 	for k in range(len(P)):
@@ -190,7 +190,8 @@ def latex_waypoint(W,k):
 	L.append(formatFloat(distance/1000));
 	L.append(formatFloat(rw.dplus));
 	L.append(formatFloat(rw.slope)+"\%");
-	L.append(f"{rw.description:s}");
+	# the current layout has no more space for the description
+	L.append(f"{rw.description[:15]:s}");
 	separator=" & ";
 	return separator.join(L);
 

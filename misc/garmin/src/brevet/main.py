@@ -301,7 +301,7 @@ def main():
 	output.gnuplot_profile(E,W);
 	print("generate map plot file");
 	assert(track);
-	output.gnuplot_map(track,W);
+	output.gnuplot_map(track,E,W);
 	assert(W);
 	
 	outgpx=arguments.output;

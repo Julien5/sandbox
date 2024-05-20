@@ -10,7 +10,7 @@ function make() {
 }
 
 rm /tmp/*.pdf /tmp/*.gpx
-#make /home/julien/tours/brevets/2024/300/gpx/track.gpx /tmp/B300.gpx
-#make /home/julien/tours/self/2024/05/gpx/studio/jura.gpx /tmp/jura.gpx
+make /home/julien/tours/brevets/2024/300/gpx/track.gpx /tmp/B300.gpx
+make /home/julien/tours/self/2024/05/gpx/studio/jura.gpx /tmp/jura.gpx
 make /home/julien/tours/self/2024/05/gpx/studio/foret-noire.gpx /tmp/foret-noire.gpx
-#make /home/julien/tours/self/2024/04/gpx/track-1.gpx /tmp/foret-noire-2.gpx
+make /home/julien/tours/self/2024/04/gpx/track-1.gpx /tmp/foret-noire-2.gpx

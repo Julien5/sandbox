@@ -13,22 +13,8 @@ def readfile(filename):
 	name,R,creator=readtracks.readpoints(filename);
 	return R;
 
-def load(P):
-	x=[];
-	y=[];
-	pprev=None;
-	for k in range(len(P)):
-		# print(p.latitude,p.longitude,p.elevation);
-		if k==0:
-			x.append(0);
-		else:
-			x.append(x[k-1]+utils.distance(P[k-1],P[k]));
-		y.append(P[k].elevation);
-	return x,y;	
-		
 def plot(x,y):
 	fig, axs = plt.subplots(1, 1, layout='constrained')
-	x,y=load();
 	axs.plot(x, y)
 	# axs.plot(t, s1)
 	axs.set_xlim(0, x[-1])
@@ -78,9 +64,9 @@ class Elevation:
 		# adjust elevation filtering to the source
 		# OA -> epsilon=16
 		# komoot and gpx.studio -> epsilon=2
-		self.douglas_peucker_epsilon=2;
+		self.douglas_peucker_epsilon=20;
 		if "outdooractive" in creator:
-			self.douglas_peucker_epsilon=16;
+			self.douglas_peucker_epsilon=25;
 		print(f"using epsilon={self.douglas_peucker_epsilon:3.0f} for creator={creator:s}");	
 
 	def estimate_positive_elevation(self,windices=None):
@@ -110,11 +96,23 @@ class Elevation:
 
 	def floor_index(self,index):
 		I=sorted(self._positive_elevation.keys());
-		for i in I:
-			if i>=index:
-				return i;
+		for n in range(len(I)):
+			if (n+1)==len(I): # the next is past end
+				return I[-1];
+			if I[n+1]>=index:
+				return I[n];
 		assert(False);	
-		return None;	
+		return None;
+
+	def floor_distance(self,dist):
+		x,y=self.xy();
+		ret=0;
+		for k in range(len(x)):
+			if x[k]<dist:
+				ret=k;
+			else:
+				break;
+		return ret;	
 		
 	def elevation_from_to(self,index1,index2):
 		assert(index1 in self._positive_elevation);
@@ -144,7 +142,18 @@ def print_elevation(e,prefix=None):
 		print(f"{prefix:s} ",end="")
 	print(f"elevation={e:5.1f}");
 
-def main(filename,epsilon):
+def main():
+	filename="/home/julien/tours/self/2024/05/gpx/studio/foret-noire.gpx";
+	track=readfile(filename);
+	E=Elevation(track,20);
+	E.estimate_positive_elevation();
+	x,y=E.xy()
+	begin=E.floor_index(E.floor_distance(33100));
+	end=E.floor_index(E.floor_distance(38000));
+	print(E.elevation_from_to(begin,end));
+	plot(x,y);
+	
+def maind(filename,epsilon):
 	track=readfile(filename);
 	E=Elevation(track,epsilon);
 	E.estimate_positive_elevation();
@@ -158,8 +167,9 @@ if __name__ == "__main__":
 	# test/elevation.gpx,
 	# gpx.studio: 1257.
 	# komoot:     1390
-	main(find_test_file("elevation-oa.gpx"),16);
-	main(find_test_file("elevation-studio.gpx"),2);
-	main(find_test_file("elevation-komoot.gpx"),2);
+	#main(find_test_file("elevation-oa.gpx"),16);
+	#main(find_test_file("elevation-studio.gpx"),2);
+	#main(find_test_file("elevation-komoot.gpx"),2);
+	main();
 	print("done");
 
