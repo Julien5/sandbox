@@ -164,8 +164,8 @@ def label_waypoints(richpoints,start,E):
 			dx,dy=E.slope(Wprev.index,W.index);
 			W.dplus=dy;
 			W.xdplus=dx;
-			if dx>0:
-				W.slope=100*dy/(W.distance-Wprev.distance);
+			assert(W.distance>Wprev.distance);
+			W.slope=100*dy/(W.distance-Wprev.distance);
 		if not W.description:
 			# save the original name in the description
 			W.description=W.name;
