@@ -19,7 +19,6 @@ def get_rwaypoints_at_page(p,W):
 	return R;
 
 def get_begin_end(xmin,xmax,E):
-	print(xmin,xmax);
 	(d,y)=E.xy();
 	begin=None;
 	end=None;
@@ -150,7 +149,6 @@ def gnuplot_profile(E,W):
 		f.close();
 		I=get_rwaypoints_at_page(xk,W);
 		assert(I);
-		print("page",xk);
 		profile_csv_waypoints([W[i] for i in I]);
 		subprocess.run(["gnuplot",filename],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL);
 		os.rename("/tmp/profile/profile.png",f"/tmp/profile/profile-{xk:d}.png");
@@ -199,7 +197,6 @@ def latex_waypoint(W,k):
 def latex_total(E,begin,end):
 	L=list();
 	(d,y)=E.xy();
-	print("total",begin,end);
 	dplus=None;
 	distance=0;
 	slope=None;
@@ -268,7 +265,5 @@ def latex_profile(E,W,outpdf):
 	if os.path.exists("/tmp/profile/profile.pdf"):
 		os.remove("/tmp/profile/profile.pdf")
 	subprocess.run(["pdflatex","/tmp/profile/profile.tex"],stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL);
-	while not os.path.exists("/tmp/profile/profile.pdf"):
-		time.sleep(20);
-		print("wait...");
+	assert(os.path.exists("/tmp/profile/profile.pdf"));
 	os.rename("/tmp/profile/profile.pdf",pdf);

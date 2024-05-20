@@ -2,6 +2,7 @@
 
 import sys
 import os
+import math
 
 sys.path.append(os.path.join(os.path.dirname(__file__),".."));
 
@@ -50,7 +51,7 @@ def fixup_extremas(x,y,indices):
 			xm=argmax(y,domain);
 			assert(y[xm]>=y[xk]);
 		assert(xm in domain);	
-		print(f"{x[xk]:3.1f}->{x[xm]:3.1f} -> delta={x[xk]-x[xm]:3.1f}");	
+		#print(f"{x[xk]:3.1f}->{x[xm]:3.1f} -> delta={x[xk]-x[xm]:3.1f}");	
 		ret.append(xm);	
 	ret.append(I[-1]);
 	return ret;
@@ -103,6 +104,12 @@ def decimate(x,y,indices):
 	r=decimate_flat(x,y,r);
 	return r;
 
+def generate_point_at_index(index,P,d):
+	rw=RichWaypoint(P[index]);
+	rw.distance=d[index];
+	rw.index=index;
+	rw.type="A";
+	return rw;
 
 def waypoints_douglas(P,E):
 	(x,y)=E.xy();
@@ -114,43 +121,76 @@ def waypoints_douglas(P,E):
 	r100=R100(x,start);
 	begin=0;
 	end=len(X)
-	print("running douglas peucker");
 	D=waypoints_douglas_worker(X[begin:end]);
 	for d in D:
 		indices.append(x.index(d));
-	print(indices);
-	print(sorted(indices));
 	assert(sorted(indices)==indices);
 
 	rindices=indices;
 	while True:
 		before=len(rindices);
-		print(f"*** decimate [{len(rindices):3d}]***");
+		#print(f"*** decimate [{len(rindices):3d}]***");
 		rindices=decimate_same_slope(x,y,rindices);
 		after=len(rindices);
 		if before==after:
 			break;
 	while True:
 		before=len(rindices);
-		print(f"*** decimate flat [{len(rindices):3d}]***");
+		#print(f"*** decimate flat [{len(rindices):3d}]***");
 		rindices=decimate_flat(x,y,rindices);
 		after=len(rindices);
 		if before==after:
 			break;
 	rindices=fixup_extremas(x,y,rindices);
-	print("removed",len(indices)-len(rindices),"points")
+	#print("removed",len(indices)-len(rindices),"points")
 	assert(rindices==sorted(rindices));
 	ret=list();
 	assert(sorted(rindices)==rindices);
 	for k in rindices:
-		rw=RichWaypoint(P[k]);
-		rw.distance=x[k];
-		rw.index=k;
-		rw.type="A";
-		print(f"waypoint at {x[k]:3.0f}");
+		rw=generate_point_at_index(k,P,x);
 		ret.append(rw);
 	return ret;
 
+
+def generate_point_at_distance(distance,P,d):
+	index=0;
+	for k in range(len(d)):
+		index=k;
+		if d[k]>distance:
+			break;
+	return generate_point_at_index(index,P,d);
+
+def nextd(distance,delta):
+	return (math.floor(distance/delta)+1)*delta;
+
+
+def subsample(d_begin,d_end,delta,P,d):
+	ret=list();
+	while True:
+		#d_begin=nextd(d_begin,delta);
+		d_begin=d_begin+delta;
+		if d_end < d_begin:
+			break;
+		a=generate_point_at_distance(d_begin,P,d);
+		ret.append(a);
+	return ret;
+
+def waypoints_subsample(P,E,D):
+	delta=15000;
+	A=list();
+	(d,y)=E.xy();
+	for k in range(len(D)):
+		if k==0:
+			continue;
+		wprev=D[k-1];
+		w=D[k];
+		if w.distance-wprev.distance>delta:
+			Aloc=subsample(wprev.distance,w.distance,delta,P,d);
+			A.extend(Aloc);
+	return A;		
+
 def waypoints(P,E):
 	D=waypoints_douglas(P,E);
-	return D;
+	A=waypoints_subsample(P,E,D);
+	R=D+A;
+	return sorted(R, key=lambda w: w.distance);

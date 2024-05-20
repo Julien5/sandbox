@@ -53,7 +53,6 @@ def douglas_peucker(x,y,epsilon):
 
 def compute(x,y,epsilon=0):
 	indices=douglas_peucker(x,y,epsilon);
-	print("#index",len(indices));
 	ret=0;
 	for i in range(len(indices)):
 		if i==0:
@@ -87,14 +86,11 @@ class Elevation:
 		indices=dindices;
 		if not windices is None:
 			indices=dindices+windices;
-			print(f"estimate elevation using {len(indices):d} points");
 		indices=sorted(set(indices));
 		assert(len(indices)>=len(dindices));
 		self._positive_elevation=list();
 		dy=0;
 		dx=0;
-		print(f"estimate elevation using {len(indices):d} points");
-		print(indices);
 		self._positive_elevation=dict();
 		for i in range(len(indices)):
 			if i==0:
@@ -116,8 +112,6 @@ class Elevation:
 		return None;	
 		
 	def elevation_from_to(self,index1,index2):
-		print(index1,index2);
-		print(sorted(self._positive_elevation.keys()));
 		assert(index1 in self._positive_elevation);
 		assert(index2 in self._positive_elevation);
 		xe1=self._positive_elevation[index1];
