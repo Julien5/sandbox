@@ -312,13 +312,16 @@ def main():
 	assert(track);
 	output.gnuplot_map(track,W);
 	assert(W);
-	output.latex_profile(E,W);
-	if not os.path.exists("out"):
-		os.makedirs("out");
-	print("generate gpx");
-	outfilename=arguments.output;
+	
+	outgpx=arguments.output;
 	if not arguments.output:
-		outfilename="out/"+os.path.basename(filename);
-	makegpx(track,W,name,outfilename);
+		outgpx="out/"+os.path.basename(filename);
+		if not os.path.exists("out"):
+			os.makedirs("out");
+	print("generate gpx");
+	makegpx(track,W,name,outgpx);
+	outpdf=outgpx.replace(".gpx",".pdf");
+	output.latex_profile(E,W,outpdf);
+	
 	
 main()

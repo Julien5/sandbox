@@ -226,7 +226,7 @@ def latex_total(E,begin,end):
 	return separator.join(L);
 
 
-def latex_profile(E,W):
+def latex_profile(E,W,outpdf):
 	f=open(findtemplate("tex","profile-template.tex"),"r");
 	L=f.read().split("\n");
 	f.close();
@@ -263,3 +263,12 @@ def latex_profile(E,W):
 	f=open("/tmp/profile/profile.tex","w");
 	f.write(out);
 	f.close();
+	pdf = os.path.abspath(outpdf);
+	os.chdir("/tmp/profile")
+	if os.path.exists("/tmp/profile/profile.pdf"):
+		os.remove("/tmp/profile/profile.pdf")
+	subprocess.run(["pdflatex","/tmp/profile/profile.tex"]);
+	while not os.path.exists("/tmp/profile/profile.pdf"):
+		time.sleep(20);
+		print("wait...");
+	os.rename("/tmp/profile/profile.pdf",pdf);
