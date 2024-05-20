@@ -233,7 +233,7 @@ def closest(W,w0):
 def short(w):
 	return f"[{w.type:s}|{w.distance/1000:3.0f}km|{w.point.elevation:3.0f}m|{w.index:d}]"
 
-def filter_waypoints(W):
+def remove_close_waypoints(W):
 	if not W:
 		return W;
 	for w in W:
@@ -293,7 +293,7 @@ def main():
 
 	Wak=A+K;
 	W=sorted(Wak, key=lambda w: w.distance);
-	W=filter_waypoints(W);
+	W=remove_close_waypoints(W);
 	E.estimate_positive_elevation([w.index for w in W]);
 	W=label_waypoints(W,start,E);
 	
