@@ -25,31 +25,6 @@ def R100(x,start):
 def R20(x,start):
 	return RK(x,start,20);
 
-def summits(x,y):
-	start=0;
-	ret=list();
-	while start<len(x):
-		R=R20(x,start);
-		kmax=argmax(y,R);
-		start=max(R)+1;
-		ret.append(kmax);
-	return ret;
-
-def waypoints_summits(P):
-	ret=dict();
-	x,y=elevation.load(P);
-	assert(len(x)==len(y));
-	summit_indices=summits(x,y);
-	assert(not 0 in summit_indices);
-	assert(len(summit_indices)>=1);
-	for n in range(len(summit_indices)):
-		k=summit_indices[n];
-		rw=RichWaypoint(P[k]);
-		rw.distance=x[k];
-		ret[rw.distance]=rw;
-	return ret;
-
-
 from rdp import rdp
 
 #>>> rdp([[1, 1], [2, 2], [3, 3], [4, 4]])
@@ -128,8 +103,8 @@ def decimate(x,y,indices):
 	return r;
 
 
-def waypoints_douglas(P):
-	x,y=elevation.load(P);
+def waypoints_douglas(P,E):
+	(x,y)=E.xy();
 	assert(len(x)==len(y));
 	X=[[x[k],y[k]] for k in range(len(x))];
 	start=0;
@@ -169,30 +144,12 @@ def waypoints_douglas(P):
 	for k in rindices:
 		rw=RichWaypoint(P[k]);
 		rw.distance=x[k];
+		rw.index=k;
 		rw.type="A";
 		print(f"waypoint at {x[k]:3.0f}");
 		ret.append(rw);
 	return ret;
 
-def waypoints(P):
-	#S=waypoints_summits(P);
-	D=waypoints_douglas(P);
+def waypoints(P,E):
+	D=waypoints_douglas(P,E);
 	return D;
-
-def slope(x,y,p1,p2):
-	cumulative_x=0;
-	cumulative_y=0;
-	start=p1.distance;
-	end=p2.distance;
-	for k in range(len(x)):
-		d=x[k];
-		if d<start:
-			continue;
-		if d>end:
-			break;
-		if y[k]>y[k-1] and k>0:
-			cumulative_y+=y[k]-y[k-1];
-			assert(x[k]>x[k-1]);
-			cumulative_x+=(x[k]-x[k-1]);
-	return cumulative_x,cumulative_y;
-

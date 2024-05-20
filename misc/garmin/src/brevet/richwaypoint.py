@@ -6,6 +6,7 @@ class RichWaypoint:
 		self.name="";
 		self.description="";
 		self.distance=None;
+		self.index=None;
 		self.time=None;
 		self.hide=False;
 		self.label_on_profile=True;
@@ -19,3 +20,15 @@ class RichWaypoint:
 
 	def isAutomatic(self):
 		return self.type == "A";
+
+	def __eq__(self, other): 
+		if not isinstance(other, RichWaypoint):
+			return NotImplemented
+		if self.index != other.index:
+			return False;
+		if self.type != other.type:
+			return False;
+		if self.name != other.name:
+			return False;
+		# to be continued...
+		return True;

@@ -15,7 +15,7 @@ def get_rwaypoints_at_page(k,W):
 		km=w.distance/1000;
 		if xmin <= km and km <= xmax:
 			R.append(w);
-	return R;	
+	return R;
 
 def bbox(P,proj,d,dmin,dmax):
 	assert(len(P)==len(d));
@@ -107,9 +107,9 @@ def gnuplot_map(P,W):
 	return 	
 
 import math;
-def gnuplot_profile(P,W):
+def gnuplot_profile(E,W):
 	os.makedirs("/tmp/profile",exist_ok=True);
-	d,y=elevation.load(P);
+	(d,y)=E.xy();
 	f=open("/tmp/profile/elevation.csv","w");
 	for k in range(len(d)):
 		f.write(f"{d[k]/1000:5.2f}\t{y[k]:5.2f}\n");
@@ -171,7 +171,7 @@ def latex_waypoint(rw):
 	return separator.join(L);
 
 
-def latex_profile(W):
+def latex_profile(E,W):
 	f=open(findtemplate("tex","profile-template.tex"),"r");
 	L=f.read().split("\n");
 	f.close();
@@ -196,7 +196,8 @@ def latex_profile(W):
 		pointlist=list();
 		for w in F:
 			pointlist.append(latex_waypoint(w));
-		#pointlist.append(latex_total());	
+		#begin=
+		#pointlist.append(latex_total(begin,end));	
 		newline="\\\\";	
 		template=template.replace("{pointlist}",f"{newline:s}\n\t".join(pointlist)+newline);
 		parts.append(template);

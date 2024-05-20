@@ -29,6 +29,6 @@ class Finder:
 		index=self.spatial.query(pt)[1];
 		#nearest=self.A[index];
 		ret=self.points.point(index);
-		return ret;
+		return ret,index;
 
 		

@@ -114,31 +114,30 @@ def project_waypoints(richpoints,finder):
 	D=dict();
 	for richpoint in richpoints:
 		distance=finder.find_distance(richpoint.point);
-
-		# we project all points, even controls,
-		# because we want exact points
-		pr=finder.project(richpoint.point);
+		# We project the waypoints on the track points.
+		# Otherwise we cannot compute the distance.
+		# TODO: fix that ?
+		pr,index=finder.project(richpoint.point);
 		d=utils.distance(pr,richpoint.point);
 		print(f"{richpoint.name:20s} {d:5.1f}");
 		richpoint.point=pr;
-
-		if distance in D:
-			if richpoint.name == D[distance].name:
+		richpoint.distance=distance;
+		richpoint.index=index;
+		if index in D:
+			if richpoint.name == D[index].name:
 				continue;
 			new=richpoint;
-			old=D[distance];
-			print("two waypoints with the same time:",time);
+			old=D[index];
+			print("found waypoints with the same index:",index);
 			print("new:",new.name,"-",new.description);
 			print("old:",old.name,"-",old.description);
-			assert(not distance in D);
-		richpoint.distance=distance;
-		D[distance]=richpoint;
+			assert(not index in D);
+		D[index]=richpoint;
 	return [D[d] for d in sorted(D.keys())];
 
-def label_waypoints(richpoints,start,track):
-	x,y=elevation.load(track);
-	K=set();
-	A=set();
+def label_waypoints(richpoints,start,E):
+	K=list();
+	A=list();
 
 	R=richpoints;
 
@@ -147,10 +146,10 @@ def label_waypoints(richpoints,start,track):
 		W=R[k];
 		prefix=None;
 		if W.isControlPoint():
-			K.add(W);
+			K.append(W);
 			prefix=f"K{len(K):d}";
 		else:
-			A.add(W);
+			A.append(W);
 			prefix=f"A{len(A)%10:d}";
 			
 		Wprev=None;
@@ -163,13 +162,14 @@ def label_waypoints(richpoints,start,track):
 		time_str=fix_summer_winter_time(time).strftime("%H:%M");
 
 		if not Wprev is None:
-			dx,dy=automatic.slope(x,y,Wprev,W);
+			dx,dy=E.slope(Wprev.distance,W.distance);
 			W.dplus=dy;
 			W.xdplus=dx;
 			if dx>0:
 				W.slope=100*dy/dx;
-		# save the original name in the description
-		W.description=W.name;
+		if not W.description:
+			# save the original name in the description
+			W.description=W.name;
 		slope_str="  ";
 		if not (W.slope is None):
 			slope_str=f"{W.slope:2.0f}"
@@ -177,8 +177,8 @@ def label_waypoints(richpoints,start,track):
 		print(f"{W.name:s} at {W.distance/1000:3.0f}");
 		W.time=time;
 		
-		D[W.distance]=W;
-	return [D[d] for d in sorted(D.keys())];
+		D[W.index]=W;
+	return [D[i] for i in sorted(D.keys())];
 
 
 def makegpx(track,waypoints,name,filename):
@@ -218,7 +218,15 @@ def sort_waypoints(W):
 
 def closest(W,w0):
 	assert(len(W)>=2);
-	return sorted(W, key=lambda rw: abs(rw.distance-w0.distance))[1];
+	# Note: if two waypoints have the same distance, sorted[1] is not
+	# necessarily the 'other closest'.
+	S=sorted(W, key=lambda rw: abs(rw.index-w0.index));
+	for k in range(2):
+		if S[k] != w0:
+			return S[k];
+	assert(0);	
+	return None;	
+	
 
 def filter_waypoints(W):
 	if not W:
@@ -228,7 +236,10 @@ def filter_waypoints(W):
 		d=abs(c.distance-w.distance);
 		if d<4000:
 			Sloc=sort_waypoints([w,c]);
-			print(f"hide {Sloc[-1].name:s} because it is too close to {Sloc[0].name:s} (d={d:04.1f}m)");
+			assert(len(Sloc)==2);
+			winner=Sloc[0];
+			looser=Sloc[-1];
+			print(f"examine {w.index:d}/{w.type:s}: hide {looser.index:d}/{looser.type:s} because it is too close to {winner.index:d}/{winner.type:s} (d={d:04.1f}m)");
 			Sloc[-1].label_on_profile=False;
 			if d<2000:
 				Sloc[-1].hide=True;
@@ -260,9 +271,9 @@ def main():
 
 	print("read disc (track)");
 	name,track=readtracks.readpoints(filename);
-	print("make waypoints");
-	
-	
+
+	E=elevation.Elevation(track);
+
 	print("read disc (waypoints)");
 	Kgpx,Agpx=read_control_waypoints(filename);
 	wpfinder=finder.Finder(track);
@@ -270,21 +281,24 @@ def main():
 	A=project_waypoints(Agpx,wpfinder);
 	if not A:
 		print("make automatic waypoints");
-		A=automatic.waypoints(track);
+		A=automatic.waypoints(track,E);
 	else:
 		print(f"gpx has {len(A):d} automatic waypoints");
+
+	print("A",[w.index for w in A]);
+	print("K",[w.index for w in K]);	
 	Wak=A+K;
 	W=sorted(Wak, key=lambda w: w.distance);
 	W=filter_waypoints(W);
-	W=label_waypoints(W,start,track);
+	W=label_waypoints(W,start,E);
 	
 	print("generate profile plot file");
-	output.gnuplot_profile(track,W);
+	output.gnuplot_profile(E,W);
 	print("generate map plot file");
 	assert(track);
 	output.gnuplot_map(track,W);
 	assert(W);
-	output.latex_profile(W);
+	output.latex_profile(E,W);
 	if not os.path.exists("out"):
 		os.makedirs("out");
 	print("generate gpx");

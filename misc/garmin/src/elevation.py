@@ -22,11 +22,9 @@ def load(P):
 		if k==0:
 			x.append(0);
 		else:
-			# todo: not divide by 1000.
 			x.append(x[k-1]+utils.distance(P[k-1],P[k]));
 		y.append(P[k].elevation);
 	return x,y;	
-
 		
 def plot(x,y):
 	fig, axs = plt.subplots(1, 1, layout='constrained')
@@ -65,6 +63,64 @@ def compute(x,y,epsilon=0):
 		if y[k]>y[kprev]:
 			ret+=(y[k]-y[kprev])
 	return ret;
+
+class Elevation:
+	def __init__(self,track):
+		x=list();
+		y=list();
+		for k in range(len(track)):
+			P=track[k];
+			if k==0:
+				x.append(0);
+			else:
+				Pprev=track[k-1];
+				x.append(x[k-1]+utils.distance(Pprev,P));
+			y.append(P.elevation);
+		self._xy=(x,y);	
+		indices=douglas_peucker(x,y,50);
+		self._positive_elevation=list();
+		for i in range(len(indices)):
+			if i==0:
+				continue;
+			k=indices[i];
+			kprev=indices[i-1];
+			distance=x[k];
+			elevation=y[k];
+			if y[k] > y[kprev]:
+				elevation += y[k]-y[kprev];
+			for k in range(kprev+1,k+1):
+				self._positive_elevation.append((x[k],elevation));
+		last_k=len(self._positive_elevation)-1;
+		last_value=self._positive_elevation[-1];
+		for k in range(last_k+1,len(track)):
+			self._positive_elevation.append(last_value);
+		assert(len(self._positive_elevation)==len(track));
+			
+	def elevation_from_to(self,index1,index2):
+		xe1=next(filter(lambda xe: xe[0]==index1+1, self._positive_elevation));
+		xe2=next(filter(lambda xe: xe[0]==index2, self._positive_elevation));
+		if xe1 and xe2:
+			return xe2[1]-xe1[1];
+		return None;
+
+	def xy(self):
+		return self._xy;
+
+	def slope(self,start,end):
+		cumulative_x=0;
+		cumulative_y=0;
+		(x,y)=self.xy();
+		for k in range(len(x)):
+			d=x[k];
+			if d<start:
+				continue;
+			if d>end:
+				break;
+			if y[k]>y[k-1] and k>0:
+				cumulative_y+=y[k]-y[k-1];
+				assert(x[k]>x[k-1]);
+				cumulative_x+=(x[k]-x[k-1]);
+		return cumulative_x,cumulative_y;
 
 def print_elevation(e,prefix=None):
 	if prefix:
