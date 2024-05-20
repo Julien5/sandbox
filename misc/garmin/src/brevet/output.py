@@ -118,7 +118,7 @@ def gnuplot_map(P,W):
 		f=open(filename,"w");
 		f.write(content);
 		f.close();
-		subprocess.run(["gnuplot",filename]);
+		subprocess.run(["gnuplot",filename],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL);
 		os.rename("/tmp/profile/map.png",f"/tmp/profile/map-{k:d}.png");
 
 import math;
@@ -152,7 +152,7 @@ def gnuplot_profile(E,W):
 		assert(I);
 		print("page",xk);
 		profile_csv_waypoints([W[i] for i in I]);
-		subprocess.run(["gnuplot",filename]);
+		subprocess.run(["gnuplot",filename],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL);
 		os.rename("/tmp/profile/profile.png",f"/tmp/profile/profile-{xk:d}.png");
 
 def index_with(L,string):
@@ -267,7 +267,7 @@ def latex_profile(E,W,outpdf):
 	os.chdir("/tmp/profile")
 	if os.path.exists("/tmp/profile/profile.pdf"):
 		os.remove("/tmp/profile/profile.pdf")
-	subprocess.run(["pdflatex","/tmp/profile/profile.tex"]);
+	subprocess.run(["pdflatex","/tmp/profile/profile.tex"],stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL);
 	while not os.path.exists("/tmp/profile/profile.pdf"):
 		time.sleep(20);
 		print("wait...");
