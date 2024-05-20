@@ -191,6 +191,8 @@ def makegpx(track,waypoints,name,filename):
 		for p in segment.walk(True):
 			p.elevation=None;
 			p.time=None;
+		for p in waypoints:
+			p.point.elevation=None;
 		
 	gpx = gpxpy.gpx.GPX();
 
@@ -272,9 +274,10 @@ def main():
 		start=datetime.datetime(tomorrow.year,tomorrow.month,tomorrow.day,hour=7);
 
 	print("read disc (track)");
-	name,track=readtracks.readpoints(filename);
+	name,track,creator=readtracks.readpoints(filename);
 	print("compute elevation");
-	E=elevation.Elevation(track);
+	E=elevation.Elevation(track)
+	E.setCreator(creator);
 	
 	print("read disc (waypoints)");
 	Kgpx,Agpx=read_control_waypoints(filename);

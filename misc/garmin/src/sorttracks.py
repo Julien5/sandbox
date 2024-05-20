@@ -378,7 +378,7 @@ def process_intervals(directory,k,points,J):
 def create_statistics(directory):
 	origin=os.path.join(directory,"gpx","origin.gpx");
 	timer=Timer();
-	name,points=readtracks.readpoints(origin);
+	name,points,creator=readtracks.readpoints(origin);
 	timer.elapsed("read");
 	assert(points);
 

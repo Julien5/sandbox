@@ -10,7 +10,7 @@ import readtracks;
 import utils;
 
 def readfile(filename):
-	name,R=readtracks.readpoints(filename);
+	name,R,creator=readtracks.readpoints(filename);
 	return R;
 
 def load(P):
@@ -64,7 +64,7 @@ def compute(x,y,epsilon=0):
 	return ret;
 
 class Elevation:
-	def __init__(self,track):
+	def __init__(self,track,douglas_peucker_epsilon=2):
 		x=list();
 		y=list();
 		for k in range(len(track)):
@@ -76,11 +76,21 @@ class Elevation:
 				x.append(x[k-1]+utils.distance(Pprev,P));
 			y.append(P.elevation);
 		self._xy=(x,y);
+		self.douglas_peucker_epsilon=douglas_peucker_epsilon;
 		self.estimate_positive_elevation();
+
+	def setCreator(self,creator):
+		# adjust elevation filtering to the source
+		# OA -> epsilon=16
+		# komoot and gpx.studio -> epsilon=2
+		self.douglas_peucker_epsilon=2;
+		if "outdooractive" in creator:
+			self.douglas_peucker_epsilon=16;
+		print(f"using epsilon={self.douglas_peucker_epsilon:3.0f} for creator={creator:s}");	
 
 	def estimate_positive_elevation(self,windices=None):
 		(x,y)=self.xy();
-		dindices=douglas_peucker(x,y,10);
+		dindices=douglas_peucker(x,y,self.douglas_peucker_epsilon);
 		assert(len(dindices)==len(set(dindices)));
 		assert(0 in dindices and len(x)-1 in dindices);
 		indices=dindices;
@@ -139,17 +149,11 @@ def print_elevation(e,prefix=None):
 		print(f"{prefix:s} ",end="")
 	print(f"elevation={e:5.1f}");
 
-def main(filename,epsilon=0):
+def main(filename,epsilon):
 	track=readfile(filename);
-	E=Elevation(track);
-	for k in range(len(track)):
-		print(k,E.elevation_from_to(0,k));
-	return;
-	x,y=load(readfile(filename));
-	# plot(x,y);
-	elevation=compute(x,y,epsilon);
-	Elevation();
-	print_elevation(elevation,"computed");
+	E=Elevation(track,epsilon);
+	dx,dy=E.elevation_from_to(0,len(track)-1);
+	print(filename,dy);
 
 def find_test_file(filename):
 	return os.path.join(os.path.dirname(__file__),"..","test/",filename);
@@ -158,25 +162,8 @@ if __name__ == "__main__":
 	# test/elevation.gpx,
 	# gpx.studio: 1257.
 	# komoot:     1390
-	main(find_test_file("elevation-oa.gpx"),epsilon=5);
-	sys.exit();
-		
-	epsilon=1
-	print("*** OA");
-	for epsilon in [0, 0.01, 0.05, 0.1, 1, 5]:
-		print("epsilon=",epsilon);
-		main(find_test_file("elevation-oa.gpx"),epsilon);
-	print();
-	
-	print("*** studio");
-	for epsilon in [0, 0.01, 0.05, 0.1, 1, 5]:
-		print("epsilon=",epsilon);
-		main(find_test_file("elevation.gpx"),epsilon);
-	print();
-	
-	print("komoot");
-	for epsilon in [0, 0.01, 0.05, 0.1, 1, 5]:
-		print("epsilon=",epsilon);
-		main(find_test_file("elevation-komoot.gpx"),epsilon);
+	main(find_test_file("elevation-oa.gpx"),16);
+	main(find_test_file("elevation-studio.gpx"),2);
+	main(find_test_file("elevation-komoot.gpx"),2);
 	print("done");
 

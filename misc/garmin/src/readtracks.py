@@ -54,6 +54,6 @@ def readpoints(path):
 		name=track.name;
 		for seg in track.segments:
 			ret.extend(segpoints(seg));
-	return name,ret;		
+	return name,ret,gpx.creator;		
 
 
