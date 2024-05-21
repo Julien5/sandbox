@@ -169,7 +169,7 @@ def subsample(d_begin,d_end,delta,P,d):
 	while True:
 		#d_begin=nextd(d_begin,delta);
 		d_begin=d_begin+delta;
-		if d_end < d_begin:
+		if d_end - d_begin < 5000:
 			break;
 		a=generate_point_at_distance(d_begin,P,d);
 		ret.append(a);
