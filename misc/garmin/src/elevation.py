@@ -44,10 +44,12 @@ def douglas_peucker(x,y,epsilon):
 		last_index=index;
 	return sorted(indices);
 
+import srtm
 class Elevation:
 	def __init__(self,track,douglas_peucker_epsilon=2):
 		x=list();
 		y=list();
+		elevation_data = srtm.get_data()
 		for k in range(len(track)):
 			P=track[k];
 			if k==0:
@@ -56,7 +58,14 @@ class Elevation:
 				Pprev=track[k-1];
 				d=utils.distance(Pprev,P);
 				x.append(x[k-1]+d);
-			y.append(P.elevation);
+				
+			if not P.elevation is None:
+				y.append(P.elevation);
+			else:	
+				elevation=elevation_data.get_elevation(P.latitude,P.longitude);
+				y.append(elevation);
+		assert(len(x)==len(y));
+		assert(len(x)==len(track));
 		self._xy=(x,y);
 		self.douglas_peucker_epsilon=douglas_peucker_epsilon;
 

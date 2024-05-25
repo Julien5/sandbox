@@ -58,9 +58,9 @@ def time_as_delta(hours):
 	return datetime.timedelta(days=tddays,seconds=math.floor(tdseconds));
 
 def timehours_to(distance):
+	global arguments;
 	km=distance/1000;
-	return km/10;
-
+	return km/arguments.speed;
 
 def waypoint_time(total_hours,start=None):
 	delta=time_as_delta(total_hours);
@@ -166,8 +166,9 @@ def label_waypoints(richpoints,start,E):
 			W.xdplus=dx;
 			assert(W.distance>Wprev.distance);
 			W.slope=100*dy/(W.distance-Wprev.distance);
-		if not W.description:
+		if W.isControlPoint() and not W.description:
 			# save the original name in the description
+			# for controls
 			W.description=W.name;
 		slope_str="  ";
 		if not (W.slope is None):
@@ -256,9 +257,12 @@ def parse_arguments():
 	parser = argparse.ArgumentParser();
 	parser.add_argument('filename') 
 	parser.add_argument('-s', '--starttime', help="format: 2024-12-28-08:00:05");
+	parser.add_argument('-z', '--speed', help="average speed")
 	# flat: default = false
 	parser.add_argument('-f', '--flat', action="store_true", help="removes time and elevation data")
 	parser.add_argument('-o', '--output', help="output filename")
+	# store_true => default=false
+	parser.add_argument('-b', '--bypass10K', action="store_true", help="bypass the 10K trackpoints limit")
 	arguments=parser.parse_args();
 
 def main():
@@ -273,8 +277,20 @@ def main():
 		tomorrow=datetime.date.today() + datetime.timedelta(days=1);
 		start=datetime.datetime(tomorrow.year,tomorrow.month,tomorrow.day,hour=7);
 
+	if not arguments.speed:
+		arguments.speed = 15;
+	else:
+		arguments.speed = float(arguments.speed);
+		
+	print(arguments);
+
 	print("read disc (track)");
 	name,track,creator=readtracks.readpoints(filename);
+	print(f"{filename:s} has {len(track):d} points");
+	if not arguments.bypass10K:
+		if len(track)>10000:
+			print(f"{filename:s} has more than 10000 points => aborting");
+			return 1;
 	print("compute elevation");
 	E=elevation.Elevation(track)
 	E.setCreator(creator);
@@ -314,6 +330,7 @@ def main():
 	outpdf=outgpx.replace(".gpx",".pdf");
 	print("generate pdf",outpdf);
 	output.latex_profile(E,W,outpdf);
+	return 0
 	
-	
-main()
+code=main();
+sys.exit(code);
