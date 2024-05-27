@@ -7,6 +7,7 @@ import math;
 import sys;
 import os;
 import argparse;
+import copy;
 
 sys.path.append(os.path.join(os.path.dirname(__file__),".."));
 
@@ -42,8 +43,8 @@ def read_control_waypoints(filename):
 		if not rw.name:
 			rw.name="";
 		if not w.type is None:
-			assert(w.type == "K" or w.type == "A");
-			rw.type=w.type;
+			if w.type in {"A","K"}:
+				rw.type=w.type;
 		else: # assume control point
 			rw.type="K";
 		if is_automatic(rw):
@@ -184,8 +185,10 @@ def label_waypoints(richpoints,start,E):
 	return [D[i] for i in sorted(D.keys())];
 
 
-def makegpx(track,waypoints,name,filename):
+def makegpx(_track,_waypoints,name,filename):
 	global arguments;
+	track=copy.deepcopy(_track);
+	waypoints=copy.deepcopy(_waypoints);
 	segment = toGPXSegment(track);
 	if arguments.flat:
 		print("remove time and elevation before exporting to gpx");
@@ -257,13 +260,24 @@ def parse_arguments():
 	parser = argparse.ArgumentParser();
 	parser.add_argument('filename') 
 	parser.add_argument('-s', '--starttime', help="format: 2024-12-28-08:00:05");
-	parser.add_argument('-z', '--speed', help="average speed")
+	parser.add_argument('-z', '--speed', help="average speed [15 kmh]")
+	parser.add_argument('-l', '--segment-length', help="segment length [100 km]")
 	# flat: default = false
 	parser.add_argument('-f', '--flat', action="store_true", help="removes time and elevation data")
 	parser.add_argument('-o', '--output', help="output filename")
 	# store_true => default=false
 	parser.add_argument('-b', '--bypass10K', action="store_true", help="bypass the 10K trackpoints limit")
 	arguments=parser.parse_args();
+
+	if not arguments.speed:
+		arguments.speed = 15;
+	else:
+		arguments.speed = float(arguments.speed);
+
+	if not arguments.segment_length:
+		arguments.segment_length=100;
+	else:
+		arguments.segment_length=int(arguments.segment_length);
 
 def main():
 	global arguments;
@@ -277,12 +291,8 @@ def main():
 		tomorrow=datetime.date.today() + datetime.timedelta(days=1);
 		start=datetime.datetime(tomorrow.year,tomorrow.month,tomorrow.day,hour=7);
 
-	if not arguments.speed:
-		arguments.speed = 15;
-	else:
-		arguments.speed = float(arguments.speed);
-		
 	print(arguments);
+	output.arguments=arguments;
 
 	print("read disc (track)");
 	name,track,creator=readtracks.readpoints(filename);
@@ -297,6 +307,7 @@ def main():
 	
 	print("read disc (waypoints)");
 	Kgpx,Agpx=read_control_waypoints(filename);
+	print(f"found {len(Kgpx):d} controls and {len(Agpx):d} automatic waypoints");
 	print("project points");
 	wpfinder=finder.Finder(track);
 	K=project_waypoints(Kgpx,wpfinder);

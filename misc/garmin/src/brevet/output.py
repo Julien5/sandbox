@@ -5,9 +5,14 @@ import subprocess;
 
 import elevation;
 
+arguments=None;
+
 def get_rwaypoints_at_page(p,W):
-	xmin=max(100*p-10,0);
-	xmax=100*(p+1)+10;
+	global arguments;
+	size=arguments.segment_length;
+	margin=math.ceil(size/10);
+	xmin=max(size*p-margin,0);
+	xmax=size*(p+1)+margin;
 	R=list();
 	for k in range(len(W)):
 		w=W[k];
@@ -42,7 +47,8 @@ def bbox(P,proj,d,dmin,dmax):
 		if kmax is None or d[k]<dmax:
 			kmax=k;
 	U=[proj(p.longitude,p.latitude) for p in P[kmin:kmax]];
-	margin=10000;
+	global arguments;
+	margin=1000*(arguments.segment_length/10);
 	xmin=min([u[0] for u in U])-margin;
 	xmax=max([u[0] for u in U])+margin;
 	ymin=min([u[1] for u in U])-margin;
@@ -102,10 +108,12 @@ def gnuplot_map(P,E,W):
 	f=open(findtemplate("gnuplot","map.gnuplot"),"r");
 	content0=f.read();
 	f.close();
-	for k in range(math.floor(d[-1]/100000)+1):
+	global arguments;
+	sizem=arguments.segment_length*1000;
+	for k in range(math.floor(d[-1]/sizem)+1):
 		I=get_rwaypoints_at_page(k,W);
 		map_csv_waypoints([W[i] for i in  I],utm);
-		xmin,xmax,ymin,ymax=bbox(P,utm,d,k*100000,(k+1)*100000);
+		xmin,xmax,ymin,ymax=bbox(P,utm,d,k*sizem,(k+1)*sizem);
 		content=content0;
 		content=content.replace("{pngx}",str(10*int((xmax-xmin)/1000)));
 		content=content.replace("{pngy}",str(10*int((ymax-ymin)/1000)));
@@ -133,9 +141,12 @@ def gnuplot_profile(E,W):
 	content0=f.read();
 	f.close();
 	length_km=d[-1]/1000;
-	for xk in range(math.floor(length_km/100)+1):
-		xmin=max(100*xk-10,0);
-		xmax=100*(xk+1)+10;
+	global arguments;
+	sizekm=arguments.segment_length;
+	marginkm=math.ceil(sizekm/10);
+	for xk in range(math.floor(length_km/sizekm)+1):
+		xmin=max(sizekm*xk-marginkm,0);
+		xmax=sizekm*(xk+1)+marginkm;
 		ymin=math.floor(min(y)/500)*500;
 		ymax=math.ceil(max(y)/500)*500;
 		content=content0;
@@ -236,11 +247,13 @@ def latex_profile(E,W,outpdf):
 	out="\n".join(L);
 	assert(template0 in out);
 	parts=[];
+	global arguments;
+	sizem=arguments.segment_length*1000;
 	while True:
 		template=template0;
 		profilepng=f"/tmp/profile/profile-{page:d}.png";
 		mappng=f"/tmp/profile/map-{page:d}.png";
-		begin,end=get_begin_end(page*100000,(page+1)*100000,E);
+		begin,end=get_begin_end(page*sizem,(page+1)*sizem,E);
 		if begin is None:
 			break;
 		template=template.replace("{profile-png}",profilepng);
