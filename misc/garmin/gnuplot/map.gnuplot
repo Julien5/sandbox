@@ -7,6 +7,7 @@ unset key
 unset ytics
 unset xtics
 unset key
+unset border
 
 set yzeroaxis
 set xzeroaxis
