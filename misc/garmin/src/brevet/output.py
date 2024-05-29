@@ -115,10 +115,6 @@ def gnuplot_map(P,E,W):
 		map_csv_waypoints([W[i] for i in  I],utm);
 		xmin,xmax,ymin,ymax=bbox(P,utm,d,k*sizem,(k+1)*sizem);
 		content=content0;
-		#content=content.replace("{pngx}",str(10*int((xmax-xmin)/1000)));
-		#content=content.replace("{pngy}",str(10*int((ymax-ymin)/1000)));
-		content=content.replace("{pngx}",str(500));
-		content=content.replace("{pngy}",str(500));
 		content=content.replace("{xmin}",str(xmin));
 		content=content.replace("{xmax}",str(xmax));
 		content=content.replace("{ymin}",str(ymin));

@@ -1,4 +1,4 @@
-set terminal pngcairo size {pngx},{pngy} enhanced font "sans,18"
+set terminal pngcairo size 800,800 enhanced font "sans,18"
 set output "/tmp/profile/map.png"
 
 set datafile separator '\t'
