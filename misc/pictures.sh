@@ -83,11 +83,10 @@ function main() {
 		sleep 1
 		echo wait...
 		wait $(jobs -p)
+		
+		echo merge all
+		cat $DIR/tmp/lists/{backup,data,home}.txt.clean.extended > $DIR/tmp/lists/all.extended
 	fi
-
-	echo merge all
-	cat $DIR/tmp/lists/{backup,data,home}.txt.clean.extended > $DIR/tmp/lists/all.extended
-	return;
 
 	a=$DIR/tmp/lists/all.extended
 	n=$(cat $a | wc -l)
