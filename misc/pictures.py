@@ -4,7 +4,9 @@ import exifread;
 import os;
 import hashlib;
 import datetime;
-import json;
+
+def shorttag(tag):
+    return tag.replace(" ","").lower();
 
 def readdatetimefromexif(D):
     tags=D.keys();
@@ -49,32 +51,78 @@ def find_exif(exif,part):
     for tag in exif:
         if part in tag.lower():
             return exif[tag];
-    return None;    
+    return None;
 
-def md5(filename):
+def hash_dict(D):
+    hash_md5 = hashlib.md5()
+    for k in D.keys():
+        hash_md5.update(k.encode("utf-8"));
+        hash_md5.update(D[k].encode("utf-8"));
+    return int.from_bytes(hash_md5.digest(),'big');
+
+hard_md5=0;
+def computemd5(filename):
+    global hard_md5;
+    hard_md5 += 1;
     hash_md5 = hashlib.md5()
     with open(filename, "rb") as f:
         for chunk in iter(lambda: f.read(4096), b""):
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
 
-def shorttag(tag):
-    return tag.replace(" ","").lower();
+hard_exif=0;
+def computeexif(filename):
+    global hard_exif;
+    hard_exif += 1;
+    with open(filename, 'rb') as jpgfile:
+        #tags = exifread.process_file(jpgfile,stop_tag="DateTimeOriginal");
+        tags = exifread.process_file(jpgfile,details=False);
+        _exif=dict();
+        for tag in tags:
+            value=str(tags[tag]);
+            if len(value)<32:
+                _exif[tag]=str(tags[tag]);
+        return _exif;
+                
 
-class Data:
+class Image:
     def __init__(self,filename):
-        self.exif=dict();
-        with open(filename, 'rb') as jpgfile:
-            tags = exifread.process_file(jpgfile,stop_tag="DateTimeOriginal");
-            for tag in tags:
-                value=str(tags[tag]);
-                if len(value)<32:
-                    self.exif[tag]=str(tags[tag]);
-            # set date and time
-        self.datetime=readdatetime(self.exif,filename);
-        self.filename=filename;
-        self.size=os.path.getsize(self.filename);
-        
+         self.filename=filename;
+         self._md5=None;
+         self._exif=None;
+
+    def exif(self):
+        if self._exif is None:
+            self._exif=computeexif(self.filename);
+        return self._exif;
+
+    def md5sum(self):
+        if self._md5 is None:
+            self._md5=computemd5(self.filename);
+        return self._md5
+       
+    def size(self):
+        return os.path.getsize(self.filename);
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False;
+        if self.size() != other.size():
+            return False;
+        if self.exif():
+            return self.exif() == other.exif();
+        if os.path.basename(self.filename) == os.path.basename(other.filename):
+            return True;
+        #print(f"hard compare: {self.filename:s} to {other.filename:s}",end="");
+        if self.md5sum() != other.md5sum():
+            #print(" [differ]");
+            return False;
+        #print(" [equal]");
+        return True;
+
+    def __hash__(self):
+        return self.size();
+
     def print(self):
         for tag in self.exif.keys():
             if "EXIF " in tag or "Image " in tag:
@@ -84,13 +132,14 @@ class Data:
         D="unknown";
         b1="";
         if self.exif:
-            if readdatetimefromexif(self.exif):
-                D=self.datetime.strftime("%Y/%m/%d");
-                b1=self.datetime.strftime("%H-%M-%S");
+            dt=readdatetimefromexif(self.exif())
+            if dt:
+                D=dt.strftime("%Y/%m/%d");
+                b1=dt.strftime("%H-%M-%S");
             else:
-                manufacturer=find_exif(self.exif,"manufacturer");
+                manufacturer=find_exif(self.exif(),"manufacturer");
                 if not manufacturer:
-                    manufacturer=find_exif(self.exif,"make");
+                    manufacturer=find_exif(self.exif(),"make");
                 #model=find_exif(self.exif,"model");
                 if manufacturer:
                     D=f"{manufacturer:s}";
@@ -105,168 +154,91 @@ class Data:
             return f"{D:s}/{b1:s}-{b2:s}.{extension:s}";
         return f"{D:s}/{b2:s}.{extension:s}";
 
-    def __eq__(self, other):
-        if not isinstance(other, self.__class__):
-            return False;
-        H1=self.__hash__();
-        H2=other.__hash__();
-        return H1 == H2;
-
-    def datetimehash(self):
-        return int(self.datetime.strftime("%Y%m%d%H%M%S"));
-                    
-    def __hash__(self):
-        return self.datetimehash();
-        L=list();
-        for tag in self.exif.keys():
-            L.append(self.exif[tag]);
-        return sum([int(hashlib.sha1(s.encode("utf-8")).hexdigest(), 16) for s in L]);
-
-    def get_exif(self):
-        return self.exif;
-
-def collect(filename):
-    print("collect",filename);
-    ret=dict();
-    #ret["md5sum"]=md5(filename);
-    ret["exif"]=createExifData(filename).get_exif();
-    ret["mtime"]=int(os.path.getmtime(filename));
-    ret["size"]=os.path.getsize(filename);
-    ret["filename"]=filename;
-    return ret;
-
-def checkmd5eq(L):
-    assert(L);
-    return len(set([md5(filename) for filename in L]))==1;
-
-def md5uniqs(L):
-    assert(L);
-    ret=dict();
-    if len(L)<2:
-        assert(type(L)==type(list()));
-        return [L[0]];
-    for filename in L:
-        assert(filename != "/");
-        ret[md5(filename)]=filename;
-    return list(ret.values());
-    
 def exifstat(filename):
-    createExifData(filename).print();
+    createImage(filename).print();
 
-def createExifDataWorker(filename):
-    with open(filename, 'rb') as jpgfile:
-        return Data(filename);
+def createImageWorker(filename):
+    return Image(filename);
 
-def createExifData(filename):
+def createImage(filename):
     try:
-        return createExifDataWorker(filename);
+        return createImageWorker(filename);
     except Exception as e:
         print("error with",filename,e);
         raise e;
     return None;
 
-def exifstats(L):
-    for filename in L:
-        exifstat(filename);
-
-def exifcheck(L):
-    # all filenames in L have the same size
-    ExifSet=dict();
-    SizeSet=set();
-    for filename in L:
-        SizeSet.add(os.path.getsize(filename));
-        e=createExifData(filename);
-        if not e:
-            print("ignore",filename);
-            continue;
-        if not e in ExifSet:
-            ExifSet[e]=list();
-        ExifSet[e].append(filename);
-
-    assert(len(SizeSet)==1);
-    # return the representants
-    ret=list();
-    for e in ExifSet.keys():
-        U=md5uniqs(ExifSet[e]);
-        ret.extend(U);
-    assert(ret);
-    if len(L) != len(ret):
-        print(f"{len(ret):d} uniq elements for {len(L):d} files:")
-        print("in","\n".join(L))
-        print("out","\n".join(ret))
-        print("--");
-    return ret;
-
 class List:
     def __init__(self):
         self.D = dict();
+        self.ninput=0;
 
-    def append(self,filename,size):
-        if not size in self.D:
-            self.D[size]=list();
-        self.D[size].append(filename);
+    def append(self,filename):
+        image=Image(filename);
+        if not image in self.D:
+            self.D[image]=list();
+        self.D[image].append(image);
+        self.ninput+=1;
+        if self.ninput % 250 == 0:
+            r=len(self.D)/self.ninput;
+            print(f"processed {self.ninput:d} files to {len(self.D):5d} images [{100*r:3.1f}%]");
 
-    def siblings(self,filename):
-        # same size, same basename
-        size=os.path.getsize(filename);
-        assert(size in self.D);
-        ret=list();
-        for o in D[size]:
-            if os.path.basename(filename) == os.path.basename(o):
-                ret.append(o);
-        return ret;   
-
-    def exifchecks(self):
-        L=list();
-        for size in self.D:
-            l=self.D[size];
-            Lloc=exifcheck(l);
-            L.extend(Lloc);
-        return L;
+    def uniqs(self):
+        U=list();
+        for image in self.D:
+            U.append(image.filename);
+        return U;
 
     def stats(self):
+        global hard_exif;
+        global hard_md5;
         R=dict();
-        # 1995840
         source_size=0;
-        for size in self.D:
-            Lsize=self.D[size];
-            source_size += size*len(Lsize);
-            if not len(Lsize) in R:
-                R[len(Lsize)] = 0;
-            R[len(Lsize)] += 1;
-        for n in sorted(R.keys()):
-            print(f"number of {n:d}-duplicates: {R[n]:d}");
-        print("source size",source_size);
-        
-def main():
+        target_size=0;
+        source_nfiles=0;
+        target_nfiles=len(self.D);
+        for image in self.D:
+            source_size += sum([i.size() for i in self.D[image]]);
+            source_nfiles += len(self.D[image]);
+            target_size += image.size();
+        print("source nfiles:",source_nfiles);
+        print("target nfiles:",target_nfiles);            
+        print("source size:",source_size);
+        print("target size:",target_size);
+        print("hard exif:",hard_exif);
+        print("hard md5:",hard_md5);
+
+def makeList():
     L=List();
     print("reading..");
     #filename="/home/julien/tmp/tmp/lists/all.extended";
     filename="/tmp/all.extended";
     f=open(filename,'r');
     lines=f.read().split("\n");
+    f.close();
+    idict=dict();
     for line in lines:
         if not "|" in line:
             continue;
         parts=line.split("|");
         size=int(parts[1]);
         filename=parts[3];
-        assert(len(filename)>3);
-        L.append(filename,size);
+        L.append(filename);
+    return L;    
+        
+def main():
+    L=makeList();
     L.stats();
-    # uniq
-    U=L.exifchecks();
-    f=open("rename_dict.txt",'w');
-    target_size=0;
-    for u in U:
-        assert(u != "/");
-        D=createExifData(u);
-        subpath=D.subpath()
-        #print(f"{u:s} -> /{subpath:s}");
-        f.write(f"{u:s}|/{subpath:s}\n");
-        target_size += D.size;
-    f.close();
-    L.stats();
-    print("target size",target_size);
+    print("collecting representants");
+    U=L.uniqs();
+    #f=open("rename_dict.txt",'w');
+    #print("writing representants (this may take a while)");
+    #lines=[f"{u:s}|{createImage(u).subpath():s}" for u in U];
+    #f.write("\n".join(lines));
+    #f.close();
+    
 if __name__ == "__main__":
    main();
+
+
+   
