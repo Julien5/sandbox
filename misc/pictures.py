@@ -18,6 +18,9 @@ def readdatetimefromexif(D):
             #assert(D['Image Model']=='DMC-FX01');
             return None;
         try:
+            # fix
+            if dts=="2012:02:04 12:57: 1":
+                dts="2012:02:04 12:57:01";
             return datetime.datetime.strptime(dts, "%Y:%m:%d %H:%M:%S");
         except Exception as e:
             print("could not read date time from",dts,e);
@@ -111,8 +114,6 @@ class Image:
             return False;
         if self.exif():
             return self.exif() == other.exif();
-        if os.path.basename(self.filename) == os.path.basename(other.filename):
-            return True;
         #print(f"hard compare: {self.filename:s} to {other.filename:s}",end="");
         if self.md5sum() != other.md5sum():
             #print(" [differ]");
@@ -145,6 +146,7 @@ class Image:
                     D=f"{manufacturer:s}";
         parts=os.path.basename(self.filename).split(".");
         # f9f1586944c07678879c718319dd266b.P1080052.JPG
+        # TODO: 2013-11-29 19.21.27.jpg
         # capture original basename
         b2=parts[0];
         if len(parts)>2 and len(parts[0])>30:
@@ -186,7 +188,7 @@ class List:
     def uniqs(self):
         U=list();
         for image in self.D:
-            U.append(image.filename);
+            U.append(image);
         return U;
 
     def stats(self):
@@ -231,11 +233,16 @@ def main():
     L.stats();
     print("collecting representants");
     U=L.uniqs();
-    #f=open("rename_dict.txt",'w');
-    #print("writing representants (this may take a while)");
-    #lines=[f"{u:s}|{createImage(u).subpath():s}" for u in U];
-    #f.write("\n".join(lines));
-    #f.close();
+    f=open("rename_dict.txt",'w');
+    print("writing representants (this may take a while)",end="");
+    R=list();
+    for image in U:
+        R.append(f"{image.filename:s}|{image.subpath():s}");
+        if len(R) % 1000 == 0:
+            print(f" [{100*len(R)/len(U):2.0f}%]",end="");
+    f.write("\n".join(R));
+    f.close();
+    print("\ndone");
     
 if __name__ == "__main__":
    main();
