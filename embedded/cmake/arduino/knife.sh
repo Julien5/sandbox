@@ -11,11 +11,13 @@ function ispport() {
 	if [ ! -z "$1" ]; then
 		FILTER="$1"
 	fi
-	catusb | grep "8 Series USB xHCI HC" | cut -f1 -d: | sort | $FILTER
+	#catusb | grep "8 Series USB xHCI HC" | cut -f1 -d: | sort | $FILTER
+	catusb | grep "Pololu" | cut -f1 -d: | sort | $FILTER
 }
 
 function ftdiport() {
-	catusb | grep "Future Technology Devices International" | grep FT232 | cut -f1 -d: | sort | head -1
+	#catusb | grep "Future Technology Devices International" | grep FT232 | cut -f1 -d: | sort | head -1
+	catusb | grep "CH340" | cut -f1 -d: | sort | head -1
 }
 
 function arduinoport() {
@@ -29,7 +31,7 @@ function dude.arduino() {
 
 function dude.isp() {
 	# specifying a baud rate seems useless. In doubt try -b57600.
-	avrdude -p atmega328p -c stk500 -P/dev/$(ispport) -B 0.5 $@ 
+	avrdude -p atmega328p -c stk500 -P/dev/$(ispport) -B 0.5 $@
 }
 
 function burn.fuse() {
@@ -86,7 +88,7 @@ function monitor() {
 
 function burn.test {
 	burn.fuse
-	burn.application /tmp/build_arduino/test/test.hex 
+	burn.application /tmp/builds/avr/test/test.hex 
 }
 
 function help {

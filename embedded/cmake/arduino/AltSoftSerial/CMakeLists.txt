@@ -1,7 +1,7 @@
 SET(TARGET AltSoftSerial)
 add_library(${TARGET} STATIC)
 target_sources(${TARGET} PRIVATE
-  /opt/arduino/libraries/${TARGET}/AltSoftSerial.cpp
+  /opt/avr/ArduinoCore-avr-1.8.6/libraries/${TARGET}/AltSoftSerial.cpp
   )
-target_include_directories(${TARGET} PUBLIC /opt/arduino/libraries/${TARGET})
+target_include_directories(${TARGET} PUBLIC /opt/avr/ArduinoCore-avr-1.8.6/libraries/${TARGET})
 target_link_libraries(${TARGET} PRIVATE core)

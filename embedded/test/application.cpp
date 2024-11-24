@@ -53,6 +53,8 @@ void write() {
     //common::time::delay(common::time::ms(1000));
 }
 
+
+
 void application::loop() {
     DBG("loop(%d)\r\n", int(common::time::since_reset().value()));
     debug::turnBuildinLED(true);
@@ -70,5 +72,5 @@ void application::loop() {
 #endif
 #endif
     debug::turnBuildinLED(false);
-    common::time::delay(common::time::ms(1000));
+    common::time::delay(common::time::ms(250));
 }

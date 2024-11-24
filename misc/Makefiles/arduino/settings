@@ -1,5 +1,5 @@
-ARDUINOCOREDIR=/opt/arduino/ArduinoCore-avr-1.8.2
-DIR3RDPARTY:=/opt/arduino/libraries
+ARDUINOCOREDIR=/opt/avr/ArduinoCore-avr-1.8.6/
+DIR3RDPARTY:=/opt/avr/ArduinoCore-avr-1.8.6/libraries
 
 CXX=avr-g++
 CC=avr-gcc

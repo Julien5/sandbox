@@ -9,3 +9,7 @@ endif()
 if (NOT DEFINED ARDUINO)
   add_subdirectory(wifi-transmitter)
 endif()
+
+if (DEFINED ARDUINO)
+    add_subdirectory(test-avr)
+endif()

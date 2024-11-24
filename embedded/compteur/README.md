@@ -121,8 +121,8 @@ The ATmega and ESP8266 have both their own power supply. (I tested with one powe
 #### Firmware
 The build instructions are configured for my setup, that looks like:
 ```
-/opt/arduino/ArduinoCore-avr-1.8.2
-/opt/arduino/libraries/LowPower
+/opt/avr/ArduinoCore-avr-1.8.6/
+/opt/avr/ArduinoCore-avr-1.8.6/libraries/LowPower
 etc.
 ```
 

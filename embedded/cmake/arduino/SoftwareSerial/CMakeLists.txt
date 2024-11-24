@@ -1,6 +1,6 @@
 add_library(SoftwareSerial INTERFACE)
 target_sources(SoftwareSerial INTERFACE
-  /opt/arduino/ArduinoCore-avr-1.8.2/libraries/SoftwareSerial/src/SoftwareSerial.h
-  /opt/arduino/ArduinoCore-avr-1.8.2/libraries/SoftwareSerial/src/SoftwareSerial.cpp
+  /opt/avr/ArduinoCore-avr-1.8.6/libraries/SoftwareSerial/src/SoftwareSerial.h
+  /opt/avr/ArduinoCore-avr-1.8.6/libraries/SoftwareSerial/src/SoftwareSerial.cpp
   )
-target_include_directories(SoftwareSerial INTERFACE /opt/arduino/ArduinoCore-avr-1.8.2/libraries/SoftwareSerial/src)
+target_include_directories(SoftwareSerial INTERFACE /opt/avr/ArduinoCore-avr-1.8.6/libraries/SoftwareSerial/src)

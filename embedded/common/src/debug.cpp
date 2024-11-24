@@ -58,7 +58,8 @@ int debug::freeMemory() {
 #include "SoftwareSerial.h"
 
 SoftwareSerial SOFT_UART(2, 3);
-#define TXCHANNEL SOFT_UART
+//#define TXCHANNEL SOFT_UART
+#define TXCHANNEL Serial
 void serialprint(const char *buffer) {
     TXCHANNEL.print(buffer);
 }

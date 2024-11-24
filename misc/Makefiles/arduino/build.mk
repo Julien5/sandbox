@@ -1,5 +1,5 @@
 ifndef SRCSDIR
-SRCSDIR := /opt/arduino/libraries/$(NAME)
+SRCSDIR := /opt/avr/ArduinoCore-avr-1.8.6/libraries/$(NAME)
 endif
 OBJSDIR := /tmp/build/arduino/$(NAME)
 
@@ -38,7 +38,7 @@ ARDUINO_BAUD:=57600
 
 reset:
 	@$(if $(strip $(ARDUINO_PORT)),,echo could not find arduino port!)
-	/opt/arduino/tools/ard-reset-arduino $(ARDUINO_PORT)
+	/opt/avr/ArduinoCore-avr-1.8.6/tools/ard-reset-arduino $(ARDUINO_PORT)
 
 flash: hex reset showsize
 	$(AVRDUDE) -q -V -p atmega328p \

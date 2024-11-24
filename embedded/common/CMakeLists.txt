@@ -42,7 +42,7 @@ endif()
 target_include_directories(common PUBLIC include/)
 
 if (ARDUINO)
-  target_link_libraries(common PRIVATE LowPower)
+  target_link_libraries(common PRIVATE Low-Power)
   #target_link_libraries(common PRIVATE AltSoftSerial)
   target_link_libraries(common PRIVATE SoftwareSerial)
   target_link_libraries(common PRIVATE LiquidCrystal)
