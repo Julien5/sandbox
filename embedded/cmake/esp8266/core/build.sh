@@ -1,21 +1,21 @@
 #!/usr/bin/env bash
 
 set -e
-# set -x
+set -x
 
 if [[ -z "$IDF_PATH" ]]; then
 	echo IDF_PATH not defined
 	exit 1
 fi
 SCRIPTDIR=$(dirname $(realpath $0))
-BUILDDIR=/tmp/esp8266/core;
+BUILDDIR=/tmp/builds/esp8266/core;
 FILENAME=$BUILDDIR/stdout
 mkdir -p $BUILDDIR;
 #rm -f $FILENAME
 if [[ ! -f $FILENAME ]]; then
 	rm -Rf $BUILDDIR;
 	pushd $IDF_PATH
-	git clean -dfx
+	#git clean -dfx
 	popd 
 	echo cmaking core for esp8266
 	pushd $IDF_PATH/examples/get-started/hello_world
