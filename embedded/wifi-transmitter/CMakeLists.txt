@@ -1,5 +1,5 @@
 if (ESP8266)
-  add_avr_executable(wifi-transmitter)
+  add_portable_executable(wifi-transmitter)
 else()
   add_library(wifi-transmitter STATIC)
 endif()

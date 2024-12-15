@@ -6,7 +6,7 @@ else()
   add_subdirectory(pc)
 endif()
 
-function(add_avr_executable targetname)
+function(add_portable_executable targetname)
   add_executable(${targetname} ${ARGN})
   
   if (ARDUINO)

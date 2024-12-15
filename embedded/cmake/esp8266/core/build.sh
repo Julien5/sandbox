@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 set -e
-set -x
+#set -x
 
 if [[ -z "$IDF_PATH" ]]; then
 	echo IDF_PATH not defined

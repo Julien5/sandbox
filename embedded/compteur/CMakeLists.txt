@@ -1,4 +1,4 @@
-add_avr_executable(compteur)
+add_portable_executable(compteur)
 
 target_sources(compteur PRIVATE
   adcfile.cpp

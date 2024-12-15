@@ -1,4 +1,4 @@
-add_avr_executable(test-avr)
+add_portable_executable(test-avr)
 
 target_sources(test-avr PRIVATE application.cpp)
 target_sources(test-avr PRIVATE main_arduino.cpp)
