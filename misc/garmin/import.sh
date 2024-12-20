@@ -30,7 +30,7 @@ function bad() {
 		printf "[%50s] bad type\n" "$filename"
 		return 0;
 	fi
-	if [[ ! "$bfilename" = "Track_"* ]] && [[ ! "$bfilename" = "Current.gpx" ]]; then
+	if [[ ! "$bfilename" = "Track_"*-*-*.gpx ]] && [[ ! "$bfilename" = "Current.gpx" ]]; then
 		printf "[%50s] no record\n" "$filename"
 		return 0;
 	fi
@@ -115,6 +115,7 @@ function main() {
 	remove-files-from-GPS ${GPSDIR}
 	local HDIR=$(createH)
 	import-new-files "${TRACKSDIR}" "${HDIR}"
+	# import-to-H-file "$HOME/tracks/2024.04.05/Track_05-APR-24 194817.gpx" "${HDIR}"
 }
 
 main "$@"

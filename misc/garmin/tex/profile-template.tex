@@ -1,0 +1,52 @@
+\documentclass[a4paper]{article}
+%\documentclass[english,ms,10pt]{memoir}
+\usepackage[T1]{fontenc}
+\usepackage[a4paper, portrait]{geometry}
+\usepackage{graphicx}
+
+\textheight	297mm
+\textwidth  19cm
+
+\def\profileheight{5cm}
+\def\mapheight{94mm}
+
+\renewcommand{\familydefault}{cmtt}
+\renewcommand{\rmdefault}{cmtt}
+\renewcommand{\sfdefault}{cmtt}
+
+
+\begin{document}
+\newgeometry{left=2mm,right=2mm,top=1mm,bottom=-10mm,bindingoffset=0mm}
+\ttfamily
+
+% begin-template
+\begin{table}[h!]
+  \centering
+  \begin{tabular}{ | c | c | }
+    \hline
+    \multicolumn{2}{|l|}{
+    \includegraphics[height=\profileheight]{{profile-png}}
+    } \\
+    \hline
+    \begin{minipage}{8cm}
+      \centering
+      \includegraphics*[height=\mapheight,width=85mm,keepaspectratio,trim=30mm 10mm 10mm 30mm, clip]{{map-png}}
+    \end{minipage}
+    &
+    \begin{minipage}[c][\mapheight][c]{11cm}
+      \centering
+    \begin{tabular}{|l|r|c|r|r|r|r|l|}
+      \hline
+      NAME & KM & TIME & HM & DIST & D+ & SLOPE & DESCRIPTION \\
+      \hline
+          {pointlist}
+      \hline
+    \end{tabular} 
+    \end{minipage}
+    \\ \hline
+  \end{tabular}
+\end{table}
+\vspace{-5mm}
+% end-template
+
+\end{document}
