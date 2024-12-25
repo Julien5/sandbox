@@ -21,7 +21,7 @@ def read(filename):
 	return ret;
 
 def resolve(P,s):
-	K=re.findall(r'\{\S+\}', s);
+	K=re.findall(r'\{\S+\}', s.replace("}{","} {"));
 	if not K:
 		return s;
 	ret=s;
@@ -35,8 +35,9 @@ def resolve(P,s):
 	return resolve(P,ret);
 	
 def main():
-	#K=re.findall(r'^\S+=', "aa.ss={foo.bar}/bar= dd");
-	#print(K);
+	K=re.findall(r'{\S+}', "aa.ss={foo.bar}d/ {ff.dd}/bar= dd");
+	print(K);
+	#return
 	#K=re.findall(r'=\S+', "aa.ss={foo.bar}/bar = d");
 	#print(K);
 	#return;
@@ -44,11 +45,34 @@ def main():
 	platform=f"{coredir:s}/platform.txt"
 	boards=f"{coredir:s}/boards.txt"
 	P=read(platform);
-	#for k in ["compiler.path","compiler.c.flags","compiler.cpp.flags"]:
+	B=read(boards);
+	for b in B:
+		if b.startswith("nodemcu."):
+			unb=".".join(b.split(".")[1:])
+			if unb in P:
+				if unb == "name":
+					continue;
+				print("clash at",unb);
+				print("P:",P[unb]);
+				print("B:",B[b]);
+				assert(False)
+			P[unb]=B[b];
+			#print("from B:",unb,B[b]);
+	# override
+	P["compiler.path"]="";
+	P["build.f_cpu"]="80000000L"
+	P["runtime.ide.version"]="10612"
+	P["build.arch"]="ESP8266"
+	P["build.path"]="/opt/esp8266-toolchain/Arduino-3.1.2/cores/esp8266"
+	P["runtime.platform.path"]="/opt/esp8266-toolchain/Arduino-3.1.2";
+	P["_id"]="generic";
+	# remove build.opt
+	P["build.opt.flags"]="";
 	for k in ["recipe.cpp.o.pattern"]:
 		v=resolve(P,P[k]);
-		print(f"{k:s}={v:s}");
-	#rint(P["compiler.path"]);
+		print(f"{k:s}=={v:s}");
+		print("unresolved:",re.findall(r'{\S+}',v));
+	#print(P["compiler.cpp.cmd"]);
 
 if __name__ == "__main__":
 	main();
