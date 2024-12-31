@@ -11,6 +11,15 @@ def parse_arguments():
 	parser.add_argument('COREDIR',default="/opt/esp8266-toolchain/Arduino-3.1.2");
 	parser.add_argument('-b', '--board', default="nodemcu",help="board from boards.txt");
 	parser.add_argument('-k', '--key', default="recipe.cpp.o.pattern",help="key from platform.txt");
+	# target_compile_definitions
+	# target_compile_options
+	# target_include_directories
+	# target_link_libraries
+	# target_link_options
+	# target_sources
+	parser.add_argument('-f', '--filter', default=None, help="{compile_definitions,compile_options,include_directories}");
+	
+
 	arguments=parser.parse_args();
 
 def read(filename):
@@ -57,10 +66,7 @@ def subkeys(P,m,direct=True):
 			ret.append(k);
 	return ret;
 
-def main():
-	global arguments;
-	parse_arguments();
-	
+def build():
 	platform=f"{arguments.COREDIR:s}/platform.txt"
 	boards=f"{arguments.COREDIR:s}/boards.txt"
 	P=read(platform);
@@ -72,13 +78,7 @@ def main():
 			menus[b]=B[b];
 		if b.startswith(arguments.board+"."):
 			unb=".".join(b.split(".")[1:])
-			if unb in P:
-				if unb == "name":
-					continue;
-				print("clash at",unb);
-				print("platforms:",P[unb]);
-				print("using boards:",B[b]);
-				#assert(False)
+			# note: prefer the board.txt over the platform.txt
 			P[unb]=B[b];
 	P["compiler.path"]="";
 	P["build.f_cpu"]="80000000L"
@@ -89,10 +89,22 @@ def main():
 	P["_id"]="generic";
 	# remove build.opt
 	P["build.opt.flags"]="";
-	
-	v=resolve(P,P[arguments.key]);
-	print(f"{v:s}");
-	print("unresolved:",re.findall(r'{\S+}',v));
+	return P
+
+def output(P):
+	global arguments;
+	if arguments.key in P:
+		v=resolve(P,P[arguments.key]);
+		print(f"{v:s}");
+		print("unresolved:",re.findall(r'{\S+}',v));
+	else:
+		print("could not find key",arguments.key);
+
+def main():
+	global arguments;
+	parse_arguments();
+	P=build();
+	output(P)
 	
 if __name__ == "__main__":
 	main();
