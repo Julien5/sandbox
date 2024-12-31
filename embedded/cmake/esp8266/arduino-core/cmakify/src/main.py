@@ -2,6 +2,16 @@
 
 import re;
 import sys;
+import argparse;
+
+arguments=None;
+def parse_arguments():
+	global arguments;
+	parser = argparse.ArgumentParser();
+	parser.add_argument('COREDIR',default="/opt/esp8266-toolchain/Arduino-3.1.2");
+	parser.add_argument('-b', '--board', default="nodemcu",help="board from boards.txt");
+	parser.add_argument('-k', '--key', default="recipe.cpp.o.pattern",help="key from platform.txt");
+	arguments=parser.parse_args();
 
 def read(filename):
 	f=open(filename,'r');
@@ -46,18 +56,13 @@ def subkeys(P,m,direct=True):
 		if not "." in k[len(m)+1:]:
 			ret.append(k);
 	return ret;
-	
+
 def main():
-	#coredir="/home/julien/delme/esp8266";
-	coredir="/opt/esp8266-toolchain/Arduino-3.1.2";
-	board="nodemcu";
-	key="recipe.cpp.o.pattern"
-	if len(sys.argv) > 1:
-		coredir=sys.argv[1];
-		board=sys.argv[2];
-		key=sys.argv[3];
-	platform=f"{coredir:s}/platform.txt"
-	boards=f"{coredir:s}/boards.txt"
+	global arguments;
+	parse_arguments();
+	
+	platform=f"{arguments.COREDIR:s}/platform.txt"
+	boards=f"{arguments.COREDIR:s}/boards.txt"
 	P=read(platform);
 	B=read(boards);
 	direct=True;
@@ -65,7 +70,7 @@ def main():
 	for b in B:
 		if b.startswith("menu."):
 			menus[b]=B[b];
-		if b.startswith(board+"."):
+		if b.startswith(arguments.board+"."):
 			unb=".".join(b.split(".")[1:])
 			if unb in P:
 				if unb == "name":
@@ -79,13 +84,13 @@ def main():
 	P["build.f_cpu"]="80000000L"
 	P["runtime.ide.version"]="10612"
 	P["build.arch"]="ESP8266"
-	P["build.path"]=coredir+"/cores/esp8266"
-	P["runtime.platform.path"]=coredir;
+	P["build.path"]=arguments.COREDIR+"/cores/esp8266"
+	P["runtime.platform.path"]=arguments.COREDIR;
 	P["_id"]="generic";
 	# remove build.opt
 	P["build.opt.flags"]="";
 	
-	v=resolve(P,P[key]);
+	v=resolve(P,P[arguments.key]);
 	print(f"{v:s}");
 	print("unresolved:",re.findall(r'{\S+}',v));
 	
