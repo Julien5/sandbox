@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import re;
-import sys;
 import argparse;
 
 arguments=None;
@@ -10,16 +9,14 @@ def parse_arguments():
 	parser = argparse.ArgumentParser();
 	parser.add_argument('COREDIR',default="/opt/esp8266-toolchain/Arduino-3.1.2");
 	parser.add_argument('-b', '--board', default="nodemcu",help="board from boards.txt");
-	parser.add_argument('-k', '--key', default="recipe.cpp.o.pattern",help="key from platform.txt");
+	parser.add_argument('-k', '--key', default=None,help="key from platform.txt");
 	# target_compile_definitions
 	# target_compile_options
 	# target_include_directories
 	# target_link_libraries
 	# target_link_options
 	# target_sources
-	parser.add_argument('-f', '--filter', default=None, help="{compile_definitions,compile_options,include_directories}");
-	
-
+	parser.add_argument('-f', '--filter', default=None, help="{CFLAGS,CXXFLAGS}");
 	arguments=parser.parse_args();
 
 def read(filename):
@@ -91,14 +88,48 @@ def build():
 	P["build.opt.flags"]="";
 	return P
 
+FLAGS="FLAGS";
+INCLUDES="INCLUDES";
+DEFINES="DEFINES";
+TYPES={FLAGS,INCLUDES,DEFINES};
+def classify_element(e):
+	if e.startswith("-I"):
+		return INCLUDES;
+	for f in {"-D","-U"}:
+		if e.startswith(f):
+			return DEFINES;
+	for f in {"-f","-M","-g","-O","-n","-m","-W","-std"}:
+		if e.startswith(f):
+			return FLAGS;
+	return None;
+
+def classify(raw):
+	L=raw.split(" ");
+	ret=dict();
+	for t in TYPES:
+		ret[t]=list();
+	for l in L:
+		if not l.strip():
+			continue;
+		e=l.replace("\"","");
+		t=classify_element(e);
+		if not t:
+			#print("no type for:",e);
+			continue;
+		ret[t].append(e);
+	return ret;
+	
 def output(P):
 	global arguments;
-	if arguments.key in P:
-		v=resolve(P,P[arguments.key]);
-		print(f"{v:s}");
-		print("unresolved:",re.findall(r'{\S+}',v));
-	else:
-		print("could not find key",arguments.key);
+	C=classify(resolve(P,P[arguments.key]));		
+	if arguments.filter:
+		F=arguments.filter.split(",");
+		for k in F:
+			if not k in TYPES:
+				print("unknown",k);
+				continue;
+			if k in C:
+				print("\n".join(C[k]));
 
 def main():
 	global arguments;
