@@ -71,9 +71,9 @@ def main():
 				if unb == "name":
 					continue;
 				print("clash at",unb);
-				print("P:",P[unb]);
-				print("B:",B[b]);
-				assert(False)
+				print("platforms:",P[unb]);
+				print("using boards:",B[b]);
+				#assert(False)
 			P[unb]=B[b];
 	P["compiler.path"]="";
 	P["build.f_cpu"]="80000000L"
