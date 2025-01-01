@@ -20,27 +20,30 @@ def parse_arguments():
 	# target_sources
 	parser.add_argument('-f', '--filter', default=None, help="{CFLAGS,CXXFLAGS}");
 	parser.add_argument('-t', '--toolchain', action='store_true', help="generate toolchain");
+	parser.add_argument('-l', '--library', default=None, help="generate library");
 	arguments=parser.parse_args();
 
 def output(data):
 	global arguments;
 	r=None
 	C=None;
-	if arguments.key:
-		r=data.resolve(arguments.key);
-		C=classify.classify(r);		
 	if arguments.filter:
 		F=arguments.filter.split(",");
 		for k in F:
 			if not k in classify.TYPES:
 				print("unknown",k);
 				continue;
+			C=data.classify(arguments.key);
 			if k in C:
 				print("\n".join(C[k]));
 	elif arguments.toolchain:
 		print(cmake.toolchain(data))
+	elif arguments.library:
+		print(cmake.library(data))
 	elif arguments.key:
-		print(r);
+		print(data.resolve(arguments.key));
+	else:
+		print("dont know what do do");
 
 def main():
 	global arguments;

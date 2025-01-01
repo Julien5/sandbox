@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import re;
+import classify;
 
 def resolve(P,s):
 	K=re.findall(r'\{\S+\}', s.replace("}{","} {"));
@@ -61,3 +62,6 @@ class Data:
 
 	def resolve(self,key):
 		return resolve(self.P,self.P[key]);
+
+	def classify(self,key):
+		return classify.classify(self.resolve(key))
