@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import argparse;
-import resolve
 import build
 import classify;
 import cmake;
@@ -20,12 +19,16 @@ def parse_arguments():
 	# target_link_options
 	# target_sources
 	parser.add_argument('-f', '--filter', default=None, help="{CFLAGS,CXXFLAGS}");
+	parser.add_argument('-t', '--toolchain', action='store_true', help="generate toolchain");
 	arguments=parser.parse_args();
 
-def output(P):
+def output(data):
 	global arguments;
-	r=resolve.resolve(P,P[arguments.key]);
-	C=classify.classify(r);		
+	r=None
+	C=None;
+	if arguments.key:
+		r=data.resolve(arguments.key);
+		C=classify.classify(r);		
 	if arguments.filter:
 		F=arguments.filter.split(",");
 		for k in F:
@@ -34,15 +37,16 @@ def output(P):
 				continue;
 			if k in C:
 				print("\n".join(C[k]));
+	elif arguments.toolchain:
+		print(cmake.toolchain(data))
 	elif arguments.key:
 		print(r);
 
 def main():
 	global arguments;
 	parse_arguments();
-	P=build.build(arguments);
-	output(P)
-	print(cmake.toolchain(P))
+	data=build.Data(arguments);
+	output(data)
 	
 if __name__ == "__main__":
 	main();

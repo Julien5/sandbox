@@ -4,6 +4,7 @@ FLAGS="FLAGS";
 INCLUDES="INCLUDES";
 DEFINES="DEFINES";
 TYPES={FLAGS,INCLUDES,DEFINES};
+
 def classify_element(e):
 	if e.startswith("-I"):
 		return INCLUDES;
