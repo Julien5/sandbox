@@ -10,7 +10,7 @@ def format(L,coredir):
 	ret=L[0];
 	if len(L)>1:
 		ret="\""+" ".join(L)+"\"";
-	ret=ret.replace(coredir,"${COREDIR}");
+	ret=ret.replace(coredir,"${ARDUINOCOREDIR}");
 	return ret;
 
 class CMakeBuffer:
@@ -39,12 +39,26 @@ class CMakeBuffer:
 
 	def target_include_directories(self,public,private):
 		self.buffer.append("target_include_directories(${PROJECT_NAME}");
-		self.buffer.append(f"    PUBLIC");
-		for l in public:
-			self.buffer.append(f"    {l:s}");
-		self.buffer.append(f"    PRIVATE");
-		for l in private:
-			self.buffer.append(f"    {l:s}");
+		if public:
+			self.buffer.append(f"    PUBLIC");
+			for l in public:
+				self.buffer.append(f"    {l:s}");
+		if private:
+			self.buffer.append(f"    PRIVATE");
+			for l in private:
+				self.buffer.append(f"    {l:s}");
+		self.buffer.append("    )");
+
+	def target_link_libraries(self,public,private):
+		self.buffer.append("target_link_libraries(${PROJECT_NAME}");
+		if public:
+			self.buffer.append(f"    PUBLIC");
+			for l in public:
+				self.buffer.append(f"    {l:s}");
+		if private:		
+			self.buffer.append(f"    PRIVATE");
+			for l in private:
+				self.buffer.append(f"    {l:s}");
 		self.buffer.append("    )");
 
 	def data(self):
@@ -60,28 +74,53 @@ def toolchain(data):
 	cmake.newline();
 	cmake.set("ARDUINOCOREDIR",data.COREDIR());
 	cmake.newline();
-	C=classify.classify(data.resolve("recipe.c.o.pattern"))
-	cmake.set("CMAKE_C_FLAGS",format(C[classify.FLAGS],data.COREDIR()));
-	C=classify.classify(data.resolve("recipe.cpp.o.pattern"))
-	cmake.set("CMAKE_CXX_FLAGS",format(C[classify.FLAGS],data.COREDIR()));
+	C=data.classify("recipe.c.o.pattern")
+	A=data.classify("menu.mmu.3232.build.mmuflags");
+	C0=list();
+	C0.extend(C[classify.FLAGS]);
+	C0.extend(C[classify.DEFINES]);
+	cmake.set("CMAKE_C_FLAGS",format(C0,data.COREDIR()));
+	C=data.classify("recipe.cpp.o.pattern")
+	C0=list();
+	C0.extend(C[classify.FLAGS]);
+	C0.extend(A[classify.DEFINES]);
+	cmake.set("CMAKE_CXX_FLAGS",format(C0,data.COREDIR()));
 	cmake.newline();
-	C=classify.classify(data.resolve("recipe.c.combine.pattern"))
-	cmake.set("CMAKE_EXE_LINKER_FLAGS",format(C[classify.FLAGS],data.COREDIR()))
+	#C=classify.classify(data.resolve("recipe.c.combine.pattern"))
+	#cmake.set("CMAKE_EXE_LINKER_FLAGS",format(C[classify.FLAGS],data.COREDIR()))
 	return cmake.data();
 
 def library(data):
 	libdir=data.arguments.library
 	cmake=CMakeBuffer();
+	libname=os.path.basename(libdir).lower();
+	LIBNAME=libname.upper();
 	cmake.project(os.path.basename(libdir));
 	cmake.add_library();
-	
+	cmake.set("LIBDIR",format([libdir],data.COREDIR()));
+	libformat=lambda f:format([f],data.COREDIR()).replace(libdir,"${LIBDIR}");
 	files = glob.glob(f"{libdir:s}/**/*.cpp", recursive=True)
-	L=[format([f],data.COREDIR()) for f in files];
-	cmake.target_sources(L);
+	L=[libformat(f) for f in files];
+	cmake.target_sources(sorted(L));
 
-
-	public=[format([f"{libdir:s}/src"],data.COREDIR())];
-	private=[format([f"{libdir:s}/src/common"],data.COREDIR())];
+	public=list();
+	if data.arguments.add_include_directories:
+		public.extend([libformat(d) for d in data.arguments.add_include_directories]);
+	for f in [f"{libdir:s}",f"{libdir:s}/src"]:
+		if os.path.isdir(f):
+			public.append(libformat(f));
+	private=list();
+	for f in [f"{libdir:s}/src",f"{libdir:s}/src/common"]:
+		if os.path.isdir(f):
+			private.append(libformat(f));
+	cmake.newline()
 	cmake.target_include_directories(public,private);
+	cmake.newline()
+	public=list();
+	private=list();
+	if data.arguments.add_link_libraries:
+		public.extend([libformat(d) for d in data.arguments.add_link_libraries]);
+	cmake.target_link_libraries(public,private);
 	
+	cmake.newline()
 	return cmake.data();
