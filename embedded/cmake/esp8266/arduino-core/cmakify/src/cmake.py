@@ -37,8 +37,10 @@ class CMakeBuffer:
 			self.buffer.append(f"    {l:s}");
 		self.buffer.append("    )");
 
-	def target_include_directories(self,public,private):
-		self.buffer.append("target_include_directories(${PROJECT_NAME}");
+	def target_worker(self,name,public,private):
+		if not public and not private:
+			return;
+		self.buffer.append(name+"(${PROJECT_NAME}");
 		if public:
 			self.buffer.append(f"    PUBLIC");
 			for l in public:
@@ -49,18 +51,15 @@ class CMakeBuffer:
 				self.buffer.append(f"    {l:s}");
 		self.buffer.append("    )");
 
-	def target_link_libraries(self,public,private):
-		self.buffer.append("target_link_libraries(${PROJECT_NAME}");
-		if public:
-			self.buffer.append(f"    PUBLIC");
-			for l in public:
-				self.buffer.append(f"    {l:s}");
-		if private:		
-			self.buffer.append(f"    PRIVATE");
-			for l in private:
-				self.buffer.append(f"    {l:s}");
-		self.buffer.append("    )");
+	def target_include_directories(self,public,private):
+		self.target_worker("target_include_directories",public,private);
 
+	def target_link_libraries(self,public,private):
+		self.target_worker("target_link_libraries",public,private);
+
+	def target_compile_definitions(self,public,private):
+		self.target_worker("target_compile_definitions",public,private);
+		
 	def data(self):
 		return "\n".join(self.buffer);
 
@@ -100,7 +99,7 @@ def library(data):
 	cmake.set("LIBDIR",format([libdir],data.COREDIR()));
 	libformat=lambda f:format([f],data.COREDIR()).replace(libdir,"${LIBDIR}");
 	files = glob.glob(f"{libdir:s}/**/*.cpp", recursive=True)
-	L=[libformat(f) for f in files];
+	L=[libformat(f) for f in files if not ("example" in f  or "extras" in f)];
 	cmake.target_sources(sorted(L));
 
 	public=list();
@@ -121,6 +120,12 @@ def library(data):
 	if data.arguments.add_link_libraries:
 		public.extend([libformat(d) for d in data.arguments.add_link_libraries]);
 	cmake.target_link_libraries(public,private);
+
+	public=list();
+	private=list();
+	if data.arguments.add_defines:
+		public.extend([libformat(d) for d in data.arguments.add_defines]);
+	cmake.target_compile_definitions(public,private);
 	
 	cmake.newline()
 	return cmake.data();

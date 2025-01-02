@@ -6,7 +6,7 @@ import classify;
 import cmake;
 
 arguments=None;
-def parse_arguments():
+def read_arguments():
 	global arguments;
 	parser = argparse.ArgumentParser();
 	parser.add_argument('COREDIR',default="/opt/esp8266-toolchain/Arduino-3.1.2");
@@ -23,6 +23,7 @@ def parse_arguments():
 	parser.add_argument('-l', '--library', default=None, help="generate library");
 	parser.add_argument('--add-include-directories', nargs='+')
 	parser.add_argument('--add-link-libraries', nargs='+')
+	parser.add_argument('--add-defines', nargs='+')
 	arguments=parser.parse_args();
 
 def output(data):
@@ -49,7 +50,7 @@ def output(data):
 
 def main():
 	global arguments;
-	parse_arguments();
+	read_arguments();
 	data=build.Data(arguments);
 	output(data)
 	
