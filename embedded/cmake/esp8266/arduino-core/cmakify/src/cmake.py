@@ -74,16 +74,9 @@ def toolchain(data):
 	cmake.set("ARDUINOCOREDIR",data.COREDIR());
 	cmake.newline();
 	C=data.classify("recipe.c.o.pattern")
-	A=data.classify("menu.mmu.3232.build.mmuflags");
-	C0=list();
-	C0.extend(C[classify.FLAGS]);
-	C0.extend(C[classify.DEFINES]);
-	cmake.set("CMAKE_C_FLAGS",format(C0,data.COREDIR()));
+	cmake.set("CMAKE_C_FLAGS",format(C[classify.FLAGS],data.COREDIR()));
 	C=data.classify("recipe.cpp.o.pattern")
-	C0=list();
-	C0.extend(C[classify.FLAGS]);
-	C0.extend(A[classify.DEFINES]);
-	cmake.set("CMAKE_CXX_FLAGS",format(C0,data.COREDIR()));
+	cmake.set("CMAKE_CXX_FLAGS",format(C[classify.FLAGS],data.COREDIR()));
 	cmake.newline();
 	#C=classify.classify(data.resolve("recipe.c.combine.pattern"))
 	#cmake.set("CMAKE_EXE_LINKER_FLAGS",format(C[classify.FLAGS],data.COREDIR()))
