@@ -52,6 +52,6 @@ if (ARDUINO)
 endif()
 
 if (ESP8266)
-  target_link_libraries(${PROJECT_NAME} PUBLIC core)
+    target_link_libraries(${PROJECT_NAME} PUBLIC core)
 endif()
 
