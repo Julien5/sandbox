@@ -1,14 +1,16 @@
-add_library(core INTERFACE)
+project(core)
 
-string(CONCAT cmd ${CMAKE_CURRENT_LIST_DIR} "/build.sh")
-execute_process(COMMAND ${cmd} WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-include(${CMAKE_BINARY_DIR}/core/core.cmake)
+include($ENV{IDF_PATH}/tools/cmake/idf.cmake)
+idf_build_process(esp8266
+    COMPONENTS esp8266 freertos esptool_py pthread spi_flash
+)
 
-target_compile_definitions(core INTERFACE -DESP8266=1)
-target_compile_options(core INTERFACE ${CORE_CFLAGS})
-target_link_options(core INTERFACE ${CORE_LFLAGS})
+add_library(${PROJECT_NAME} dummy.cpp)
 
-message(${CORE_LFLAGS})
+target_compile_definitions(${CMAKE_PROJECT_NAME} PUBLIC -DESP8266=1)
 
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    idf::esp8266
+)
 
 
