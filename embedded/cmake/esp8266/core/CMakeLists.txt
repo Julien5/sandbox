@@ -30,6 +30,7 @@ target_link_libraries(${PROJECT_NAME}
     PUBLIC
     idf::esp8266
     idf::spi_flash
+    idf::pthread
 )
 
 
