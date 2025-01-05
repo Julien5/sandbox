@@ -8,7 +8,7 @@ if [[ -z "$IDF_PATH" ]]; then
 	exit 1
 fi
 SCRIPTDIR=$(dirname $(realpath $0))
-BUILDDIR=/tmp/builds/esp8266/core;
+BUILDDIR=/tmp/builds/esp8266/extern;
 FILENAME=$BUILDDIR/stdout
 mkdir -p $BUILDDIR;
 #rm -f $FILENAME
