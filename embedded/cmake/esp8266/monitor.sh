@@ -18,7 +18,7 @@ fi
 
 ELFFILE=$1
 
-PORT="/dev/$(catusb | grep -i FT232 | cut -f1 -d":")"
+PORT="/dev/$(catusb | grep -i CH340 | cut -f1 -d":")"
 if [ -z $PORT ]; then
 	echo could not find port
 	exit 1
