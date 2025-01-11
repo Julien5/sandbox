@@ -4,9 +4,15 @@
 # https://github.com/espressif/ESP8266_RTOS_SDK/issues/1083
 # has project() before idf_build_process.
 include($ENV{IDF_PATH}/tools/cmake/idf.cmake)
+
+# the bootloader target issues an error if the sdkconfig
+# is passed relative to the CMakeLists.txt
+get_filename_component(SDKCONFIG sdkconfig-core
+    REALPATH BASE_DIR "${CMAKE_BINARY_DIR}")
+
 idf_build_process(esp8266
     COMPONENTS esp8266 freertos esptool_py pthread spi_flash
-    SDKCONFIG sdkconfig
+    SDKCONFIG ${SDKCONFIG}
 )
 
 project(core)
@@ -28,9 +34,10 @@ target_include_directories(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
     PUBLIC
-    idf::esp8266
     idf::spi_flash
     idf::pthread
+    idf::vfs
+    idf::esp8266
 )
 
 

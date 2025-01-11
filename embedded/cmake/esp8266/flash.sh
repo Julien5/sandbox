@@ -39,4 +39,4 @@ echo elf2image
 python $IDF_PATH/components/esptool_py/esptool/esptool.py --chip esp8266 elf2image --flash_mode dio --flash_freq 40m --flash_size 2MB --version=3 -o "$BINFILE" "$ELFFILE"
 
 echo write_flash
-python $IDF_PATH/components/esptool_py/esptool/esptool.py --chip esp8266 -p $DEVICE -b 460800 write_flash --flash_mode dio --flash_freq 40m --flash_size 2MB 0x8000 /tmp/builds/esp8266/extern/partition_table/partition-table.bin 0x0 /tmp/builds/esp8266/extern/bootloader/bootloader.bin 0x10000 "$BINFILE"
+python $IDF_PATH/components/esptool_py/esptool/esptool.py --chip esp8266 -p $DEVICE -b 460800 write_flash --flash_mode dio --flash_freq 40m --flash_size 2MB 0x8000 /tmp/builds/esp8266/partition_table/partition-table.bin 0x0 /tmp/builds/esp8266/bootloader/bootloader.bin 0x10000 "$BINFILE"
