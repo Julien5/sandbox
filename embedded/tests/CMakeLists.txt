@@ -3,3 +3,4 @@ if (DEFINED ARDUINO)
 endif()
 
 add_subdirectory(test-base)
+add_subdirectory(test-sdfat)

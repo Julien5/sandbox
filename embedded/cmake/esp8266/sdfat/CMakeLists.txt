@@ -1,0 +1,74 @@
+project(SdFat)
+add_library(${PROJECT_NAME} STATIC)
+set(LIBDIR /home/julien/projects/SdFat)
+target_sources(${PROJECT_NAME} PRIVATE
+    ${LIBDIR}/src/ExFatLib/ExFatDbg.cpp
+    ${LIBDIR}/src/ExFatLib/ExFatFile.cpp
+    ${LIBDIR}/src/ExFatLib/ExFatFilePrint.cpp
+    ${LIBDIR}/src/ExFatLib/ExFatFileWrite.cpp
+    ${LIBDIR}/src/ExFatLib/ExFatFormatter.cpp
+    ${LIBDIR}/src/ExFatLib/ExFatName.cpp
+    ${LIBDIR}/src/ExFatLib/ExFatPartition.cpp
+    ${LIBDIR}/src/ExFatLib/ExFatVolume.cpp
+    ${LIBDIR}/src/FatLib/FatDbg.cpp
+    ${LIBDIR}/src/FatLib/FatFile.cpp
+    ${LIBDIR}/src/FatLib/FatFileLFN.cpp
+    ${LIBDIR}/src/FatLib/FatFilePrint.cpp
+    ${LIBDIR}/src/FatLib/FatFileSFN.cpp
+    ${LIBDIR}/src/FatLib/FatFormatter.cpp
+    ${LIBDIR}/src/FatLib/FatName.cpp
+    ${LIBDIR}/src/FatLib/FatPartition.cpp
+    ${LIBDIR}/src/FatLib/FatVolume.cpp
+    ${LIBDIR}/src/FreeStack.cpp
+    ${LIBDIR}/src/FsLib/FsFile.cpp
+    ${LIBDIR}/src/FsLib/FsNew.cpp
+    ${LIBDIR}/src/FsLib/FsVolume.cpp
+    ${LIBDIR}/src/MinimumSerial.cpp
+    ${LIBDIR}/src/SdCard/Rp2040Sdio/PioSdioCard.cpp
+    ${LIBDIR}/src/SdCard/SdCardInfo.cpp
+    ${LIBDIR}/src/SdCard/SdSpiCard.cpp
+    ${LIBDIR}/src/SdCard/TeensySdio/TeensySdio.cpp
+    ${LIBDIR}/src/SpiDriver/SdSpiArtemis.cpp
+    ${LIBDIR}/src/SpiDriver/SdSpiChipSelect.cpp
+    ${LIBDIR}/src/SpiDriver/SdSpiDue.cpp
+    ${LIBDIR}/src/SpiDriver/SdSpiParticle.cpp
+    ${LIBDIR}/src/SpiDriver/SdSpiSTM32.cpp
+    ${LIBDIR}/src/SpiDriver/SdSpiSTM32Core.cpp
+    ${LIBDIR}/src/SpiDriver/SdSpiTeensy3.cpp
+    ${LIBDIR}/src/common/FmtNumber.cpp
+    ${LIBDIR}/src/common/FsCache.cpp
+    ${LIBDIR}/src/common/FsDateTime.cpp
+    ${LIBDIR}/src/common/FsName.cpp
+    ${LIBDIR}/src/common/FsStructs.cpp
+    ${LIBDIR}/src/common/FsUtf.cpp
+    ${LIBDIR}/src/common/PrintBasic.cpp
+    ${LIBDIR}/src/common/upcase.cpp
+    ${LIBDIR}/src/iostream/StdioStream.cpp
+    ${LIBDIR}/src/iostream/StreamBaseClass.cpp
+    ${LIBDIR}/src/iostream/istream.cpp
+    ${LIBDIR}/src/iostream/ostream.cpp
+    )
+
+target_include_directories(${PROJECT_NAME}
+    PUBLIC
+    /tmp/patch/include
+    ${ARDUINOCOREDIR}/tools/sdk/include
+    ${ARDUINOCOREDIR}/tools/sdk/lwip/include
+    ${ARDUINOCOREDIR}/tools/sdk/libc/xtensa-lx106-elf/include
+    ${ARDUINOCOREDIR}/cores/esp8266/core
+    ${ARDUINOCOREDIR}/cores/esp8266
+    ${ARDUINOCOREDIR}/libraries/SPI
+    ${ARDUINOCOREDIR}/libraries/Wire
+    ${ARDUINOCOREDIR}/variants/nodemcu
+    ${LIBDIR}
+    ${LIBDIR}/src
+    PRIVATE
+    ${LIBDIR}/src
+    ${LIBDIR}/src/common
+    )
+
+target_link_libraries(${PROJECT_NAME}
+    PUBLIC
+    esp8266
+    )
+
