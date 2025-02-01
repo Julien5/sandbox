@@ -24,14 +24,14 @@ fn main() {
     println!("a contains: {}", a);
 
     // *Move* `a` into `b`
-    let b = a;
+    let b = a.clone();
     // The pointer address of `a` is copied (not the data) into `b`.
     // Both are now pointers to the same heap allocated data, but
     // `b` now owns it.
     
     // Error! `a` can no longer access the data, because it no longer owns the
     // heap memory
-    //println!("a contains: {}", a);
+    println!("a contains: {}", a);
     // TODO ^ Try uncommenting this line
 
     // This function takes ownership of the heap allocated memory from `b`
