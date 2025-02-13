@@ -45,14 +45,23 @@ function test-esp8266() {
 	${EXE} --board nodemcu --key compiler.c.cmd ${COREDIR}
 
 	${EXE} --board nodemcu --key compiler.cpp.cmd ${COREDIR}
-	echo "***"
 	${EXE} --board nodemcu --key recipe.c.combine.pattern ${COREDIR}
-	echo "***"
 	${EXE} --board nodemcu --toolchain ${COREDIR}
 
-	echo "***"
+	SDFATROOTDIR=/tmp/x/sdfat/
+	if [ ! -d ${SDFATROOTDIR} ]; then
+		mkdir -p ${SDFATROOTDIR}
+		pushd ${SDFATROOTDIR}
+		wget https://github.com/greiman/SdFat/archive/refs/tags/2.2.3.zip
+		unzip 2.2.3.zip
+		ln -s SdFat-2.2.3 SdFat
+		popd
+	fi
+	SDFATDIR=${SDFATROOTDIR}/SdFat
+	#SDFATDIR=$HOME/delme/SdFat
+
 	${EXE} --board nodemcu --lib ${COREDIR}/libraries/SPI ${COREDIR}
-	${EXE} --board nodemcu --lib ~/delme/SdFat ${COREDIR}
+	${EXE} --board nodemcu --lib ${SDFATDIR} ${COREDIR}
 
 	rm -Rf /tmp/cmake-test
 	mkdir -p /tmp/cmake-test
@@ -81,7 +90,7 @@ function test-esp8266() {
 		   --add-defines ${COREDEFINES} \
 		   > core/CMakeLists.txt
 	${EXE} --board nodemcu --lib ${COREDIR}/libraries/SPI ${COREDIR} > SPI/CMakeLists.txt
-	${EXE} --board nodemcu --lib ~/delme/SdFat ${COREDIR} \
+	${EXE} --board nodemcu --lib ${SDFATDIR} ${COREDIR} \
 		   --add-include-directories \
 		   /tmp/patch/include \
 		   $COREINCLUDES \
@@ -98,6 +107,14 @@ function test-esp8266() {
 
 function main() {
 	COREDIR=$HOME/delme/Arduino-master
+	COREDIR=/tmp/x/Arduino-3.1.2
+	if [ ! -d ${COREDIR} ]; then
+		mkdir -p /tmp/x
+		pushd /tmp/x
+		wget https://github.com/esp8266/Arduino/archive/refs/tags/3.1.2.zip
+		unzip 3.1.2.zip
+		popd
+	fi	
 	test-esp8266
 	#download-esp8266-arduino-core
 	#compare
