@@ -16,3 +16,5 @@ screenlog.0
 delme
 *.pdf
 *.png
+
+Cargo.lock
