@@ -1,0 +1,11 @@
+[package]
+name = "rust-radio"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+stream-download = "0.15.0"
+tokio = { version = "1.37.0", features = ["sync", "macros", "rt-multi-thread"] }
+rodio = { version = "0.20.1", default-features = false, features = [
+  "symphonia-all",
+] }
