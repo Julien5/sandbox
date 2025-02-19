@@ -97,7 +97,7 @@ impl<S : rodio::Source> Iterator for Source<S> where <S as Iterator>::Item: rodi
 	fn next(&mut self) -> Option<<Self as Iterator>::Item> {
 		let ret=self.source.next();
 		match &ret {
-			Some(_) => {},//time::<&str>("next",None),
+			Some(_) => {},//tracing::info!("next"),
 			None => tracing::info!("no next"),
 		}
 		ret
@@ -137,7 +137,7 @@ async fn main() -> core::result::Result<(), Box<dyn Error + Send + Sync>> {
             // be liberal with the buffer size, you need to make sure it holds enough space to
             // prevent any out-of-bounds reads
             NonZeroUsize::new(512 * 1024).unwrap(),
-        ), Settings::default())
+        ), Settings::default().prefetch_bytes(8))
         .await
     {
         Ok(reader) => reader,
