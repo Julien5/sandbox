@@ -1,4 +1,3 @@
-use std::env::args;
 use std::env;
 use std::error::Error;
 use std::num::NonZeroUsize;
@@ -13,7 +12,9 @@ use stream_download::{Settings, StreamDownload};
 use std::io::Read;
 use std::io::Seek;
 use std::io::SeekFrom;
-use std::io::Result;
+
+use std::time::Duration;
+use std::time::{SystemTime,UNIX_EPOCH};
 
 // trait Decodable: Read + Seek {}
 
@@ -27,11 +28,19 @@ impl<R : Read + Seek> Reader<R> {
 	}
 }
 
+fn time() {
+	let a = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs();
+	println!("time:{:?}", a);
+}
+
 impl<R : Read + Seek> Read for Reader<R> {
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
 		let ret=self.reader.read(buf);
 		match &ret {
-			Ok(size) => println!("read={:?} bytes", size),
+			Ok(size) => {
+				time();
+				println!("read={:?} bytes",size);
+			},		
 			Err(ex) => println!("read error: {:?}", ex)
 		}
 		ret
@@ -48,6 +57,62 @@ impl<R : Read + Seek> Seek for Reader<R> {
 		ret
 	}
 }
+
+struct Source<S : rodio::Source> where <S as Iterator>::Item: rodio::Sample {
+	source: S,
+}
+
+impl<S : rodio::Source> Source<S> where <S as Iterator>::Item: rodio::Sample {
+	fn new(orig:S) -> Self {
+		Self { source:orig }
+	}
+}
+
+impl<S : rodio::Source> rodio::Source for Source<S> where <S as Iterator>::Item: rodio::Sample {
+	fn current_frame_len(&self) -> Option<usize> {
+		let ret=self.source.current_frame_len();
+		match &ret {
+			Some(size) => {
+				time();
+				println!("current frame length={:?} bytes", size);
+			},
+			None => println!("no length")
+		}
+		ret
+	}
+	fn channels(&self) -> u16 {
+		let ret=self.source.channels();
+		println!("{:?} channels", ret);
+		ret
+	}
+	fn sample_rate(&self) -> u32 {
+		let ret=self.source.sample_rate();
+		println!("{:?} Hz", ret);
+		ret
+	}
+	fn total_duration(&self) -> Option<Duration> {
+		let ret=self.source.total_duration();
+		match &ret {
+			Some(size) => println!("total duration={:?} seconds", size),
+			None => println!("no duration")
+		}
+		ret
+	}
+}
+
+impl<S : rodio::Source> Iterator for Source<S> where <S as Iterator>::Item: rodio::Sample {
+	type Item = S::Item;
+	fn next(&mut self) -> Option<<Self as Iterator>::Item> {
+		let ret=self.source.next();
+		match &ret {
+			Some(_) => println!("next"),
+			None => println!("no next"),
+		}
+		ret
+	}
+}
+
+
 
 #[tokio::main]
 async fn main() -> core::result::Result<(), Box<dyn Error + Send + Sync>> {
@@ -68,7 +133,7 @@ async fn main() -> core::result::Result<(), Box<dyn Error + Send + Sync>> {
             MemoryStorageProvider,
             // be liberal with the buffer size, you need to make sure it holds enough space to
             // prevent any out-of-bounds reads
-            NonZeroUsize::new(64 * 1024).unwrap(),
+            NonZeroUsize::new(128 * 1024).unwrap(),
         ), Settings::default())
             .await
         {
@@ -81,7 +146,8 @@ async fn main() -> core::result::Result<(), Box<dyn Error + Send + Sync>> {
     let handle = tokio::task::spawn_blocking(move || {
         let (_stream, handle) = rodio::OutputStream::try_default()?;
         let sink = rodio::Sink::try_new(&handle)?;
-        sink.append(rodio::Decoder::new(reader)?);
+		let source = Source::new(rodio::Decoder::new(reader)?);
+        sink.append(source);
         sink.sleep_until_end();
 
         Ok::<_, Box<dyn Error + Send + Sync>>(())
