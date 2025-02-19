@@ -107,17 +107,11 @@ impl<S : rodio::Source> Iterator for Source<S> where S::Item: rodio::Sample {
 #[tokio::main]
 async fn main() -> core::result::Result<(), Box<dyn Error + Send + Sync>> {
 	tracing_subscriber::fmt()
-		.event_format(
-			tracing_subscriber::fmt::format()
-				.with_file(true)
-				.with_line_number(true)
-		)
+		.with_max_level(tracing::Level::DEBUG)
+		.with_file(true)
+		.with_line_number(true)
+		.with_target(false)
 		.init();
-
-	use tracing::Level;
-	let subscriber = tracing_subscriber::fmt().with_max_level(Level::DEBUG).finish();
-	let _ = tracing::subscriber::set_global_default(subscriber);
-
 
 	let stdargs: Vec<String> = env::args().collect();
     let url = match stdargs.len() {
