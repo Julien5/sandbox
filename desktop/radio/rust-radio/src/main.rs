@@ -52,7 +52,7 @@ impl<R : Read + Seek> Seek for Reader<R> {
 	}
 }
 
-struct Source<S : rodio::Source> where <S as Iterator>::Item: rodio::Sample {
+struct Source<S : rodio::Source> where S::Item: rodio::Sample {
 	source: S,
 }
 
@@ -63,7 +63,7 @@ impl<S : rodio::Source> Source<S> where <S as Iterator>::Item: rodio::Sample {
 	}
 }
 
-impl<S : rodio::Source> rodio::Source for Source<S> where <S as Iterator>::Item: rodio::Sample {
+impl<S : rodio::Source> rodio::Source for Source<S> where S::Item: rodio::Sample {
 	fn current_frame_len(&self) -> Option<usize> {
 		let ret=self.source.current_frame_len();
 		match &ret {
@@ -92,7 +92,7 @@ impl<S : rodio::Source> rodio::Source for Source<S> where <S as Iterator>::Item:
 	}
 }
 
-impl<S : rodio::Source> Iterator for Source<S> where <S as Iterator>::Item: rodio::Sample {
+impl<S : rodio::Source> Iterator for Source<S> where S::Item: rodio::Sample {
 	type Item = S::Item;
 	fn next(&mut self) -> Option<<Self as Iterator>::Item> {
 		let ret=self.source.next();
