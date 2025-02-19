@@ -14,7 +14,9 @@ use std::io::Seek;
 use std::io::SeekFrom;
 
 use std::time::Duration;
-use std::time::{SystemTime,UNIX_EPOCH};
+//use std::time::{SystemTime,UNIX_EPOCH};
+
+use tracing_subscriber;
 
 // trait Decodable: Read + Seek {}
 
@@ -28,20 +30,12 @@ impl<R : Read + Seek> Reader<R> {
 	}
 }
 
-fn time() {
-	let a = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs();
-	println!("time:{:?}", a);
-}
-
 impl<R : Read + Seek> Read for Reader<R> {
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
 		let ret=self.reader.read(buf);
 		match &ret {
-			Ok(size) => {
-				time();
-				println!("read={:?} bytes",size);
-			},		
-			Err(ex) => println!("read error: {:?}", ex)
+			Ok(size) => tracing::info!("read {:?}",size),
+			Err(ex) => tracing::info!("read error{:?}",ex),
 		}
 		ret
 	}
@@ -51,7 +45,7 @@ impl<R : Read + Seek> Seek for Reader<R> {
     fn seek(&mut self, relative_position: SeekFrom) -> std::io::Result<u64> {
 		let ret=self.reader.seek(relative_position);
 		match &ret {
-			Ok(size) => println!("seek={:?} bytes", size),
+			Ok(size) => tracing::info!("seek:{:?}",size),
 			Err(ex) => println!("seek error: {:?}", ex)
 		}
 		ret
@@ -64,6 +58,7 @@ struct Source<S : rodio::Source> where <S as Iterator>::Item: rodio::Sample {
 
 impl<S : rodio::Source> Source<S> where <S as Iterator>::Item: rodio::Sample {
 	fn new(orig:S) -> Self {
+		tracing::info!("constructed source");
 		Self { source:orig }
 	}
 }
@@ -72,28 +67,25 @@ impl<S : rodio::Source> rodio::Source for Source<S> where <S as Iterator>::Item:
 	fn current_frame_len(&self) -> Option<usize> {
 		let ret=self.source.current_frame_len();
 		match &ret {
-			Some(size) => {
-				time();
-				println!("current frame length={:?} bytes", size);
-			},
+			Some(_size) => {},//tracing::info!("frame length:{:?}",size),
 			None => println!("no length")
 		}
 		ret
 	}
 	fn channels(&self) -> u16 {
 		let ret=self.source.channels();
-		println!("{:?} channels", ret);
+		//println!("{:?} channels", ret);
 		ret
 	}
 	fn sample_rate(&self) -> u32 {
 		let ret=self.source.sample_rate();
-		println!("{:?} Hz", ret);
+		//time("rate", Some(ret));
 		ret
 	}
 	fn total_duration(&self) -> Option<Duration> {
 		let ret=self.source.total_duration();
 		match &ret {
-			Some(size) => println!("total duration={:?} seconds", size),
+			Some(size) => tracing::info!("total duration:{:?}",size),
 			None => println!("no duration")
 		}
 		ret
@@ -105,17 +97,28 @@ impl<S : rodio::Source> Iterator for Source<S> where <S as Iterator>::Item: rodi
 	fn next(&mut self) -> Option<<Self as Iterator>::Item> {
 		let ret=self.source.next();
 		match &ret {
-			Some(_) => println!("next"),
-			None => println!("no next"),
+			Some(_) => {},//time::<&str>("next",None),
+			None => tracing::info!("no next"),
 		}
 		ret
 	}
 }
 
-
-
 #[tokio::main]
 async fn main() -> core::result::Result<(), Box<dyn Error + Send + Sync>> {
+	tracing_subscriber::fmt()
+		.event_format(
+			tracing_subscriber::fmt::format()
+				.with_file(true)
+				.with_line_number(true)
+		)
+		.init();
+
+	use tracing::Level;
+	let subscriber = tracing_subscriber::fmt().with_max_level(Level::DEBUG).finish();
+	let _ = tracing::subscriber::set_global_default(subscriber);
+
+
 	let stdargs: Vec<String> = env::args().collect();
     let url = match stdargs.len() {
 		2 => stdargs[1].clone(),
@@ -124,8 +127,8 @@ async fn main() -> core::result::Result<(), Box<dyn Error + Send + Sync>> {
 
     let stream = HttpStream::<Client>::create(url.parse()?).await?;
 
-    println!("content length={:?}", stream.content_length());
-    println!("content type={:?}", stream.content_type());
+	tracing::info!("content length={:?}",stream.content_length());
+    tracing::info!("content typ={:?}e", stream.content_type());
 
     let reader0 =
         match StreamDownload::from_stream(stream, BoundedStorageProvider::new(
@@ -133,21 +136,28 @@ async fn main() -> core::result::Result<(), Box<dyn Error + Send + Sync>> {
             MemoryStorageProvider,
             // be liberal with the buffer size, you need to make sure it holds enough space to
             // prevent any out-of-bounds reads
-            NonZeroUsize::new(128 * 1024).unwrap(),
+            NonZeroUsize::new(512 * 1024).unwrap(),
         ), Settings::default())
-            .await
-        {
-            Ok(reader) => reader,
-            Err(e) => return Err(e.decode_error().await)?,
-        };
+        .await
+    {
+        Ok(reader) => reader,
+        Err(e) => return Err(e.decode_error().await)?,
+    };
 
 	let reader = Reader::new(reader0);
 
     let handle = tokio::task::spawn_blocking(move || {
+		tracing::info!("decoder thread start");
         let (_stream, handle) = rodio::OutputStream::try_default()?;
+		tracing::info!("decoder thread try_new");
         let sink = rodio::Sink::try_new(&handle)?;
-		let source = Source::new(rodio::Decoder::new(reader)?);
+		tracing::info!("decoder thread new decoder");
+		let dec=rodio::Decoder::new_mp3(reader)?;
+		tracing::info!("decoder thread new source");
+		let source = Source::new(dec);
+		tracing::info!("decoder thread append");
         sink.append(source);
+		tracing::info!("decoder thread sleep");
         sink.sleep_until_end();
 
         Ok::<_, Box<dyn Error + Send + Sync>>(())
