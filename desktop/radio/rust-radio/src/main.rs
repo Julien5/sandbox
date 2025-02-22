@@ -124,6 +124,11 @@ async fn main() -> core::result::Result<(), Box<dyn Error + Send + Sync>> {
 	tracing::info!("content length={:?}",stream.content_length());
     tracing::info!("content typ={:?}e", stream.content_type());
 
+	let settings = Settings::default().prefetch_bytes(1024);
+
+	tracing::info!("prefetch bytes = {:?}",settings.get_prefetch_bytes());
+	tracing::info!("seek buffer size = {:?}",settings.get_seek_buffer_size());
+
     let reader0 =
         match StreamDownload::from_stream(stream, BoundedStorageProvider::new(
             // you can use any other kind of storage provider here
@@ -131,7 +136,7 @@ async fn main() -> core::result::Result<(), Box<dyn Error + Send + Sync>> {
             // be liberal with the buffer size, you need to make sure it holds enough space to
             // prevent any out-of-bounds reads
             NonZeroUsize::new(512 * 1024).unwrap(),
-        ), Settings::default().prefetch_bytes(8))
+        ), settings)
         .await
     {
         Ok(reader) => reader,
