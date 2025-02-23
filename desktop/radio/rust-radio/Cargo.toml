@@ -11,3 +11,5 @@ rodio = { version = "0.20.1", default-features = false, features = [
 ] }
 tracing = "0.1.35"
 tracing-subscriber = "0.3.11"
+console = "0.15.0"
+# keyboard_query = "0.1.0" // needs x11 devfdsfsd

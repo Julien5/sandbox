@@ -12,6 +12,10 @@ use stream_download::{Settings, StreamDownload};
 use std::io::Read;
 use std::io::Seek;
 use std::io::SeekFrom;
+use std::thread;
+
+//use keyboard_query::DeviceState;
+use console::{Key,Term};
 
 use std::time::Duration;
 //use std::time::{SystemTime,UNIX_EPOCH};
@@ -145,7 +149,7 @@ async fn main() -> core::result::Result<(), Box<dyn Error + Send + Sync>> {
 
 	let reader = Reader::new(reader0);
 
-    let handle = tokio::task::spawn_blocking(move || {
+    let audio_handle = tokio::task::spawn_blocking(move || {
 		tracing::info!("decoder thread start");
         let (_stream, handle) = rodio::OutputStream::try_default()?;
 		tracing::info!("decoder thread try_new");
@@ -161,6 +165,21 @@ async fn main() -> core::result::Result<(), Box<dyn Error + Send + Sync>> {
 
         Ok::<_, Box<dyn Error + Send + Sync>>(())
     });
-    handle.await??;
+
+    let key_handle=thread::spawn(move || {
+		let term = Term::stdout();
+		term.write_line("Press any key. Esc to exit")?;
+		loop {
+			let key = term.read_key()?;
+			term.write_line(&format!("You pressed {:?}", key))?;
+			if key == Key::Escape {
+				break;
+			}
+		}
+		Ok::<(),std::io::Error>(())
+    });
+
+    audio_handle.await??;
+	let _ = key_handle.join();
     Ok(())
 }
