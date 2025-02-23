@@ -122,7 +122,7 @@ async fn main() -> core::result::Result<(), Box<dyn Error + Send + Sync>> {
     let stream = HttpStream::<Client>::create(url.parse()?).await?;
 
 	tracing::info!("content length={:?}",stream.content_length());
-    tracing::info!("content typ={:?}e", stream.content_type());
+    tracing::info!("content type={:?}e", stream.content_type());
 
 	let settings = Settings::default().prefetch_bytes(1024);
 
