@@ -3,10 +3,42 @@ use std::env;
 use rand::rng;
 use rand::prelude::SliceRandom;
 
+type MyResult<T> = std::result::Result<T, MyError>;
+
+#[derive(Debug, Clone)]
+struct MyError;
+
+fn to_2d(index:usize,n:usize) -> MyResult<(usize,usize)> {
+	if index>(n*n) {
+		return Err(MyError);
+	}
+	let x=index%n;
+	let y=index/n;
+	Ok((x,y))
+}
+
+fn from_2d(c:(usize,usize),n:usize) -> usize {
+	c.1*n+c.0
+}
+
+
 fn print_grid(grid:&Vec<bool>) {
-	for (index,value) in grid.iter().enumerate() {
-		//let (index,value) = e.enumerate();
-		println!("grid[{}]={}",index,value);
+	let l=grid.len();
+	assert!(grid.len()>0);
+	let n=f64::sqrt(grid.len() as f64) as usize;
+	println!("grid len is {l} and the square is {n}");
+	for k1 in 0..n {
+		for k2 in 0..n {
+			let k=from_2d((k1,k2),n);
+			// println!("k1={k1} k2={k2} k={k}");
+			if grid[k] {
+				print!("| * ");
+			} else {
+				print!("|   ");
+			}
+			
+		}
+		println!("|");
 	}
 }
 
@@ -30,4 +62,25 @@ fn main() {
 	let mut rng = rng();
 	grid.shuffle(&mut rng);
 	print_grid(&grid);
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+    #[test]
+    fn test_2d() -> Result<(), MyError> {
+		let c = to_2d(0_usize,4)?;
+		assert_eq!(c,(0,0));
+
+		let c = to_2d(1_usize,4)?;
+		assert_eq!(c,(1,0));
+
+		let c = to_2d(4_usize,4)?;
+		assert_eq!(c,(0,1));
+		
+		let c = to_2d(15_usize,4)?;
+		assert_eq!(c,(3,3));
+		
+		Ok(())		
+    }
 }
