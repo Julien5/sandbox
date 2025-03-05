@@ -3,14 +3,17 @@ use std::env;
 use rand::rng;
 use rand::prelude::SliceRandom;
 
-type MyResult<T> = std::result::Result<T, MyError>;
+#[cfg(test)]
+type Result<T> = std::result::Result<T, Error>;
 
+#[cfg(test)]
 #[derive(Debug, Clone)]
-struct MyError;
+struct Error;
 
-fn to_2d(index:usize,n:usize) -> MyResult<(usize,usize)> {
+#[cfg(test)]
+fn to_2d(index:usize,n:usize) -> Result<(usize,usize)> {
 	if index>(n*n) {
-		return Err(MyError);
+		return Err(Error);
 	}
 	let x=index%n;
 	let y=index/n;
@@ -44,7 +47,7 @@ fn print_grid(grid:&Vec<bool>) {
 
 fn main() {
 	let args: Vec<String> = env::args().collect();
-	dbg!(&args);
+	// dbg!(&args);
 	let n = args[1].parse::<usize>().unwrap();
 	dbg!(n);
 	let mut grid : Vec<bool> = vec![false; n*n];
@@ -57,8 +60,6 @@ fn main() {
 		grid[k]=true;
 	}
 
-	print_grid(&grid);
-	println!("** shuffle **");
 	let mut rng = rng();
 	grid.shuffle(&mut rng);
 	print_grid(&grid);
@@ -68,7 +69,7 @@ fn main() {
 mod tests {
 	use super::*;
     #[test]
-    fn test_2d() -> Result<(), MyError> {
+    fn test_2d() -> std::result::Result<(), Error> {
 		let c = to_2d(0_usize,4)?;
 		assert_eq!(c,(0,0));
 
