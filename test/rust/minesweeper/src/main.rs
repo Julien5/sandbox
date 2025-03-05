@@ -25,9 +25,9 @@ fn from_2d(c:(usize,usize),n:usize) -> usize {
 }
 
 
-fn print_grid(grid:&Vec<bool>) {
+fn print_grid(grid:&[bool]) {
 	let l=grid.len();
-	assert!(grid.len()>0);
+	assert!(!grid.is_empty());
 	let n=f64::sqrt(grid.len() as f64) as usize;
 	println!("grid len is {l} and the square is {n}");
 	for k1 in 0..n {
