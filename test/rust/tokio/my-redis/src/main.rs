@@ -11,7 +11,7 @@ type Db = Arc<Mutex<HashMap<String, Bytes>>>;
 async fn main() {
     let listener = TcpListener::bind("127.0.0.1:6379").await.unwrap();
 
-    println!("Listening");
+    dbg!("Listening");
 
     let db = Arc::new(Mutex::new(HashMap::new()));
 
@@ -20,7 +20,7 @@ async fn main() {
         // Clone the handle to the hash map.
         let db = db.clone();
 
-        println!("Accepted");
+        dbg!("Accepted");
         tokio::spawn(async move {
             process(socket, db).await;
         });
