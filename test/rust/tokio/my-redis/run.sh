@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+
+function init() {
+	. $HOME/.profile
+}
+
+
 function tokio() {
 	cd /home/julien/projects/sandbox/test/rust/tokio/my-redis/
 	dev.rust.desktop
@@ -13,5 +19,6 @@ function main() {
 	tokio
 }
 
+init
 main "$@"
 echo all good
