@@ -139,13 +139,30 @@ def test_join_intervals():
 	for r in R:
 		print(r)
 
+def remove_spurious_train_interval(intervals):
+	ret=[];
+	for interval in intervals:
+		if interval.typename == "train" and interval.end==interval.begin+1: # length=1
+			if ret:
+				ret[-1].end=interval.end;
+		else:
+			ret.append(interval);
+	return ret;
+
 def annotate(points,annotation_function):
 	assert(points);
 	intervals=[utils.Interval(annotation_function(points,0),0,None)];
 	N=len(points);
+	A=[annotation_function(points,n) for n in range(len(points))];
+
+	for n in range(1,len(A)-1):
+		if A[n] == "train":
+			if A[n-1] != "train" and A[n+1] != "train":
+				pass;#A[n]=A[n-1];
+			
 	for n in range(1,N):
-		annotation=annotation_function(points,n);
-		change=intervals[-1].typename != annotation;
+		annotation=A[n];#annotation_function(points,n);
+		change=intervals[-1].typename != A[n];
 		if not change:
 			continue;
 		# close the current one
@@ -155,7 +172,7 @@ def annotate(points,annotation_function):
 	intervals[-1].end=N;
 	# remove None
 	# intervals=[intervals[k] for k in range(len(intervals)) if not intervals[k].typename is None];
-	return intervals;
+	return remove_spurious_train_interval(intervals);
 
 def test_annotation_function(points,n):
 	if points[n].elevation is None:
@@ -254,6 +271,13 @@ def annotation_function(points,n):
 	if pause_condition(m):
 		return "pause";
 	if trainspeed_condition(m):
+		#t1=points[n].time;
+		#t2=points[n+1].time;
+		#dist=points[n].dist(points[n+1]);
+		#print("t1=",t1);
+		#print("t2=",t2)
+		#print("d=",dist);
+		#print("speed=",utils.kmh(dist/(t2-t1).seconds));
 		return "train";
 	return "moving";
 
@@ -381,7 +405,6 @@ def create_statistics(directory):
 	name,points,creator=readtracks.readpoints(origin);
 	timer.elapsed("read");
 	assert(points);
-
 	J=annotate(points,annotation_function);
 	timer.elapsed("annotate");
 	
