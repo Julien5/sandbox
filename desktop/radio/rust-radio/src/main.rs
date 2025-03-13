@@ -148,16 +148,18 @@ async fn main() -> core::result::Result<(), Box<dyn Error + Send + Sync>> {
     };
 
 	let reader = Reader::new(reader0);
-
-	
-	tracing::info!("decoder thread start");
+	tracing::info!("reader done");
     let (_stream, handle) = rodio::OutputStream::try_default()?;
+	tracing::info!("output stream done");
 	let sink = rodio::Sink::try_new(&handle)?;
+	tracing::info!("sink done");
 	let dec=rodio::Decoder::new_mp3(reader)?;
+	tracing::info!("decoder done");
 	let source = Source::new(dec);
+	tracing::info!("source done");
+    sink.append(source);
+	tracing::info!("append done");
 	let audio_handle = tokio::task::spawn_blocking(move || {
-		tracing::info!("decoder thread append");
-        sink.append(source);
 		tracing::info!("decoder thread sleep");
         sink.sleep_until_end();
         Ok::<_, Box<dyn Error + Send + Sync>>(())
