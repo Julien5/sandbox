@@ -1,15 +1,12 @@
 extern crate gpx;
 extern crate chrono;
-extern crate geographiclib_rs;
-extern crate geoutils;
+extern crate geo;
 
 use std::io::BufReader;
 use std::fs::File;
 
 use gpx::read;
 use gpx::{Gpx, Track, TrackSegment};
-use geographiclib_rs::{Geodesic, InverseGeodesic};
-
 
 type Time = chrono::NaiveDateTime;
 
@@ -23,15 +20,25 @@ fn kmh(speed:f64) -> f64 {
 	speed * 3.6f64 
 }
 
+use geo::Distance;
+fn distance(x1:f64,y1:f64,x2:f64,y2:f64) -> f64 {
+	//let p0 = geoutils::Location::new(xprev, yprev);
+	//let p1 = geoutils::Location::new(x, y);
+	//let distance = p0.distance_to(&p1).unwrap().meters();
+	let p1 = geo::Point::new(x1,y1);
+	let p2 = geo::Point::new(x2,y2);
+	let ret = geo::Haversine::distance(p1,p2);
+	ret
+}
+
 fn main() {
-    let file = File::open("/home/julien/projects/tracks/3d31374775331e8f5ef06ddc5a8d213e/gpx/GAP00-00-moving.gpx").unwrap();
+	// /home/julien/projects/tracks/3d31374775331e8f5ef06ddc5a8d213e/gpx/GAP00-00-moving.gpx
+    let file = File::open("/tmp/GAP00-00-moving.gpx").unwrap();
     let reader = BufReader::new(file);
 
     let gpx: Gpx = read(reader).unwrap();
     let track: &Track = &gpx.tracks[0];
     let segment: &TrackSegment = &track.segments[0];
-
-	let g = Geodesic::wgs84();
 
 	let mut previous: Option<(f64,f64,Time)> = None;
 	let mut total_distance = 0f64;
@@ -47,10 +54,8 @@ fn main() {
 		let time : Time = chrono::NaiveDateTime::parse_from_str(timestring.as_str(),"%Y-%m-%dT%H:%M:%S.%fZ").ok().unwrap();
 		let (distance,dtime) = match previous {
 			Some((xprev,yprev,tprev)) => {
-				let p0 = geoutils::Location::new(xprev, yprev);
-				let p1 = geoutils::Location::new(x, y);
-				let distance = p0.distance_to(&p1).unwrap().meters();
-				(distance,time_delta(&tprev,&time))},
+				let d=distance(xprev,yprev,x,y);
+				(d,time_delta(&tprev,&time))},
 			None => (0f64,0i64),
 		};
 		total_distance += distance;
@@ -62,5 +67,6 @@ fn main() {
 	let total_distance_km = total_distance/1000f64;
 	let tt=chrono::TimeDelta::new(total_time,0).unwrap().num_minutes();
 	let avg=kmh(total_distance/total_time as f64);
-	println!("total: distance:{total_distance_km:.1} km time:{tt} min speed:{avg:.2} kmh");
+	let npoints = segment.points.len();
+	println!("total: {npoints} points distance:{total_distance_km:.1} km time:{tt} min speed:{avg:.2} kmh");
 }

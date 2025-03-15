@@ -4,6 +4,5 @@ edition = "2021"
 
 [dependencies]
 chrono = "0.4.40"
-geographiclib-rs = "0.2.4"
-geoutils = "0.5.1"
+geo = "0.29.3"
 gpx = "0.10.0"
