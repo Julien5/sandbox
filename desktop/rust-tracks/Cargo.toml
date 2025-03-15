@@ -1,0 +1,5 @@
+[package]
+name = "rust-tracks"
+
+[dependencies]
+gpx = "0.10.0"
