@@ -1,6 +1,7 @@
 extern crate gpx;
 extern crate chrono;
 extern crate geo;
+extern crate glob;
 
 use std::io::BufReader;
 use std::fs::File;
@@ -31,9 +32,8 @@ fn distance(x1:f64,y1:f64,x2:f64,y2:f64) -> f64 {
 	ret
 }
 
-fn main() {
-	// /home/julien/projects/tracks/3d31374775331e8f5ef06ddc5a8d213e/gpx/GAP00-00-moving.gpx
-    let file = File::open("/tmp/GAP00-00-moving.gpx").unwrap();
+fn worker(filename:String) {
+    let file = File::open(filename.clone()).unwrap();
     let reader = BufReader::new(file);
 
     let gpx: Gpx = read(reader).unwrap();
@@ -45,7 +45,6 @@ fn main() {
 	let mut total_time = 0i64;
 	for point in &segment.points {
 		let (x,y)=point.point().x_y();
-		let elevation=point.elevation.unwrap();
 		if point.time.is_none() {
 			break;
 		}
@@ -60,13 +59,32 @@ fn main() {
 		};
 		total_distance += distance;
 		total_time += dtime;
-		let speed = kmh(distance/dtime as f64);
-		println!("point: ({x:.2},{y:.2}) {elevation:.0}m {distance:4.0}m {dtime:3.0}s {speed:.1} kmh");
+		//let speed = kmh(distance/dtime as f64);
+		//println!("point: ({x:.2},{y:.2}) {distance:4.0}m {dtime:3.0}s {speed:.1} kmh");
 		previous = Some((x,y,time));
 	}
 	let total_distance_km = total_distance/1000f64;
 	let tt=chrono::TimeDelta::new(total_time,0).unwrap().num_minutes();
 	let avg=kmh(total_distance/total_time as f64);
 	let npoints = segment.points.len();
-	println!("total: {npoints} points distance:{total_distance_km:.1} km time:{tt} min speed:{avg:.2} kmh");
+	println!("total || {npoints:5} points | {total_distance_km:6.1} km | {tt:4.0} min | {avg:5.2} kmh |");
+}
+
+fn main() {
+	let mut files=Vec::new();
+	for entry in glob::glob("/home/julien/projects/tracks/*/*/*.gpx").unwrap() {
+		match entry {
+			Ok(path) => {
+				let filename=path.display().to_string();
+				if filename.ends_with("-moving.gpx") {
+					files.push(filename);
+				}
+				//println!("{}",path.display())
+			},
+			Err(e) => println!("{:?}", e),
+		}
+    }
+	for filename in files {
+		worker(filename);
+	}
 }
