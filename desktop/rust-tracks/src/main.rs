@@ -24,6 +24,11 @@ fn main() {
 	for point in &segment.points {
 		let (x,y)=point.point().x_y();
 		let elevation=point.elevation.unwrap();
-		println!("point:{x} {y} {elevation}");
+		let speed=point.speed.unwrap_or_default();
+		let time=match point.time {
+			Some(t) => t.format().unwrap_or_default(),
+			None => String::from("None"),
+		};
+		println!("point: ({x:.2},{y:.2}) {elevation:.0} {speed:.0} {time}");
 	}
 }
