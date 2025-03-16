@@ -3,7 +3,7 @@ extern crate chrono;
 extern crate geo;
 extern crate glob;
 
-use std::io::{BufReader, Read};
+use std::io::{BufReader, Cursor, Read};
 use std::fs::File;
 
 use gpx::read;
@@ -22,18 +22,19 @@ fn kmh(speed:f64) -> f64 {
 	speed * 3.6f64 
 }
 
-use geo::Distance;
 fn distance(x1:f64,y1:f64,x2:f64,y2:f64) -> f64 {
 	//let p0 = geoutils::Location::new(xprev, yprev);
 	//let p1 = geoutils::Location::new(x, y);
 	//let distance = p0.distance_to(&p1).unwrap().meters();
 	let p1 = geo::Point::new(x1,y1);
 	let p2 = geo::Point::new(x2,y2);
+	use geo::Distance;
 	let ret = geo::Haversine::distance(p1,p2);
 	ret
 }
 
-fn worker(gpx:&gpx::Gpx) {
+fn worker(reader_mem : &mut std::io::Cursor<Vec<u8>>) {
+	let gpx: Gpx = read(reader_mem).unwrap();
     let track: &Track = &gpx.tracks[0];
     let segment: &TrackSegment = &track.segments[0];
 
@@ -64,7 +65,7 @@ fn worker(gpx:&gpx::Gpx) {
 	let tt=chrono::TimeDelta::new(total_time,0).unwrap().num_minutes();
 	let avg=kmh(total_distance/total_time as f64);
 	let npoints = segment.points.len();
-	// println!("total || {npoints:5} points | {total_distance_km:6.1} km | {tt:4.0} min | {avg:5.2} kmh |");
+	println!("total || {npoints:5} points | {total_distance_km:6.1} km | {tt:4.0} min | {avg:5.2} kmh |");
 }
 
 fn main() {
@@ -79,24 +80,16 @@ fn main() {
     }
 	let n=files.len();
 	for filename in &files {
-		let start = std::time::Instant::now();
 		let file = File::open(filename.clone()).unwrap();
 		let mut reader_file = BufReader::new(file);
 		
 		let mut content: Vec<u8> = Vec::new();
 		reader_file.read_to_end(&mut content);
-		println!("read content: {:5.2?}", start.elapsed());
 
 		use std::io::Cursor;
 		let mut reader_mem=std::io::Cursor::new(content);
 
-		let start = std::time::Instant::now();
-		let gpx: Gpx = read(reader_mem).unwrap();
-		println!("parse content: {:5.2?}", start.elapsed());
-		
-		let start = std::time::Instant::now();
-		worker(&gpx);
-		println!("compute stats: {:5.2?}", start.elapsed());
+		worker(&mut reader_mem);
 	}
 	println!("analyzed {n} files");
 }
