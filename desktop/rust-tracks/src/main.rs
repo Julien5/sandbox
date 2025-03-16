@@ -8,7 +8,8 @@ use std::fs::File;
 
 use gpx::read;
 use gpx::{Gpx, Track, TrackSegment};
-use String;
+
+use rayon::prelude::*;
 
 type Time = chrono::NaiveDateTime;
 
@@ -33,7 +34,7 @@ fn distance(x1:f64,y1:f64,x2:f64,y2:f64) -> f64 {
 	ret
 }
 
-fn worker(content : &Vec<u8>) {
+fn worker(content : &Vec<u8>) -> usize {
 	let reader_mem=std::io::Cursor::new(content);
 	let gpx: Gpx = read(reader_mem).unwrap();
     let track: &Track = &gpx.tracks[0];
@@ -67,6 +68,7 @@ fn worker(content : &Vec<u8>) {
 	let avg=kmh(total_distance/total_time as f64);
 	let npoints = segment.points.len();
 	println!("total || {npoints:5} points | {total_distance_km:6.1} km | {tt:4.0} min | {avg:5.2} kmh |");
+	npoints
 }
 
 fn main() {
@@ -80,24 +82,24 @@ fn main() {
 		}
     }
 
-	let n=files.len();
 	files.sort();
-	files.truncate(100);
+	//files.truncate(100);
 
 	let mut contents=Vec::new();
 	for filename in &files {
 		let file = File::open(filename.clone()).unwrap();
 		let mut reader_file = BufReader::new(file);
 		let mut content: Vec<u8> = Vec::new();
-		reader_file.read_to_end(&mut content);
+		let _ = reader_file.read_to_end(&mut content);
 		contents.push(content);
 	}
 
 	assert_eq!(contents.len(),files.len());
 	assert!(contents.len() > 0usize);
-	for content in &contents {
-		worker(&content);
-	}
-	
+	//let S : usize = contents.iter().map(|content| worker(content)).sum();
+	let S : usize = contents.par_iter().map(|content| worker(content)).sum();
+	println!("analyzed {S} points");
+
+	let n=contents.len();
 	println!("analyzed {n} files");
 }
