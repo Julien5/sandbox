@@ -3,11 +3,12 @@ extern crate chrono;
 extern crate geo;
 extern crate glob;
 
-use std::io::BufReader;
+use std::io::{BufReader, Read};
 use std::fs::File;
 
 use gpx::read;
 use gpx::{Gpx, Track, TrackSegment};
+use String;
 
 type Time = chrono::NaiveDateTime;
 
@@ -32,11 +33,7 @@ fn distance(x1:f64,y1:f64,x2:f64,y2:f64) -> f64 {
 	ret
 }
 
-fn worker(filename:String) {
-    let file = File::open(filename.clone()).unwrap();
-    let reader = BufReader::new(file);
-
-    let gpx: Gpx = read(reader).unwrap();
+fn worker(gpx:&gpx::Gpx) {
     let track: &Track = &gpx.tracks[0];
     let segment: &TrackSegment = &track.segments[0];
 
@@ -67,24 +64,39 @@ fn worker(filename:String) {
 	let tt=chrono::TimeDelta::new(total_time,0).unwrap().num_minutes();
 	let avg=kmh(total_distance/total_time as f64);
 	let npoints = segment.points.len();
-	println!("total || {npoints:5} points | {total_distance_km:6.1} km | {tt:4.0} min | {avg:5.2} kmh |");
+	// println!("total || {npoints:5} points | {total_distance_km:6.1} km | {tt:4.0} min | {avg:5.2} kmh |");
 }
 
 fn main() {
+	let args: Vec<String> = std::env::args().collect();
 	let mut files=Vec::new();
 	for entry in glob::glob("/home/julien/projects/tracks/*/*/*.gpx").unwrap() {
-		match entry {
-			Ok(path) => {
-				let filename=path.display().to_string();
-				if filename.ends_with("-moving.gpx") {
-					files.push(filename);
-				}
-				//println!("{}",path.display())
-			},
-			Err(e) => println!("{:?}", e),
+		let f1=entry.unwrap();
+		let fe=f1.display().to_string();
+		if fe.contains("-moving.gpx") {
+			files.push(fe);
 		}
     }
-	for filename in files {
-		worker(filename);
+	let n=files.len();
+	for filename in &files {
+		let start = std::time::Instant::now();
+		let file = File::open(filename.clone()).unwrap();
+		let mut reader_file = BufReader::new(file);
+		
+		let mut content: Vec<u8> = Vec::new();
+		reader_file.read_to_end(&mut content);
+		println!("read content: {:5.2?}", start.elapsed());
+
+		use std::io::Cursor;
+		let mut reader_mem=std::io::Cursor::new(content);
+
+		let start = std::time::Instant::now();
+		let gpx: Gpx = read(reader_mem).unwrap();
+		println!("parse content: {:5.2?}", start.elapsed());
+		
+		let start = std::time::Instant::now();
+		worker(&gpx);
+		println!("compute stats: {:5.2?}", start.elapsed());
 	}
+	println!("analyzed {n} files");
 }
