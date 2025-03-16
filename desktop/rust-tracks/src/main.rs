@@ -3,7 +3,7 @@ extern crate chrono;
 extern crate geo;
 extern crate glob;
 
-use std::io::{BufReader, Cursor, Read};
+use std::io::{BufReader, Read};
 use std::fs::File;
 
 use gpx::read;
@@ -22,18 +22,19 @@ fn kmh(speed:f64) -> f64 {
 	speed * 3.6f64 
 }
 
+use geo::Distance;
 fn distance(x1:f64,y1:f64,x2:f64,y2:f64) -> f64 {
 	//let p0 = geoutils::Location::new(xprev, yprev);
 	//let p1 = geoutils::Location::new(x, y);
 	//let distance = p0.distance_to(&p1).unwrap().meters();
 	let p1 = geo::Point::new(x1,y1);
 	let p2 = geo::Point::new(x2,y2);
-	use geo::Distance;
 	let ret = geo::Haversine::distance(p1,p2);
 	ret
 }
 
-fn worker(reader_mem : &mut std::io::Cursor<Vec<u8>>) {
+fn worker(content : &Vec<u8>) {
+	let reader_mem=std::io::Cursor::new(content);
 	let gpx: Gpx = read(reader_mem).unwrap();
     let track: &Track = &gpx.tracks[0];
     let segment: &TrackSegment = &track.segments[0];
@@ -69,7 +70,7 @@ fn worker(reader_mem : &mut std::io::Cursor<Vec<u8>>) {
 }
 
 fn main() {
-	let args: Vec<String> = std::env::args().collect();
+	let _args: Vec<String> = std::env::args().collect();
 	let mut files=Vec::new();
 	for entry in glob::glob("/home/julien/projects/tracks/*/*/*.gpx").unwrap() {
 		let f1=entry.unwrap();
@@ -78,18 +79,25 @@ fn main() {
 			files.push(fe);
 		}
     }
+
 	let n=files.len();
+	files.sort();
+	files.truncate(100);
+
+	let mut contents=Vec::new();
 	for filename in &files {
 		let file = File::open(filename.clone()).unwrap();
 		let mut reader_file = BufReader::new(file);
-		
 		let mut content: Vec<u8> = Vec::new();
 		reader_file.read_to_end(&mut content);
-
-		use std::io::Cursor;
-		let mut reader_mem=std::io::Cursor::new(content);
-
-		worker(&mut reader_mem);
+		contents.push(content);
 	}
+
+	assert_eq!(contents.len(),files.len());
+	assert!(contents.len() > 0usize);
+	for content in &contents {
+		worker(&content);
+	}
+	
 	println!("analyzed {n} files");
 }
