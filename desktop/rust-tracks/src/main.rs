@@ -10,7 +10,7 @@ use std::fs::File;
 use rayon::prelude::*;
 
 fn main() {
-	let _args: Vec<String> = std::env::args().collect();
+	let args: Vec<String> = std::env::args().collect();
 	let mut files=Vec::new();
 	for entry in glob::glob("/home/julien/projects/tracks/*/*/*.gpx").unwrap() {
 		let f1=entry.unwrap();
@@ -21,7 +21,10 @@ fn main() {
     }
 
 	files.sort();
-	//files.truncate(100);
+	assert!(args.len()>2);
+	if args[1] == "small" {
+		files.truncate(100);
+	}
 
 	let mut contents=Vec::new();
 	for filename in &files {
@@ -34,8 +37,12 @@ fn main() {
 
 	assert_eq!(contents.len(),files.len());
 	assert!(contents.len() > 0usize);
-	//let s : usize = contents.iter().map(|content| worker(content)).sum();
-	let s : usize = contents.par_iter().map(|content| worker::worker(content)).sum();
+	let mut s = 0usize;
+	if args[2] == "parallel" {
+		s = contents.par_iter().map(|content| worker::worker(content)).sum();
+	} else {
+		s = contents.iter().map(|content| worker::worker(content)).sum();
+	}
 	println!("analyzed {s} points");
 
 	let n=contents.len();
