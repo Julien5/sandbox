@@ -5,28 +5,22 @@ use std::env;
 use rand::rng;
 use rand::prelude::SliceRandom;
 
-#[cfg(test)]
-type Result<T> = std::result::Result<T, Error>;
-
-#[cfg(test)]
-#[derive(Debug, Clone)]
-struct Error;
-
-#[cfg(test)]
-fn to_2d(index:usize,n:usize) -> Result<(usize,usize)> {
-	if index>(n*n) {
-		return Err(Error);
-	}
+fn to_2d(index:usize,n:usize) -> (usize,usize) {
+	assert!(index<(n*n));
 	let x=index%n;
 	let y=index/n;
-	Ok((x,y))
+	(x,y)
 }
 
 fn from_2d(c:(usize,usize),n:usize) -> usize {
 	c.1*n+c.0
 }
 
-fn print_grid(grid:&[char]) {
+const empty : usize = 10;
+const bomb  : usize = 9;
+
+fn print_grid(grid:&[usize]) {
+	let print_lookup: [char;11] = ['0','1','2','3','4','5','6','7','8','B',' '];
 	let l=grid.len();
 	assert!(!grid.is_empty());
 	let n=f64::sqrt(grid.len() as f64) as usize;
@@ -34,9 +28,7 @@ fn print_grid(grid:&[char]) {
 	for k1 in 0..n {
 		for k2 in 0..n {
 			let k=from_2d((k1,k2),n);
-			// println!("k1={k1} k2={k2} k={k}");
-			print!("| {} ",grid[k]);
-			
+			print!("| {} ",print_lookup[grid[k]]);
 		}
 		println!("|");
 	}
@@ -53,19 +45,31 @@ fn distinct_random_numbers(N:usize,b:usize) -> Vec<usize> {
 	G
 }
 
+fn iterate_neighboors(grid:&[char], pos:usize) {
+	let (posx,posy)=to_2d(pos,grid.len());
+	for i in 0..2 {
+		for j in 0..2 {
+			let l=from_2d((posx+i-1,posy+j-1),grid.len());
+			if l<grid.len() {
+			}
+		}
+	}
+}
+
 fn main() {
 	let args: Vec<String> = env::args().collect();
 	// dbg!(&args);
 	let n = args[1].parse::<usize>().unwrap();
 	let N = n*n;
 	dbg!(n);
-	let mut grid : Vec<char> = vec![' '; N];
+	let mut grid : Vec<usize> = vec![empty; N];
 
 	let b = args[2].parse::<usize>().unwrap();
 	dbg!(b);
 
-	for p in distinct_random_numbers(N,b) {
-		grid[p]='B';
+	let Bx = distinct_random_numbers(N,b);
+	for p in Bx {
+		grid[p]=bomb;
 	}
 
 	print_grid(&grid);
@@ -75,19 +79,17 @@ fn main() {
 mod tests {
 	use super::*;
     #[test]
-    fn test_2d() -> std::result::Result<(), Error> {
-		let c = to_2d(0_usize,4)?;
+    fn test_2d() {
+		let c = to_2d(0_usize,4);
 		assert_eq!(c,(0,0));
 
-		let c = to_2d(1_usize,4)?;
+		let c = to_2d(1_usize,4);
 		assert_eq!(c,(1,0));
 
-		let c = to_2d(4_usize,4)?;
+		let c = to_2d(4_usize,4);
 		assert_eq!(c,(0,1));
 		
-		let c = to_2d(15_usize,4)?;
+		let c = to_2d(15_usize,4);
 		assert_eq!(c,(3,3));
-		
-		Ok(())		
     }
 }
