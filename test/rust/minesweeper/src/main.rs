@@ -18,9 +18,10 @@ fn from_2d(c:(usize,usize),n:usize) -> usize {
 
 const empty : usize = 10;
 const bomb  : usize = 9;
+const zero  : usize = 0;
 
 fn print_grid(grid:&[usize]) {
-	let print_lookup: [char;11] = ['0','1','2','3','4','5','6','7','8','B',' '];
+	let print_lookup: [char;11] = [' ','1','2','3','4','5','6','7','8','B',' '];
 	let l=grid.len();
 	assert!(!grid.is_empty());
 	let n=f64::sqrt(grid.len() as f64) as usize;
@@ -45,7 +46,7 @@ fn distinct_random_numbers(N:usize,b:usize) -> Vec<usize> {
 	G
 }
 
-fn iterate_neighboors(grid:&[char], pos:usize) {
+fn iterate_neighboors(grid:&[usize], pos:usize) {
 	let (posx,posy)=to_2d(pos,grid.len());
 	for i in 0..2 {
 		for j in 0..2 {
@@ -62,7 +63,7 @@ fn main() {
 	let n = args[1].parse::<usize>().unwrap();
 	let N = n*n;
 	dbg!(n);
-	let mut grid : Vec<usize> = vec![empty; N];
+	let mut grid : Vec<usize> = vec![zero; N];
 
 	let b = args[2].parse::<usize>().unwrap();
 	dbg!(b);
