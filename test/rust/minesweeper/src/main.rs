@@ -29,7 +29,8 @@ fn print_grid(grid:&[usize]) {
 	for k1 in 0..n {
 		for k2 in 0..n {
 			let k=from_2d((k1,k2),n);
-			print!("| {} ",print_lookup[grid[k]]);
+			print!("| {:2} ",grid[k]);
+			//print!("| {} ",print_lookup[grid[k]]);
 		}
 		println!("|");
 	}
@@ -46,14 +47,29 @@ fn distinct_random_numbers(N:usize,b:usize) -> Vec<usize> {
 	G
 }
 
-fn iterate_neighboors(grid:&[usize], pos:usize) {
+fn increment_neighboors(grid:&mut [usize], pos:usize) {
 	let (posx,posy)=to_2d(pos,grid.len());
 	for i in 0..2 {
+		if posx+i<1 {
+			continue;
+		}
 		for j in 0..2 {
+			if posy+j<1 {
+				continue;
+			}
+	
 			let l=from_2d((posx+i-1,posy+j-1),grid.len());
-			if l<grid.len() {
+			println!("consider {l}");
+			if l<grid.len() && grid[l] != bomb {
+				grid[l]+=1;
 			}
 		}
+	}
+}
+
+fn count_bombs(grid:&mut [usize], bombs_positions:&[usize]) {
+	for bpos in bombs_positions {
+		increment_neighboors(grid,*bpos);
 	}
 }
 
@@ -68,11 +84,14 @@ fn main() {
 	let b = args[2].parse::<usize>().unwrap();
 	dbg!(b);
 
-	let Bx = distinct_random_numbers(N,b);
-	for p in Bx {
-		grid[p]=bomb;
+	//let Bx = distinct_random_numbers(N,b);
+	let Bx = [12];
+	for p in &Bx {
+		grid[*p]=bomb;
 	}
 
+	print_grid(&grid);
+	count_bombs(&mut grid,&Bx);
 	print_grid(&grid);
 }
 
