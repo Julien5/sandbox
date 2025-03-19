@@ -20,18 +20,27 @@ const _EMPTY : usize = 10;
 const BOMB  : usize = 9;
 const ZERO  : usize = 0;
 
-fn print_grid(grid:&[usize]) {
-	let print_lookup: [char;11] = [' ','1','2','3','4','5','6','7','8','B',' '];
+// to stdout efficiency
+use std::{
+    fs::File,
+    io::{BufWriter, Write},
+    os::unix::io::FromRawFd,
+};
+
+fn print_grid(grid:&[usize], writer: &mut BufWriter<File>) {
+	let print_lookup: [u8;11] = [b' ',b'1',b'2',b'3',b'4',b'5',b'6',b'7',b'8',b'B',b' '];
 	let l=grid.len();
 	assert!(!grid.is_empty());
 	let n=f64::sqrt(grid.len() as f64) as usize;
 	println!("grid len is {l} and the square is {n}");
+	let mut output:Vec<u8> = vec![b' ';n+1];
+	output[n]=b'\n';
 	for k1 in 0..n {
 		for k2 in 0..n {
 			let k=from_2d((k1,k2),n);
-			print!("| {} ",print_lookup[grid[k]]);
+			output[k2]=print_lookup[grid[k]];
 		}
-		println!("|");
+		writer.write_all(&output).unwrap();
 	}
 }
 
@@ -76,13 +85,16 @@ fn count_bombs(grid:&mut [usize], bombs_positions:&[usize]) {
 
 fn main() {
 	let args: Vec<String> = env::args().collect();
-	// dbg!(&args);
-	let n = args[1].parse::<usize>().unwrap();
+	let stdout = unsafe { File::from_raw_fd(1) };
+	let mut writer = BufWriter::new(stdout);
+	let quiet : bool = args[1].contains("quiet");
+	println!("quiet={quiet}");
+	let n = args[2].parse::<usize>().unwrap();
 	let N = n*n;
 	dbg!(n);
 	let mut grid : Vec<usize> = vec![ZERO; N];
 
-	let b = args[2].parse::<usize>().unwrap();
+	let b = args[3].parse::<usize>().unwrap();
 	dbg!(b);
 
 	let Bx = distinct_random_numbers(N,b);
@@ -91,9 +103,13 @@ fn main() {
 		grid[*p]=BOMB;
 	}
 
-	print_grid(&grid);
+	if quiet == false {
+		print_grid(&grid,&mut writer);
+	}
 	count_bombs(&mut grid,&Bx);
-	print_grid(&grid);
+	if quiet == false {
+		print_grid(&grid,&mut writer);
+	}
 }
 
 #[cfg(test)]
