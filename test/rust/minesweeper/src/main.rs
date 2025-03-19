@@ -1,3 +1,5 @@
+#![allow(non_snake_case)]
+
 use std::env;
 
 use rand::rng;
@@ -24,7 +26,6 @@ fn from_2d(c:(usize,usize),n:usize) -> usize {
 	c.1*n+c.0
 }
 
-
 fn print_grid(grid:&[char]) {
 	let l=grid.len();
 	assert!(!grid.is_empty());
@@ -41,23 +42,32 @@ fn print_grid(grid:&[char]) {
 	}
 }
 
+fn distinct_random_numbers(N:usize,b:usize) -> Vec<usize> {
+	// generates [0,1,...,N-1]
+	let mut G : Vec<usize>=(0usize..N).collect();
+	let mut rng = rng();
+	// shuffle it and keep the first b elements.
+	G.shuffle(&mut rng);
+	G.truncate(b);
+	assert_eq!(G.len(),b);
+	G
+}
+
 fn main() {
 	let args: Vec<String> = env::args().collect();
 	// dbg!(&args);
 	let n = args[1].parse::<usize>().unwrap();
+	let N = n*n;
 	dbg!(n);
-	let mut grid : Vec<char> = vec![' '; n*n];
+	let mut grid : Vec<char> = vec![' '; N];
 
 	let b = args[2].parse::<usize>().unwrap();
 	dbg!(b);
 
-	// init 
-	for k in 0..b {
-		grid[k]='B';
+	for p in distinct_random_numbers(N,b) {
+		grid[p]='B';
 	}
 
-	let mut rng = rng();
-	grid.shuffle(&mut rng);
 	print_grid(&grid);
 }
 
