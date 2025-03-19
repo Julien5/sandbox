@@ -25,7 +25,7 @@ fn from_2d(c:(usize,usize),n:usize) -> usize {
 }
 
 
-fn print_grid(grid:&[bool]) {
+fn print_grid(grid:&[char]) {
 	let l=grid.len();
 	assert!(!grid.is_empty());
 	let n=f64::sqrt(grid.len() as f64) as usize;
@@ -34,11 +34,7 @@ fn print_grid(grid:&[bool]) {
 		for k2 in 0..n {
 			let k=from_2d((k1,k2),n);
 			// println!("k1={k1} k2={k2} k={k}");
-			if grid[k] {
-				print!("| * ");
-			} else {
-				print!("|   ");
-			}
+			print!("| {} ",grid[k]);
 			
 		}
 		println!("|");
@@ -50,14 +46,14 @@ fn main() {
 	// dbg!(&args);
 	let n = args[1].parse::<usize>().unwrap();
 	dbg!(n);
-	let mut grid : Vec<bool> = vec![false; n*n];
+	let mut grid : Vec<char> = vec![' '; n*n];
 
 	let b = args[2].parse::<usize>().unwrap();
 	dbg!(b);
 
 	// init 
 	for k in 0..b {
-		grid[k]=true;
+		grid[k]='B';
 	}
 
 	let mut rng = rng();
