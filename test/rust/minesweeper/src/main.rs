@@ -29,7 +29,32 @@ struct Grid {
 	bomb_positions: Vec<usize>
 }
 
+fn distinct_random_numbers(N:usize,b:usize) -> Vec<usize> {
+	// generates [0,1,...,N-1]
+	let mut G : Vec<usize>=(0usize..N).collect();
+	let mut rng = rng();
+	// shuffle it and keep the first b elements.
+	G.shuffle(&mut rng);
+	G.truncate(b);
+	assert_eq!(G.len(),b);
+	G
+}
+
 impl Grid {
+	fn with_bombs(n:usize, b:usize) -> Grid {
+		let N=n*n;
+		let mut g=Grid {
+			n:n,
+			N:N,
+			bomb_positions:distinct_random_numbers(N,b),
+			grid: vec![ZERO; N]
+		};
+		for p in &g.bomb_positions {
+			g.grid[*p]=BOMB;
+		}
+		g
+	}
+
 	fn increment_neighboors(&mut self, pos:usize) {
 		let (posx,posy)=to_2d(pos,self.n);
 		for i in 0..3 {
@@ -80,16 +105,6 @@ fn print_grid(grid:&Grid, writer: &mut BufWriter<File>) {
 	}
 }
 
-fn distinct_random_numbers(N:usize,b:usize) -> Vec<usize> {
-	// generates [0,1,...,N-1]
-	let mut G : Vec<usize>=(0usize..N).collect();
-	let mut rng = rng();
-	// shuffle it and keep the first b elements.
-	G.shuffle(&mut rng);
-	G.truncate(b);
-	assert_eq!(G.len(),b);
-	G
-}
 
 fn main() {
 	let args: Vec<String> = env::args().collect();
@@ -100,23 +115,8 @@ fn main() {
 	let quiet : bool = args[1].contains("quiet");
 	let n = args[2].parse::<usize>().unwrap();
 	let b = args[3].parse::<usize>().unwrap();
-	let N = n*n;
-
-	let Bx = distinct_random_numbers(N,b);
-	//let Bx = [12];
-
-	let mut grid0 : Vec<Element> = vec![ZERO; N];
-	for p in &Bx {
-		grid0[*p]=BOMB;
-	}
-
-	let mut grid : Grid = Grid {
-		n:n,
-		N:N,
-		bomb_positions:Bx,
-		grid:grid0
-	};
-
+	
+	let mut grid = Grid::with_bombs(n,b);
 	if quiet == false {
 		print_grid(&grid,&mut writer);
 	}
