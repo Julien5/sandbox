@@ -16,9 +16,48 @@ fn from_2d(c:(usize,usize),n:usize) -> usize {
 	c.1*n+c.0
 }
 
-const _EMPTY : usize = 10;
-const BOMB  : usize = 9;
-const ZERO  : usize = 0;
+type Element = usize;
+
+const _EMPTY : Element = 10;
+const BOMB  : Element = 9;
+const ZERO  : Element = 0;
+
+struct Grid {
+	n: usize,
+    N: usize,
+	grid: Vec<Element>,
+	bomb_positions: Vec<usize>
+}
+
+impl Grid {
+	fn increment_neighboors(&mut self, pos:usize) {
+		let (posx,posy)=to_2d(pos,self.n);
+		for i in 0..3 {
+			if posx+i<1 {
+				continue;
+			}
+			for j in 0..3 {
+				if i == 1 && j == 1 {
+					continue
+				}
+				if posy+j<1 {
+					continue;
+				}
+				let l=from_2d((posx+i-1,posy+j-1),self.n);
+				if l<self.grid.len() && self.grid[l] != BOMB {
+					self.grid[l]+=1;
+				}
+			}
+		}
+	}
+	
+	fn count_bombs(&mut self) {
+		let positions=self.bomb_positions.clone();
+		for bpos in positions { 
+			self.increment_neighboors(bpos);
+		}
+	}
+}
 
 // to stdout efficiency
 use std::{
@@ -27,18 +66,15 @@ use std::{
     os::unix::io::FromRawFd,
 };
 
-fn print_grid(grid:&[usize], writer: &mut BufWriter<File>) {
+fn print_grid(grid:&Grid, writer: &mut BufWriter<File>) {
 	let print_lookup: [u8;11] = [b' ',b'1',b'2',b'3',b'4',b'5',b'6',b'7',b'8',b'B',b' '];
-	let l=grid.len();
-	assert!(!grid.is_empty());
-	let n=f64::sqrt(grid.len() as f64) as usize;
-	println!("grid len is {l} and the square is {n}");
-	let mut output:Vec<u8> = vec![b' ';n+1];
-	output[n]=b'\n';
-	for k1 in 0..n {
-		for k2 in 0..n {
-			let k=from_2d((k1,k2),n);
-			output[k2]=print_lookup[grid[k]];
+	assert!(!grid.grid.is_empty());
+	let mut output:Vec<u8> = vec![b' ';grid.n+1];
+	output[grid.n]=b'\n';
+	for k1 in 0..grid.n {
+		for k2 in 0..grid.n {
+			let k=from_2d((k1,k2),grid.n);
+			output[k2]=print_lookup[grid.grid[k]];
 		}
 		writer.write_all(&output).unwrap();
 	}
@@ -55,58 +91,36 @@ fn distinct_random_numbers(N:usize,b:usize) -> Vec<usize> {
 	G
 }
 
-fn increment_neighboors(grid:&mut [usize], pos:usize) {
-	let n=f64::sqrt(grid.len() as f64) as usize;
-	let (posx,posy)=to_2d(pos,n);
-	for i in 0..3 {
-		if posx+i<1 {
-			continue;
-		}
-		for j in 0..3 {
-			if i == 1 && j == 1 {
-				continue
-			}
-			if posy+j<1 {
-				continue;
-			}
-			let l=from_2d((posx+i-1,posy+j-1),n);
-			if l<grid.len() && grid[l] != BOMB {
-				grid[l]+=1;
-			}
-		}
-	}
-}
-
-fn count_bombs(grid:&mut [usize], bombs_positions:&[usize]) {
-	for bpos in bombs_positions {
-		increment_neighboors(grid,*bpos);
-	}
-}
-
 fn main() {
 	let args: Vec<String> = env::args().collect();
+
 	let stdout = unsafe { File::from_raw_fd(1) };
 	let mut writer = BufWriter::new(stdout);
+	
 	let quiet : bool = args[1].contains("quiet");
-	println!("quiet={quiet}");
 	let n = args[2].parse::<usize>().unwrap();
-	let N = n*n;
-	dbg!(n);
-	let mut grid : Vec<usize> = vec![ZERO; N];
-
 	let b = args[3].parse::<usize>().unwrap();
-	dbg!(b);
+	let N = n*n;
 
 	let Bx = distinct_random_numbers(N,b);
 	//let Bx = [12];
+
+	let mut grid0 : Vec<Element> = vec![ZERO; N];
 	for p in &Bx {
-		grid[*p]=BOMB;
+		grid0[*p]=BOMB;
 	}
+
+	let mut grid : Grid = Grid {
+		n:n,
+		N:N,
+		bomb_positions:Bx,
+		grid:grid0
+	};
 
 	if quiet == false {
 		print_grid(&grid,&mut writer);
 	}
-	count_bombs(&mut grid,&Bx);
+	grid.count_bombs();
 	if quiet == false {
 		print_grid(&grid,&mut writer);
 	}
