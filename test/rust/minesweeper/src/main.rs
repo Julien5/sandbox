@@ -5,14 +5,14 @@ use std::env;
 use rand::rng;
 use rand::prelude::SliceRandom;
 
-fn to_2d(index:usize,n:usize) -> (usize,usize) {
+fn _2d(index:usize,n:usize) -> (usize,usize) {
 	assert!(index<(n*n));
 	let x=index%n;
 	let y=index/n;
 	(x,y)
 }
 
-fn from_2d(c:(usize,usize),n:usize) -> usize {
+fn _1d(c:(usize,usize),n:usize) -> usize {
 	c.1*n+c.0
 }
 
@@ -22,32 +22,35 @@ const _EMPTY : Element = 10;
 const BOMB  : Element = 9;
 const ZERO  : Element = 0;
 
-struct Grid {
-	n: usize,
-    N: usize,
-	grid: Vec<Element>,
-	bomb_positions: Vec<usize>
-}
-
-fn distinct_random_numbers(N:usize,b:usize) -> Vec<usize> {
+fn distinct_random_numbers(n:usize,b:usize) -> Vec<usize> {
 	// generates [0,1,...,N-1]
-	let mut G : Vec<usize>=(0usize..N).collect();
+	let mut G : Vec<usize>=(0usize..(n*n)).collect();
 	let mut rng = rng();
 	// shuffle it and keep the first b elements.
 	G.shuffle(&mut rng);
 	G.truncate(b);
 	assert_eq!(G.len(),b);
+	for g in &mut G {
+		let (x,y)=_2d(*g,n);
+		let p2=_1d((x+1,y+1),n+2);
+		*g=p2
+	}
 	G
 }
 
+struct Grid {
+	n: usize,
+	grid: Vec<Element>,
+	bomb_positions: Vec<usize>
+}
+
+
 impl Grid {
 	fn with_bombs(n:usize, b:usize) -> Grid {
-		let N=n*n;
 		let mut g=Grid {
 			n:n,
-			N:N,
-			bomb_positions:distinct_random_numbers(N,b),
-			grid: vec![ZERO; N]
+			bomb_positions:distinct_random_numbers(n,b),
+			grid: vec![ZERO; (n+2)*(n+2)]
 		};
 		for p in &g.bomb_positions {
 			g.grid[*p]=BOMB;
@@ -56,20 +59,17 @@ impl Grid {
 	}
 
 	fn increment_neighboors(&mut self, pos:usize) {
-		let (posx,posy)=to_2d(pos,self.n);
+		let (posx,posy)=_2d(pos,self.n+2);
+		assert!(posx>0 && posx<self.n+1);
+		assert!(posy>0 && posy<self.n+1);
 		for i in 0..3 {
-			if posx+i<1 {
-				continue;
-			}
 			for j in 0..3 {
 				if i == 1 && j == 1 {
 					continue
 				}
-				if posy+j<1 {
-					continue;
-				}
-				let l=from_2d((posx+i-1,posy+j-1),self.n);
-				if l<self.grid.len() && self.grid[l] != BOMB {
+				let l=_1d((posx+i-1,posy+j-1),self.n+2);
+				assert!(l<self.grid.len());
+				if self.grid[l] != BOMB {
 					self.grid[l]+=1;
 				}
 			}
@@ -98,7 +98,7 @@ fn print_grid(grid:&Grid, writer: &mut BufWriter<File>) {
 	output[grid.n]=b'\n';
 	for k1 in 0..grid.n {
 		for k2 in 0..grid.n {
-			let k=from_2d((k1,k2),grid.n);
+			let k=_1d((k1+1,k2+1),grid.n+2);
 			output[k2]=print_lookup[grid.grid[k]];
 		}
 		writer.write_all(&output).unwrap();
@@ -131,16 +131,16 @@ mod tests {
 	use super::*;
     #[test]
     fn test_2d() {
-		let c = to_2d(0_usize,4);
+		let c = _2d(0_usize,4);
 		assert_eq!(c,(0,0));
 
-		let c = to_2d(1_usize,4);
+		let c = _2d(1_usize,4);
 		assert_eq!(c,(1,0));
 
-		let c = to_2d(4_usize,4);
+		let c = _2d(4_usize,4);
 		assert_eq!(c,(0,1));
 		
-		let c = to_2d(15_usize,4);
+		let c = _2d(15_usize,4);
 		assert_eq!(c,(3,3));
     }
 }
