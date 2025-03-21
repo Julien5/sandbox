@@ -44,7 +44,6 @@ struct Grid {
 	bomb_positions: Vec<usize>
 }
 
-
 impl Grid {
 	fn with_bombs(n:usize, b:usize) -> Grid {
 		let mut g=Grid {
@@ -56,6 +55,20 @@ impl Grid {
 			g.grid[*p]=BOMB;
 		}
 		g
+	}
+
+	fn print(&self, writer: &mut BufWriter<File>) {
+		let print_lookup: [u8;11] = [b' ',b'1',b'2',b'3',b'4',b'5',b'6',b'7',b'8',b'B',b' '];
+		assert!(!self.grid.is_empty());
+		let mut output:Vec<u8> = vec![b' ';self.n+1];
+		output[self.n]=b'\n';
+		for k1 in 0..self.n {
+			for k2 in 0..self.n {
+				let k=_1d((k1+1,k2+1),self.n+2);
+				output[k2]=print_lookup[self.grid[k]];
+			}
+			writer.write_all(&output).unwrap();
+		}
 	}
 
 	fn increment_neighboors(&mut self, pos:usize) {
@@ -84,27 +97,12 @@ impl Grid {
 	}
 }
 
-// to stdout efficiency
+// for stdout efficiency
 use std::{
     fs::File,
     io::{BufWriter, Write},
     os::unix::io::FromRawFd,
 };
-
-fn print_grid(grid:&Grid, writer: &mut BufWriter<File>) {
-	let print_lookup: [u8;11] = [b' ',b'1',b'2',b'3',b'4',b'5',b'6',b'7',b'8',b'B',b' '];
-	assert!(!grid.grid.is_empty());
-	let mut output:Vec<u8> = vec![b' ';grid.n+1];
-	output[grid.n]=b'\n';
-	for k1 in 0..grid.n {
-		for k2 in 0..grid.n {
-			let k=_1d((k1+1,k2+1),grid.n+2);
-			output[k2]=print_lookup[grid.grid[k]];
-		}
-		writer.write_all(&output).unwrap();
-	}
-}
-
 
 fn main() {
 	let args: Vec<String> = env::args().collect();
@@ -118,11 +116,11 @@ fn main() {
 	
 	let mut grid = Grid::with_bombs(n,b);
 	if quiet == false {
-		print_grid(&grid,&mut writer);
+		grid.print(&mut writer);
 	}
 	grid.count_bombs();
 	if quiet == false {
-		print_grid(&grid,&mut writer);
+		grid.print(&mut writer);
 	}
 }
 
