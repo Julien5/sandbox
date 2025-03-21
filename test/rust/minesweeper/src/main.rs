@@ -5,6 +5,8 @@ use std::env;
 use rand::rng;
 use rand::prelude::SliceRandom;
 
+use rayon::prelude::*;
+
 fn _2d(index:usize,n:usize) -> (usize,usize) {
 	assert!(index<(n*n));
 	let x=index%n;
@@ -104,6 +106,13 @@ use std::{
     os::unix::io::FromRawFd,
 };
 
+fn worker(n:usize) -> usize {
+	println!("worker on grid of size {n}");
+	let mut grid = Grid::with_bombs(n,n);
+	grid.count_bombs();
+	grid.n
+}
+
 fn main() {
 	let args: Vec<String> = env::args().collect();
 
@@ -122,6 +131,12 @@ fn main() {
 	if quiet == false {
 		grid.print(&mut writer);
 	}
+
+	const N : usize = 8;
+	let mut sizes = [4*2048usize; N];
+	let ret=sizes.par_iter().map(|n| worker(*n)).count();
+	println!("ret={ret}");
+	()
 }
 
 #[cfg(test)]
