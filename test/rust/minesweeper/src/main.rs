@@ -5,7 +5,7 @@ use std::env;
 use rand::rng;
 use rand::prelude::SliceRandom;
 
-// use rayon::prelude::*;
+use rayon::prelude::*;
 
 fn _2d(index:usize,n:usize) -> (usize,usize) {
 	assert!(index<(n*n));
@@ -64,6 +64,13 @@ struct Tile {
 }
 
 impl Tile {
+	 fn empty() -> Tile {
+		let mut g=Tile {
+			grid: vec![],
+			bomb_chunk: BombChunk::with_positions(0,0,vec![])
+		};
+		g
+	}
 	fn with_chunk(chunk:BombChunk) -> Tile {
 		let mut g=Tile {
 			grid: vec![ZERO; (chunk.n+2)*(chunk.n+2)],
@@ -125,7 +132,7 @@ use std::{
     os::unix::io::FromRawFd,
 };
 
-fn worker(bomb_chunk:BombChunk) -> Tile {
+fn chunk_count(bomb_chunk:BombChunk) -> Tile {
 	let n=12usize;
 	println!("worker on grid of size {n}");
 	let mut grid = Tile::with_chunk(bomb_chunk);
@@ -144,11 +151,10 @@ impl TileAccumulator {
 		};
 		ret
 	}
-	fn aggregate(&mut self,tile:Tile) -> &mut TileAccumulator {
+	fn aggregate(&mut self,tile:Tile) {
 		let index=tile.bomb_chunk.index;
 		println!("aggregating tile index:{} tiles:{}",index,self.tiles.len());
 		self.tiles.push(tile);	
-		self
 	}
 }
 
@@ -176,16 +182,24 @@ fn main() {
 
 	let pos=distinct_random_numbers(n,b);
 	println!("len={}",pos.len());
+
+
 	let mut bomb_chunks=vec![];
-	for index in 0..3 {
-		bomb_chunks.push(BombChunk::with_positions(n,index,distinct_random_numbers(n,b)));
+	let Nchunks=16;
+	println!("generate chunks");
+	for index in 0..Nchunks {
+		let chunk=BombChunk::with_positions(n,index,distinct_random_numbers(n,b));
+		bomb_chunks.push(chunk);
 	}
-	let mut accumulator=TileAccumulator::init();
-	let _ret=bomb_chunks.into_iter()
-		.map(|chunk| worker(chunk))
-		.fold(&mut accumulator,|acc,tile| {
-			acc.aggregate(tile)
-		});
+	println!("count and collect");
+	let mut acc=std::sync::Arc::new(std::sync::Mutex::new(TileAccumulator::init()));
+	let _:Vec<()>=bomb_chunks.into_par_iter()
+		.map(|chunk| chunk_count(chunk))
+		.into_par_iter()
+		.map(|tile| {
+			acc.lock().unwrap().aggregate(tile);
+		}).collect();
+	println!("aggregate");
 	()
 }
 
