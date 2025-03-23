@@ -19,12 +19,18 @@ fn _1d(c:(usize,usize),n:usize) -> usize {
 }
 
 type Element = usize;
+type BombPositions = Vec<usize>;
 
 const _EMPTY : Element = 10;
 const BOMB  : Element = 9;
 const ZERO  : Element = 0;
 
-fn distinct_random_numbers(n:usize,b:usize) -> Vec<usize> {
+struct BombChunk {
+	positions:BombPositions,
+	n:usize
+}
+
+fn distinct_random_numbers(n:usize,b:usize) -> BombPositions {
 	// generates [0,1,...,N-1]
 	let mut G : Vec<usize>=(0usize..(n*n)).collect();
 	let mut rng = rng();
@@ -40,18 +46,28 @@ fn distinct_random_numbers(n:usize,b:usize) -> Vec<usize> {
 	G
 }
 
-struct Grid {
-	n: usize,
-	grid: Vec<Element>,
-	bomb_positions: Vec<usize>
+impl BombChunk {
+	fn with_positions(n:usize,positions:BombPositions) -> BombChunk {
+		let chunk=BombChunk {
+			n:n,
+			positions:positions
+		};
+		chunk
+	}
 }
 
-impl Grid {
-	fn with_bombs(n:usize, b:usize) -> Grid {
-		let mut g=Grid {
-			n:n,
-			bomb_positions:distinct_random_numbers(n,b),
-			grid: vec![ZERO; (n+2)*(n+2)]
+struct Tile {
+	n: usize,
+	grid: Vec<Element>,
+	bomb_positions: BombPositions
+}
+
+impl Tile {
+	fn with_chunk(chunk:BombChunk) -> Tile {
+		let mut g=Tile {
+			n:chunk.n,
+			bomb_positions:chunk.positions,
+			grid: vec![ZERO; (chunk.n+2)*(chunk.n+2)]
 		};
 		for p in &g.bomb_positions {
 			g.grid[*p]=BOMB;
@@ -106,11 +122,30 @@ use std::{
     os::unix::io::FromRawFd,
 };
 
-fn worker(n:usize) -> usize {
+fn worker(bomb_chunk:BombChunk) -> Tile {
+	let n=12usize;
 	println!("worker on grid of size {n}");
-	let mut grid = Grid::with_bombs(n,n);
+	let mut grid = Tile::with_chunk(bomb_chunk);
 	grid.count_bombs();
-	grid.n
+	grid
+}
+
+struct TileAccumulator {
+	tiles : Vec<Tile>,
+}
+
+impl TileAccumulator {
+	fn init() -> TileAccumulator {
+		let ret=TileAccumulator {
+			tiles:vec![]
+		};
+		ret
+	}
+}
+
+fn aggregate(acc:TileAccumulator,tile:Tile) -> TileAccumulator {
+	println!("aggregating tile:{}",tile.n);
+	acc
 }
 
 fn main() {
@@ -122,8 +157,9 @@ fn main() {
 	let quiet : bool = args[1].contains("quiet");
 	let n = args[2].parse::<usize>().unwrap();
 	let b = args[3].parse::<usize>().unwrap();
-	
-	let mut grid = Grid::with_bombs(n,b);
+
+	let bomb_chunk = BombChunk::with_positions(n,distinct_random_numbers(n,b));
+	let mut grid = Tile::with_chunk(bomb_chunk);
 	if quiet == false {
 		grid.print(&mut writer);
 	}
@@ -131,11 +167,19 @@ fn main() {
 	if quiet == false {
 		grid.print(&mut writer);
 	}
+	writer.flush();
 
-	const N : usize = 8;
-	let mut sizes = [4*2048usize; N];
-	let ret=sizes.par_iter().map(|n| worker(*n)).count();
-	println!("ret={ret}");
+	let pos=distinct_random_numbers(n,b);
+	println!("len={}",pos.len());
+	let mut bomb_chunks=vec![];
+	for k in 0..3 {
+		bomb_chunks.push(BombChunk::with_positions(n,distinct_random_numbers(n,b)));
+	}
+	let acc=TileAccumulator::init();
+	let ret=bomb_chunks.into_iter()
+		.map(|chunk| worker(chunk))
+		.fold(TileAccumulator::init(),|acc,tile| aggregate(acc,tile));
+	println!("ret");
 	()
 }
 
