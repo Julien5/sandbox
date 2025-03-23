@@ -5,7 +5,7 @@ use std::env;
 use rand::rng;
 use rand::prelude::SliceRandom;
 
-// use rayon::prelude::*;
+use rayon::prelude::*;
 
 fn _2d(index:usize,n:usize) -> (usize,usize) {
 	assert!(index<(n*n));
@@ -177,15 +177,18 @@ fn main() {
 	let pos=distinct_random_numbers(n,b);
 	println!("len={}",pos.len());
 	let mut bomb_chunks=vec![];
-	for index in 0..3 {
+	for index in 0..300 {
 		bomb_chunks.push(BombChunk::with_positions(n,index,distinct_random_numbers(n,b)));
 	}
 	let initialAccumulator=TileAccumulator::init();
-	let _ret=bomb_chunks.into_iter()
+	let _ret=bomb_chunks.into_par_iter()
 		.map(|chunk| worker(chunk))
-		.fold(initialAccumulator,|acc,tile| {
+		.fold(||TileAccumulator::init(),
+			  |acc,tile| {
 			aggregate(acc,tile)
-		});
+			  });
+	let ret=_ret.count();
+	println!("{ret}");
 	()
 }
 
