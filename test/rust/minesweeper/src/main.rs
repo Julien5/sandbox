@@ -5,7 +5,7 @@ use std::env;
 use rand::rng;
 use rand::prelude::SliceRandom;
 
-use rayon::prelude::*;
+// use rayon::prelude::*;
 
 fn _2d(index:usize,n:usize) -> (usize,usize) {
 	assert!(index<(n*n));
@@ -57,19 +57,17 @@ impl BombChunk {
 }
 
 struct Tile {
-	n: usize,
 	grid: Vec<Element>,
-	bomb_positions: BombPositions
+	bomb_chunk: BombChunk,
 }
 
 impl Tile {
 	fn with_chunk(chunk:BombChunk) -> Tile {
 		let mut g=Tile {
-			n:chunk.n,
-			bomb_positions:chunk.positions,
-			grid: vec![ZERO; (chunk.n+2)*(chunk.n+2)]
+			grid: vec![ZERO; (chunk.n+2)*(chunk.n+2)],
+			bomb_chunk:chunk
 		};
-		for p in &g.bomb_positions {
+		for p in &g.bomb_chunk.positions {
 			g.grid[*p]=BOMB;
 		}
 		g
@@ -78,11 +76,12 @@ impl Tile {
 	fn print(&self, writer: &mut BufWriter<File>) {
 		let print_lookup: [u8;11] = [b' ',b'1',b'2',b'3',b'4',b'5',b'6',b'7',b'8',b'B',b' '];
 		assert!(!self.grid.is_empty());
-		let mut output:Vec<u8> = vec![b' ';self.n+1];
-		output[self.n]=b'\n';
-		for k1 in 0..self.n {
-			for k2 in 0..self.n {
-				let k=_1d((k1+1,k2+1),self.n+2);
+		let n=self.bomb_chunk.n;
+		let mut output:Vec<u8> = vec![b' ';n+1];
+		output[n]=b'\n';
+		for k1 in 0..n {
+			for k2 in 0..n {
+				let k=_1d((k1+1,k2+1),n+2);
 				output[k2]=print_lookup[self.grid[k]];
 			}
 			writer.write_all(&output).unwrap();
@@ -90,15 +89,16 @@ impl Tile {
 	}
 
 	fn increment_neighboors(&mut self, pos:usize) {
-		let (posx,posy)=_2d(pos,self.n+2);
-		assert!(posx>0 && posx<self.n+1);
-		assert!(posy>0 && posy<self.n+1);
+		let n=self.bomb_chunk.n;
+		let (posx,posy)=_2d(pos,n+2);
+		assert!(posx>0 && posx<n+1);
+		assert!(posy>0 && posy<n+1);
 		for i in 0..3 {
 			for j in 0..3 {
 				if i == 1 && j == 1 {
 					continue
 				}
-				let l=_1d((posx+i-1,posy+j-1),self.n+2);
+				let l=_1d((posx+i-1,posy+j-1),n+2);
 				assert!(l<self.grid.len());
 				if self.grid[l] != BOMB {
 					self.grid[l]+=1;
@@ -108,7 +108,7 @@ impl Tile {
 	}
 	
 	fn count_bombs(&mut self) {
-		let positions=self.bomb_positions.clone();
+		let positions=self.bomb_chunk.positions.clone();
 		for bpos in positions { 
 			self.increment_neighboors(bpos);
 		}
@@ -144,7 +144,7 @@ impl TileAccumulator {
 }
 
 fn aggregate(acc:TileAccumulator,tile:Tile) -> TileAccumulator {
-	println!("aggregating tile:{}",tile.n);
+	println!("aggregating tile:{} tiles:{}",tile.bomb_chunk.n,acc.tiles.len());
 	acc
 }
 
@@ -167,19 +167,18 @@ fn main() {
 	if quiet == false {
 		grid.print(&mut writer);
 	}
-	writer.flush();
+	let _ = writer.flush();
 
 	let pos=distinct_random_numbers(n,b);
 	println!("len={}",pos.len());
 	let mut bomb_chunks=vec![];
-	for k in 0..3 {
+	for _k in 0..3 {
 		bomb_chunks.push(BombChunk::with_positions(n,distinct_random_numbers(n,b)));
 	}
-	let acc=TileAccumulator::init();
-	let ret=bomb_chunks.into_iter()
+	let _acc=TileAccumulator::init();
+	let _ret=bomb_chunks.into_iter()
 		.map(|chunk| worker(chunk))
 		.fold(TileAccumulator::init(),|acc,tile| aggregate(acc,tile));
-	println!("ret");
 	()
 }
 
