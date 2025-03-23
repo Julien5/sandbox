@@ -146,7 +146,7 @@ impl TileAccumulator {
 	}
 }
 
-fn aggregate(mut acc:TileAccumulator,tile:Tile) -> TileAccumulator {
+fn aggregate(acc:&mut TileAccumulator,tile:Tile) -> &mut TileAccumulator {
 	let index=tile.bomb_chunk.index;
 	println!("aggregating tile index:{} tiles:{}",index,acc.tiles.len());
 	acc.tiles.push(tile);	
@@ -180,12 +180,14 @@ fn main() {
 	for index in 0..300 {
 		bomb_chunks.push(BombChunk::with_positions(n,index,distinct_random_numbers(n,b)));
 	}
-	let initialAccumulator=TileAccumulator::init();
+	let mut initialAccumulator=TileAccumulator::init();
 	let _ret=bomb_chunks.into_par_iter()
 		.map(|chunk| worker(chunk))
-		.fold(||TileAccumulator::init(),
+		.fold(|| {
+			&mut initialAccumulator
+		},
 			  |acc,tile| {
-			aggregate(acc,tile)
+				  aggregate(acc,tile)
 			  });
 	let ret=_ret.count();
 	println!("{ret}");
