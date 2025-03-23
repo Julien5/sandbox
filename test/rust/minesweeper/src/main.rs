@@ -5,7 +5,7 @@ use std::env;
 use rand::rng;
 use rand::prelude::SliceRandom;
 
-use rayon::prelude::*;
+// use rayon::prelude::*;
 
 fn _2d(index:usize,n:usize) -> (usize,usize) {
 	assert!(index<(n*n));
@@ -144,14 +144,14 @@ impl TileAccumulator {
 		};
 		ret
 	}
+	fn aggregate(&mut self,tile:Tile) -> &mut TileAccumulator {
+		let index=tile.bomb_chunk.index;
+		println!("aggregating tile index:{} tiles:{}",index,self.tiles.len());
+		self.tiles.push(tile);	
+		self
+	}
 }
 
-fn aggregate(acc:&mut TileAccumulator,tile:Tile) -> &mut TileAccumulator {
-	let index=tile.bomb_chunk.index;
-	println!("aggregating tile index:{} tiles:{}",index,acc.tiles.len());
-	acc.tiles.push(tile);	
-	acc
-}
 
 fn main() {
 	let args: Vec<String> = env::args().collect();
@@ -177,20 +177,15 @@ fn main() {
 	let pos=distinct_random_numbers(n,b);
 	println!("len={}",pos.len());
 	let mut bomb_chunks=vec![];
-	for index in 0..300 {
+	for index in 0..3 {
 		bomb_chunks.push(BombChunk::with_positions(n,index,distinct_random_numbers(n,b)));
 	}
-	let mut initialAccumulator=TileAccumulator::init();
-	let _ret=bomb_chunks.into_par_iter()
+	let mut accumulator=TileAccumulator::init();
+	let _ret=bomb_chunks.into_iter()
 		.map(|chunk| worker(chunk))
-		.fold(|| {
-			&mut initialAccumulator
-		},
-			  |acc,tile| {
-				  aggregate(acc,tile)
-			  });
-	let ret=_ret.count();
-	println!("{ret}");
+		.fold(&mut accumulator,|acc,tile| {
+			acc.aggregate(tile)
+		});
 	()
 }
 
