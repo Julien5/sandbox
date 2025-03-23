@@ -109,9 +109,10 @@ impl Tile {
 	
 	fn count_bombs(&mut self) {
 		let positions=self.bomb_chunk.positions.clone();
-		for bpos in positions { 
-			self.increment_neighboors(bpos);
+		positions.iter().for_each(|bpos| {
+			self.increment_neighboors(*bpos);
 		}
+		);
 	}
 }
 
