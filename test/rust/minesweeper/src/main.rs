@@ -195,11 +195,9 @@ fn main() {
 	let mut acc=std::sync::Arc::new(std::sync::Mutex::new(TileAccumulator::init()));
 	let _:Vec<()>=bomb_chunks.into_par_iter()
 		.map(|chunk| chunk_count(chunk))
-		.into_par_iter()
 		.map(|tile| {
 			acc.lock().unwrap().aggregate(tile);
 		}).collect();
-	println!("aggregate");
 	()
 }
 
