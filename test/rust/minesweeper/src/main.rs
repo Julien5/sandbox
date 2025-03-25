@@ -82,43 +82,16 @@ impl BombChunks {
 	fn push(&mut self, chunk:BombChunk) {
 		self.chunks.push(chunk);
 	}
+	
+	fn iter(&mut self) -> impl Iterator<Item=&BombChunk> {
+           self.chunks.iter()
+	}
+	
 	fn clone(&self,index:usize) {
 		assert!(index<self.chunks.len());
 		self.chunks[index].clone();
 	}
 }
-
-impl Iterator for BombChunks {
-	type Item = BombChunk;
-	fn next(&mut self) -> Option<BombChunk> {
-		if self.chunks.is_empty() {
-			return None;
-		}
-		if self.index>=self.chunks.len() {
-			return None;
-		}
-		assert!(self.index<self.chunks.len());
-		Some(self.chunks[self.index].clone())
-	}
-}
-
-impl IntoIterator for BombChunks {
-    type Item = BombChunk;
-    type IntoIter = <Vec<BombChunk> as IntoIterator>::IntoIter;
-    fn into_iter(self) -> Self::IntoIter {
-        self.chunks.into_iter()
-    }
-}
-
-/*
-impl<'a> IntoIterator for &'a BombChunks {
-	type Item = &'a BombChunk;
-    type IntoIter = std::slice::Iter<'a, &BombChunk>;
-    fn into_iter(self) -> Self::IntoIter {
-        self.chunks.iter()
-    }
-}
-*/
 
 struct Tile {
 	grid: Vec<Element>,
