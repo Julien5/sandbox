@@ -25,6 +25,7 @@ const _EMPTY : Element = 10;
 const BOMB  : Element = 9;
 const ZERO  : Element = 0;
 
+#[derive(Clone, Debug)]
 struct BombChunk {
 	n:usize,	
 	index:usize,
@@ -58,6 +59,67 @@ impl BombChunk {
 	}
 }
 
+struct BombChunks {
+	chunks : Vec<BombChunk>,
+	index: usize
+}
+
+impl BombChunks {
+	fn new() -> BombChunks {
+		let ret=BombChunks {
+			chunks:vec![],
+			index: 0
+		};
+		ret
+	}
+	fn with_chunks(chunks:Vec<BombChunk>) -> BombChunks {
+		let ret=BombChunks {
+			chunks:chunks,
+			index: 0
+		};
+		ret
+	}
+	fn push(&mut self, chunk:BombChunk) {
+		self.chunks.push(chunk);
+	}
+	fn clone(&self,index:usize) {
+		assert!(index<self.chunks.len());
+		self.chunks[index].clone();
+	}
+}
+
+impl Iterator for BombChunks {
+	type Item = BombChunk;
+	fn next(&mut self) -> Option<BombChunk> {
+		if self.chunks.is_empty() {
+			return None;
+		}
+		if self.index>=self.chunks.len() {
+			return None;
+		}
+		assert!(self.index<self.chunks.len());
+		Some(self.chunks[self.index].clone())
+	}
+}
+
+impl IntoIterator for BombChunks {
+    type Item = BombChunk;
+    type IntoIter = <Vec<BombChunk> as IntoIterator>::IntoIter;
+    fn into_iter(self) -> Self::IntoIter {
+        self.chunks.into_iter()
+    }
+}
+
+/*
+impl<'a> IntoIterator for &'a BombChunks {
+	type Item = &'a BombChunk;
+    type IntoIter = std::slice::Iter<'a, &BombChunk>;
+    fn into_iter(self) -> Self::IntoIter {
+        self.chunks.iter()
+    }
+}
+*/
+
 struct Tile {
 	grid: Vec<Element>,
 	bomb_chunk: BombChunk,
@@ -65,7 +127,7 @@ struct Tile {
 
 impl Tile {
 	 fn empty() -> Tile {
-		let mut g=Tile {
+		let g=Tile {
 			grid: vec![],
 			bomb_chunk: BombChunk::with_positions(0,0,vec![])
 		};
@@ -184,7 +246,7 @@ fn main() {
 	println!("len={}",pos.len());
 
 
-	let mut bomb_chunks=vec![];
+	let mut bomb_chunks=BombChunks::new();
 	let Nchunks=16;
 	println!("generate chunks");
 	for index in 0..Nchunks {
@@ -192,8 +254,8 @@ fn main() {
 		bomb_chunks.push(chunk);
 	}
 	println!("count and collect");
-	let mut acc=std::sync::Arc::new(std::sync::Mutex::new(TileAccumulator::init()));
-	let _:Vec<()>=bomb_chunks.into_par_iter()
+	let acc=std::sync::Arc::new(std::sync::Mutex::new(TileAccumulator::init()));
+	let _:Vec<()>=bomb_chunks.iter()
 		.map(|chunk| chunk_count(chunk))
 		.map(|tile| {
 			acc.lock().unwrap().aggregate(tile);
