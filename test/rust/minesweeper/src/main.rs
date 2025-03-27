@@ -5,7 +5,7 @@ use std::env;
 use rand::rng;
 use rand::prelude::SliceRandom;
 
-use rayon::prelude::*;
+// use rayon::prelude::*;
 
 fn _2d(index:usize,n:usize) -> (usize,usize) {
 	assert!(index<(n*n));
@@ -61,36 +61,30 @@ impl BombChunk {
 
 struct BombChunks {
 	chunks : Vec<BombChunk>,
-	index: usize
 }
 
 impl BombChunks {
 	fn new() -> BombChunks {
 		let ret=BombChunks {
-			chunks:vec![],
-			index: 0
-		};
-		ret
-	}
-	fn with_chunks(chunks:Vec<BombChunk>) -> BombChunks {
-		let ret=BombChunks {
-			chunks:chunks,
-			index: 0
+			chunks:vec![]
 		};
 		ret
 	}
 	fn push(&mut self, chunk:BombChunk) {
 		self.chunks.push(chunk);
 	}
-	
-	fn iter(&mut self) -> impl Iterator<Item=&BombChunk> {
-           self.chunks.iter()
-	}
-	
-	fn clone(&self,index:usize) {
-		assert!(index<self.chunks.len());
-		self.chunks[index].clone();
-	}
+}
+
+impl Iterator for BombChunks {
+    type Item = BombChunk;
+    fn next(&mut self) -> Option<Self::Item> {
+		if self.chunks.is_empty() {
+			return None;
+		}
+		let N=self.chunks.len();
+		println!("remaining number of bomb chunks:{N}");
+        Some(self.chunks.remove(N-1))
+    }
 }
 
 struct Tile {
@@ -99,13 +93,6 @@ struct Tile {
 }
 
 impl Tile {
-	 fn empty() -> Tile {
-		let g=Tile {
-			grid: vec![],
-			bomb_chunk: BombChunk::with_positions(0,0,vec![])
-		};
-		g
-	}
 	fn with_chunk(chunk:BombChunk) -> Tile {
 		let mut g=Tile {
 			grid: vec![ZERO; (chunk.n+2)*(chunk.n+2)],
@@ -228,7 +215,7 @@ fn main() {
 	}
 	println!("count and collect");
 	let acc=std::sync::Arc::new(std::sync::Mutex::new(TileAccumulator::init()));
-	let _:Vec<()>=bomb_chunks.iter()
+	let _:Vec<()>=bomb_chunks.into_iter()
 		.map(|chunk| chunk_count(chunk))
 		.map(|tile| {
 			acc.lock().unwrap().aggregate(tile);
