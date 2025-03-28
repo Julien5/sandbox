@@ -32,7 +32,7 @@ fn distinct_random_numbers(n:usize,b:usize) -> BombPositions {
 }
 
 impl BombChunk {
-	pub fn with_b(n:usize,index:usize,b:usize) -> BombChunk {
+	pub fn with_bomb_count(n:usize,index:usize,b:usize) -> BombChunk {
 		let chunk=BombChunk {
 			n:n,
 			index:index,

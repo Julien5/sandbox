@@ -55,7 +55,7 @@ fn main() {
 	let n = args[2].parse::<usize>().unwrap();
 	let b = args[3].parse::<usize>().unwrap();
 
-	let bomb_chunk = BombChunk::with_b(n,0,b);
+	let bomb_chunk = BombChunk::with_bomb_count(n,0,b);
 	let mut grid = Tile::with_chunk(bomb_chunk);
 	if quiet == false {
 		grid.print(&mut writer);
@@ -70,7 +70,7 @@ fn main() {
 	let Nchunks=16;
 	println!("generate chunks");
 	for index in 0..Nchunks {
-		let chunk=BombChunk::with_b(n,index,b);
+		let chunk=BombChunk::with_bomb_count(n,index,b);
 		bomb_chunks.push(chunk);
 	}
 	println!("count and collect");
