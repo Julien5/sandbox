@@ -18,11 +18,39 @@ use std::{
     os::unix::io::FromRawFd,
 };
 
-fn chunk_count(bomb_chunk:BombChunk) -> Tile {
-	let n=12usize;
-	println!("worker on grid of size {n}");
+struct Printer {
+	writer : Option<BufWriter<File>>,
+}
+
+impl Printer {
+	fn new_verbose() -> Printer {
+		let stdout=unsafe { File::from_raw_fd(1) };
+		let p=Printer {
+			writer : Some(BufWriter::new(stdout))
+		};
+		p
+	}
+	fn new_quiet() -> Printer {
+		let p=Printer {
+			writer : None
+		};
+		p
+	}
+	fn print(&mut self,tile:&Tile) {
+		match &mut self.writer {
+			Some(writer) => {
+				tile.print(writer);
+				let _=writer.flush();
+			}
+			_ => {	}
+		}
+	}
+}
+
+fn make_tile(bomb_chunk:BombChunk, printer:&mut Printer) -> Tile {
+	println!("worker on grid of size {}",bomb_chunk.n());
 	let mut grid = Tile::with_chunk(bomb_chunk);
-	grid.count_bombs();
+	printer.print(&grid);
 	grid
 }
 
@@ -37,67 +65,45 @@ impl TileAccumulator {
 		};
 		ret
 	}
-	fn aggregate(&mut self,tile:Tile) {
+	fn aggregate(&mut self,mut tile:Tile,printer:&mut Printer) {
 		let index=tile.index();
 		println!("aggregating tile index:{} tiles:{}",index,self.tiles.len());
+		tile.count_bombs();
+		printer.print(&tile);
 		self.tiles.push(tile);	
 	}
 }
 
-
 fn main() {
 	let args: Vec<String> = env::args().collect();
-
-	let stdout = unsafe { File::from_raw_fd(1) };
-	let mut writer = BufWriter::new(stdout);
 	
 	let quiet : bool = args[1].contains("quiet");
 	let n = args[2].parse::<usize>().unwrap();
 	let b = args[3].parse::<usize>().unwrap();
 
-	let bomb_chunk = BombChunk::with_bomb_count(n,0,b);
-	let mut grid = Tile::with_chunk(bomb_chunk);
-	if quiet == false {
-		grid.print(&mut writer);
-	}
-	grid.count_bombs();
-	if quiet == false {
-		grid.print(&mut writer);
-	}
-	let _ = writer.flush();
+	let mut printer = match quiet {
+		true => {
+			Printer::new_quiet()
+		}
+		false => {
+			Printer::new_verbose()
+		}
+	};
 
 	let mut bomb_chunks=BombChunks::new();
-	let Nchunks=16;
+	let Nchunks=1;
 	println!("generate chunks");
 	for index in 0..Nchunks {
 		let chunk=BombChunk::with_bomb_count(n,index,b);
 		bomb_chunks.push(chunk);
 	}
 	println!("count and collect");
+	let tiles : Vec<Tile> = bomb_chunks.into_iter()
+		.map(|chunk| make_tile(chunk,&mut printer)).collect();
 	let acc=std::sync::Arc::new(std::sync::Mutex::new(TileAccumulator::init()));
-	let _:Vec<()>=bomb_chunks.into_iter()
-		.map(|chunk| chunk_count(chunk))
+	let _results : Vec<()> = tiles.into_iter()
 		.map(|tile| {
-			acc.lock().unwrap().aggregate(tile);
+			acc.lock().unwrap().aggregate(tile,&mut printer);
 		}).collect();
-	()
 }
 
-#[cfg(test)]
-mod tests {
-	use super::*;
-    #[test]
-    fn test_2d() {
-		let c = _2d(0_usize,4);
-		assert_eq!(c,(0,0));
-
-		let c = _2d(1_usize,4);
-		assert_eq!(c,(1,0));
-
-		let c = _2d(4_usize,4);
-		assert_eq!(c,(0,1));
-		
-		let c = _2d(15_usize,4);
-		assert_eq!(c,(3,3));
-    }
-}
