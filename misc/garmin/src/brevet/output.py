@@ -192,7 +192,7 @@ def latex_waypoint(W,k):
 		distance=rw.distance - prev.distance;
 		assert(distance>0);
 	L=list();
-	L.append(format(rw.name[:2],rw));
+	L.append(format(rw.name[:3],rw));
 	L.append(formatFloat(rw.distance/1000));
 	L.append(rw.time.strftime("%H:%M"));
 	L.append(formatFloat(rw.point.elevation));
