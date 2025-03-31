@@ -1,13 +1,10 @@
 #!/usr/bin/env python3
 
 import os;
-import sys;
-
 import matplotlib.pyplot as plt
-import numpy as np
-
 import readtracks;
 import utils;
+from rdp import rdp
 
 def readfile(filename):
 	name,R,creator=readtracks.readpoints(filename);
@@ -22,8 +19,6 @@ def plot(x,y):
 	axs.set_ylabel('s1')
 	axs.grid(True)
 	plt.show();
-
-from rdp import rdp
 
 def round(x):
 	return int(x);
@@ -81,7 +76,12 @@ class Elevation:
 	def estimate_positive_elevation(self,windices=None):
 		(x,y)=self.xy();
 		dindices=douglas_peucker(x,y,self.douglas_peucker_epsilon);
+		# not duplicates
 		assert(len(dindices)==len(set(dindices)));
+		if not 0 in dindices:
+			dindices.prepend(0);
+		if not len(x)-1 in dindices:
+			dindices.append(len(x)-1);
 		assert(0 in dindices and len(x)-1 in dindices);
 		indices=dindices;
 		if not windices is None:
