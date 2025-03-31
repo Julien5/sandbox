@@ -5,6 +5,9 @@ import os;
 import statistics;
 import utils;
 import chain;
+import sys;
+sys.path.append('/opt/python3/pip');
+sys.path.append('/opt/python3/self');
 
 from glob import glob
 

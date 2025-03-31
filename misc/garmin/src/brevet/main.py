@@ -9,6 +9,8 @@ import os;
 import argparse;
 import copy;
 
+sys.path.append('/opt/python3/pip');
+sys.path.append('/opt/python3/self');
 sys.path.append(os.path.join(os.path.dirname(__file__),".."));
 
 import elevation;
