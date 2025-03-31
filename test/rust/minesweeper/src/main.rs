@@ -49,7 +49,7 @@ impl Printer {
 
 fn make_tile(bomb_chunk:BombChunk, printer:&mut Printer) -> Tile {
 	println!("worker on grid of size {}",bomb_chunk.n());
-	let mut grid = Tile::with_chunk(bomb_chunk);
+	let grid = Tile::with_chunk(bomb_chunk);
 	printer.print(&grid);
 	grid
 }
