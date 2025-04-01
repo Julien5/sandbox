@@ -3,6 +3,7 @@
 mod utils;
 mod bomb;
 mod tile;
+mod baseline;
 
 use std::env;
 
@@ -80,6 +81,7 @@ fn main() {
 	let quiet : bool = args[1].contains("quiet");
 	let n = args[2].parse::<usize>().unwrap();
 	let b = args[3].parse::<usize>().unwrap();
+	baseline::main(n,b);
 
 	let mut printer = match quiet {
 		true => {
