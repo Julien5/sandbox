@@ -1,10 +1,10 @@
 #![allow(non_snake_case)]
 
-use std::env;
+mod utils;
+mod bomb;
+mod tile;
 
-pub mod utils;
-pub mod bomb;
-pub mod tile;
+use std::env;
 
 use bomb::*;
 use tile::*;
