@@ -14,9 +14,8 @@ fn from_2d(c:(usize,usize),n:usize) -> usize {
 	c.1*n+c.0
 }
 
-const empty : usize = 10;
-const bomb  : usize = 9;
-const zero  : usize = 0;
+const BOMB  : usize = 9;
+const ZERO  : usize = 0;
 
 fn print_grid(grid:&[usize]) {
 	let print_lookup: [char;11] = [' ','1','2','3','4','5','6','7','8','B',' '];
@@ -60,7 +59,7 @@ fn increment_neighboors(grid:&mut [usize], pos:usize) {
 				continue;
 			}
 			let l=from_2d((posx+i-1,posy+j-1),n);
-			if l<grid.len() && grid[l] != bomb {
+			if l<grid.len() && grid[l] != BOMB {
 				grid[l]+=1;
 			}
 		}
@@ -75,12 +74,12 @@ fn count_bombs(grid:&mut [usize], bombs_positions:&[usize]) {
 
 pub fn main(n : usize, b: usize) {
 	let N = n*n;
-	let mut grid : Vec<usize> = vec![zero; N];
+	let mut grid : Vec<usize> = vec![ZERO; N];
 
 	let Bx = distinct_random_numbers(N,b);
 	//let Bx = [12];
 	for p in &Bx {
-		grid[*p]=bomb;
+		grid[*p]=BOMB;
 	}
 
 	print_grid(&grid);
