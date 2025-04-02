@@ -18,14 +18,6 @@ pub struct Tile {
 }
 
 impl Tile {
-	fn index(&self, kn:usize, km:usize) -> usize {
-		_1d((kn+1,km+1),self.nM,self.mM)
-	}
-
-	fn index_all(&self, kn:usize, km:usize) -> usize {
-		_1d((kn,km),self.nM,self.mM)
-	}
-	
 	fn at(&self, kn:usize, km:usize) -> Element {
 		self.grid[_1d((kn+1,km+1),self.nM,self.mM)]
 	}
