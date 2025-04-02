@@ -11,18 +11,56 @@ const ZERO  : Element = 0;
 pub struct Tile {
 	grid: Vec<Element>,
 	bomb_chunk: BombChunk,
+	n:usize,
+	m:usize,
+	nM:usize,
+	mM:usize
 }
 
 impl Tile {
+	fn index(&self, kn:usize, km:usize) -> usize {
+		_1d((kn+1,km+1),self.n+2,self.m+2)
+	}
+
+	fn index_all(&self, kn:usize, km:usize) -> usize {
+		_1d((kn,km),self.n+2,self.m+2)
+	}
+	
+	fn at(&self, kn:usize, km:usize) -> Element {
+		self.grid[_1d((kn+1,km+1),self.n+2,self.m+2)]
+	}
+
+	fn at_all(&self, kn:usize, km:usize) -> Element {
+		self.grid[_1d((kn,km),self.n+2,self.m+2)]
+	}
+	
 	pub fn with_chunk(chunk:BombChunk) -> Tile {
+		let n=chunk.n();
+		let m=chunk.m();
+		let nM=n+2;
+		let mM=m+2;
 		let mut g=Tile {
-			grid: vec![ZERO; (chunk.n()+2)*(chunk.m()+2)],
-			bomb_chunk:chunk
+			grid: vec![ZERO; nM*mM],
+			bomb_chunk:chunk,
+			n:n,
+			m:m,
+			nM:nM,
+			mM:mM
 		};
 		for p in g.bomb_chunk.positions() {
 			g.grid[*p]=BOMB;
 		}
+		g.count_bombs();
 		g
+	}
+
+	pub fn update_first_real_line(&mut self, k:usize, prev: &Tile) {
+		if self.grid[self.nM+k] == BOMB {
+			return;
+		}
+		let kg=self.index_all(k,1);
+		let kp=prev.index_all(k,self.mM-1);
+		self.grid[kg] += prev.grid[kp]; 
 	}
 
 	pub fn merge(&mut self,prev:Option<&Tile>, next:Option<&Tile>) {
@@ -34,9 +72,7 @@ impl Tile {
 			Some(prev) => {
 				// update first "real" line
 				for k in 0..nM {
-					if self.grid[nM+k] != BOMB {
-						self.grid[nM+k] += prev.grid[(mM-1)*nM+k]
-					}
+					self.update_first_real_line(k,prev);
 				}
 			}
 			None => {}
@@ -119,7 +155,7 @@ impl Tile {
 		);
 	}
 
-	pub fn index(&self) -> usize {
+	pub fn tile_index(&self) -> usize {
 		self.bomb_chunk.index()
 	}
 }

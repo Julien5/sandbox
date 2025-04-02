@@ -27,7 +27,7 @@ impl TileAccumulator {
 	fn aggregate(&mut self,mut tile:Tile) {
 		let index=tile.tile_index();
 		println!("aggregating tile index:{} tiles:{}",index,self.tiles.len());
-		tile.count_bombs();
+		//tile.count_bombs();
 		//tile.print(printer);
 		self.tiles.push(tile);	
 	}
