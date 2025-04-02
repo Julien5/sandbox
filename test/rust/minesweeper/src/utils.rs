@@ -1,11 +1,11 @@
-pub fn _2d(index:usize,n:usize) -> (usize,usize) {
-	assert!(index<(n*n));
+pub fn _2d(index:usize,n:usize,m:usize) -> (usize,usize) {
+	assert!(index<(n*m));
 	let x=index%n;
 	let y=index/n;
 	(x,y)
 }
 
-pub fn _1d(c:(usize,usize),n:usize) -> usize {
+pub fn _1d(c:(usize,usize),n:usize,_m:usize) -> usize {
 	c.1*n+c.0
 }
 
@@ -14,16 +14,15 @@ mod tests {
 	use super::*;
     #[test]
     fn test_2d() {
-		let c = _2d(0_usize,4);
-		assert_eq!(c,(0,0));
+		let n=4;
+		let m=2;
 
-		let c = _2d(1_usize,4);
-		assert_eq!(c,(1,0));
+		let k = 6;
+		let c = _2d(k,n,m);
+		assert_eq!(c,(2,1));
 
-		let c = _2d(4_usize,4);
-		assert_eq!(c,(0,1));
-		
-		let c = _2d(15_usize,4);
-		assert_eq!(c,(3,3));
+		let k = 2;
+		let c = _2d(k,n,m);
+		assert_eq!(c,(2,0));
     }
 }

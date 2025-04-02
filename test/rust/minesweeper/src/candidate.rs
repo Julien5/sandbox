@@ -42,7 +42,7 @@ impl Printer {
 }
 
 fn make_tile(bomb_chunk:BombChunk, printer:&mut Printer) -> Tile {
-	println!("worker on grid of size {}",bomb_chunk.n());
+	println!("worker on grid of size {} {}",bomb_chunk.n(), bomb_chunk.m());
 	let grid = Tile::with_chunk(bomb_chunk);
 	printer.print(&grid);
 	grid
@@ -79,10 +79,13 @@ pub fn main(n:usize,b:usize,quiet:bool) {
 	};
 
 	let mut bomb_chunks=BombChunks::new();
-	let Nchunks=1;
+	let Nchunks=2;
+	let m=((n as f32)/(Nchunks as f32)).floor() as usize;
+	let b_chunk=((b as f32)/(Nchunks as f32)).floor() as usize;
+	dbg!(n,Nchunks,m);
 	println!("generate chunks");
 	for index in 0..Nchunks {
-		let chunk=BombChunk::with_bomb_count(n,index,b);
+		let chunk=BombChunk::with_bomb_count(n,m,index,b_chunk);
 		bomb_chunks.push(chunk);
 	}
 	println!("count and collect");
