@@ -53,50 +53,36 @@ impl Tile {
 		g.count_bombs();
 		g
 	}
-
-	pub fn update_first_real_line(&mut self, k:usize, prev: &Tile) {
-		let kg=self.index_all(k,1);
-		assert_eq!(kg,self.nM+k);
-		if self.grid[kg] == BOMB {
-			return;
+		
+	pub fn bomb_count_at(&self,kn:usize,km:usize,prev:Option<&Tile>, next:Option<&Tile>) -> usize {
+		if self.at(kn,km) == BOMB {
+			return BOMB;
 		}
-		let kp=prev.index_all(k,self.mM-1);
-		self.grid[kg] += prev.grid[kp]; 
-	}
-
-	pub fn update_bottom_real_line(&mut self, k:usize, next: &Tile) {
-		let kg=self.index_all(k,self.mM-2);
-		assert_eq!(kg,(self.mM-2)*self.nM+k);
-		if self.grid[kg] == BOMB {
-			return;
-		}
-		let kn=next.index_all(k,0);
-		assert_eq!(kn,k);
-		self.grid[kg] += next.grid[kn];
-	}
-
-	pub fn merge(&mut self,prev:Option<&Tile>, next:Option<&Tile>) {
-		match prev {
-			Some(prev) => {
-				// update first "real" line
-				for k in 0..self.nM {
-					self.update_first_real_line(k,prev);
+		if km == 0 {
+			// add last line from prev
+			match prev {
+				Some(tile) => {
+					assert!(tile.at_all(kn,tile.m-1) != BOMB);
+					return self.at(kn,km) + tile.at_all(kn,tile.m-1);
 				}
+				_ => {}
 			}
-			None => {}
 		}
-		match next {
-			Some(next) => {
-				// update last "real" line
-				for k in 0..self.nM {
-					self.update_bottom_real_line(k,next);
+		if km == self.m-1 {
+			// add first line from next
+			match next {
+				Some(tile) => {
+					assert!(tile.at_all(kn,0) != BOMB);
+					return self.at(kn,km) + tile.at_all(kn,0);
 				}
+				_ => {}
 			}
-			None => {}
+			
 		}
+		self.at(kn,km)
 	}
 
-	pub fn print(&self, printer: &mut Printer) {
+	pub fn print_bombs(&self, printer: &mut Printer) {
 		let print_lookup: [u8;11] = [b' ',b'1',b'2',b'3',b'4',b'5',b'6',b'7',b'8',b'B',b' '];
 		assert!(!self.grid.is_empty());
 		let mut output:Vec<u8> = vec![b' ';self.n+2];
@@ -106,6 +92,26 @@ impl Tile {
 			for kn in 0..self.n {
 				let k=_1d((kn+1,km+1),self.nM,self.mM);
 				output[kn]=print_lookup[self.grid[k]];
+			}
+			printer.print(&output);
+		}
+	}
+
+	pub fn print_counts(&self, prev:Option<&Tile>, next:Option<&Tile>, printer: &mut Printer) {
+		let print_lookup: [u8;11] = [b' ',b'1',b'2',b'3',b'4',b'5',b'6',b'7',b'8',b'B',b' '];
+		assert!(!self.grid.is_empty());
+		let mut output:Vec<u8> = vec![b' ';self.n+2];
+		output[self.n]=b'|';
+		output[self.n+1]=b'\n';
+		for km in 0..self.m {
+			for kn in 0..self.n {
+				let k=_1d((kn+1,km+1),self.nM,self.mM);
+				if self.grid[k] != BOMB  {
+					let c=self.bomb_count_at(kn,km,prev,next);
+					output[kn]=print_lookup[c];
+				} else {
+					output[kn]=print_lookup[self.grid[k]];
+				}
 			}
 			printer.print(&output);
 		}

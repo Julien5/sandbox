@@ -9,7 +9,7 @@ use rayon::prelude::*;
 fn make_tile(bomb_chunk:BombChunk, printer:&mut Printer) -> Tile {
 	// println!("make grid of size {}x{}",bomb_chunk.n(), bomb_chunk.m());
 	let grid = Tile::with_chunk(bomb_chunk);
-	grid.print(printer);
+	grid.print_bombs(printer);
 	grid
 }
 
@@ -24,7 +24,7 @@ impl TileAccumulator {
 		};
 		ret
 	}
-	fn aggregate(&mut self,mut tile:Tile) {
+	fn aggregate(&mut self,tile:Tile) {
 		let index=tile.tile_index();
 		println!("aggregating tile index:{} tiles:{}",index,self.tiles.len());
 		//tile.count_bombs();
@@ -36,15 +36,14 @@ impl TileAccumulator {
 		let mut next:Option<&Tile>=None;
 		let K=self.tiles.len();
 		for p in 0..K {
-			let mut current = self.tiles[p].clone();
+			let current = &self.tiles[p];
 			if p>0 {
 				prev=Some(&self.tiles[p-1]);
 			}
 			if p<K-1 {
 				next=Some(&self.tiles[p+1]);
 			}
-			current.merge(prev,next);
-			current.print(printer);
+			current.print_counts(prev,next,printer);
 			prev=None;
 			next=None;
 		}
