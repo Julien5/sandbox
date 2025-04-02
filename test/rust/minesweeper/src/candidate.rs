@@ -37,6 +37,8 @@ impl TileAccumulator {
 		let K=self.tiles.len();
 		for p in 0..K {
 			let mut current = self.tiles[p].clone();
+			prev=None;
+			next=None;
 			if p>0 {
 				prev=Some(&self.tiles[p-1]);
 			}

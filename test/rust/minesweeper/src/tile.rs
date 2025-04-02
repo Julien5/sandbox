@@ -35,7 +35,7 @@ impl Tile {
 			Some(prev) => {
 				// update first "real" line
 				for k in 0..nM {
-					if (self.grid[nM+k] != BOMB) {
+					if self.grid[nM+k] != BOMB {
 						self.grid[nM+k] += prev.grid[(mM-1)*nM+k]
 					}
 				}
@@ -62,8 +62,26 @@ impl Tile {
 		let m=self.bomb_chunk.m();
 		let nM=n+2;
 		let mM=m+2;
+		let mut output:Vec<u8> = vec![b' ';n+1];
+		output[n]=b'\n';
+		for km in 0..m {
+			for kn in 0..n {
+				let k=_1d((kn+1,km+1),nM,mM);
+				output[kn]=print_lookup[self.grid[k]];
+			}
+			printer.print(&output);
+		}
+	}
+	
+	pub fn print_all(&self, printer: &mut Printer) {
+		let print_lookup: [u8;11] = [b' ',b'1',b'2',b'3',b'4',b'5',b'6',b'7',b'8',b'B',b' '];
+		assert!(!self.grid.is_empty());
+		let n=self.bomb_chunk.n();
+		let m=self.bomb_chunk.m();
+		let nM=n+2;
+		let mM=m+2;
 		let mut output:Vec<u8> = vec![b' ';nM+1];
-		output[n+2]=b'\n';
+		output[nM]=b'\n';
 		for km in 0..mM {
 			for kn in 0..nM {
 				let k=_1d((kn,km),nM,mM);
