@@ -25,7 +25,7 @@ impl TileAccumulator {
 		ret
 	}
 	fn aggregate(&mut self,mut tile:Tile) {
-		let index=tile.index();
+		let index=tile.tile_index();
 		println!("aggregating tile index:{} tiles:{}",index,self.tiles.len());
 		tile.count_bombs();
 		//tile.print(printer);
@@ -62,7 +62,7 @@ pub fn main(n:usize,b:usize,quiet:bool) {
 	};
 
 	let mut bomb_chunks=BombChunks::new();
-	let Nchunks=8;
+	let Nchunks=2;
 	let m=((n as f32)/(Nchunks as f32)).floor() as usize;
 	let b_chunk=((b as f32)/(Nchunks as f32)).floor() as usize;
 	println!("generate chunks");
