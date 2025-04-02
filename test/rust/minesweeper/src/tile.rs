@@ -83,7 +83,7 @@ impl Tile {
 	}
 
 	pub fn print_bombs(&self, printer: &mut Printer) {
-		let print_lookup: [u8;11] = [b' ',b'1',b'2',b'3',b'4',b'5',b'6',b'7',b'8',b'B',b' '];
+		let print_lookup: [u8;11] = [b' ',b' ',b' ',b' ',b' ',b' ',b' ',b' ',b' ',b'*',b' '];
 		assert!(!self.grid.is_empty());
 		let mut output:Vec<u8> = vec![b' ';self.n+2];
 		output[self.n]=b'|';
@@ -98,7 +98,7 @@ impl Tile {
 	}
 
 	pub fn print_counts(&self, prev:Option<&Tile>, next:Option<&Tile>, printer: &mut Printer) {
-		let print_lookup: [u8;11] = [b' ',b'1',b'2',b'3',b'4',b'5',b'6',b'7',b'8',b'B',b' '];
+		let print_lookup: [u8;11] = [b'.',b'1',b'2',b'3',b'4',b'5',b'6',b'7',b'8',b'*',b' '];
 		assert!(!self.grid.is_empty());
 		let mut output:Vec<u8> = vec![b' ';self.n+2];
 		output[self.n]=b'|';
