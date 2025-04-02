@@ -105,13 +105,8 @@ impl Tile {
 		output[self.n+1]=b'\n';
 		for km in 0..self.m {
 			for kn in 0..self.n {
-				let k=_1d((kn+1,km+1),self.nM,self.mM);
-				if self.grid[k] != BOMB  {
-					let c=self.bomb_count_at(kn,km,prev,next);
-					output[kn]=print_lookup[c];
-				} else {
-					output[kn]=print_lookup[self.grid[k]];
-				}
+				let c=self.bomb_count_at(kn,km,prev,next);
+				output[kn]=print_lookup[c];
 			}
 			printer.print(&output);
 		}
