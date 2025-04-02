@@ -29,7 +29,6 @@ fn distinct_random_numbers(n:usize,m:usize,b:usize) -> BombPositions {
 		let (x,y)=_2d(*g,n,m);
 		let p2=_1d((x+1,y+1),n+2,m+2);
 		let (px,py)=_2d(p2,n+2,m+2);
-		dbg!(n,m,x,y,p2,px,py);
 		assert!(px>0 && px<(n+2-1));
 		assert!(py>0 && py<(m+2-1));
 		*g=p2
@@ -80,7 +79,7 @@ impl Iterator for BombChunks {
 			return None;
 		}
 		let N=self.chunks.len();
-		println!("remaining number of bomb chunks:{N}");
+		//println!("remaining number of bomb chunks:{N}");
         Some(self.chunks.remove(N-1))
     }
 }

@@ -7,7 +7,7 @@ use crate::utils::*;
 // use rayon::prelude::*;
 
 fn make_tile(bomb_chunk:BombChunk, printer:&mut Printer) -> Tile {
-	println!("worker on grid of size {} {}",bomb_chunk.n(), bomb_chunk.m());
+	// println!("make grid of size {}x{}",bomb_chunk.n(), bomb_chunk.m());
 	let grid = Tile::with_chunk(bomb_chunk);
 	grid.print(printer);
 	grid
@@ -37,8 +37,6 @@ impl TileAccumulator {
 		let K=self.tiles.len();
 		for p in 0..K {
 			let mut current = self.tiles[p].clone();
-			prev=None;
-			next=None;
 			if p>0 {
 				prev=Some(&self.tiles[p-1]);
 			}
@@ -47,6 +45,8 @@ impl TileAccumulator {
 			}
 			current.merge(prev,next);
 			current.print(printer);
+			prev=None;
+			next=None;
 		}
 	}
 }
@@ -65,7 +65,6 @@ pub fn main(n:usize,b:usize,quiet:bool) {
 	let Nchunks=2;
 	let m=((n as f32)/(Nchunks as f32)).floor() as usize;
 	let b_chunk=((b as f32)/(Nchunks as f32)).floor() as usize;
-	dbg!(n,Nchunks,m);
 	println!("generate chunks");
 	for index in 0..Nchunks {
 		let chunk=BombChunk::with_bomb_count(n,m,index,b_chunk);

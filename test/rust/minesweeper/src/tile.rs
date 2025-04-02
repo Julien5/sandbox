@@ -20,7 +20,6 @@ impl Tile {
 			bomb_chunk:chunk
 		};
 		for p in g.bomb_chunk.positions() {
-			dbg!(g.grid.len(),*p);
 			g.grid[*p]=BOMB;
 		}
 		g
@@ -73,7 +72,7 @@ impl Tile {
 		}
 	}
 	
-	pub fn print_all(&self, printer: &mut Printer) {
+	pub fn _print_all(&self, printer: &mut Printer) {
 		let print_lookup: [u8;11] = [b' ',b'1',b'2',b'3',b'4',b'5',b'6',b'7',b'8',b'B',b' '];
 		assert!(!self.grid.is_empty());
 		let n=self.bomb_chunk.n();
