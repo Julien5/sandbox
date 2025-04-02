@@ -61,8 +61,9 @@ impl Tile {
 		let m=self.bomb_chunk.m();
 		let nM=n+2;
 		let mM=m+2;
-		let mut output:Vec<u8> = vec![b' ';n+1];
-		output[n]=b'\n';
+		let mut output:Vec<u8> = vec![b' ';n+2];
+		output[n]=b'|';
+		output[n+1]=b'\n';
 		for km in 0..m {
 			for kn in 0..n {
 				let k=_1d((kn+1,km+1),nM,mM);

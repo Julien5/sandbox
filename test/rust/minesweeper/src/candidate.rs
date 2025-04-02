@@ -4,7 +4,7 @@ use crate::bomb::*;
 use crate::tile::*;
 use crate::utils::*;
 
-// use rayon::prelude::*;
+use rayon::prelude::*;
 
 fn make_tile(bomb_chunk:BombChunk, printer:&mut Printer) -> Tile {
 	// println!("make grid of size {}x{}",bomb_chunk.n(), bomb_chunk.m());
@@ -24,7 +24,7 @@ impl TileAccumulator {
 		};
 		ret
 	}
-	fn aggregate(&mut self,mut tile:Tile,_printer:&mut Printer) {
+	fn aggregate(&mut self,mut tile:Tile) {
 		let index=tile.index();
 		println!("aggregating tile index:{} tiles:{}",index,self.tiles.len());
 		tile.count_bombs();
@@ -62,7 +62,7 @@ pub fn main(n:usize,b:usize,quiet:bool) {
 	};
 
 	let mut bomb_chunks=BombChunks::new();
-	let Nchunks=2;
+	let Nchunks=8;
 	let m=((n as f32)/(Nchunks as f32)).floor() as usize;
 	let b_chunk=((b as f32)/(Nchunks as f32)).floor() as usize;
 	println!("generate chunks");
@@ -76,7 +76,7 @@ pub fn main(n:usize,b:usize,quiet:bool) {
 	let acc=std::sync::Arc::new(std::sync::Mutex::new(TileAccumulator::init()));
 	let _results : Vec<()> = tiles.into_iter()
 		.map(|tile| {
-			acc.lock().unwrap().aggregate(tile,&mut printer);
+			acc.lock().unwrap().aggregate(tile);
 		}).collect();
 	acc.lock().unwrap().close(&mut printer);
 }
