@@ -2,49 +2,14 @@
 
 use crate::bomb::*;
 use crate::tile::*;
+use crate::utils::*;
 
 // use rayon::prelude::*;
-
-// for stdout efficiency
-use std::{
-    fs::File,
-    io::{BufWriter, Write},
-    os::unix::io::FromRawFd,
-};
-
-struct Printer {
-	writer : Option<BufWriter<File>>,
-}
-
-impl Printer {
-	fn new_verbose() -> Printer {
-		let stdout=unsafe { File::from_raw_fd(1) };
-		let p=Printer {
-			writer : Some(BufWriter::new(stdout))
-		};
-		p
-	}
-	fn new_quiet() -> Printer {
-		let p=Printer {
-			writer : None
-		};
-		p
-	}
-	fn print(&mut self,tile:&Tile) {
-		match &mut self.writer {
-			Some(writer) => {
-				tile.print(writer);
-				let _=writer.flush();
-			}
-			_ => {	}
-		}
-	}
-}
 
 fn make_tile(bomb_chunk:BombChunk, printer:&mut Printer) -> Tile {
 	println!("worker on grid of size {} {}",bomb_chunk.n(), bomb_chunk.m());
 	let grid = Tile::with_chunk(bomb_chunk);
-	printer.print(&grid);
+	grid.print(printer);
 	grid
 }
 
@@ -59,12 +24,28 @@ impl TileAccumulator {
 		};
 		ret
 	}
-	fn aggregate(&mut self,mut tile:Tile,printer:&mut Printer) {
+	fn aggregate(&mut self,mut tile:Tile,_printer:&mut Printer) {
 		let index=tile.index();
 		println!("aggregating tile index:{} tiles:{}",index,self.tiles.len());
 		tile.count_bombs();
-		printer.print(&tile);
+		//tile.print(printer);
 		self.tiles.push(tile);	
+	}
+	fn close(&mut self,printer:&mut Printer) {
+		let mut prev:Option<&Tile>=None;
+		let mut next:Option<&Tile>=None;
+		let K=self.tiles.len();
+		for p in 0..K {
+			let mut current = self.tiles[p].clone();
+			if p>0 {
+				prev=Some(&self.tiles[p-1]);
+			}
+			if p<K-1 {
+				next=Some(&self.tiles[p+1]);
+			}
+			current.merge(prev,next);
+			current.print(printer);
+		}
 	}
 }
 
@@ -96,5 +77,6 @@ pub fn main(n:usize,b:usize,quiet:bool) {
 		.map(|tile| {
 			acc.lock().unwrap().aggregate(tile,&mut printer);
 		}).collect();
+	acc.lock().unwrap().close(&mut printer);
 }
 
