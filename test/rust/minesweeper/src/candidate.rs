@@ -1,5 +1,7 @@
 #![allow(non_snake_case)]
 
+use std::collections::BTreeMap;
+
 use crate::bomb::*;
 use crate::tile::*;
 use crate::utils::*;
@@ -13,20 +15,20 @@ fn make_tile(bomb_chunk:BombChunk) -> Tile {
 }
 
 struct TileAccumulator {
-	tiles : Vec<Tile>,
+	tiles : BTreeMap<usize,Tile>
 }
 
 impl TileAccumulator {
 	fn init() -> TileAccumulator {
 		let ret=TileAccumulator {
-			tiles:vec![]
+			tiles: BTreeMap::new()
 		};
 		ret
 	}
 	fn aggregate(&mut self,tile:Tile) {
 		let index=tile.tile_index();
 		println!("collect tile index:{} tiles:{}",index,self.tiles.len());
-		self.tiles.push(tile);	
+		self.tiles.insert(tile.tile_index(),tile);
 	}
 	fn print(&mut self,tile:Tile,printer:SharedPrinter) -> Tile {
 		let index=tile.tile_index();
@@ -37,14 +39,16 @@ impl TileAccumulator {
 	fn close(&mut self,printer:&mut Printer) {
 		let mut prev:Option<&Tile>=None;
 		let mut next:Option<&Tile>=None;
-		let K=self.tiles.len();
-		for p in 0..K {
-			let current = &self.tiles[p];
-			if p>0 {
-				prev=Some(&self.tiles[p-1]);
+		let K=self.tiles.keys();
+		let tiles_count=K.len();
+		for keyref in K {
+			let key=*keyref;
+			let current = self.tiles.get(&key).unwrap();
+			if key>0 {
+				prev=Some(self.tiles.get(&(key-1)).unwrap());
 			}
-			if p<K-1 {
-				next=Some(&self.tiles[p+1]);
+			if key<tiles_count-1 {
+				next=Some(self.tiles.get(&(key+1)).unwrap());
 			}
 			current.print_counts(prev,next,printer);
 			prev=None;
@@ -54,7 +58,7 @@ impl TileAccumulator {
 }
 
 fn make_printer(quiet:bool) -> Printer {
-	let mut printer = match quiet {
+	let printer = match quiet {
 		true => {
 			Printer::new_quiet()
 		}
@@ -66,14 +70,17 @@ fn make_printer(quiet:bool) -> Printer {
 }
 
 pub fn main(n:usize,b:usize,quiet:bool) {
-	let Nchunks=2;
+	let Nchunks=match n {
+		0..16 => 2,
+		_ => 8
+	};
 
 	let m=((n as f32)/(Nchunks as f32)).floor() as usize;
 	let b_chunk=((b as f32)/(Nchunks as f32)).floor() as usize;
 	
 	let indexes:Vec<usize>=(0..Nchunks).collect();
 	let acc0=std::sync::Arc::new(std::sync::Mutex::new(TileAccumulator::init()));
-	let mut shared_printer=std::sync::Arc::new(std::sync::Mutex::new(make_printer(quiet)));
+	let shared_printer=std::sync::Arc::new(std::sync::Mutex::new(make_printer(quiet)));
 	
 	let _:Vec<()>=indexes.clone().into_par_iter()
 		.map(|index| BombChunk::with_bomb_count(n,m,index,b_chunk)).into_par_iter()
