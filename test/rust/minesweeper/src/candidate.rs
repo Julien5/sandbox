@@ -6,11 +6,10 @@ use crate::utils::*;
 
 use rayon::prelude::*;
 
-fn make_tile(bomb_chunk:BombChunk, printer:&mut Printer) -> Tile {
-	// println!("make grid of size {}x{}",bomb_chunk.n(), bomb_chunk.m());
-	let grid = Tile::with_chunk(bomb_chunk);
-	grid.print_bombs(printer);
-	grid
+type SharedPrinter = std::sync::Arc<std::sync::Mutex<Printer>>;
+
+fn make_tile(bomb_chunk:BombChunk) -> Tile {
+	Tile::with_chunk(bomb_chunk)
 }
 
 struct TileAccumulator {
@@ -26,10 +25,14 @@ impl TileAccumulator {
 	}
 	fn aggregate(&mut self,tile:Tile) {
 		let index=tile.tile_index();
-		println!("aggregating tile index:{} tiles:{}",index,self.tiles.len());
-		//tile.count_bombs();
-		//tile.print(printer);
+		println!("collect tile index:{} tiles:{}",index,self.tiles.len());
 		self.tiles.push(tile);	
+	}
+	fn print(&mut self,tile:Tile,printer:SharedPrinter) -> Tile {
+		let index=tile.tile_index();
+		println!("printing tile index:{} tiles:{}",index,self.tiles.len());
+		tile.print_bombs(&mut printer.lock().unwrap());
+		tile
 	}
 	fn close(&mut self,printer:&mut Printer) {
 		let mut prev:Option<&Tile>=None;
@@ -50,7 +53,7 @@ impl TileAccumulator {
 	}
 }
 
-pub fn main(n:usize,b:usize,quiet:bool) {
+fn make_printer(quiet:bool) -> Printer {
 	let mut printer = match quiet {
 		true => {
 			Printer::new_quiet()
@@ -59,24 +62,26 @@ pub fn main(n:usize,b:usize,quiet:bool) {
 			Printer::new_verbose()
 		}
 	};
+	printer
+}
 
-	let mut bomb_chunks=BombChunks::new();
+pub fn main(n:usize,b:usize,quiet:bool) {
 	let Nchunks=2;
+
 	let m=((n as f32)/(Nchunks as f32)).floor() as usize;
 	let b_chunk=((b as f32)/(Nchunks as f32)).floor() as usize;
-	println!("generate chunks");
-	for index in 0..Nchunks {
-		let chunk=BombChunk::with_bomb_count(n,m,index,b_chunk);
-		bomb_chunks.push(chunk);
-	}
-	println!("count and collect");
-	let tiles : Vec<Tile> = bomb_chunks.into_iter()
-		.map(|chunk| make_tile(chunk,&mut printer)).collect();
-	let acc=std::sync::Arc::new(std::sync::Mutex::new(TileAccumulator::init()));
-	let _results : Vec<()> = tiles.into_iter()
-		.map(|tile| {
-			acc.lock().unwrap().aggregate(tile);
-		}).collect();
-	acc.lock().unwrap().close(&mut printer);
+	
+	let indexes:Vec<usize>=(0..Nchunks).collect();
+	let acc0=std::sync::Arc::new(std::sync::Mutex::new(TileAccumulator::init()));
+	let mut shared_printer=std::sync::Arc::new(std::sync::Mutex::new(make_printer(quiet)));
+	
+	let _:Vec<()>=indexes.clone().into_par_iter()
+		.map(|index| BombChunk::with_bomb_count(n,m,index,b_chunk)).into_par_iter()
+		.map(|chunk| make_tile(chunk)).into_par_iter()
+		.map(|tile| acc0.lock().unwrap().print(tile,shared_printer.clone()))
+		.map(|tile| acc0.lock().unwrap().aggregate(tile))
+		.collect();
+
+	acc0.lock().unwrap().close(&mut shared_printer.lock().unwrap());
 }
 

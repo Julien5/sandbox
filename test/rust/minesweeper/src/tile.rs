@@ -42,6 +42,7 @@ impl Tile {
 		for p in g.bomb_chunk.positions() {
 			g.grid[*p]=BOMB;
 		}
+		// TODO: avoid looping again over all positions again.
 		g.count_bombs();
 		g
 	}
