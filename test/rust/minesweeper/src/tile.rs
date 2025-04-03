@@ -55,8 +55,8 @@ impl Tile {
 			// add last line from prev
 			match prev {
 				Some(tile) => {
-					assert!(tile.at_all(kn,tile.mM-1) != BOMB);
-					return self.at(kn,km) + tile.at_all(kn,tile.mM-1);
+					assert!(tile.at_all(kn+1,tile.mM-1) != BOMB);
+					return self.at(kn,0) + tile.at_all(kn+1,tile.mM-1);
 				}
 				_ => {}
 			}
@@ -65,8 +65,8 @@ impl Tile {
 			// add first line from next
 			match next {
 				Some(tile) => {
-					assert!(tile.at_all(kn,0) != BOMB);
-					return self.at(kn,km) + tile.at_all(kn,0);
+					assert!(tile.at_all(kn+1,0) != BOMB);
+					return self.at(kn,self.m-1) + tile.at_all(kn+1,0);
 				}
 				_ => {}
 			}
