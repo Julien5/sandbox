@@ -4,7 +4,7 @@ use rand::rng;
 use rand::prelude::SliceRandom;
 
 fn to_2d(index:usize,n:usize) -> (usize,usize) {
-	assert!(index<(n*n));
+	debug_assert!(index<(n*n));
 	let x=index%n;
 	let y=index/n;
 	(x,y)
@@ -20,7 +20,7 @@ const ZERO  : usize = 0;
 fn print_grid(grid:&[usize]) {
 	let print_lookup: [char;11] = [' ','1','2','3','4','5','6','7','8','B',' '];
 	let l=grid.len();
-	assert!(!grid.is_empty());
+	debug_assert!(!grid.is_empty());
 	let n=f64::sqrt(grid.len() as f64) as usize;
 	println!("grid len is {l} and the square is {n}");
 	for k1 in 0..n {
@@ -40,7 +40,7 @@ fn distinct_random_numbers(N:usize,b:usize) -> Vec<usize> {
 	// shuffle it and keep the first b elements.
 	G.shuffle(&mut rng);
 	G.truncate(b);
-	assert_eq!(G.len(),b);
+	debug_assert_eq!(G.len(),b);
 	G
 }
 

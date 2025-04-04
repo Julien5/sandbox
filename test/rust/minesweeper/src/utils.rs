@@ -1,5 +1,5 @@
 pub fn _2d(index:usize,n:usize,m:usize) -> (usize,usize) {
-	assert!(index<(n*m));
+	debug_assert!(index<(n*m));
 	let x=index%n;
 	let y=index/n;
 	(x,y)
@@ -53,10 +53,10 @@ mod tests {
 
 		let k = 6;
 		let c = _2d(k,n,m);
-		assert_eq!(c,(2,1));
+		debug_assert_eq!(c,(2,1));
 
 		let k = 2;
 		let c = _2d(k,n,m);
-		assert_eq!(c,(2,0));
+		debug_assert_eq!(c,(2,0));
     }
 }

@@ -55,7 +55,7 @@ impl Tile {
 			// add last line from prev
 			match prev {
 				Some(tile) => {
-					assert!(tile.at_all(kn+1,tile.mM-1) != BOMB);
+					debug_assert!(tile.at_all(kn+1,tile.mM-1) != BOMB);
 					return self.at(kn,0) + tile.at_all(kn+1,tile.mM-1);
 				}
 				_ => {}
@@ -65,7 +65,7 @@ impl Tile {
 			// add first line from next
 			match next {
 				Some(tile) => {
-					assert!(tile.at_all(kn+1,0) != BOMB);
+					debug_assert!(tile.at_all(kn+1,0) != BOMB);
 					return self.at(kn,self.m-1) + tile.at_all(kn+1,0);
 				}
 				_ => {}
@@ -77,7 +77,7 @@ impl Tile {
 
 	pub fn print_bombs(&self, printer: &mut Printer) {
 		let print_lookup: [u8;11] = [b' ',b' ',b' ',b' ',b' ',b' ',b' ',b' ',b' ',b'*',b' '];
-		assert!(!self.grid.is_empty());
+		debug_assert!(!self.grid.is_empty());
 		let mut output:Vec<u8> = vec![b' ';4*self.n+2];
 		output[0]=b'|';
 		output[4*self.n+1]=b'\n';
@@ -93,7 +93,7 @@ impl Tile {
 
 	pub fn print_counts(&self, prev:Option<&Tile>, next:Option<&Tile>, printer: &mut Printer) {
 		let print_lookup: [u8;11] = [b'.',b'1',b'2',b'3',b'4',b'5',b'6',b'7',b'8',b'*',b' '];
-		assert!(!self.grid.is_empty());
+		debug_assert!(!self.grid.is_empty());
 		let mut output:Vec<u8> = vec![b' ';4*self.n+2];
 		output[0]=b'|';
 		output[4*self.n+1]=b'\n';
@@ -109,7 +109,7 @@ impl Tile {
 	
 	pub fn _print_all(&self, printer: &mut Printer) {
 		let print_lookup: [u8;11] = [b' ',b'1',b'2',b'3',b'4',b'5',b'6',b'7',b'8',b'B',b' '];
-		assert!(!self.grid.is_empty());
+		debug_assert!(!self.grid.is_empty());
 		let mut output:Vec<u8> = vec![b' ';self.nM+1];
 		output[self.nM]=b'\n';
 		for km in 0..self.mM {
@@ -123,15 +123,15 @@ impl Tile {
 
 	fn increment_neighboors(&mut self, pos:usize) {
 		let (posx,posy)=_2d(pos,self.nM,self.mM);
-		assert!(posx>0 && posx<self.n+1);
-		assert!(posy>0 && posy<self.m+1);
+		debug_assert!(posx>0 && posx<self.n+1);
+		debug_assert!(posy>0 && posy<self.m+1);
 		for i in 0..3 {
 			for j in 0..3 {
 				if i == 1 && j == 1 {
 					continue
 				}
 				let l=_1d((posx+i-1,posy+j-1),self.nM,self.mM);
-				assert!(l<self.grid.len());
+				debug_assert!(l<self.grid.len());
 				if self.grid[l] != BOMB {
 					self.grid[l]+=1;
 				}
