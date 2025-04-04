@@ -14,7 +14,13 @@ pub struct BombChunk {
 
 fn distinct_random_numbers(n:usize,m:usize,b:usize) -> BombPositions {
 	let mut rng = StdRng::seed_from_u64(3);
-	let mut positions : Vec<usize>=(0usize..(n*m)).collect();
+	let mut positions : Vec<usize>=vec![0;n*m];
+	for j in 0..m {
+		let line=Vec::from_iter((j+1)*(n+2)+1..(j+1)*(n+2)+n+1);
+		positions[j*n..(j+1)*n].copy_from_slice(line.as_slice());
+	}
+	debug_assert_eq!(positions[0],n+3);
+	
 	for i in 0..b {
 		let end=m*n-i;
 		let j=rng.random_range(0..end);
@@ -23,13 +29,7 @@ fn distinct_random_numbers(n:usize,m:usize,b:usize) -> BombPositions {
 	let mut G : Vec<usize>=vec![0;b];
 	let end=m*n;
 	for i in 0..b  {
-		let g = positions[end-i-1];
-		let (x,y)=_2d(g,n,m);
-		let p2=_1d((x+1,y+1),n+2,m+2);
-		let (px,py)=_2d(p2,n+2,m+2);
-		assert!(px>0 && px<(n+2-1));
-		assert!(py>0 && py<(m+2-1));
-		G[i]=p2;
+		G[i] = positions[end-i-1];
 	}
 	G
 }
