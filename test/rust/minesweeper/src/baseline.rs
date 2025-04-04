@@ -72,18 +72,21 @@ fn count_bombs(grid:&mut [usize], bombs_positions:&[usize]) {
 	}
 }
 
-pub fn main(n : usize, b: usize) {
+pub fn main(n : usize, b: usize, quiet: bool) {
 	let N = n*n;
 	let mut grid : Vec<usize> = vec![ZERO; N];
 
 	let Bx = distinct_random_numbers(N,b);
-	//let Bx = [12];
 	for p in &Bx {
 		grid[*p]=BOMB;
 	}
 
-	print_grid(&grid);
+	if ! quiet {
+		print_grid(&grid);
+	}
 	count_bombs(&mut grid,&Bx);
-	print_grid(&grid);
+	if ! quiet {
+		print_grid(&grid);
+	}
 }
 

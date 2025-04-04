@@ -17,7 +17,7 @@ fn main() {
 	let b = args[4].parse::<usize>().unwrap();
 	
 	match algorithm.as_str() {
-		"baseline" => baseline::main(n,b),
+		"baseline" => baseline::main(n,b,quiet),
 		"candidate" => candidate::main(n,b,quiet),
 		&_ => {
 			println!("unknown {}",algorithm);
