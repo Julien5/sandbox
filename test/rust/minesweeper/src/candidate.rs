@@ -25,7 +25,7 @@ impl TileAccumulator {
 	}
 	fn aggregate(&mut self,tile:Tile) {
 		let index=tile.tile_index();
-		println!("collect tile index:{} tiles:{}",index,self.tiles.len());
+		log::debug!("collect tile index:{} tiles:{}",index,self.tiles.len());
 		self.tiles.insert(tile.tile_index(),tile);
 	}
 	fn print_bombs(&mut self,printer:&mut Printer) {
@@ -87,9 +87,9 @@ pub fn main(n:usize,b:usize,quiet:bool) {
 		.collect();
 
 	let mut printer=make_printer(quiet);
-	println!("bombs");
+	log::debug!("bombs");
 	acc0.lock().unwrap().print_bombs(&mut printer);
-	println!("counts");
+	log::debug!("counts");
 	acc0.lock().unwrap().print_counts(&mut printer);
 }
 
