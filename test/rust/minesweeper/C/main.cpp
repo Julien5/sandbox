@@ -42,6 +42,7 @@ namespace global {
     size X = 10;
     size Y = 10;
     size N = 10;
+    bool quiet = false;
 } // namespace global
 
 using namespace global;
@@ -58,17 +59,10 @@ void init(const std::vector<std::string> &arguments) {
     srand(time(NULL));
 
     if (!arguments.empty()) {
-        X = readsize(arguments[0]);
-        Y = readsize(arguments[0]);
-        N = readsize(arguments[0]) / 10;
-        if (arguments.size() > 1) {
-            Y = readsize(arguments[1]);
-        }
-        if (arguments.size() > 2) {
-            X = readsize(arguments[0]);
-            Y = readsize(arguments[1]);
-            N = readsize(arguments[2]);
-        }
+        quiet = arguments[0].find("verbose") == std::string::npos;
+        X = readsize(arguments[1]);
+        Y = X;
+        N = readsize(arguments[2]);
     }
     printf("X: %d, Y: %d, N: %d\n", X, Y, N);
 }
@@ -135,6 +129,42 @@ inline void count_mines(int8_t *grid, size X, size Y, grid_index *mine_grid_inde
     }
 }
 
+void print_grid_fast(int8_t *grid) {
+    printf("print counts\n");
+    for (size i = 0; i < Y; ++i) {
+        if (!quiet) {
+            fwrite(&g_grid[i * X], sizeof(*g_grid), X, stdout);
+            putc('\n', stdout);
+        }
+    }
+}
+
+void print_grid_slow(int8_t *grid) {
+    printf("print counts\n");
+    char lookup[32] = {' '};
+    for (size i = 0; i < Y; ++i) {
+        // fwrite(&g_grid[i * X], sizeof(*g_grid), X, stdout);
+        int8_t *output = new int8_t[4 * X + 2];
+        for (size j = 0; j < 4 * X + 2; ++j) {
+            output[j] = ' ';
+        }
+        output[0] = '|';
+        output[4 * X + 1] = '\n';
+        for (size j = 0; j < X; ++j) {
+            output[4 * j + 1] = ' ';
+            output[4 * j + 2] = grid[i * X + j];
+            output[4 * j + 3] = ' ';
+            output[4 * j + 4] = '|';
+        }
+        if (!quiet)
+            fwrite(output, sizeof(char), 4 * X + 2, stdout);
+    }
+}
+
+void print_grid(int8_t *grid) {
+    print_grid_slow(grid);
+}
+
 int run(const std::vector<std::string> &arguments) {
     init(arguments);
     size total = X * Y;
@@ -151,20 +181,14 @@ int run(const std::vector<std::string> &arguments) {
     create_grid(g_grid, X, Y, mine_grid_index, N);
 #ifdef PRINT
     printf("print grid\n");
-    for (size i = 0; i < Y; ++i) {
-        fwrite(&g_grid[i * X], sizeof(*g_grid), X, stdout);
-        putc('\n', stdout);
-    }
+    print_grid(g_grid);
 #endif
     printf("count mines\n");
     count_mines(g_grid, X, Y, mine_grid_index, N);
 
 #ifdef PRINT
     printf("print counts\n");
-    for (size i = 0; i < Y; ++i) {
-        fwrite(&g_grid[i * X], sizeof(*g_grid), X, stdout);
-        putc('\n', stdout);
-    }
+    print_grid(g_grid);
 #endif
 
     delete[] g_grid;
