@@ -69,7 +69,8 @@ fn make_printer(quiet:bool) -> Printer {
 
 pub fn main(n:usize,b:usize,quiet:bool) {
 	let Nchunks=match n {
-		0..16 => 2,
+		0..4 => 1,
+		4..16 => 2,
 		_ => 8
 	};
 
