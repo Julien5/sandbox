@@ -14,12 +14,12 @@
 
 static int8_t *g_grid;
 typedef size_t size;
-typedef uint32_t grid_index;
+typedef size_t grid_index;
 
 // Fisher–Yates_shuffle
 void FisherYatesShuffle(grid_index *arr, size count, size max_size,
                         std::minstd_rand0 &gen) {
-    int32_t *positions = new int32_t[max_size];
+    size *positions = new size[max_size];
     for (size i = 0; i != max_size; ++i) {
         positions[i] = i;
     }
@@ -70,19 +70,19 @@ void init(const std::vector<std::string> &arguments) {
             N = readsize(arguments[2]);
         }
     }
-    // printf("X: %d, Y: %d, N: %d\n", X, Y, N);
+    printf("X: %d, Y: %d, N: %d\n", X, Y, N);
 }
 
-inline void create_grid(int8_t *grid, int X, int Y, grid_index *mine_grid_index,
-                        int N) {
-    int total = X * Y;
+inline void create_grid(int8_t *grid, size X, size Y, grid_index *mine_grid_index,
+                        size N) {
+    size total = X * Y;
     std::memset(grid, '.', total);
 
     std::random_device rd;
     // std::mt19937 g(rd());
     std::minstd_rand0 g(rd());
     FisherYatesShuffle(mine_grid_index, N, total, g);
-    for (int n = 0; n < N; ++n) {
+    for (size n = 0; n < N; ++n) {
         grid_index idx = mine_grid_index[n];
         grid[idx] = 'M';
     }
@@ -98,11 +98,11 @@ inline void create_grid(int8_t *grid, int X, int Y, grid_index *mine_grid_index,
         }
 */
 
-inline void count_mines(int8_t *grid, int X, int Y, grid_index *mine_grid_index,
-                        int N) {
+inline void count_mines(int8_t *grid, size X, size Y, grid_index *mine_grid_index,
+                        size N) {
     int total = X * Y;
     //#pragma omp parallel for simd
-    for (int n = 0; n < N; ++n) {
+    for (size n = 0; n < N; ++n) {
         grid_index idx = mine_grid_index[n];
         int i = idx % X;
 
@@ -137,10 +137,9 @@ inline void count_mines(int8_t *grid, int X, int Y, grid_index *mine_grid_index,
 
 int run(const std::vector<std::string> &arguments) {
     init(arguments);
-    int total = X * Y;
+    size total = X * Y;
     if (N > total)
         return -1;
-
     g_grid = new int8_t[total];
     grid_index *mine_grid_index = new grid_index[N];
 
@@ -148,10 +147,11 @@ int run(const std::vector<std::string> &arguments) {
         return -1;
 
     printf("make grid\n");
+
     create_grid(g_grid, X, Y, mine_grid_index, N);
 #ifdef PRINT
     printf("print grid\n");
-    for (int i = 0; i < Y; ++i) {
+    for (size i = 0; i < Y; ++i) {
         fwrite(&g_grid[i * X], sizeof(*g_grid), X, stdout);
         putc('\n', stdout);
     }
@@ -161,7 +161,7 @@ int run(const std::vector<std::string> &arguments) {
 
 #ifdef PRINT
     printf("print counts\n");
-    for (int i = 0; i < Y; ++i) {
+    for (size i = 0; i < Y; ++i) {
         fwrite(&g_grid[i * X], sizeof(*g_grid), X, stdout);
         putc('\n', stdout);
     }
