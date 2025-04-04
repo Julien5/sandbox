@@ -5,10 +5,24 @@ mod candidate;
 mod bomb;
 mod utils;
 mod tile;
+use std::io::Write;
 
 use std::env;
 
 fn main() {
+	// env_logger::init();
+	env_logger::Builder::new()
+        .format(|buf, record| {
+            writeln!(buf,
+                "{} [{}] - {}",
+                chrono::Local::now().format("%M:%S:%3f"),
+                record.level(),
+                record.args()
+            )
+        })
+        .filter(None, log::LevelFilter::Info)
+        .init();
+	
 	let args: Vec<String> = env::args().collect();
 
 	let algorithm = args[1].clone();
@@ -20,8 +34,9 @@ fn main() {
 		"baseline" => baseline::main(n,b,quiet),
 		"candidate" => candidate::main(n,b,quiet),
 		&_ => {
-			println!("unknown {}",algorithm);
+			log::error!("unknown {}",algorithm);
 		}
 	}
+	log::info!("done");
 }
 

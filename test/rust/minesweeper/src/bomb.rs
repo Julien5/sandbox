@@ -20,7 +20,8 @@ pub struct BombChunks {
 fn distinct_random_numbers(n:usize,m:usize,b:usize) -> BombPositions {
 	// generates [0,1,...,N-1]
 	let mut G : Vec<usize>=(0usize..(n*m)).collect();
-	let mut rng = StdRng::seed_from_u64(2);
+	//let mut rng = StdRng::from_os_rng();
+	let mut rng = StdRng::seed_from_u64(3);
 	// shuffle it and keep the first b elements.
 	G.shuffle(&mut rng);
 	G.truncate(b);

@@ -25,7 +25,7 @@ impl TileAccumulator {
 	}
 	fn aggregate(&mut self,tile:Tile) {
 		let index=tile.tile_index();
-		log::debug!("collect tile index:{} tiles:{}",index,self.tiles.len());
+		log::trace!("collect tile index:{} tiles:{}",index,self.tiles.len());
 		self.tiles.insert(tile.tile_index(),tile);
 	}
 	fn print_bombs(&mut self,printer:&mut Printer) {
@@ -79,7 +79,8 @@ pub fn main(n:usize,b:usize,quiet:bool) {
 	
 	let indexes:Vec<usize>=(0..Nchunks).collect();
 	let acc0=std::sync::Arc::new(std::sync::Mutex::new(TileAccumulator::init()));
-	
+
+	log::info!("make bombs and count");
 	let _:Vec<()>=indexes.clone().into_par_iter()
 		.map(|index| BombChunk::with_bomb_count(n,m,index,b_chunk)).into_par_iter()
 		.map(|chunk| make_tile(chunk)).into_par_iter()
@@ -87,9 +88,9 @@ pub fn main(n:usize,b:usize,quiet:bool) {
 		.collect();
 
 	let mut printer=make_printer(quiet);
-	log::debug!("bombs");
+	log::info!("print bombs");
 	acc0.lock().unwrap().print_bombs(&mut printer);
-	log::debug!("counts");
+	log::info!("print counts");
 	acc0.lock().unwrap().print_counts(&mut printer);
 }
 
