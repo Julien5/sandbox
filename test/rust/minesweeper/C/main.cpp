@@ -10,12 +10,29 @@
 #include <time.h>
 #include <vector>
 
-#define PRINT
+#include <chrono>
+#include <iomanip>
+#include <iostream>
+
+void log(const std::string &msg) {
+    // get a precise timestamp as a string
+    const auto now = std::chrono::system_clock::now();
+    const auto nowAsTimeT = std::chrono::system_clock::to_time_t(now);
+    const auto nowMs = std::chrono::duration_cast<std::chrono::milliseconds>(
+                           now.time_since_epoch()) %
+                       1000;
+    std::cerr
+        << std::put_time(std::localtime(&nowAsTimeT), "%T")
+        << '.' << std::setfill('0') << std::setw(3) << nowMs.count()
+        << ": "
+        << msg << std::endl;
+}
 
 static int8_t *g_grid;
 typedef size_t size;
 typedef size_t grid_index;
-
+const int8_t BOMB = 10;
+const int8_t EMPTY = 0;
 // Fisher–Yates_shuffle
 void FisherYatesShuffle(grid_index *arr, size count, size max_size,
                         std::minstd_rand0 &gen) {
@@ -70,7 +87,7 @@ void init(const std::vector<std::string> &arguments) {
 inline void create_grid(int8_t *grid, size X, size Y, grid_index *mine_grid_index,
                         size N) {
     size total = X * Y;
-    std::memset(grid, '.', total);
+    std::memset(grid, EMPTY, total);
 
     std::random_device rd;
     // std::mt19937 g(rd());
@@ -78,19 +95,14 @@ inline void create_grid(int8_t *grid, size X, size Y, grid_index *mine_grid_inde
     FisherYatesShuffle(mine_grid_index, N, total, g);
     for (size n = 0; n < N; ++n) {
         grid_index idx = mine_grid_index[n];
-        grid[idx] = 'M';
+        grid[idx] = BOMB;
     }
 }
 
-#define INC_COUNT(idx) grid[(idx)] += 0b1100 >> (grid[(idx)] >> 4)
-/*
-#define INC_COUNT(idx) \
-        if (grid[(idx)] == '.') { \
-                grid[(idx)] = '1'; \
-        } else if (grid[(idx)] != 'M') { \
-                grid[(idx)]++; \
-        }
-*/
+#define INC_COUNT(idx)         \
+    if (grid[(idx)] != BOMB) { \
+        grid[(idx)]++;         \
+    }
 
 inline void count_mines(int8_t *grid, size X, size Y, grid_index *mine_grid_index,
                         size N) {
@@ -130,7 +142,6 @@ inline void count_mines(int8_t *grid, size X, size Y, grid_index *mine_grid_inde
 }
 
 void print_grid_fast(int8_t *grid) {
-    printf("print counts\n");
     for (size i = 0; i < Y; ++i) {
         if (!quiet) {
             fwrite(&g_grid[i * X], sizeof(*g_grid), X, stdout);
@@ -139,9 +150,18 @@ void print_grid_fast(int8_t *grid) {
     }
 }
 
-void print_grid_slow(int8_t *grid) {
-    printf("print counts\n");
-    char lookup[32] = {' '};
+void print_grid_slow(int8_t *grid, const bool show_counts) {
+    if (show_counts)
+        log("print counts");
+    else
+        log("print grid");
+    char lookup[16] = {13};
+    lookup[EMPTY] = '.';
+    lookup[BOMB] = '*';
+    for (size i = 1; i < 9; ++i) {
+        lookup[i] = show_counts ? '0' + i : lookup[EMPTY];
+    }
+
     for (size i = 0; i < Y; ++i) {
         // fwrite(&g_grid[i * X], sizeof(*g_grid), X, stdout);
         int8_t *output = new int8_t[4 * X + 2];
@@ -152,7 +172,7 @@ void print_grid_slow(int8_t *grid) {
         output[4 * X + 1] = '\n';
         for (size j = 0; j < X; ++j) {
             output[4 * j + 1] = ' ';
-            output[4 * j + 2] = grid[i * X + j];
+            output[4 * j + 2] = lookup[grid[i * X + j]];
             output[4 * j + 3] = ' ';
             output[4 * j + 4] = '|';
         }
@@ -161,8 +181,8 @@ void print_grid_slow(int8_t *grid) {
     }
 }
 
-void print_grid(int8_t *grid) {
-    print_grid_slow(grid);
+void print_grid(int8_t *grid, bool show_counts) {
+    print_grid_slow(grid, show_counts);
 }
 
 int run(const std::vector<std::string> &arguments) {
@@ -176,23 +196,16 @@ int run(const std::vector<std::string> &arguments) {
     if (!g_grid || !mine_grid_index)
         return -1;
 
-    printf("make grid\n");
-
+    log("make grid");
     create_grid(g_grid, X, Y, mine_grid_index, N);
-#ifdef PRINT
-    printf("print grid\n");
-    print_grid(g_grid);
-#endif
-    printf("count mines\n");
+    log("count mines");
     count_mines(g_grid, X, Y, mine_grid_index, N);
-
-#ifdef PRINT
-    printf("print counts\n");
-    print_grid(g_grid);
-#endif
+    print_grid(g_grid, false);
+    print_grid(g_grid, true);
 
     delete[] g_grid;
     delete[] mine_grid_index;
+    log("done");
     return EXIT_SUCCESS;
 }
 
