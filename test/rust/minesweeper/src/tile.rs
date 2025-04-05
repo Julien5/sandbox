@@ -31,11 +31,12 @@ impl Tile {
 			grid: vec![ZERO; nM*mM],
 			bomb_chunk:chunk,
 		};
-		for p in g.bomb_chunk.positions() {
-			g.grid[*p]=BOMB;
+		let L=g.bomb_chunk.positions().len();
+		for p in 0..L {
+			let pos=g.bomb_chunk.positions()[p];
+			g.grid[pos]=BOMB;
+			g.increment_neighboors(pos);
 		}
-		// TODO: avoid looping again over all positions again.
-		g.count_bombs();
 		g
 	}
 
@@ -147,7 +148,7 @@ impl Tile {
 		}
 	}
 	
-	pub fn count_bombs(&mut self) {
+	pub fn _count_bombs(&mut self) {
 		let positions=self.bomb_chunk.positions().clone();
 		positions.iter().for_each(|bpos| {
 			self.increment_neighboors(*bpos);
