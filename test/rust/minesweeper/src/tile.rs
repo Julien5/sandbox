@@ -10,19 +10,15 @@ const ZERO  : Element = 0;
 pub struct Tile {
 	grid: Vec<Element>,
 	bomb_chunk: BombChunk,
-	n:usize,
-	m:usize,
-	nM:usize,
-	mM:usize
 }
 
 impl Tile {
 	fn at(&self, kn:usize, km:usize) -> Element {
-		self.grid[_1d((kn+1,km+1),self.nM,self.mM)]
+		self.grid[_1d((kn+1,km+1),self.nM(),self.mM())]
 	}
 
 	fn at_all(&self, kn:usize, km:usize) -> Element {
-		self.grid[_1d((kn,km),self.nM,self.mM)]
+		self.grid[_1d((kn,km),self.nM(),self.mM())]
 	}
 	
 	pub fn with_chunk(chunk:BombChunk) -> Tile {
@@ -34,10 +30,6 @@ impl Tile {
 		let mut g=Tile {
 			grid: vec![ZERO; nM*mM],
 			bomb_chunk:chunk,
-			n:n,
-			m:m,
-			nM:nM,
-			mM:mM
 		};
 		for p in g.bomb_chunk.positions() {
 			g.grid[*p]=BOMB;
@@ -45,6 +37,22 @@ impl Tile {
 		// TODO: avoid looping again over all positions again.
 		g.count_bombs();
 		g
+	}
+
+	fn nM(&self) -> usize {
+		self.n()+2
+	}
+	
+	fn mM(&self) -> usize {
+		self.m()+2
+	}
+
+	fn n(&self) -> usize {
+		self.bomb_chunk.n()
+	}
+	
+	fn m(&self) -> usize {
+		self.bomb_chunk.m()
 	}
 		
 	pub fn bomb_count_at(&self,kn:usize,km:usize,prev:Option<&Tile>, next:Option<&Tile>) -> usize {
@@ -55,18 +63,18 @@ impl Tile {
 			// add last line from prev
 			match prev {
 				Some(tile) => {
-					debug_assert!(tile.at_all(kn+1,tile.mM-1) != BOMB);
-					return self.at(kn,0) + tile.at_all(kn+1,tile.mM-1);
+					debug_assert!(tile.at_all(kn+1,tile.mM()-1) != BOMB);
+					return self.at(kn,0) + tile.at_all(kn+1,tile.mM()-1);
 				}
 				_ => {}
 			}
 		}
-		if km == self.m-1 {
+		if km == self.m()-1 {
 			// add first line from next
 			match next {
 				Some(tile) => {
 					debug_assert!(tile.at_all(kn+1,0) != BOMB);
-					return self.at(kn,self.m-1) + tile.at_all(kn+1,0);
+					return self.at(kn,self.m()-1) + tile.at_all(kn+1,0);
 				}
 				_ => {}
 			}
@@ -78,12 +86,12 @@ impl Tile {
 	pub fn print_bombs(&self, printer: &mut Printer) {
 		let print_lookup: [u8;11] = [b' ',b' ',b' ',b' ',b' ',b' ',b' ',b' ',b' ',b'*',b' '];
 		debug_assert!(!self.grid.is_empty());
-		let mut output:Vec<u8> = vec![b' ';4*self.n+2];
+		let mut output:Vec<u8> = vec![b' ';4*self.n()+2];
 		output[0]=b'|';
-		output[4*self.n+1]=b'\n';
-		for km in 0..self.m {
-			for kn in 0..self.n {
-				let k=_1d((kn+1,km+1),self.nM,self.mM);
+		output[4*self.n()+1]=b'\n';
+		for km in 0..self.m() {
+			for kn in 0..self.n() {
+				let k=_1d((kn+1,km+1),self.nM(),self.mM());
 				output[4*kn+2]=print_lookup[self.grid[k]];
 				output[4*kn+4]=b'|';
 			}
@@ -94,11 +102,11 @@ impl Tile {
 	pub fn print_counts(&self, prev:Option<&Tile>, next:Option<&Tile>, printer: &mut Printer) {
 		let print_lookup: [u8;11] = [b'.',b'1',b'2',b'3',b'4',b'5',b'6',b'7',b'8',b'*',b' '];
 		debug_assert!(!self.grid.is_empty());
-		let mut output:Vec<u8> = vec![b' ';4*self.n+2];
+		let mut output:Vec<u8> = vec![b' ';4*self.n()+2];
 		output[0]=b'|';
-		output[4*self.n+1]=b'\n';
-		for km in 0..self.m {
-			for kn in 0..self.n {
+		output[4*self.n()+1]=b'\n';
+		for km in 0..self.m() {
+			for kn in 0..self.n() {
 				let c=self.bomb_count_at(kn,km,prev,next);
 				output[4*kn+2]=print_lookup[c];
 				output[4*kn+4]=b'|';
@@ -110,11 +118,11 @@ impl Tile {
 	pub fn _print_all(&self, printer: &mut Printer) {
 		let print_lookup: [u8;11] = [b' ',b'1',b'2',b'3',b'4',b'5',b'6',b'7',b'8',b'B',b' '];
 		debug_assert!(!self.grid.is_empty());
-		let mut output:Vec<u8> = vec![b' ';self.nM+1];
-		output[self.nM]=b'\n';
-		for km in 0..self.mM {
-			for kn in 0..self.nM {
-				let k=_1d((kn,km),self.nM,self.mM);
+		let mut output:Vec<u8> = vec![b' ';self.nM()+1];
+		output[self.nM()]=b'\n';
+		for km in 0..self.mM() {
+			for kn in 0..self.nM() {
+				let k=_1d((kn,km),self.nM(),self.mM());
 				output[kn]=print_lookup[self.grid[k]];
 			}
 			printer.print(&output);
@@ -122,15 +130,15 @@ impl Tile {
 	}
 
 	fn increment_neighboors(&mut self, pos:usize) {
-		let (posx,posy)=_2d(pos,self.nM,self.mM);
-		debug_assert!(posx>0 && posx<self.n+1);
-		debug_assert!(posy>0 && posy<self.m+1);
+		let (posx,posy)=_2d(pos,self.nM(),self.mM());
+		debug_assert!(posx>0 && posx<self.n()+1);
+		debug_assert!(posy>0 && posy<self.m()+1);
 		for i in 0..3 {
 			for j in 0..3 {
 				if i == 1 && j == 1 {
 					continue
 				}
-				let l=_1d((posx+i-1,posy+j-1),self.nM,self.mM);
+				let l=_1d((posx+i-1,posy+j-1),self.nM(),self.mM());
 				debug_assert!(l<self.grid.len());
 				if self.grid[l] != BOMB {
 					self.grid[l]+=1;
