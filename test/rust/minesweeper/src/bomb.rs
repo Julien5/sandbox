@@ -1,10 +1,8 @@
 use rand::rngs::StdRng;
 use rand::{Rng, SeedableRng};
 
-use crate::utils::*;
 type BombPositions = Vec<usize>;
 
-#[derive(Clone, Debug)]
 pub struct BombChunk {
 	n:usize,
 	m:usize,
@@ -14,13 +12,17 @@ pub struct BombChunk {
 
 fn distinct_random_numbers(n:usize,m:usize,b:usize) -> BombPositions {
 	let mut rng = StdRng::seed_from_u64(3);
+	// populate the available positions exluding the margins.
 	let mut positions : Vec<usize>=vec![0;n*m];
 	for j in 0..m {
-		let line=Vec::from_iter((j+1)*(n+2)+1..(j+1)*(n+2)+n+1);
+		let begin=(j+1)*(n+2)+1;
+		let end  = begin+n;
+		let line=Vec::from_iter(begin..end);
 		positions[j*n..(j+1)*n].copy_from_slice(line.as_slice());
 	}
 	debug_assert_eq!(positions[0],n+3);
-	
+
+	// Fisher-Yates
 	for i in 0..b {
 		let end=m*n-i;
 		let j=rng.random_range(0..end);
@@ -36,6 +38,7 @@ fn distinct_random_numbers(n:usize,m:usize,b:usize) -> BombPositions {
 
 impl BombChunk {
 	pub fn with_bomb_count(n:usize,m:usize,index:usize,b:usize) -> BombChunk {
+		log::trace!("make bombs for chunk index:{}",index);
 		let chunk=BombChunk {
 			n:n,
 			m:m,

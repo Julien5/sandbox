@@ -71,7 +71,7 @@ pub fn main(n:usize,b:usize,quiet:bool) {
 	let Nchunks=match n {
 		0..4 => 1,
 		4..16 => 2,
-		_ => 8
+		_ => 32
 	};
 
 	let m=((n as f32)/(Nchunks as f32)).floor() as usize;
@@ -86,7 +86,7 @@ pub fn main(n:usize,b:usize,quiet:bool) {
 		.map(|chunk| make_tile(chunk)).into_par_iter()
 		.map(|tile| acc0.lock().unwrap().aggregate(tile))
 		.collect();
-
+	
 	let mut printer=make_printer(quiet);
 	log::info!("print bombs");
 	acc0.lock().unwrap().print_bombs(&mut printer);

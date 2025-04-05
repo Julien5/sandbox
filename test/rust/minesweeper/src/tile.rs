@@ -7,7 +7,6 @@ const _EMPTY : Element = 10;
 const BOMB  : Element = 9;
 const ZERO  : Element = 0;
 
-#[derive(Clone)]
 pub struct Tile {
 	grid: Vec<Element>,
 	bomb_chunk: BombChunk,
@@ -27,6 +26,7 @@ impl Tile {
 	}
 	
 	pub fn with_chunk(chunk:BombChunk) -> Tile {
+		log::trace!("make tile for chunk index:{}",chunk.index());
 		let n=chunk.n();
 		let m=chunk.m();
 		let nM=n+2;
