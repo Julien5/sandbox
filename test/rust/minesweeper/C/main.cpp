@@ -34,7 +34,7 @@ typedef size_t grid_index;
 const int8_t BOMB = 'M';
 const int8_t EMPTY = '.';
 
-bool fast_print = true;
+bool fast_print = false;
 
 // Fisher–Yates_shuffle
 void FisherYatesShuffle(grid_index *arr, size count, size max_size,
@@ -87,7 +87,7 @@ void init(const std::vector<std::string> &arguments) {
     printf("X: %d, Y: %d, N: %d\n", X, Y, N);
 }
 
-#define INC2_COUNT(idx)        \
+#define INC0_COUNT(idx)        \
     if (grid[(idx)] != BOMB) { \
         grid[(idx)]++;         \
     }
