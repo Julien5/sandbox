@@ -165,18 +165,18 @@ void print_grid_fast(int8_t *grid, bool _show_count) {
         }
     }
 }
-
+#include <cassert>
 void print_grid_slow(int8_t *grid, const bool show_counts) {
     char lookup[256] = {0};
     lookup[EMPTY] = '.';
     lookup[BOMB] = '*';
     for (size i = 1; i < 9; ++i) {
+        assert(i != EMPTY);
         lookup[i] = show_counts ? '0' + i : lookup[EMPTY];
         lookup['0' + i] = show_counts ? '0' + i : lookup[EMPTY];
     }
-
+    int8_t *output = new int8_t[4 * X + 2];
     for (size i = 0; i < Y; ++i) {
-        int8_t *output = new int8_t[4 * X + 2];
         for (size j = 0; j < 4 * X + 2; ++j) {
             output[j] = ' ';
         }
@@ -191,6 +191,7 @@ void print_grid_slow(int8_t *grid, const bool show_counts) {
         if (!quiet)
             fwrite(output, sizeof(char), 4 * X + 2, stdout);
     }
+    delete output;
 }
 
 void print_grid(int8_t *grid, bool show_counts) {
