@@ -1,7 +1,7 @@
 use crate::bomb::*;
 use crate::utils::*;
 
-type Element = usize;
+type Element = u8;
 
 const _EMPTY : Element = 10;
 const BOMB  : Element = 9;
@@ -56,7 +56,7 @@ impl Tile {
 		self.bomb_chunk.m()
 	}
 		
-	pub fn bomb_count_at(&self,kn:usize,km:usize,prev:Option<&Tile>, next:Option<&Tile>) -> usize {
+	pub fn bomb_count_at(&self,kn:usize,km:usize,prev:Option<&Tile>, next:Option<&Tile>) -> u8 {
 		if self.at(kn,km) == BOMB {
 			return BOMB;
 		}
@@ -93,7 +93,7 @@ impl Tile {
 		for km in 0..self.m() {
 			for kn in 0..self.n() {
 				let k=_1d((kn+1,km+1),self.nM(),self.mM());
-				output[4*kn+2]=print_lookup[self.grid[k]];
+				output[4*kn+2]=print_lookup[self.grid[k] as usize];
 				output[4*kn+4]=b'|';
 			}
 			printer.print(&output);
@@ -109,7 +109,7 @@ impl Tile {
 		for km in 0..self.m() {
 			for kn in 0..self.n() {
 				let c=self.bomb_count_at(kn,km,prev,next);
-				output[4*kn+2]=print_lookup[c];
+				output[4*kn+2]=print_lookup[c as usize];
 				output[4*kn+4]=b'|';
 			}
 			printer.print(&output);
@@ -124,7 +124,7 @@ impl Tile {
 		for km in 0..self.mM() {
 			for kn in 0..self.nM() {
 				let k=_1d((kn,km),self.nM(),self.mM());
-				output[kn]=print_lookup[self.grid[k]];
+				output[kn]=print_lookup[self.grid[k] as usize];
 			}
 			printer.print(&output);
 		}
