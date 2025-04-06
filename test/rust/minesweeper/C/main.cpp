@@ -7,8 +7,8 @@
 #include <random>
 #include <string>
 #include <thread>
-#include <time.h>
 #include <vector>
+#include <cassert>
 
 #include <chrono>
 #include <iomanip>
@@ -34,14 +34,18 @@ typedef size_t grid_index;
 const int8_t BOMB = 'M';
 const int8_t EMPTY = '.';
 
-bool fast_print = true;
+const bool fast_print = true;
 
 // Fisher–Yates_shuffle
-void FisherYatesShuffle(grid_index *arr, size count, size max_size,
+void FisherYatesShuffle(grid_index *arr, size count, size X, size Y,
                         std::minstd_rand0 &gen) {
+    const auto max_size = X * Y;
     size *positions = new size[max_size];
-    for (size i = 0; i != max_size; ++i) {
-        positions[i] = i;
+    size i = 0;
+    for (size x = 1; x != X + 1; ++x) {
+        for (size y = 1; y != Y + 1; ++y) {
+            positions[i++] = y * (X + 2) + x;
+        }
     }
     for (size i = 0; i != count; ++i) {
         auto end = max_size - i - 1;
@@ -65,7 +69,6 @@ namespace global {
     bool quiet = false;
 } // namespace global
 
-using namespace global;
 namespace {
     size readsize(const std::string &s) {
         char *p_end;
@@ -79,12 +82,12 @@ void init(const std::vector<std::string> &arguments) {
     srand(time(NULL));
 
     if (!arguments.empty()) {
-        quiet = arguments[0].find("verbose") == std::string::npos;
-        X = readsize(arguments[1]);
-        Y = X;
-        N = readsize(arguments[2]);
+        global::quiet = arguments[0].find("verbose") == std::string::npos;
+        global::X = readsize(arguments[1]);
+        global::Y = global::X;
+        global::N = readsize(arguments[2]);
     }
-    printf("X: %d, Y: %d, N: %d\n", X, Y, N);
+    printf("X: %d, Y: %d, N: %d\n", global::X, global::Y, global::N);
 }
 
 #define INC0_COUNT(idx)        \
@@ -100,68 +103,81 @@ void init(const std::vector<std::string> &arguments) {
         grid[(idx)]++;                \
     }
 
-inline void count_mines_at_index(int8_t *grid, size X, size Y, grid_index *mine_grid_index,
-                                 size N, size idx) {
-    size i = idx % X;
-    if (idx > X) [[likely]] {
-        INC_COUNT(idx - 1 - X);
-        INC_COUNT(idx - X);
-        if (i + 1 < X) [[likely]] {
-            INC_COUNT(idx + 1 - X);
-        }
-    }
-    INC_COUNT(idx - 1);
-    if (i + 1 < X) [[likely]] {
-        INC_COUNT(idx + 1);
-    }
+size _1d(size x, size y, size X, size Y) {
+    return y * X + x;
+}
 
-    if (idx < X * Y - X) [[likely]] {
-        INC_COUNT(idx - 1 + X);
-        INC_COUNT(idx + X);
-        if (i + 1 < X) [[likely]] {
-            INC_COUNT(idx + 1 + X);
+struct point {
+    size x = 0;
+    size y = 0;
+};
+
+point _2d(int k, size X, size Y) {
+    point p;
+    p.x = k % X;
+    p.y = k / X;
+    return p;
+}
+
+inline void count_mines_at_index(int8_t *grid, size idx) {
+    using namespace global;
+    size i = idx % (X + 2);
+    // std::cerr << "X=" << X << " Y=" << Y << " idx = " << idx << " i = " << i << std::endl;
+    assert(i > 0 && i < (X + 2 - 1));
+    size j = idx / (X + 2);
+    assert(j > 0 && j < (Y + 2 - 1));
+    point p = _2d(idx, X + 2, Y + 2);
+    assert(0 < p.x && p.x < X + 1);
+    assert(0 < p.y && p.y < Y + 1);
+    for (int dx = -1; dx < 2; ++dx) {
+        for (int dy = -1; dy < 2; ++dy) {
+            if (dx == 0 && dy == 0)
+                continue;
+            size nx = p.x + dx;
+            size ny = p.y + dy;
+            size nk = _1d(nx, ny, X + 2, Y + 2);
+            INC_COUNT(nk);
         }
     }
 }
 
-inline void create_grid(int8_t *grid, size X, size Y, grid_index *mine_grid_index,
-                        size N) {
-    size total = X * Y;
+inline void create_grid(int8_t *grid, grid_index *mine_grid_index) {
+    size total = (global::X + 2) * (global::Y + 2);
     std::memset(grid, EMPTY, total);
 
     std::random_device rd;
     // std::mt19937 g(rd());
     std::minstd_rand0 g(rd());
-    FisherYatesShuffle(mine_grid_index, N, total, g);
-    for (size n = 0; n < N; ++n) {
+    FisherYatesShuffle(mine_grid_index, global::N, global::X, global::Y, g);
+    for (size n = 0; n < global::N; ++n) {
         grid_index idx = mine_grid_index[n];
+        assert(idx < total);
         grid[idx] = BOMB;
         if (!fast_print) {
-            count_mines_at_index(grid, X, Y, mine_grid_index, N, idx);
+            count_mines_at_index(grid, idx);
         }
     }
 }
 
-inline void count_mines(int8_t *grid, size X, size Y, grid_index *mine_grid_index,
-                        size N) {
-    int total = X * Y;
-    //#pragma omp parallel for simd
-    for (size n = 0; n < N; ++n) {
+inline void count_mines(int8_t *grid, grid_index *mine_grid_index) {
+    for (size n = 0; n < global::N; ++n) {
         grid_index idx = mine_grid_index[n];
-        count_mines_at_index(grid, X, Y, mine_grid_index, N, idx);
+        count_mines_at_index(grid, idx);
     }
 }
 
 void print_grid_fast(int8_t *grid, bool _show_count) {
+    using namespace global;
     for (size i = 0; i < Y; ++i) {
         if (!quiet) {
-            fwrite(&g_grid[i * X], sizeof(*g_grid), X, stdout);
+            fwrite(&g_grid[(i + 1) * (X + 2)], sizeof(*g_grid), X + 2, stdout);
             putc('\n', stdout);
         }
     }
 }
 #include <cassert>
 void print_grid_slow(int8_t *grid, const bool show_counts) {
+    using namespace global;
     char lookup[256] = {0};
     lookup[EMPTY] = '.';
     lookup[BOMB] = '*';
@@ -179,7 +195,7 @@ void print_grid_slow(int8_t *grid, const bool show_counts) {
         output[4 * X + 1] = '\n';
         for (size j = 0; j < X; ++j) {
             output[4 * j + 1] = ' ';
-            output[4 * j + 2] = lookup[grid[i * X + j]];
+            output[4 * j + 2] = lookup[grid[_1d(i + 1, j + 1, X + 2, Y + 2)]];
             output[4 * j + 3] = ' ';
             output[4 * j + 4] = '|';
         }
@@ -199,21 +215,21 @@ void print_grid(int8_t *grid, bool show_counts) {
 
 int run(const std::vector<std::string> &arguments) {
     init(arguments);
-    size total = X * Y;
-    if (N > total)
+    size total = global::X * global::Y;
+    if (global::N > total)
         return -1;
-    g_grid = new int8_t[total];
-    grid_index *mine_grid_index = new grid_index[N];
+    g_grid = new int8_t[(global::X + 2) * (global::Y + 2)];
+    grid_index *mine_grid_index = new grid_index[global::N];
 
     if (!g_grid || !mine_grid_index)
         return -1;
 
     log("make grid");
-    create_grid(g_grid, X, Y, mine_grid_index, N);
+    create_grid(g_grid, mine_grid_index);
     if (fast_print) {
         print_grid(g_grid, false);
         log("count mines");
-        count_mines(g_grid, X, Y, mine_grid_index, N);
+        count_mines(g_grid, mine_grid_index);
     } else {
         print_grid(g_grid, false);
     }
