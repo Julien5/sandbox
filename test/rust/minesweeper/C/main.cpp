@@ -28,13 +28,13 @@ void log(const std::string &msg) {
         << msg << std::endl;
 }
 
-static int8_t *g_grid;
-typedef size_t size;
-typedef size_t grid_index;
+static int8_t *g_grid = nullptr;
 const int8_t BOMB = 'M';
 const int8_t EMPTY = '.';
+const bool fast_print = false;
 
-const bool fast_print = true;
+typedef size_t size;
+typedef size_t grid_index;
 
 // Fisher–Yates_shuffle
 void FisherYatesShuffle(grid_index *arr, size count, size X, size Y,
@@ -90,19 +90,6 @@ void init(const std::vector<std::string> &arguments) {
     printf("X: %d, Y: %d, N: %d\n", global::X, global::Y, global::N);
 }
 
-#define INC0_COUNT(idx)        \
-    if (grid[(idx)] != BOMB) { \
-        grid[(idx)]++;         \
-    }
-
-#define INC_COUNT(idx) grid[(idx)] += 0b1100 >> (grid[(idx)] >> 4)
-#define INC2_COUNT(idx)               \
-    if (grid[(idx)] == EMPTY) {       \
-        grid[(idx)] = '1';            \
-    } else if (grid[(idx)] != BOMB) { \
-        grid[(idx)]++;                \
-    }
-
 size _1d(size x, size y, size X, size Y) {
     return y * X + x;
 }
@@ -136,7 +123,7 @@ inline void count_mines_at_index(int8_t *grid, size idx) {
             size nx = p.x + dx;
             size ny = p.y + dy;
             size nk = _1d(nx, ny, X + 2, Y + 2);
-            INC_COUNT(nk);
+            grid[nk]++;
         }
     }
 }
@@ -218,14 +205,13 @@ int run(const std::vector<std::string> &arguments) {
     size total = global::X * global::Y;
     if (global::N > total)
         return -1;
+    log("make grid");
     g_grid = new int8_t[(global::X + 2) * (global::Y + 2)];
     grid_index *mine_grid_index = new grid_index[global::N];
-
     if (!g_grid || !mine_grid_index)
         return -1;
-
-    log("make grid");
     create_grid(g_grid, mine_grid_index);
+
     if (fast_print) {
         print_grid(g_grid, false);
         log("count mines");
