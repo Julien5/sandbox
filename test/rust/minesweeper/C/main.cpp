@@ -34,7 +34,7 @@ typedef size_t grid_index;
 const int8_t BOMB = 'M';
 const int8_t EMPTY = '.';
 
-bool fast_print = false;
+bool fast_print = true;
 
 // Fisher–Yates_shuffle
 void FisherYatesShuffle(grid_index *arr, size count, size max_size,
@@ -102,27 +102,21 @@ void init(const std::vector<std::string> &arguments) {
 
 inline void count_mines_at_index(int8_t *grid, size X, size Y, grid_index *mine_grid_index,
                                  size N, size idx) {
-    int i = idx % X;
+    size i = idx % X;
     if (idx > X) [[likely]] {
-        if (i > 0) [[likely]] {
-            INC_COUNT(idx - 1 - X);
-        }
+        INC_COUNT(idx - 1 - X);
         INC_COUNT(idx - X);
         if (i + 1 < X) [[likely]] {
             INC_COUNT(idx + 1 - X);
         }
     }
-    if (i > 0) [[likely]] {
-        INC_COUNT(idx - 1);
-    }
+    INC_COUNT(idx - 1);
     if (i + 1 < X) [[likely]] {
         INC_COUNT(idx + 1);
     }
 
     if (idx < X * Y - X) [[likely]] {
-        if (i > 0) [[likely]] {
-            INC_COUNT(idx - 1 + X);
-        }
+        INC_COUNT(idx - 1 + X);
         INC_COUNT(idx + X);
         if (i + 1 < X) [[likely]] {
             INC_COUNT(idx + 1 + X);
@@ -142,8 +136,9 @@ inline void create_grid(int8_t *grid, size X, size Y, grid_index *mine_grid_inde
     for (size n = 0; n < N; ++n) {
         grid_index idx = mine_grid_index[n];
         grid[idx] = BOMB;
-        if (!fast_print)
+        if (!fast_print) {
             count_mines_at_index(grid, X, Y, mine_grid_index, N, idx);
+        }
     }
 }
 
