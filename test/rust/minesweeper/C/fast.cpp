@@ -1,0 +1,83 @@
+#include "fast.h"
+#include "minesweeper.h"
+#include <cassert>
+#include <cstring>
+#include <random>
+
+namespace {
+    static int8_t *g_grid = nullptr;
+    const int8_t BOMB = 'M';
+    const int8_t EMPTY = '0';
+
+    inline void count_mines_at_index(int8_t *grid, size X, size Y, size idx) {
+        size i = idx % (X + 2);
+        // std::cerr << "X=" << X << " Y=" << Y << " idx = " << idx << " i = " << i << std::endl;
+        assert(i > 0 && i < (X + 2 - 1));
+        size j = idx / (X + 2);
+        assert(j > 0 && j < (Y + 2 - 1));
+        point p = _2d(idx, X + 2, Y + 2);
+        assert(0 < p.x && p.x < X + 1);
+        assert(0 < p.y && p.y < Y + 1);
+        for (int dx = -1; dx < 2; ++dx) {
+            for (int dy = -1; dy < 2; ++dy) {
+                if (dx == 0 && dy == 0)
+                    continue;
+                size nx = p.x + dx;
+                size ny = p.y + dy;
+                size nk = _1d(nx, ny, X + 2, Y + 2);
+                if (grid[nk] != BOMB)
+                    grid[nk]++;
+            }
+        }
+    }
+
+    inline void create_grid(int8_t *grid, size X, size Y, grid_index *mine_grid_index, size N) {
+        size total = (X + 2) * (Y + 2);
+        std::memset(grid, EMPTY, total);
+
+        std::random_device rd;
+        // std::mt19937 g(rd());
+        std::minstd_rand0 g(rd());
+        FisherYatesShuffle(mine_grid_index, N, X, Y);
+        for (size n = 0; n < N; ++n) {
+            grid_index idx = mine_grid_index[n];
+            assert(idx < total);
+            grid[idx] = BOMB;
+        }
+    }
+
+    inline void count_mines(int8_t *grid, size X, size Y, grid_index *mine_grid_index, size N) {
+        for (size n = 0; n < N; ++n) {
+            grid_index idx = mine_grid_index[n];
+            count_mines_at_index(grid, X, Y, idx);
+        }
+    }
+
+    void print_grid(int8_t *grid, size X, size Y, bool quiet) {
+        if (quiet)
+            return;
+        for (size i = 0; i < Y; ++i) {
+            fwrite(&g_grid[(i + 1) * (X + 2)], sizeof(*g_grid), X + 2, stdout);
+            putc('\n', stdout);
+        }
+    }
+}
+
+int fast::run(size X, size Y, size N, bool quiet) {
+    log("make grid");
+    g_grid = new int8_t[(X + 2) * (Y + 2)];
+    grid_index *mine_grid_index = new grid_index[N];
+    if (!g_grid || !mine_grid_index)
+        return -1;
+    create_grid(g_grid, X, Y, mine_grid_index, N);
+
+    print_grid(g_grid, X, Y, quiet);
+    log("count mines");
+    count_mines(g_grid, X, Y, mine_grid_index, N);
+    print_grid(g_grid, X, Y, quiet);
+
+    delete[] g_grid;
+    delete[] mine_grid_index;
+    log("done");
+    return EXIT_SUCCESS;
+}
