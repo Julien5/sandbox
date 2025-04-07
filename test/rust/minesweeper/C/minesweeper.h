@@ -10,6 +10,8 @@ struct point {
     size x = 0;
     size y = 0;
 };
+
 size _1d(size x, size y, size X, size Y);
-point _2d(int k, size X, size Y);
-void FisherYatesShuffle(grid_index *arr, size count, size X, size Y);
+point _2d(size k, size X, size Y);
+
+void FisherYatesShuffle(size *positions, grid_index *arr, size count, size X, size Y);

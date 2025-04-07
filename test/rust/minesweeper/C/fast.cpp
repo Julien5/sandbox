@@ -3,42 +3,50 @@
 #include <cassert>
 #include <cstring>
 #include <random>
+#include <iostream>
 
 namespace {
     static int8_t *g_grid = nullptr;
     const int8_t BOMB = 'M';
-    const int8_t EMPTY = '0';
+    const int8_t EMPTY = '.';
 
     inline void count_mines_at_index(int8_t *grid, size X, size Y, size idx) {
-        size i = idx % (X + 2);
-        // std::cerr << "X=" << X << " Y=" << Y << " idx = " << idx << " i = " << i << std::endl;
-        assert(i > 0 && i < (X + 2 - 1));
-        size j = idx / (X + 2);
-        assert(j > 0 && j < (Y + 2 - 1));
-        point p = _2d(idx, X + 2, Y + 2);
-        assert(0 < p.x && p.x < X + 1);
-        assert(0 < p.y && p.y < Y + 1);
+        point p = _2d(idx, X, Y);
+        // std::cerr << "p.x=" << int(p.x) << " p.y=" << int(p.y) << std::endl;
+        assert(0 <= p.x && p.x < X);
+        assert(0 <= p.y && p.y < Y);
         for (int dx = -1; dx < 2; ++dx) {
             for (int dy = -1; dy < 2; ++dy) {
                 if (dx == 0 && dy == 0)
                     continue;
-                size nx = p.x + dx;
-                size ny = p.y + dy;
-                size nk = _1d(nx, ny, X + 2, Y + 2);
-                if (grid[nk] != BOMB)
-                    grid[nk]++;
+                int64_t nx = int64_t(p.x) + dx;
+                int64_t ny = int64_t(p.y) + dy;
+                int64_t nk = ny * X + nx;
+                // out of bounds
+                if (nk < 0 || nk >= (X * Y))
+                    continue;
+                // bomb
+                if (grid[nk] == BOMB)
+                    continue;
+                if (grid[nk] == '.')
+                    grid[nk] = '0';
+                grid[nk]++;
             }
         }
     }
 
     inline void create_grid(int8_t *grid, size X, size Y, grid_index *mine_grid_index, size N) {
-        size total = (X + 2) * (Y + 2);
+        const size total = X * Y;
         std::memset(grid, EMPTY, total);
-
-        std::random_device rd;
-        // std::mt19937 g(rd());
-        std::minstd_rand0 g(rd());
-        FisherYatesShuffle(mine_grid_index, N, X, Y);
+        size *positions = new size[X * Y];
+        size i = 0;
+        for (size x = 0; x != X; ++x) {
+            for (size y = 0; y != Y; ++y) {
+                positions[i++] = y * X + x;
+            }
+        }
+        FisherYatesShuffle(positions, mine_grid_index, N, X, Y);
+        delete positions;
         for (size n = 0; n < N; ++n) {
             grid_index idx = mine_grid_index[n];
             assert(idx < total);
@@ -57,7 +65,7 @@ namespace {
         if (quiet)
             return;
         for (size i = 0; i < Y; ++i) {
-            fwrite(&g_grid[(i + 1) * (X + 2)], sizeof(*g_grid), X + 2, stdout);
+            fwrite(&g_grid[i * X], sizeof(*g_grid), X, stdout);
             putc('\n', stdout);
         }
     }
@@ -65,7 +73,7 @@ namespace {
 
 int fast::run(size X, size Y, size N, bool quiet) {
     log("make grid");
-    g_grid = new int8_t[(X + 2) * (Y + 2)];
+    g_grid = new int8_t[X * Y];
     grid_index *mine_grid_index = new grid_index[N];
     if (!g_grid || !mine_grid_index)
         return -1;

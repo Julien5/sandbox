@@ -23,22 +23,15 @@ size _1d(size x, size y, size X, size Y) {
     return y * X + x;
 }
 
-point _2d(int k, size X, size Y) {
+point _2d(size k, size X, size Y) {
     point p;
     p.x = k % X;
     p.y = k / X;
     return p;
 }
 // Fisher–Yates_shuffle
-void FisherYatesShuffle(grid_index *arr, size count, size X, size Y) {
+void FisherYatesShuffle(size *positions, grid_index *ret, size count, size X, size Y) {
     const auto max_size = X * Y;
-    size *positions = new size[max_size];
-    size i = 0;
-    for (size x = 1; x != X + 1; ++x) {
-        for (size y = 1; y != Y + 1; ++y) {
-            positions[i++] = y * (X + 2) + x;
-        }
-    }
     std::random_device rd;
     std::minstd_rand0 gen(rd());
     for (size i = 0; i != count; ++i) {
@@ -51,7 +44,6 @@ void FisherYatesShuffle(grid_index *arr, size count, size X, size Y) {
         positions[end] = tmp;
     }
     for (size i = 0; i != count; ++i) {
-        arr[i] = positions[max_size - i - 1];
+        ret[i] = positions[max_size - i - 1];
     }
-    delete positions;
 }
