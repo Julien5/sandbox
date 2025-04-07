@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <string>
+#include <vector>
 
 typedef size_t size;
 typedef size_t grid_index;
@@ -14,4 +15,4 @@ struct point {
 size _1d(size x, size y, size X, size Y);
 point _2d(size k, size X, size Y);
 
-void FisherYatesShuffle(size *positions, grid_index *arr, size count, size X, size Y);
+void FisherYatesShuffle(std::vector<size> positions, grid_index *arr, size count, size X, size Y);

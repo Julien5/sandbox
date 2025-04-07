@@ -37,7 +37,7 @@ namespace {
     inline void create_grid(int8_t *grid, size X, size Y, grid_index *mine_grid_index, size N) {
         size total = (X + 2) * (Y + 2);
         std::memset(grid, EMPTY, total);
-        size *positions = new size[X * Y];
+        std::vector<size> positions(X * Y, 0);
         size i = 0;
         for (size x = 1; x != X + 1; ++x) {
             for (size y = 1; y != Y + 1; ++y) {
@@ -45,7 +45,6 @@ namespace {
             }
         }
         FisherYatesShuffle(positions, mine_grid_index, N, X, Y);
-        delete positions;
         for (size n = 0; n < N; ++n) {
             grid_index idx = mine_grid_index[n];
             assert(idx < total);
