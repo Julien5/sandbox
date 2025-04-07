@@ -14,6 +14,28 @@
 #include <iomanip>
 #include <iostream>
 
+// #define FAST_PRINT
+
+static int8_t *g_grid = nullptr;
+
+#ifndef FAST_PRINT
+const int8_t BOMB = 10;
+const int8_t EMPTY = 0;
+#else
+const int8_t BOMB = 'M';
+const int8_t EMPTY = '0';
+#endif
+
+typedef size_t size;
+typedef size_t grid_index;
+
+namespace global {
+    size X = 10;
+    size Y = 10;
+    size N = 10;
+    bool quiet = false;
+} // namespace global
+
 void log(const std::string &msg) {
     // get a precise timestamp as a string
     const auto now = std::chrono::system_clock::now();
@@ -27,14 +49,6 @@ void log(const std::string &msg) {
         << ": "
         << msg << std::endl;
 }
-
-static int8_t *g_grid = nullptr;
-const int8_t BOMB = 'M';
-const int8_t EMPTY = '.';
-const bool fast_print = false;
-
-typedef size_t size;
-typedef size_t grid_index;
 
 // Fisher–Yates_shuffle
 void FisherYatesShuffle(grid_index *arr, size count, size X, size Y,
@@ -61,13 +75,6 @@ void FisherYatesShuffle(grid_index *arr, size count, size X, size Y,
     }
     delete positions;
 }
-
-namespace global {
-    size X = 10;
-    size Y = 10;
-    size N = 10;
-    bool quiet = false;
-} // namespace global
 
 namespace {
     size readsize(const std::string &s) {
@@ -123,7 +130,8 @@ inline void count_mines_at_index(int8_t *grid, size idx) {
             size nx = p.x + dx;
             size ny = p.y + dy;
             size nk = _1d(nx, ny, X + 2, Y + 2);
-            grid[nk]++;
+            if (grid[nk] != BOMB)
+                grid[nk]++;
         }
     }
 }
@@ -140,9 +148,9 @@ inline void create_grid(int8_t *grid, grid_index *mine_grid_index) {
         grid_index idx = mine_grid_index[n];
         assert(idx < total);
         grid[idx] = BOMB;
-        if (!fast_print) {
-            count_mines_at_index(grid, idx);
-        }
+#ifndef FAST_PRINT
+        count_mines_at_index(grid, idx);
+#endif
     }
 }
 
@@ -165,13 +173,14 @@ void print_grid_fast(int8_t *grid, bool _show_count) {
 #include <cassert>
 void print_grid_slow(int8_t *grid, const bool show_counts) {
     using namespace global;
-    char lookup[256] = {0};
+    char lookup[16] = {0};
     lookup[EMPTY] = '.';
     lookup[BOMB] = '*';
     for (size i = 1; i < 9; ++i) {
         assert(i != EMPTY);
+        assert(i != BOMB);
         lookup[i] = show_counts ? '0' + i : lookup[EMPTY];
-        lookup['0' + i] = show_counts ? '0' + i : lookup[EMPTY];
+        // lookup['0' + i] = show_counts ? '0' + i : lookup[EMPTY];
     }
     int8_t *output = new int8_t[4 * X + 2];
     for (size i = 0; i < Y; ++i) {
@@ -182,7 +191,9 @@ void print_grid_slow(int8_t *grid, const bool show_counts) {
         output[4 * X + 1] = '\n';
         for (size j = 0; j < X; ++j) {
             output[4 * j + 1] = ' ';
-            output[4 * j + 2] = lookup[grid[_1d(i + 1, j + 1, X + 2, Y + 2)]];
+            const auto k = _1d(i + 1, j + 1, X + 2, Y + 2);
+            const auto g = grid[k];
+            output[4 * j + 2] = lookup[g];
             output[4 * j + 3] = ' ';
             output[4 * j + 4] = '|';
         }
@@ -194,10 +205,11 @@ void print_grid_slow(int8_t *grid, const bool show_counts) {
 
 void print_grid(int8_t *grid, bool show_counts) {
     log("print grid");
-    if (fast_print)
-        print_grid_fast(grid, show_counts);
-    else
-        print_grid_slow(grid, show_counts);
+#ifdef FAST_PRINT
+    print_grid_fast(grid, show_counts);
+#else
+    print_grid_slow(grid, show_counts);
+#endif
 }
 
 int run(const std::vector<std::string> &arguments) {
@@ -212,13 +224,13 @@ int run(const std::vector<std::string> &arguments) {
         return -1;
     create_grid(g_grid, mine_grid_index);
 
-    if (fast_print) {
-        print_grid(g_grid, false);
-        log("count mines");
-        count_mines(g_grid, mine_grid_index);
-    } else {
-        print_grid(g_grid, false);
-    }
+#ifdef FAST_PRINT
+    print_grid(g_grid, false);
+    log("count mines");
+    count_mines(g_grid, mine_grid_index);
+#else
+    print_grid(g_grid, false);
+#endif
     print_grid(g_grid, true);
 
     delete[] g_grid;
