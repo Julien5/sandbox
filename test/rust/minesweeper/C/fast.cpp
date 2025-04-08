@@ -10,9 +10,10 @@ namespace {
     const int8_t BOMB = 'M';
     const int8_t EMPTY = '.';
 
+#define INC_COUNT(idx) grid[(idx)] += 0b1100 >> (grid[(idx)] >> 4)
+
     inline void count_mines_at_index(int8_t *grid, size X, size Y, size idx) {
         point p = _2d(idx, X, Y);
-        // std::cerr << "p.x=" << int(p.x) << " p.y=" << int(p.y) << std::endl;
         assert(0 <= p.x && p.x < X);
         assert(0 <= p.y && p.y < Y);
         for (int dx = -1; dx < 2; ++dx) {
@@ -21,16 +22,14 @@ namespace {
                     continue;
                 int64_t nx = int64_t(p.x) + dx;
                 int64_t ny = int64_t(p.y) + dy;
+                if (nx < 0 || nx >= X)
+                    continue;
+                if (ny < 0 || ny >= Y)
+                    continue;
                 int64_t nk = ny * X + nx;
-                // out of bounds
-                if (nk < 0 || nk >= (X * Y))
-                    continue;
-                // bomb
-                if (grid[nk] == BOMB)
-                    continue;
-                if (grid[nk] == '.')
-                    grid[nk] = '0';
-                grid[nk]++;
+                //  out of bounds
+                assert(0 <= nk && nk <= (X * Y));
+                INC_COUNT(nk);
             }
         }
     }
