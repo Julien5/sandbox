@@ -3,6 +3,7 @@
 #include "fast.h"
 #include "beautiful.h"
 #include "minesweeper.h"
+#include "orig.h"
 #include <cassert>
 
 namespace global {
@@ -47,6 +48,8 @@ int run(const std::vector<std::string> &arguments) {
         return fast::run(global::X, global::Y, global::N, global::quiet);
     else if (global::algorithm == "beautiful")
         return beautiful::run(global::X, global::Y, global::N, global::quiet);
+    else if (global::algorithm == "orig")
+        return orig::run(global::X, global::Y, global::N, global::quiet);
     else {
         std::cerr << "unknown:" << global::algorithm << std::endl;
         return 1;

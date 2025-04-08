@@ -12,31 +12,10 @@ namespace {
 
 #define INC_COUNT(idx) grid[(idx)] += 0b1100 >> (grid[(idx)] >> 4)
 
-    inline void count_mines_at_index(int8_t *grid, size X, size Y, size idx) {
-        point p = _2d(idx, X, Y);
-        assert(0 <= p.x && p.x < X);
-        assert(0 <= p.y && p.y < Y);
-        for (int dx = -1; dx < 2; ++dx) {
-            for (int dy = -1; dy < 2; ++dy) {
-                if (dx == 0 && dy == 0)
-                    continue;
-                int64_t nx = int64_t(p.x) + dx;
-                int64_t ny = int64_t(p.y) + dy;
-                if (nx < 0 || nx >= X)
-                    continue;
-                if (ny < 0 || ny >= Y)
-                    continue;
-                int64_t nk = ny * X + nx;
-                //  out of bounds
-                assert(0 <= nk && nk <= (X * Y));
-                INC_COUNT(nk);
-            }
-        }
-    }
-
     inline void create_grid(int8_t *grid, size X, size Y, grid_index *mine_grid_index, size N) {
         const size total = X * Y;
         std::memset(grid, EMPTY, total);
+
         std::vector<size> positions(X * Y, 0);
         size i = 0;
         for (size x = 0; x != X; ++x) {
@@ -53,9 +32,39 @@ namespace {
     }
 
     inline void count_mines(int8_t *grid, size X, size Y, grid_index *mine_grid_index, size N) {
+        const auto total = X * Y;
         for (size n = 0; n < N; ++n) {
             grid_index idx = mine_grid_index[n];
-            count_mines_at_index(grid, X, Y, idx);
+            int i = idx % X;
+
+            grid[idx] = 'M';
+
+            if (idx > X) [[likely]] {
+                if (i > 0) [[likely]] {
+                    INC_COUNT(idx - 1 - X);
+                }
+                INC_COUNT(idx - X);
+                if (i + 1 < X) [[likely]] {
+                    INC_COUNT(idx + 1 - X);
+                }
+            }
+
+            if (i > 0) [[likely]] {
+                INC_COUNT(idx - 1);
+            }
+            if (i + 1 < X) [[likely]] {
+                INC_COUNT(idx + 1);
+            }
+
+            if (idx < total - X) [[likely]] {
+                if (i > 0) [[likely]] {
+                    INC_COUNT(idx - 1 + X);
+                }
+                INC_COUNT(idx + X);
+                if (i + 1 < X) [[likely]] {
+                    INC_COUNT(idx + 1 + X);
+                }
+            }
         }
     }
 
