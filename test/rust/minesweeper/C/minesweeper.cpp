@@ -39,10 +39,7 @@ void FisherYatesShuffle(std::vector<size> positions, grid_index *ret, size count
         auto end = max_size - i - 1;
         std::uniform_int_distribution<> dis(0, end);
         size j = dis(gen); // rand() % end; // dis(gen);
-        // todo: use std::swap
-        auto tmp = positions[j];
-        positions[j] = positions[end];
-        positions[end] = tmp;
+        std::swap(positions[j], positions[end]);
     }
     for (size i = 0; i != count; ++i) {
         ret[i] = positions[max_size - i - 1];
