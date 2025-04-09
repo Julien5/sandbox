@@ -46,21 +46,25 @@ fn distinct_random_numbers(N:usize,b:usize) -> Vec<usize> {
 
 fn increment_neighboors(grid:&mut [usize], pos:usize) {
 	let n=f64::sqrt(grid.len() as f64) as usize;
-	let (posx,posy)=to_2d(pos,n);
-	for i in 0..3 {
-		if posx+i<1 {
+	let (posxu,posyu)=to_2d(pos,n);
+	let (posx,posy)=(posxu as i64, posyu as i64);
+	for i in -1..1 {
+		let posnx=posx+i;
+		if posnx<0 || posnx>=(n as i64) {
 			continue;
 		}
-		for j in 0..3 {
-			if i == 1 && j == 1 {
+		for j in -1..1 {
+			if i == 0 && j == 0 {
 				continue
 			}
-			if posy+j<1 {
+			let posny=posy+j;
+			if posny<0 || posny>=(n as i64) {
 				continue;
 			}
-			let l=from_2d((posx+i-1,posy+j-1),n);
-			if l<grid.len() && grid[l] != BOMB {
-				grid[l]+=1;
+			let l=posny*(n as i64) + posnx;
+			debug_assert!(0<=l && l<(grid.len() as i64));
+			if grid[l as usize] != BOMB {
+				grid[l as usize]+=1;
 			}
 		}
 	}
