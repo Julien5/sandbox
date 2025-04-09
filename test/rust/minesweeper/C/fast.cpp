@@ -81,9 +81,11 @@ int fast::run(size X, size Y, size N, bool quiet) {
         return -1;
     create_grid(g_grid, X, Y, mine_grid_index, N);
 
+    log("print bombs");
     print_grid(g_grid, X, Y, quiet);
     log("count mines");
     count_mines(g_grid, X, Y, mine_grid_index, N);
+    log("print counts");
     print_grid(g_grid, X, Y, quiet);
 
     delete[] g_grid;

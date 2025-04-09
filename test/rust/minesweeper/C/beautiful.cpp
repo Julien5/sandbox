@@ -93,14 +93,15 @@ namespace {
 }
 
 int beautiful::run(size X, size Y, size N, bool quiet) {
-    log("make grid");
+    log("make bomb and counts");
     g_grid = new int8_t[(X + 2) * (Y + 2)];
     grid_index *mine_grid_index = new grid_index[N];
     if (!g_grid || !mine_grid_index)
         return -1;
     create_grid(g_grid, X, Y, mine_grid_index, N);
-    log("count mines");
+    log("print grid");
     print_grid(g_grid, X, Y, false, quiet);
+    log("print counts");
     print_grid(g_grid, X, Y, true, quiet);
     delete[] g_grid;
     delete[] mine_grid_index;
