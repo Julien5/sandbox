@@ -12,7 +12,7 @@ pub struct BombChunk {
 
 fn distinct_random_numbers(n:usize,m:usize,b:usize) -> BombPositions {
 	let mut rng = StdRng::seed_from_u64(3);
-	// populate the available positions exluding the margins.
+	// populate the available positions excluding the margins.
 	let mut positions : Vec<usize>=vec![0;n*m];
 	for j in 0..m {
 		let begin=(j+1)*(n+2)+1;
