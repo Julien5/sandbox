@@ -43,6 +43,18 @@ impl Printer {
 	}
 }
 
+pub fn make_printer(quiet:bool) -> Printer {
+	let printer = match quiet {
+		true => {
+			Printer::new_quiet()
+		}
+		false => {
+			Printer::new_verbose()
+		}
+	};
+	printer
+}
+
 #[cfg(test)]
 mod tests {
 	use super::*;

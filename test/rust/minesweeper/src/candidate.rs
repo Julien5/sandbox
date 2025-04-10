@@ -55,23 +55,12 @@ impl TileAccumulator {
 	}
 }
 
-fn make_printer(quiet:bool) -> Printer {
-	let printer = match quiet {
-		true => {
-			Printer::new_quiet()
-		}
-		false => {
-			Printer::new_verbose()
-		}
-	};
-	printer
-}
 
 pub fn main(n:usize,b:usize,quiet:bool) {
 	let Nchunks=match n {
 		0..4 => 1,
 		4..16 => 2,
-		_ => 32
+		_ => 1
 	};
 
 	let m=((n as f32)/(Nchunks as f32)).floor() as usize;

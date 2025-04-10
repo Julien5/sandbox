@@ -2,6 +2,7 @@
 
 use rand::rng;
 use rand::prelude::SliceRandom;
+use crate::utils;
 
 fn to_2d(index:usize,n:usize) -> (usize,usize) {
 	debug_assert!(index<(n*n));
@@ -17,16 +18,20 @@ fn from_2d(c:(usize,usize),n:usize) -> usize {
 const BOMB  : usize = 9;
 const ZERO  : usize = 0;
 
-fn print_grid(grid:&[usize]) {
-	let print_lookup: [char;11] = [' ','1','2','3','4','5','6','7','8','*',' '];
+fn print_grid(grid:&[usize], printer : &mut utils::Printer ) {
+	let print_lookup: [u8;11] = [b' ',b'1',b'2',b'3',b'4',b'5',b'6',b'7',b'8',b'*',b' '];
 	debug_assert!(!grid.is_empty());
 	let n=f64::sqrt(grid.len() as f64) as usize;
+	let mut output:Vec<u8> = vec![b' ';4*n+2];
+	output[0]=b'|';
+	output[4*n+1]=b'\n';
 	for ky in 0..n {
 		for kx in 0..n {
 			let k=from_2d((kx,ky),n);
-			print!("| {} ",print_lookup[grid[k]]);
+			output[4*kx+2]=print_lookup[grid[k] as usize];
+			output[4*kx+4]=b'|';
 		}
-		println!("|");
+		printer.print(&output);
 	}
 }
 
@@ -82,17 +87,18 @@ pub fn main(n : usize, b: usize, quiet: bool) {
 	for p in &Bx {
 		grid[*p]=BOMB;
 	}
-	
+
+	let mut printer=utils::make_printer(quiet);
 	if ! quiet {
 		log::info!("print");
-		print_grid(&grid);
+		print_grid(&grid,&mut printer);
 	}
 	log::info!("count bombs");
 	count_bombs(&mut grid,&Bx);
 	
 	if ! quiet {
 		log::trace!("print");
-		print_grid(&grid);
+		print_grid(&grid,&mut printer);
 	}
 	log::info!("done");
 }
