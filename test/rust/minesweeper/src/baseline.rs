@@ -18,15 +18,12 @@ const BOMB  : usize = 9;
 const ZERO  : usize = 0;
 
 fn print_grid(grid:&[usize]) {
-	let print_lookup: [char;11] = [' ','1','2','3','4','5','6','7','8','B',' '];
-	let l=grid.len();
+	let print_lookup: [char;11] = [' ','1','2','3','4','5','6','7','8','*',' '];
 	debug_assert!(!grid.is_empty());
 	let n=f64::sqrt(grid.len() as f64) as usize;
-	println!("grid len is {l} and the square is {n}");
-	for k1 in 0..n {
-		for k2 in 0..n {
-			let k=from_2d((k1,k2),n);
-			//print!("| {:2} ",grid[k]);
+	for ky in 0..n {
+		for kx in 0..n {
+			let k=from_2d((kx,ky),n);
 			print!("| {} ",print_lookup[grid[k]]);
 		}
 		println!("|");
@@ -45,26 +42,27 @@ fn distinct_random_numbers(N:usize,b:usize) -> Vec<usize> {
 }
 
 fn increment_neighboors(grid:&mut [usize], pos:usize) {
-	let n=f64::sqrt(grid.len() as f64) as usize;
-	let (posxu,posyu)=to_2d(pos,n);
+	let nu=f64::sqrt(grid.len() as f64) as usize;
+	let (posxu,posyu)=to_2d(pos,nu);
+	let n=nu as i64;
 	let (posx,posy)=(posxu as i64, posyu as i64);
-	for i in -1..1 {
-		let posnx=posx+i;
-		if posnx<0 || posnx>=(n as i64) {
+	for dx in [-1,0,1] {
+		let posnx=posx+dx;
+		if posnx<0 || posnx>=n {
 			continue;
 		}
-		for j in -1..1 {
-			if i == 0 && j == 0 {
+		for dy in [-1,0,1] {
+			if dx == 0 && dy == 0 {
 				continue
 			}
-			let posny=posy+j;
-			if posny<0 || posny>=(n as i64) {
+			let posny=posy+dy;
+			if posny<0 || posny>=n {
 				continue;
 			}
-			let l=posny*(n as i64) + posnx;
-			debug_assert!(0<=l && l<(grid.len() as i64));
-			if grid[l as usize] != BOMB {
-				grid[l as usize]+=1;
+			let l=posny*n + posnx;
+			let lu=l as usize;
+			if grid[lu] != BOMB {
+				grid[lu]+=1;
 			}
 		}
 	}
