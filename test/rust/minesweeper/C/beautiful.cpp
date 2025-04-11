@@ -35,23 +35,27 @@ namespace {
         }
     }
 
-    inline void create_grid(int8_t *grid, size X, size Y, grid_index *mine_grid_index, size N) {
-        size total = (X + 2) * (Y + 2);
-        std::memset(grid, EMPTY, total);
-        std::vector<size> positions(X * Y, 0);
-        size i = 0;
-        for (size x = 1; x != X + 1; ++x) {
-            for (size y = 1; y != Y + 1; ++y) {
-                positions[i++] = y * (X + 2) + x;
+    inline int8_t *create_grid(size X, size Y, grid_index *mine_grid_index, size N) {
+        {
+            std::vector<size> positions(X * Y, 0);
+            size i = 0;
+            for (size x = 1; x != X + 1; ++x) {
+                for (size y = 1; y != Y + 1; ++y) {
+                    positions[i++] = y * (X + 2) + x;
+                }
             }
+            FisherYatesShuffle(positions, mine_grid_index, N, X, Y);
         }
-        FisherYatesShuffle(positions, mine_grid_index, N, X, Y);
+        auto ret = new int8_t[(X + 2) * (Y + 2)];
+        size total = (X + 2) * (Y + 2);
+        std::memset(ret, EMPTY, total);
         for (size n = 0; n < N; ++n) {
             grid_index idx = mine_grid_index[n];
             assert(idx < total);
-            grid[idx] = BOMB;
-            count_mines_at_index(grid, X, Y, idx);
+            ret[idx] = BOMB;
+            count_mines_at_index(ret, X, Y, idx);
         }
+        return ret;
     }
 
     inline void count_mines(int8_t *grid, size X, size Y, grid_index *mine_grid_index, size N) {
@@ -91,11 +95,9 @@ namespace {
 
 int beautiful::run(size X, size Y, size N, bool quiet) {
     log("make bomb and counts");
-    g_grid = new int8_t[(X + 2) * (Y + 2)];
     grid_index *mine_grid_index = new grid_index[N];
-    if (!g_grid || !mine_grid_index)
-        return -1;
-    create_grid(g_grid, X, Y, mine_grid_index, N);
+    assert(mine_grid_index);
+    g_grid = create_grid(X, Y, mine_grid_index, N);
     log("print grid");
     print_grid(g_grid, X, Y, false, quiet);
     log("print counts");

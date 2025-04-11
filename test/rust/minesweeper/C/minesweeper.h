@@ -4,8 +4,8 @@
 #include <string>
 #include <vector>
 
-typedef size_t size;
-typedef size_t grid_index;
+typedef std::size_t size;
+typedef std::size_t grid_index;
 void log(const std::string &msg);
 struct point {
     size x = 0;
