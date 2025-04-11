@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cstring>
 #include <random>
+#include <memory>
 
 namespace {
     static int8_t *g_grid = nullptr;
@@ -70,25 +71,21 @@ namespace {
             assert(i != BOMB);
             lookup[i] = show_counts ? '0' + i : lookup[EMPTY];
         }
-        int8_t *output = new int8_t[4 * X + 2];
+        std::vector<int8_t> output(4 * X + 2, ' ');
+        output[0] = '|';
+        for (size j = 0; j < X; ++j) {
+            output[4 * j + 4] = '|';
+        }
+        output[4 * X + 1] = '\n';
         for (size i = 0; i < Y; ++i) {
-            for (size j = 0; j < 4 * X + 2; ++j) {
-                output[j] = ' ';
-            }
-            output[0] = '|';
-            output[4 * X + 1] = '\n';
             for (size j = 0; j < X; ++j) {
-                output[4 * j + 1] = ' ';
                 const auto k = _1d(i + 1, j + 1, X + 2, Y + 2);
                 const auto g = grid[k];
                 output[4 * j + 2] = lookup[g];
-                output[4 * j + 3] = ' ';
-                output[4 * j + 4] = '|';
             }
             if (!quiet)
-                fwrite(output, sizeof(char), 4 * X + 2, stdout);
+                fwrite(output.data(), sizeof(char), 4 * X + 2, stdout);
         }
-        delete output;
     }
 }
 
