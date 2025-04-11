@@ -12,11 +12,12 @@ pub struct BombChunk {
 fn distinct_random_numbers(n:usize,m:usize,b:usize) -> BombPositions {
 	// populate the available positions excluding the margins.
 	let mut positions : Vec<usize>=vec![0;n*m];
+	let mut k=0;
 	for j in 0..m {
-		let begin=(j+1)*(n+2)+1;
-		let end  = begin+n;
-		let line=Vec::from_iter(begin..end);
-		positions[j*n..(j+1)*n].copy_from_slice(line.as_slice());
+		for i in 0..n {
+			positions[k]=(j+1)*(n+2)+(i+1);
+			k=k+1;
+		}
 	}
 	utils::distinct_random_numbers(positions,b) as BombPositions
 }
