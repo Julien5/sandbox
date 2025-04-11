@@ -76,6 +76,16 @@ pub fn distinct_random_numbers(mut positions: Vec<usize>, b:usize) -> Vec<usize>
 	G
 }
 
+pub fn prepare_output(n:usize) -> Vec<u8> {
+		let mut output:Vec<u8> = vec![b' ';4*n+2];
+		output[0]=b'|';
+		output[4*n+1]=b'\n';
+		for kn in 0..n {
+			output[4*kn+4]=b'|';
+		}
+		output
+}
+
 #[cfg(test)]
 mod tests {
 	use super::*;

@@ -87,14 +87,11 @@ impl Tile {
 	pub fn print_bombs(&self, printer: &mut Printer) {
 		let print_lookup: [u8;11] = [b' ',b' ',b' ',b' ',b' ',b' ',b' ',b' ',b' ',b'*',b' '];
 		debug_assert!(!self.grid.is_empty());
-		let mut output:Vec<u8> = vec![b' ';4*self.n()+2];
-		output[0]=b'|';
-		output[4*self.n()+1]=b'\n';
+		let mut output:Vec<u8> = prepare_output(self.n());
 		for km in 0..self.m() {
 			for kn in 0..self.n() {
 				let k=_1d((kn+1,km+1),self.nM(),self.mM());
 				output[4*kn+2]=print_lookup[self.grid[k] as usize];
-				output[4*kn+4]=b'|';
 			}
 			printer.print(&output);
 		}
@@ -103,14 +100,11 @@ impl Tile {
 	pub fn print_counts(&self, prev:Option<&Tile>, next:Option<&Tile>, printer: &mut Printer) {
 		let print_lookup: [u8;11] = [b'.',b'1',b'2',b'3',b'4',b'5',b'6',b'7',b'8',b'*',b' '];
 		debug_assert!(!self.grid.is_empty());
-		let mut output:Vec<u8> = vec![b' ';4*self.n()+2];
-		output[0]=b'|';
-		output[4*self.n()+1]=b'\n';
+		let mut output:Vec<u8> = prepare_output(self.n());
 		for km in 0..self.m() {
 			for kn in 0..self.n() {
 				let c=self.bomb_count_at(kn,km,prev,next);
 				output[4*kn+2]=print_lookup[c as usize];
-				output[4*kn+4]=b'|';
 			}
 			printer.print(&output);
 		}

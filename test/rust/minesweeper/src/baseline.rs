@@ -1,6 +1,6 @@
 #![allow(non_snake_case)]
 
-use crate::utils;
+use crate::utils::{self, prepare_output};
 
 fn to_2d(index:usize,n:usize) -> (usize,usize) {
 	debug_assert!(index<(n*n));
@@ -20,14 +20,11 @@ fn print_grid(grid:&[usize], printer : &mut utils::Printer ) {
 	let print_lookup: [u8;11] = [b' ',b'1',b'2',b'3',b'4',b'5',b'6',b'7',b'8',b'*',b' '];
 	debug_assert!(!grid.is_empty());
 	let n=f64::sqrt(grid.len() as f64) as usize;
-	let mut output:Vec<u8> = vec![b' ';4*n+2];
-	output[0]=b'|';
-	output[4*n+1]=b'\n';
+	let mut output:Vec<u8> = prepare_output(n);
 	for ky in 0..n {
 		for kx in 0..n {
 			let k=from_2d((kx,ky),n);
 			output[4*kx+2]=print_lookup[grid[k] as usize];
-			output[4*kx+4]=b'|';
 		}
 		printer.print(&output);
 	}
