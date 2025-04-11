@@ -1,7 +1,5 @@
 #![allow(non_snake_case)]
 
-use rand::rng;
-use rand::prelude::SliceRandom;
 use crate::utils;
 
 fn to_2d(index:usize,n:usize) -> (usize,usize) {
@@ -36,14 +34,9 @@ fn print_grid(grid:&[usize], printer : &mut utils::Printer ) {
 }
 
 fn distinct_random_numbers(N:usize,b:usize) -> Vec<usize> {
-	// generates [0,1,...,N-1]
-	let mut G : Vec<usize>=(0usize..N).collect();
-	let mut rng = rng();
-	// shuffle it and keep the first b elements.
-	G.shuffle(&mut rng);
-	G.truncate(b);
-	debug_assert_eq!(G.len(),b);
-	G
+	// populate the available positions excluding the margins.
+	let positions : Vec<usize>=(0..N).collect();
+	utils::distinct_random_numbers(positions,b)
 }
 
 fn increment_neighboors(grid:&mut [usize], pos:usize) {

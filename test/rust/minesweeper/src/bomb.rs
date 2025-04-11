@@ -1,5 +1,4 @@
-use rand::rngs::StdRng;
-use rand::{Rng, SeedableRng};
+use crate::utils;
 
 type BombPositions = Vec<usize>;
 
@@ -11,7 +10,6 @@ pub struct BombChunk {
 }
 
 fn distinct_random_numbers(n:usize,m:usize,b:usize) -> BombPositions {
-	let mut rng = StdRng::seed_from_u64(3);
 	// populate the available positions excluding the margins.
 	let mut positions : Vec<usize>=vec![0;n*m];
 	for j in 0..m {
@@ -20,20 +18,7 @@ fn distinct_random_numbers(n:usize,m:usize,b:usize) -> BombPositions {
 		let line=Vec::from_iter(begin..end);
 		positions[j*n..(j+1)*n].copy_from_slice(line.as_slice());
 	}
-	debug_assert_eq!(positions[0],n+3);
-
-	// Fisher-Yates
-	for i in 0..b {
-		let end=m*n-i;
-		let j=rng.random_range(0..end);
-		positions.swap(j,end-1);
-	}
-	let mut G : Vec<usize>=vec![0;b];
-	let end=m*n;
-	for i in 0..b  {
-		G[i] = positions[end-i-1];
-	}
-	G
+	utils::distinct_random_numbers(positions,b) as BombPositions
 }
 
 impl BombChunk {

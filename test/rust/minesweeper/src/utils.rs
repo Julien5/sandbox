@@ -1,3 +1,5 @@
+use rand::rngs::StdRng;
+
 pub fn _2d(index:usize,n:usize,m:usize) -> (usize,usize) {
 	debug_assert!(index<(n*m));
 	let x=index%n;
@@ -53,6 +55,25 @@ pub fn make_printer(quiet:bool) -> Printer {
 		}
 	};
 	printer
+}
+
+use rand::{Rng, SeedableRng};
+
+pub fn distinct_random_numbers(mut positions: Vec<usize>, b:usize) -> Vec<usize> {
+	let mut rng = StdRng::seed_from_u64(3);
+	let L=positions.len();
+	// Fisher-Yates
+	for i in 0..b {
+		let end=L-i;
+		let j=rng.random_range(0..end);
+		positions.swap(j,end-1);
+	}
+	let mut G : Vec<usize>=vec![0;b];
+	let end=L;
+	for i in 0..b  {
+		G[i] = positions[end-i-1];
+	}
+	G
 }
 
 #[cfg(test)]
