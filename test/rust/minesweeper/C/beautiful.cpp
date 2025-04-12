@@ -12,7 +12,7 @@ namespace {
     const int8_t BOMB = 10;
     const int8_t EMPTY = 0;
 
-    inline void count_mines_at_index(Minesweeper &M, size idx) {
+    void count_mines_at_index(Minesweeper &M, size idx) {
         auto &grid(M.grid);
         const auto X = M.X;
         const auto Y = M.X;

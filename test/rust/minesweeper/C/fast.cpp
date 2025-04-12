@@ -11,7 +11,7 @@ namespace {
 
 #define INC_COUNT(idx) grid[(idx)] += 0b1100 >> (grid[(idx)] >> 4)
 
-    inline void count_mines_at_index(Minesweeper &M, size idx) {
+    void count_mines_at_index(Minesweeper &M, size idx) {
         Grid &grid(M.grid);
         const auto X = M.X;
         const auto Y = M.Y;
@@ -40,7 +40,7 @@ namespace {
         }
     }
 
-    inline std::vector<size> create_bombs(const size &X, const size &Y, const size &N) {
+    std::vector<size> create_bombs(const size &X, const size &Y, const size &N) {
         std::vector<size> positions(X * Y, 0);
         size i = 0;
         for (size x = 0; x != X; ++x) {
@@ -51,7 +51,7 @@ namespace {
         return FisherYatesShuffle(positions, N, X, Y);
     }
 
-    inline Minesweeper create(size X, size Y, size N) {
+    Minesweeper create(size X, size Y, size N) {
         Minesweeper M;
         M.X = X;
         M.Y = Y;
@@ -64,7 +64,7 @@ namespace {
         return M;
     }
 
-    inline void count_mines(Minesweeper &M) {
+    void count_mines(Minesweeper &M) {
         for (const auto &idx : M.bombs) {
             assert(M.grid[idx] = BOMB);
             count_mines_at_index(M, idx);
