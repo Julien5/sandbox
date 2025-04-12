@@ -16,8 +16,15 @@ fn from_2d(c:(usize,usize),n:usize) -> usize {
 const BOMB  : usize = 9;
 const ZERO  : usize = 0;
 
-fn print_grid(grid:&[usize], n:usize, printer : &mut utils::Printer ) {
-	let print_lookup: [u8;11] = [b' ',b'1',b'2',b'3',b'4',b'5',b'6',b'7',b'8',b'*',b' '];
+fn print_grid(grid:&[usize], n:usize, printer : &mut utils::Printer, show_count:bool) {
+	let print_lookup: [u8;11] = match show_count {
+		true => {
+			[b' ',b'1',b'2',b'3',b'4',b'5',b'6',b'7',b'8',b'*',b' ']
+		}
+		_ => {
+			[b' ',b' ',b' ',b' ',b' ',b' ',b' ',b' ',b' ',b'*',b' ']
+		}
+	};
 	debug_assert!(!grid.is_empty());
 	let mut output:Vec<u8> = prepare_output(n);
 	for ky in 0..n {
@@ -61,33 +68,25 @@ fn increment_neighboors(grid:&mut [usize], nu:usize, pos:usize) {
 	}
 }
 
-fn count_bombs(grid:&mut [usize], n:usize,bombs_positions:&[usize]) {
+fn _count_bombs(grid:&mut [usize], n:usize,bombs_positions:&[usize]) {
 	for bpos in bombs_positions {
 		increment_neighboors(grid,n,*bpos);
 	}
 }
 
 pub fn main(n : usize, b: usize, quiet: bool) {
-	let N = n*n;
-	let mut grid : Vec<usize> = vec![ZERO; N];
+	let mut grid : Vec<usize> = vec![ZERO; n*n];
 	log::info!("make bombs");
-	let Bx = distinct_random_numbers(N,b);
+	let Bx = distinct_random_numbers(n*n,b);
 	for p in &Bx {
 		grid[*p]=BOMB;
+		increment_neighboors(&mut grid,n,*p);
 	}
-
 	let mut printer=utils::make_printer(quiet);
-	if ! quiet {
-		log::info!("print");
-		print_grid(&grid,n,&mut printer);
-	}
-	log::info!("count bombs");
-	count_bombs(&mut grid,n,&Bx);
-	
-	if ! quiet {
-		log::trace!("print");
-		print_grid(&grid,n,&mut printer);
-	}
+	log::info!("print");
+	print_grid(&grid,n,&mut printer, false);
+	log::trace!("print");
+	print_grid(&grid,n,&mut printer, true);
 	log::info!("done");
 }
 
