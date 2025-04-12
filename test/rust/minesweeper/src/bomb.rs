@@ -3,8 +3,8 @@ use crate::utils;
 type BombPositions = Vec<usize>;
 
 pub struct BombChunk {
-	n:usize,
-	m:usize,
+	X:usize,
+	Y:usize,
 	index:usize,
 	positions:BombPositions
 }
@@ -23,24 +23,24 @@ fn distinct_random_numbers(n:usize,m:usize,b:usize) -> BombPositions {
 }
 
 impl BombChunk {
-	pub fn with_bomb_count(n:usize,m:usize,index:usize,b:usize) -> BombChunk {
+	pub fn with_bomb_count(X:usize,Y:usize,index:usize,b:usize) -> BombChunk {
 		log::trace!("make bombs for chunk index:{}",index);
 		let chunk=BombChunk {
-			n:n,
-			m:m,
+			X,
+			Y,
 			index:index,
-			positions:distinct_random_numbers(n,m,b)
+			positions:distinct_random_numbers(X,Y,b)
 		};
 		chunk
 	}
 	pub fn positions(&self) -> &BombPositions {
 		&self.positions
 	}
-	pub fn n(&self) -> usize {
-		self.n
+	pub fn X(&self) -> usize {
+		self.X
 	}
-	pub fn m(&self) -> usize {
-		self.m
+	pub fn Y(&self) -> usize {
+		self.Y
 	}
 	pub fn index(&self) -> usize {
 		self.index

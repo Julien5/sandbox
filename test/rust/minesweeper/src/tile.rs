@@ -13,18 +13,18 @@ pub struct Tile {
 }
 
 impl Tile {
-	fn at(&self, kn:usize, km:usize) -> Element {
-		self.grid[_1d((kn+1,km+1),self.nM(),self.mM())]
+	fn at(&self, x:usize, y:usize) -> Element {
+		self.grid[_1d((x+1,y+1),self.LX(),self.LY())]
 	}
 
-	fn at_all(&self, kn:usize, km:usize) -> Element {
-		self.grid[_1d((kn,km),self.nM(),self.mM())]
+	fn at_all(&self, x:usize, y:usize) -> Element {
+		self.grid[_1d((x,y),self.LX(),self.LY())]
 	}
 	
 	pub fn with_chunk(chunk:BombChunk) -> Tile {
 		log::trace!("make tile for chunk index:{}",chunk.index());
-		let n=chunk.n();
-		let m=chunk.m();
+		let n=chunk.X();
+		let m=chunk.Y();
 		let nM=n+2;
 		let mM=m+2;
 		let mut g=Tile {
@@ -40,20 +40,20 @@ impl Tile {
 		g
 	}
 
-	fn nM(&self) -> usize {
-		self.n()+2
+	fn LX(&self) -> usize {
+		self.X()+2
 	}
 	
-	fn mM(&self) -> usize {
-		self.m()+2
+	fn LY(&self) -> usize {
+		self.Y()+2
 	}
 
-	fn n(&self) -> usize {
-		self.bomb_chunk.n()
+	fn X(&self) -> usize {
+		self.bomb_chunk.X()
 	}
 	
-	fn m(&self) -> usize {
-		self.bomb_chunk.m()
+	fn Y(&self) -> usize {
+		self.bomb_chunk.Y()
 	}
 		
 	pub fn bomb_count_at(&self,kn:usize,km:usize,prev:Option<&Tile>, next:Option<&Tile>) -> u8 {
@@ -64,18 +64,18 @@ impl Tile {
 			// add last line from prev
 			match prev {
 				Some(tile) => {
-					debug_assert!(tile.at_all(kn+1,tile.mM()-1) != BOMB);
-					return self.at(kn,0) + tile.at_all(kn+1,tile.mM()-1);
+					debug_assert!(tile.at_all(kn+1,tile.LY()-1) != BOMB);
+					return self.at(kn,0) + tile.at_all(kn+1,tile.LY()-1);
 				}
 				_ => {}
 			}
 		}
-		if km == self.m()-1 {
+		if km == self.Y()-1 {
 			// add first line from next
 			match next {
 				Some(tile) => {
 					debug_assert!(tile.at_all(kn+1,0) != BOMB);
-					return self.at(kn,self.m()-1) + tile.at_all(kn+1,0);
+					return self.at(kn,self.Y()-1) + tile.at_all(kn+1,0);
 				}
 				_ => {}
 			}
@@ -87,10 +87,10 @@ impl Tile {
 	pub fn print_bombs(&self, printer: &mut Printer) {
 		let print_lookup: [u8;11] = [b' ',b' ',b' ',b' ',b' ',b' ',b' ',b' ',b' ',b'*',b' '];
 		debug_assert!(!self.grid.is_empty());
-		let mut output:Vec<u8> = prepare_output(self.n());
-		for km in 0..self.m() {
-			for kn in 0..self.n() {
-				let k=_1d((kn+1,km+1),self.nM(),self.mM());
+		let mut output:Vec<u8> = prepare_output(self.X());
+		for km in 0..self.Y() {
+			for kn in 0..self.X() {
+				let k=_1d((kn+1,km+1),self.LX(),self.LY());
 				output[4*kn+2]=print_lookup[self.grid[k] as usize];
 			}
 			printer.print(&output);
@@ -100,9 +100,9 @@ impl Tile {
 	pub fn print_counts(&self, prev:Option<&Tile>, next:Option<&Tile>, printer: &mut Printer) {
 		let print_lookup: [u8;11] = [b'.',b'1',b'2',b'3',b'4',b'5',b'6',b'7',b'8',b'*',b' '];
 		debug_assert!(!self.grid.is_empty());
-		let mut output:Vec<u8> = prepare_output(self.n());
-		for km in 0..self.m() {
-			for kn in 0..self.n() {
+		let mut output:Vec<u8> = prepare_output(self.X());
+		for km in 0..self.Y() {
+			for kn in 0..self.X() {
 				let c=self.bomb_count_at(kn,km,prev,next);
 				output[4*kn+2]=print_lookup[c as usize];
 			}
@@ -113,11 +113,11 @@ impl Tile {
 	pub fn _print_all(&self, printer: &mut Printer) {
 		let print_lookup: [u8;11] = [b' ',b'1',b'2',b'3',b'4',b'5',b'6',b'7',b'8',b'B',b' '];
 		debug_assert!(!self.grid.is_empty());
-		let mut output:Vec<u8> = vec![b' ';self.nM()+1];
-		output[self.nM()]=b'\n';
-		for km in 0..self.mM() {
-			for kn in 0..self.nM() {
-				let k=_1d((kn,km),self.nM(),self.mM());
+		let mut output:Vec<u8> = vec![b' ';self.LX()+1];
+		output[self.LX()]=b'\n';
+		for km in 0..self.LY() {
+			for kn in 0..self.LX() {
+				let k=_1d((kn,km),self.LX(),self.LY());
 				output[kn]=print_lookup[self.grid[k] as usize];
 			}
 			printer.print(&output);
@@ -125,15 +125,15 @@ impl Tile {
 	}
 
 	fn increment_neighboors(&mut self, pos:usize) {
-		let (posx,posy)=_2d(pos,self.nM(),self.mM());
-		debug_assert!(posx>0 && posx<self.n()+1);
-		debug_assert!(posy>0 && posy<self.m()+1);
+		let (posx,posy)=_2d(pos,self.LX(),self.LY());
+		debug_assert!(posx>0 && posx<self.X()+1);
+		debug_assert!(posy>0 && posy<self.Y()+1);
 		for i in 0..3 {
 			for j in 0..3 {
 				if i == 1 && j == 1 {
 					continue
 				}
-				let l=_1d((posx+i-1,posy+j-1),self.nM(),self.mM());
+				let l=_1d((posx+i-1,posy+j-1),self.LX(),self.LY());
 				debug_assert!(l<self.grid.len());
 				if self.grid[l] != BOMB {
 					self.grid[l]+=1;

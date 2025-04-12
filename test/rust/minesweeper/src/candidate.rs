@@ -56,22 +56,24 @@ impl TileAccumulator {
 }
 
 
-pub fn main(n:usize,b:usize,quiet:bool) {
-	let Nchunks=match n {
+pub fn main(X:usize,B:usize,quiet:bool) {
+	let K=match B {
 		0..4 => 1,
 		4..16 => 2,
-		_ => 1
+		_ => 1 // std::cmp::min(32,B/2)
 	};
 
-	let m=((n as f32)/(Nchunks as f32)).floor() as usize;
-	let b_chunk=((b as f32)/(Nchunks as f32)).floor() as usize;
+	// https://stackoverflow.com/questions/57741820/how-to-get-the-floored-quotient-of-two-integers
+	let Y = X/K;
+	assert!(Y*K==X);
+	let Bchunk = B/K;
 	
-	let indexes:Vec<usize>=(0..Nchunks).collect();
+	let indexes:Vec<usize>=(0..K).collect();
 	let acc0=std::sync::Arc::new(std::sync::Mutex::new(TileAccumulator::init()));
 
 	log::info!("make bombs and count");
 	let _:Vec<()>=indexes.clone().into_par_iter()
-		.map(|index| BombChunk::with_bomb_count(n,m,index,b_chunk)).into_par_iter()
+		.map(|index| BombChunk::with_bomb_count(X,Y,index,Bchunk)).into_par_iter()
 		.map(|chunk| make_tile(chunk)).into_par_iter()
 		.map(|tile| acc0.lock().unwrap().aggregate(tile))
 		.collect();
