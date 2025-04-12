@@ -100,25 +100,7 @@ impl Tile {
 		debug_assert!(!self.grid.is_empty());
 		let mut output:Vec<u8> = prepare_output(self.X());
 		for ky in 0..self.Y() {
-			let onymargin=ky == 0 || ky==self.Y()-1;
-			let kx=0;
-			{
-				let c=self.bomb_count_at(kx,ky,prev,next);
-				output[4*kx+2]=print_lookup[c as usize];
-			}
-			if !onymargin {
-				for kx in 1..self.X()-1 {
-					let c=self.at(kx,ky);
-					output[4*kx+2]=print_lookup[c as usize];
-				}
-			} else {
-				for kx in 1..self.X()-1 {
-					let c=self.bomb_count_at(kx,ky,prev,next);
-					output[4*kx+2]=print_lookup[c as usize];
-				}
-			}
-			let kx=self.X()-1;
-			{
+			for kx in 0..self.X() {
 				let c=self.bomb_count_at(kx,ky,prev,next);
 				output[4*kx+2]=print_lookup[c as usize];
 			}
