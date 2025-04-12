@@ -86,10 +86,10 @@ impl Tile {
 		let print_lookup: [u8;11] = [b' ',b' ',b' ',b' ',b' ',b' ',b' ',b' ',b' ',b'*',b' '];
 		debug_assert!(!self.grid.is_empty());
 		let mut output:Vec<u8> = prepare_output(self.X());
-		for km in 0..self.Y() {
-			for kn in 0..self.X() {
-				let k=_1d((kn+1,km+1),self.LX(),self.LY());
-				output[4*kn+2]=print_lookup[self.grid[k] as usize];
+		for ky in 0..self.Y() {
+			for kx in 0..self.X() {
+				let k=_1d((kx+1,ky+1),self.LX(),self.LY());
+				output[4*kx+2]=print_lookup[self.grid[k] as usize];
 			}
 			printer.print(&output);
 		}
@@ -113,10 +113,10 @@ impl Tile {
 		debug_assert!(!self.grid.is_empty());
 		let mut output:Vec<u8> = vec![b' ';self.LX()+1];
 		output[self.LX()]=b'\n';
-		for km in 0..self.LY() {
-			for kn in 0..self.LX() {
-				let k=_1d((kn,km),self.LX(),self.LY());
-				output[kn]=print_lookup[self.grid[k] as usize];
+		for ky in 0..self.LY() {
+			for kx in 0..self.LX() {
+				let k=_1d((kx,ky),self.LX(),self.LY());
+				output[kx]=print_lookup[self.grid[k] as usize];
 			}
 			printer.print(&output);
 		}
