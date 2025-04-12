@@ -60,14 +60,14 @@ pub fn main(X:usize,B:usize,quiet:bool) {
 	let K=match B {
 		0..4 => 1,
 		4..16 => 2,
-		_ => 1 // std::cmp::min(32,B/2)
+		_ => std::cmp::min(X/2,B/2)
 	};
 
 	log::info!("running with {} chunks",K);
 
 	// https://stackoverflow.com/questions/57741820/how-to-get-the-floored-quotient-of-two-integers
 	let Y = X/K;
-	assert!(Y*K==X);
+	assert_eq!(Y*K,X);
 	let Bchunk = B/K;
 	
 	let indexes:Vec<usize>=(0..K).collect();
