@@ -44,8 +44,8 @@ fn distinct_random_numbers(N:usize,b:usize) -> Vec<usize> {
 
 fn increment_neighboors(grid:&mut [usize], nu:usize, pos:usize) {
 	let (posxu,posyu)=to_2d(pos,nu);
-	let n=nu as i64;
-	let (posx,posy)=(posxu as i64, posyu as i64);
+	let n=nu as isize;
+	let (posx,posy)=(posxu as isize, posyu as isize);
 	for dx in [-1,0,1] {
 		let posnx=posx+dx;
 		if posnx<0 || posnx>=n {
