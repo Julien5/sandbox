@@ -8,8 +8,25 @@ const BOMB  : Element = 9;
 const ZERO  : Element = 0;
 
 pub struct Tile {
-	grid: Vec<Element>,
+	pub grid: Vec<Element>,
 	bomb_chunk: BombChunk,
+}
+
+pub fn merge(tile1: &mut Tile, tile2: &mut Tile) {
+	log::trace!("merging {} and {}",tile1.tile_index(),tile2.tile_index());
+	debug_assert!(tile1.tile_index()<tile2.tile_index());
+	for kx in 0..tile1.X() {
+		let ktop=_1d((kx+1,1),tile1.LX(),tile1.LY());
+		let kbot=_1d((kx+1,tile1.LY()-2),tile1.LX(),tile1.LY());
+		if tile1.grid[kbot] != BOMB {
+			debug_assert!(tile2.at_all(kx+1,0)!=BOMB);
+			tile1.grid[kbot]+=tile2.at_all(kx+1,0);
+		}
+		if tile2.grid[ktop] != BOMB {
+			debug_assert!(tile1.at_all(kx+1,tile1.LY()-1)!=BOMB);
+			tile2.grid[ktop]+=tile1.at_all(kx+1,tile1.LY()-1);
+		}
+	}
 }
 
 impl Tile {
@@ -53,35 +70,7 @@ impl Tile {
 	fn Y(&self) -> usize {
 		self.bomb_chunk.Y()
 	}
-		
-	pub fn bomb_count_at(&self,kx:usize,ky:usize,prev:Option<&Tile>, next:Option<&Tile>) -> u8 {
-		if self.at(kx,ky) == BOMB {
-			return BOMB;
-		}
-		if ky == 0 {
-			// add last line from prev
-			match prev {
-				Some(tile) => {
-					debug_assert!(tile.at_all(kx+1,tile.LY()-1) != BOMB);
-					return self.at(kx,0) + tile.at_all(kx+1,tile.LY()-1);
-				}
-				_ => {}
-			}
-		}
-		if ky == self.Y()-1 {
-			// add first line from next
-			match next {
-				Some(tile) => {
-					debug_assert!(tile.at_all(kx+1,0) != BOMB);
-					return self.at(kx,self.Y()-1) + tile.at_all(kx+1,0);
-				}
-				_ => {}
-			}
-			
-		}
-		self.at(kx,ky)
-	}
-
+	
 	pub fn print_bombs(&self, printer: &mut Printer) {
 		let print_lookup: [u8;11] = [b' ',b' ',b' ',b' ',b' ',b' ',b' ',b' ',b' ',b'*',b' '];
 		debug_assert!(!self.grid.is_empty());
@@ -95,20 +84,19 @@ impl Tile {
 		}
 	}
 
-	pub fn print_counts(&self, prev:Option<&Tile>, next:Option<&Tile>, printer: &mut Printer) {
+	pub fn print_counts(&self,printer: &mut Printer) {
 		let print_lookup: [u8;11] = [b'.',b'1',b'2',b'3',b'4',b'5',b'6',b'7',b'8',b'*',b' '];
 		debug_assert!(!self.grid.is_empty());
 		let mut output:Vec<u8> = prepare_output(self.X());
 		for ky in 0..self.Y() {
 			for kx in 0..self.X() {
-				let c=self.bomb_count_at(kx,ky,prev,next);
-				output[4*kx+2]=print_lookup[c as usize];
+				output[4*kx+2]=print_lookup[self.at(kx,ky) as usize];
 			}
 			printer.print(&output);
 		}
 	}
 	
-	pub fn _print_all(&self, printer: &mut Printer) {
+	pub fn _print_all(&self) {
 		let print_lookup: [u8;11] = [b' ',b'1',b'2',b'3',b'4',b'5',b'6',b'7',b'8',b'B',b' '];
 		debug_assert!(!self.grid.is_empty());
 		let mut output:Vec<u8> = vec![b' ';self.LX()+1];
@@ -118,7 +106,7 @@ impl Tile {
 				let k=_1d((kx,ky),self.LX(),self.LY());
 				output[kx]=print_lookup[self.grid[k] as usize];
 			}
-			printer.print(&output);
+			print!("{}",String::from_utf8(output.clone()).unwrap());
 		}
 	}
 

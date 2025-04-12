@@ -13,21 +13,32 @@ fn make_tile(bomb_chunk:BombChunk) -> Tile {
 }
 
 struct TileAccumulator {
-	tiles : BTreeMap<usize,Tile>
+	tiles : BTreeMap<usize,Tile>,
 }
 
 impl TileAccumulator {
 	fn init() -> TileAccumulator {
 		let ret=TileAccumulator {
-			tiles: BTreeMap::new()
+			tiles: BTreeMap::new(),
 		};
 		ret
 	}
-	fn aggregate(&mut self,tile:Tile) {
+	
+	fn aggregate(&mut self, mut tile: Tile) {
 		let index=tile.tile_index();
-		log::trace!("collect tile index:{} tiles:{}",index,self.tiles.len());
+		if index>0 {
+			match self.tiles.get_mut(&(index-1)) {
+				Some(prev) => merge(prev,&mut tile),
+				_ => {}
+			}
+		}
+		match self.tiles.get_mut(&(index+1)) {
+			Some(next) => merge(&mut tile,next),
+			_ => {}
+		}
 		self.tiles.insert(tile.tile_index(),tile);
 	}
+	
 	fn print_bombs(&mut self,printer:&mut Printer) {
 		let K=self.tiles.keys();
 		for key in K {
@@ -36,21 +47,10 @@ impl TileAccumulator {
 		}
 	}
 	fn print_counts(&mut self,printer:&mut Printer) {
-		let mut prev:Option<&Tile>=None;
-		let mut next:Option<&Tile>=None;
 		let K=self.tiles.keys();
-		let tiles_count=K.len();
 		for key in K {
 			let current = self.tiles.get(key).unwrap();
-			if *key>0 {
-				prev=Some(self.tiles.get(&(*key-1)).unwrap());
-			}
-			if *key<tiles_count-1 {
-				next=Some(self.tiles.get(&(*key+1)).unwrap());
-			}
-			current.print_counts(prev,next,printer);
-			prev=None;
-			next=None;
+			current.print_counts(printer);
 		}
 	}
 }
@@ -62,6 +62,8 @@ pub fn main(X:usize,B:usize,quiet:bool) {
 		4..16 => 2,
 		_ => 1 // std::cmp::min(32,B/2)
 	};
+
+	log::info!("running with {} chunks",K);
 
 	// https://stackoverflow.com/questions/57741820/how-to-get-the-floored-quotient-of-two-integers
 	let Y = X/K;

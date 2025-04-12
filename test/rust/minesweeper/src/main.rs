@@ -20,7 +20,7 @@ fn main() {
                 record.args()
             )
         })
-        .filter(None, log::LevelFilter::Info)
+        .filter(None, log::LevelFilter::Trace)
         .init();
 	
 	let args: Vec<String> = env::args().collect();
