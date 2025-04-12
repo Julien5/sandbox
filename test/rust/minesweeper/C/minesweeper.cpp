@@ -30,7 +30,7 @@ point _2d(size k, size X, size Y) {
     return p;
 }
 // Fisher–Yates_shuffle
-void FisherYatesShuffle(std::vector<size> positions, grid_index *ret, size count, size X, size Y) {
+std::vector<size> FisherYatesShuffle(std::vector<size> positions, size count, size X, size Y) {
     const auto max_size = X * Y;
     std::default_random_engine gen{static_cast<long unsigned int>(0)};
     // std::random_device rd;
@@ -41,7 +41,9 @@ void FisherYatesShuffle(std::vector<size> positions, grid_index *ret, size count
         size j = dis(gen); // rand() % end; // dis(gen);
         std::swap(positions[j], positions[end]);
     }
+    std::vector<size> ret(count);
     for (size i = 0; i != count; ++i) {
         ret[i] = positions[max_size - i - 1];
     }
+    return ret;
 }

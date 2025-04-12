@@ -6,13 +6,12 @@
 #include <iostream>
 
 namespace {
-    static int8_t *g_grid = nullptr;
     const int8_t BOMB = 'M';
     const int8_t EMPTY = '.';
 
 #define INC_COUNT(idx) grid[(idx)] += 0b1100 >> (grid[(idx)] >> 4)
 
-    inline void count_mines_at_index(int8_t *grid, size X, size Y, size idx) {
+    inline void count_mines_at_index(Grid &grid, size X, size Y, size idx) {
         point p = _2d(idx, X, Y);
         // std::cerr << "p.x=" << int(p.x) << " p.y=" << int(p.y) << std::endl;
         assert(0 <= p.x && p.x < X);
@@ -38,9 +37,9 @@ namespace {
         }
     }
 
-    inline void create_grid(int8_t *grid, size X, size Y, grid_index *mine_grid_index, size N) {
+    inline Grid create_grid(size X, size Y, Bombs &bombs, size N) {
         const size total = X * Y;
-        std::memset(grid, EMPTY, total);
+        auto ret = Grid(total, EMPTY);
         std::vector<size> positions(X * Y, 0);
         size i = 0;
         for (size x = 0; x != X; ++x) {
@@ -48,26 +47,28 @@ namespace {
                 positions[i++] = y * X + x;
             }
         }
-        FisherYatesShuffle(positions, mine_grid_index, N, X, Y);
+        bombs = FisherYatesShuffle(positions, N, X, Y);
         for (size n = 0; n < N; ++n) {
-            grid_index idx = mine_grid_index[n];
+            const auto idx = bombs[n];
             assert(idx < total);
-            grid[idx] = BOMB;
+            ret[idx] = BOMB;
         }
+        return ret;
     }
 
-    inline void count_mines(int8_t *grid, size X, size Y, grid_index *mine_grid_index, size N) {
+    inline void count_mines(Grid &grid, size X, size Y, const Bombs &bombs, size N) {
         for (size n = 0; n < N; ++n) {
-            grid_index idx = mine_grid_index[n];
+            const auto idx = bombs[n];
             count_mines_at_index(grid, X, Y, idx);
         }
     }
 
-    void print_grid(int8_t *grid, size X, size Y, bool quiet) {
+    void print_grid(const Grid &grid, size X, size Y, bool quiet) {
         if (quiet)
             return;
+        auto ptr = grid.data();
         for (size i = 0; i < Y; ++i) {
-            fwrite(&g_grid[i * X], sizeof(*g_grid), X, stdout);
+            fwrite(ptr + (i * X), sizeof(Grid::value_type), X, stdout);
             putc('\n', stdout);
         }
     }
@@ -75,21 +76,15 @@ namespace {
 
 int fast::run(size X, size Y, size N, bool quiet) {
     log("make grid");
-    g_grid = new int8_t[X * Y];
-    grid_index *mine_grid_index = new grid_index[N];
-    if (!g_grid || !mine_grid_index)
-        return -1;
-    create_grid(g_grid, X, Y, mine_grid_index, N);
+    Bombs bombs(N);
+    Grid grid = create_grid(X, Y, bombs, N);
 
     log("print bombs");
-    print_grid(g_grid, X, Y, quiet);
+    print_grid(grid, X, Y, quiet);
     log("count mines");
-    count_mines(g_grid, X, Y, mine_grid_index, N);
+    count_mines(grid, X, Y, bombs, N);
     log("print counts");
-    print_grid(g_grid, X, Y, quiet);
-
-    delete[] g_grid;
-    delete[] mine_grid_index;
+    print_grid(grid, X, Y, quiet);
     log("done");
     return EXIT_SUCCESS;
 }

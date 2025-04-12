@@ -9,11 +9,11 @@
 #include <memory>
 
 namespace {
-    static int8_t *g_grid = nullptr;
+    using Grid = std::vector<int8_t>;
     const int8_t BOMB = 10;
     const int8_t EMPTY = 0;
 
-    inline void count_mines_at_index(int8_t *grid, size X, size Y, size idx) {
+    inline void count_mines_at_index(Grid &grid, size X, size Y, size idx) {
         size i = idx % (X + 2);
         // std::cerr << "X=" << X << " Y=" << Y << " idx = " << idx << " i = " << i << std::endl;
         assert(i > 0 && i < (X + 2 - 1));
@@ -35,7 +35,7 @@ namespace {
         }
     }
 
-    inline int8_t *create_grid(size X, size Y, grid_index *mine_grid_index, size N) {
+    inline Grid create_grid(size X, size Y, Bombs &bombs, size N) {
         {
             std::vector<size> positions(X * Y, 0);
             size i = 0;
@@ -44,13 +44,12 @@ namespace {
                     positions[i++] = y * (X + 2) + x;
                 }
             }
-            FisherYatesShuffle(positions, mine_grid_index, N, X, Y);
+            bombs = FisherYatesShuffle(positions, N, X, Y);
         }
-        auto ret = new int8_t[(X + 2) * (Y + 2)];
+        auto ret = Grid((X + 2) * (Y + 2), EMPTY);
         size total = (X + 2) * (Y + 2);
-        std::memset(ret, EMPTY, total);
         for (size n = 0; n < N; ++n) {
-            grid_index idx = mine_grid_index[n];
+            auto idx = bombs[n];
             assert(idx < total);
             ret[idx] = BOMB;
             count_mines_at_index(ret, X, Y, idx);
@@ -58,15 +57,15 @@ namespace {
         return ret;
     }
 
-    inline void count_mines(int8_t *grid, size X, size Y, grid_index *mine_grid_index, size N) {
+    inline void count_mines(Grid &grid, size X, size Y, const Bombs &bombs, size N) {
         for (size n = 0; n < N; ++n) {
-            grid_index idx = mine_grid_index[n];
+            auto idx = bombs[n];
             count_mines_at_index(grid, X, Y, idx);
         }
     }
 
 #include <cassert>
-    void print_grid(int8_t *grid, size X, size Y, const bool show_counts, const bool quiet) {
+    void print_grid(const Grid &grid, size X, size Y, const bool show_counts, const bool quiet) {
         char lookup[16] = {0};
         lookup[EMPTY] = '.';
         lookup[BOMB] = '*';
@@ -95,15 +94,12 @@ namespace {
 
 int beautiful::run(size X, size Y, size N, bool quiet) {
     log("make bomb and counts");
-    grid_index *mine_grid_index = new grid_index[N];
-    assert(mine_grid_index);
-    g_grid = create_grid(X, Y, mine_grid_index, N);
+    Bombs bombs(N);
+    auto grid = create_grid(X, Y, bombs, N);
     log("print grid");
-    print_grid(g_grid, X, Y, false, quiet);
+    print_grid(grid, X, Y, false, quiet);
     log("print counts");
-    print_grid(g_grid, X, Y, true, quiet);
-    delete[] g_grid;
-    delete[] mine_grid_index;
+    print_grid(grid, X, Y, true, quiet);
     log("done");
     return EXIT_SUCCESS;
 }
