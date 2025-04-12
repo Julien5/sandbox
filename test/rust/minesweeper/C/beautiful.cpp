@@ -9,11 +9,13 @@
 #include <memory>
 
 namespace {
-    using Grid = std::vector<int8_t>;
     const int8_t BOMB = 10;
     const int8_t EMPTY = 0;
 
-    inline void count_mines_at_index(Grid &grid, size X, size Y, size idx) {
+    inline void count_mines_at_index(Minesweeper &M, size idx) {
+        auto &grid(M.grid);
+        const auto X = M.X;
+        const auto Y = M.X;
         size i = idx % (X + 2);
         // std::cerr << "X=" << X << " Y=" << Y << " idx = " << idx << " i = " << i << std::endl;
         assert(i > 0 && i < (X + 2 - 1));
@@ -35,37 +37,36 @@ namespace {
         }
     }
 
-    inline Grid create_grid(size X, size Y, Bombs &bombs, size N) {
-        {
-            std::vector<size> positions(X * Y, 0);
-            size i = 0;
-            for (size x = 1; x != X + 1; ++x) {
-                for (size y = 1; y != Y + 1; ++y) {
-                    positions[i++] = y * (X + 2) + x;
-                }
+    std::vector<size> create_bombs(const size &X, const size &Y, const size &N) {
+        std::vector<size> positions(X * Y, 0);
+        size i = 0;
+        for (size x = 1; x != X + 1; ++x) {
+            for (size y = 1; y != Y + 1; ++y) {
+                positions[i++] = y * (X + 2) + x;
             }
-            bombs = FisherYatesShuffle(positions, N, X, Y);
         }
-        auto ret = Grid((X + 2) * (Y + 2), EMPTY);
+        return FisherYatesShuffle(positions, N, X, Y);
+    }
+
+    Minesweeper create(const size &X, const size &Y, const size &N) {
+        Minesweeper ret;
+        ret.bombs = create_bombs(X, Y, N);
+        ret.grid = Grid((X + 2) * (Y + 2), EMPTY);
+        ret.X = X;
+        ret.Y = Y;
         size total = (X + 2) * (Y + 2);
-        for (size n = 0; n < N; ++n) {
-            auto idx = bombs[n];
+        for (const auto &idx : ret.bombs) {
             assert(idx < total);
-            ret[idx] = BOMB;
-            count_mines_at_index(ret, X, Y, idx);
+            ret.grid[idx] = BOMB;
+            count_mines_at_index(ret, idx);
         }
         return ret;
     }
 
-    inline void count_mines(Grid &grid, size X, size Y, const Bombs &bombs, size N) {
-        for (size n = 0; n < N; ++n) {
-            auto idx = bombs[n];
-            count_mines_at_index(grid, X, Y, idx);
-        }
-    }
-
-#include <cassert>
-    void print_grid(const Grid &grid, size X, size Y, const bool show_counts, const bool quiet) {
+    void print(const Minesweeper &M, const bool show_counts, const bool quiet) {
+        const auto &grid(M.grid);
+        const auto X = M.X;
+        const auto Y = M.Y;
         char lookup[16] = {0};
         lookup[EMPTY] = '.';
         lookup[BOMB] = '*';
@@ -94,12 +95,11 @@ namespace {
 
 int beautiful::run(size X, size Y, size N, bool quiet) {
     log("make bomb and counts");
-    Bombs bombs(N);
-    auto grid = create_grid(X, Y, bombs, N);
+    Minesweeper M = create(X, Y, N);
     log("print grid");
-    print_grid(grid, X, Y, false, quiet);
+    print(M, false, quiet);
     log("print counts");
-    print_grid(grid, X, Y, true, quiet);
+    print(M, true, quiet);
     log("done");
     return EXIT_SUCCESS;
 }

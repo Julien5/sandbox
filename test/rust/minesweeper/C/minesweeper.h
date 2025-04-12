@@ -9,6 +9,13 @@ typedef std::size_t size;
 using Grid = std::vector<int8_t>;
 using Bombs = std::vector<std::size_t>;
 
+struct Minesweeper {
+    Grid grid;
+    Bombs bombs;
+    size X;
+    size Y;
+};
+
 void log(const std::string &msg);
 struct point {
     size x = 0;
