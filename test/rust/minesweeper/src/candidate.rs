@@ -60,7 +60,7 @@ pub fn main(X:usize,B:usize,quiet:bool) {
 	let K=match B {
 		0..4 => 1,
 		4..16 => 2,
-		_ => std::cmp::min(X/2,B/2)
+		_ => 1 // [X/2,B/2,32].into_iter().min().unwrap()
 	};
 
 	log::info!("running with {} chunks",K);
