@@ -22,7 +22,15 @@ struct point {
     size y = 0;
 };
 
-size _1d(size x, size y, size X, size Y);
-point _2d(size k, size X, size Y);
+inline size _1d(size x, size y, size X, size Y) {
+    return y * X + x;
+}
 
-std::vector<size> FisherYatesShuffle(std::vector<size> positions, size count, size X, size Y);
+inline point _2d(size k, size X, size Y) {
+    point p;
+    p.x = k % X;
+    p.y = k / X;
+    return p;
+}
+
+std::vector<size> FisherYatesShuffle(std::vector<size> &positions, const size &count, const size &X, const size &Y);

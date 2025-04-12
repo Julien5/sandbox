@@ -19,26 +19,16 @@ void log(const std::string &msg) {
         << msg << std::endl;
 }
 
-size _1d(size x, size y, size X, size Y) {
-    return y * X + x;
-}
-
-point _2d(size k, size X, size Y) {
-    point p;
-    p.x = k % X;
-    p.y = k / X;
-    return p;
-}
 // Fisher–Yates_shuffle
-std::vector<size> FisherYatesShuffle(std::vector<size> positions, size count, size X, size Y) {
+std::vector<size> FisherYatesShuffle(std::vector<size> &positions, const size &count, const size &X, const size &Y) {
     const auto max_size = X * Y;
     std::default_random_engine gen{static_cast<long unsigned int>(0)};
     // std::random_device rd;
     // std::minstd_rand0 gen(rd());
     for (size i = 0; i != count; ++i) {
-        auto end = max_size - i - 1;
+        const auto end = max_size - i - 1;
         std::uniform_int_distribution<> dis(0, end);
-        size j = dis(gen); // rand() % end; // dis(gen);
+        const size j = dis(gen); // rand() % end; // dis(gen);
         std::swap(positions[j], positions[end]);
     }
     std::vector<size> ret(count);

@@ -7,17 +7,17 @@
 #include <cstring>
 #include <random>
 #include <memory>
+#include <iostream>
 
 namespace {
     const int8_t BOMB = 10;
     const int8_t EMPTY = 0;
 
-    void count_mines_at_index(Minesweeper &M, size idx) {
+    void count_mines_at_index(Minesweeper &M, const size &idx) {
         auto &grid(M.grid);
         const auto X = M.X;
         const auto Y = M.X;
         size i = idx % (X + 2);
-        // std::cerr << "X=" << X << " Y=" << Y << " idx = " << idx << " i = " << i << std::endl;
         assert(i > 0 && i < (X + 2 - 1));
         size j = idx / (X + 2);
         assert(j > 0 && j < (Y + 2 - 1));
@@ -38,6 +38,7 @@ namespace {
     }
 
     std::vector<size> create_bombs(const size &X, const size &Y, const size &N) {
+        std::cerr << "allocate: " << X * Y * sizeof(size) << " bytes\n";
         std::vector<size> positions(X * Y, 0);
         size i = 0;
         for (size x = 1; x != X + 1; ++x) {

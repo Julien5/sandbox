@@ -11,11 +11,11 @@ namespace {
 
 #define INC_COUNT(idx) grid[(idx)] += 0b1100 >> (grid[(idx)] >> 4)
 
-    void count_mines_at_index(Minesweeper &M, size idx) {
+    void count_mines_at_index(Minesweeper &M, const size &idx) {
         Grid &grid(M.grid);
         const auto X = M.X;
         const auto Y = M.Y;
-        point p = _2d(idx, X, Y);
+        const point p = _2d(idx, X, Y);
         // std::cerr << "p.x=" << int(p.x) << " p.y=" << int(p.y) << std::endl;
         assert(0 <= p.x && p.x < X);
         assert(0 <= p.y && p.y < Y);
@@ -23,13 +23,13 @@ namespace {
             for (int dy = -1; dy < 2; ++dy) {
                 if (dx == 0 && dy == 0)
                     continue;
-                int64_t nx = int64_t(p.x) + dx;
-                int64_t ny = int64_t(p.y) + dy;
+                const int64_t nx = int64_t(p.x) + dx;
+                const int64_t ny = int64_t(p.y) + dy;
                 if (nx < 0 || nx >= X)
                     continue;
                 if (ny < 0 || ny >= Y)
                     continue;
-                int64_t nk = ny * X + nx;
+                const int64_t nk = ny * X + nx;
                 // std::cerr << "p.x=" << int(p.x) << " p.y=" << int(p.y)
                 //          << " ny=" << ny << " nx=" << nx << " nk=" << nk << std::endl;
                 //  out of bounds
