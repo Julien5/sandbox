@@ -23,12 +23,10 @@ impl Tile {
 	
 	pub fn with_chunk(chunk:BombChunk) -> Tile {
 		log::trace!("make tile for chunk index:{}",chunk.index());
-		let n=chunk.X();
-		let m=chunk.Y();
-		let nM=n+2;
-		let mM=m+2;
+		let LX=chunk.X()+2;
+		let LY=chunk.Y()+2;
 		let mut g=Tile {
-			grid: vec![ZERO; nM*mM],
+			grid: vec![ZERO; LX*LY],
 			bomb_chunk:chunk,
 		};
 		let L=g.bomb_chunk.positions().len();
@@ -56,32 +54,32 @@ impl Tile {
 		self.bomb_chunk.Y()
 	}
 		
-	pub fn bomb_count_at(&self,kn:usize,km:usize,prev:Option<&Tile>, next:Option<&Tile>) -> u8 {
-		if self.at(kn,km) == BOMB {
+	pub fn bomb_count_at(&self,kx:usize,ky:usize,prev:Option<&Tile>, next:Option<&Tile>) -> u8 {
+		if self.at(kx,ky) == BOMB {
 			return BOMB;
 		}
-		if km == 0 {
+		if ky == 0 {
 			// add last line from prev
 			match prev {
 				Some(tile) => {
-					debug_assert!(tile.at_all(kn+1,tile.LY()-1) != BOMB);
-					return self.at(kn,0) + tile.at_all(kn+1,tile.LY()-1);
+					debug_assert!(tile.at_all(kx+1,tile.LY()-1) != BOMB);
+					return self.at(kx,0) + tile.at_all(kx+1,tile.LY()-1);
 				}
 				_ => {}
 			}
 		}
-		if km == self.Y()-1 {
+		if ky == self.Y()-1 {
 			// add first line from next
 			match next {
 				Some(tile) => {
-					debug_assert!(tile.at_all(kn+1,0) != BOMB);
-					return self.at(kn,self.Y()-1) + tile.at_all(kn+1,0);
+					debug_assert!(tile.at_all(kx+1,0) != BOMB);
+					return self.at(kx,self.Y()-1) + tile.at_all(kx+1,0);
 				}
 				_ => {}
 			}
 			
 		}
-		self.at(kn,km)
+		self.at(kx,ky)
 	}
 
 	pub fn print_bombs(&self, printer: &mut Printer) {
@@ -101,10 +99,28 @@ impl Tile {
 		let print_lookup: [u8;11] = [b'.',b'1',b'2',b'3',b'4',b'5',b'6',b'7',b'8',b'*',b' '];
 		debug_assert!(!self.grid.is_empty());
 		let mut output:Vec<u8> = prepare_output(self.X());
-		for km in 0..self.Y() {
-			for kn in 0..self.X() {
-				let c=self.bomb_count_at(kn,km,prev,next);
-				output[4*kn+2]=print_lookup[c as usize];
+		for ky in 0..self.Y() {
+			let onymargin=ky == 0 || ky==self.Y()-1;
+			let kx=0;
+			{
+				let c=self.bomb_count_at(kx,ky,prev,next);
+				output[4*kx+2]=print_lookup[c as usize];
+			}
+			if !onymargin {
+				for kx in 1..self.X()-1 {
+					let c=self.at(kx,ky);
+					output[4*kx+2]=print_lookup[c as usize];
+				}
+			} else {
+				for kx in 1..self.X()-1 {
+					let c=self.bomb_count_at(kx,ky,prev,next);
+					output[4*kx+2]=print_lookup[c as usize];
+				}
+			}
+			let kx=self.X()-1;
+			{
+				let c=self.bomb_count_at(kx,ky,prev,next);
+				output[4*kx+2]=print_lookup[c as usize];
 			}
 			printer.print(&output);
 		}
