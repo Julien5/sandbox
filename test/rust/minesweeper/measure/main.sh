@@ -31,9 +31,9 @@ function programs() {
 		   ;;
 		2) echo ${CARGO_TARGET_DIR}/release/minesweeper candidate verbose
 		   ;;
-		3) echo /tmp/baseline-c beautiful verbose
+		3) echo /tmp/baseline-c margin verbose
 		   ;;
-		4) echo /tmp/baseline-c fast verbose
+		4) echo /tmp/baseline-c printable verbose
 		   ;;
 		5) echo /tmp/baseline-c orig verbose
 		   ;;
@@ -44,8 +44,8 @@ function programs() {
 
 function collect() {
 	for D in 2 4 8; do
-		mkdir -p /tmp/graph/${D}
-		for K in $(seq 1 4) $(seq 6 4 22); do
+		mkdir -p ~/delme/graph/${D}/
+		for K in $(seq 1 4); do #  $(seq 6 4 22); do
 			N=$((1024*K))
 			B=$((N*N/D))
 			printf "%5s|%10s" ${K} ${D} 
@@ -70,7 +70,7 @@ function plot() {
 }
 
 function main() {
-	collect
+	# collect
 	plot
 }
 

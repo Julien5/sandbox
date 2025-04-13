@@ -2,6 +2,6 @@
 
 #include "minesweeper.h"
 
-namespace beautiful {
+namespace printable {
     int run(size X, size Y, size N, bool quiet);
 }

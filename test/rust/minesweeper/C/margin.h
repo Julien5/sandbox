@@ -2,6 +2,6 @@
 
 #include "minesweeper.h"
 
-namespace fast {
+namespace margin {
     int run(size X, size Y, size N, bool quiet);
 }

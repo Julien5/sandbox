@@ -1,5 +1,4 @@
-#include "beautiful.h"
-
+#include "margin.h"
 #include "minesweeper.h"
 
 #include <cassert>
@@ -94,7 +93,7 @@ namespace {
     }
 }
 
-int beautiful::run(size X, size Y, size N, bool quiet) {
+int margin::run(size X, size Y, size N, bool quiet) {
     log("make bomb and counts");
     Minesweeper M = create(X, Y, N);
     log("print grid");

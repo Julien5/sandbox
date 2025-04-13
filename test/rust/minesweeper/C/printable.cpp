@@ -1,4 +1,4 @@
-#include "fast.h"
+#include "printable.h"
 #include "minesweeper.h"
 #include <cassert>
 #include <cstring>
@@ -85,7 +85,7 @@ namespace {
     }
 }
 
-int fast::run(size X, size Y, size N, bool quiet) {
+int printable::run(size X, size Y, size N, bool quiet) {
     log("make grid");
     auto minesweeper = create(X, Y, N);
     log("print bombs");

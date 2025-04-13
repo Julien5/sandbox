@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
-#include "fast.h"
-#include "beautiful.h"
+#include "printable.h"
+#include "margin.h"
 #include "minesweeper.h"
 #include <cassert>
 
@@ -43,10 +43,10 @@ int run(const std::vector<std::string> &arguments) {
         assert(false);
         return -1;
     }
-    if (global::algorithm == "fast")
-        return fast::run(global::X, global::Y, global::N, global::quiet);
-    else if (global::algorithm == "beautiful")
-        return beautiful::run(global::X, global::Y, global::N, global::quiet);
+    if (global::algorithm == "printable")
+        return printable::run(global::X, global::Y, global::N, global::quiet);
+    else if (global::algorithm == "margin")
+        return margin::run(global::X, global::Y, global::N, global::quiet);
     else {
         std::cerr << "unknown:" << global::algorithm << std::endl;
         return 1;
