@@ -29,10 +29,19 @@ fn main() {
 	let quiet : bool = args[2].contains("quiet");
 	let n = args[3].parse::<usize>().unwrap();
 	let b = args[4].parse::<usize>().unwrap();
+	assert!(args.len() == 5 || args.len() == 6);
+	let K = match args.len() {
+		5 => 1,
+		6 => args[5].parse::<usize>().unwrap(),
+		_ => {
+			log::error!("bad parameters");
+			return ();
+		}
+	};
 	
 	match algorithm.as_str() {
 		"baseline" => baseline::main(n,b,quiet),
-		"candidate" => candidate::main(n,b,quiet),
+		"candidate" => candidate::main(n,b,quiet,K),
 		&_ => {
 			log::error!("unknown {}",algorithm);
 		}

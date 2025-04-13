@@ -15,7 +15,7 @@ function measure-worker() {
 
 function measure() {
 	TMPFILE=$(mktemp /tmp/measure.XXX.txt)
-	# 1>&2 echo exe: "$@"
+	#1>&2 echo exe: "$@"
 	measure-worker "$@" &> ${TMPFILE}
 	TIME=$(tail -1 ${TMPFILE} | cut -f1 -d" ")
 	SPACE=$(tail -1 ${TMPFILE} | cut -f3 -d" ")
@@ -42,13 +42,26 @@ function programs() {
 	esac
 }
 
+function Ds() {
+	echo 2 4 8
+}
+
+function Ls() {
+	echo $(seq 1 4) $(seq 6 4 22)
+}
+
+function Ks() {
+	echo 1 2 4 8 16 32 64
+}
+
 function collect() {
-	for D in 2 4 8; do
-		mkdir -p ~/delme/graph/${D}/
-		for K in $(seq 1 4); do #  $(seq 6 4 22); do
-			N=$((1024*K))
+	K=1
+	for D in $(Ds); do
+		mkdir -p ~/delme/graph/${K}/${D}/
+		for L in $(Ls); do
+			N=$((1024*L))
 			B=$((N*N/D))
-			printf "%5s|%10s" ${K} ${D} 
+			printf "%5s|%10s" ${L} ${D} 
 			for n in 1 2 3 4; do
 				M=$(measure $(programs $n) ${N} ${B})
 				TIME=$(echo ${M} | cut -f1 -d" " | tr -d s)
@@ -56,22 +69,48 @@ function collect() {
 				printf " |%5s|%10s" ${TIME} ${SPACE}
 			done
 			printf "\n"
-		done | tee ~/delme/graph/${D}/K.txt
+		done | tee ~/delme/graph/${K}/${D}/data.txt
+		echo
+	done
+}
+
+function collect-K() {
+	CANDIDATE=$(programs 2);
+	L=8;
+	for D in 2; do
+		for K in $(Ks); do
+			N=$((1024*L))
+			B=$((N*N/D))
+			printf "%5s|%10s" ${K} ${D} 
+			M=$(measure $CANDIDATE ${N} ${B} ${K})
+			TIME=$(echo ${M} | cut -f1 -d" " | tr -d s)
+			SPACE=$(echo ${M} | cut -f2 -d" " | tr -d k)
+			printf " |%5s|%10s" ${TIME} ${SPACE}
+			printf "\n"
+		done | tee ~/delme/graph/${K}/${D}/measure.dat
 		echo
 	done
 }
 
 function plot() {
+	K=1;
 	for D in 2 4 8; do
-		cat ~/delme/graph/${D}/K.txt  > /tmp/time.dat
+		cat ~/delme/graph/${K}/${D}/measure.dat  > /tmp/measure.dat
+		gnuplot ${SCRIPTDIR}/time-array.gnuplot
+		mv /tmp/time-array.png /tmp/time-array-${D}.png 
+	done
+
+	D=4;
+	for K in 2 4 8; do
+		cat ~/delme/graph/${K}/${D}/measure.dat  > /tmp/measure.dat
 		gnuplot ${SCRIPTDIR}/time-array.gnuplot
 		mv /tmp/time-array.png /tmp/time-array-${D}.png 
 	done
 }
 
 function main() {
-	# collect
-	plot
+	collect-K
+	# plot
 }
 
 main "$@"
