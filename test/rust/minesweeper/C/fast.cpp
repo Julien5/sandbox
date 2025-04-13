@@ -20,13 +20,13 @@ namespace {
         assert(0 <= p.x && p.x < X);
         assert(0 <= p.y && p.y < Y);
         for (int dx = -1; dx < 2; ++dx) {
+            const int64_t nx = int64_t(p.x) + dx;
+            if (nx < 0 || nx >= X)
+                continue;
             for (int dy = -1; dy < 2; ++dy) {
                 if (dx == 0 && dy == 0)
                     continue;
-                const int64_t nx = int64_t(p.x) + dx;
                 const int64_t ny = int64_t(p.y) + dy;
-                if (nx < 0 || nx >= X)
-                    continue;
                 if (ny < 0 || ny >= Y)
                     continue;
                 const int64_t nk = ny * X + nx;

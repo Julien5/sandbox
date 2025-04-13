@@ -43,9 +43,9 @@ function programs() {
 }
 
 function collect() {
-	for D in 4 2; do
+	for D in 2 4 8; do
 		mkdir -p /tmp/graph/${D}
-		for K in $(seq 4 4 20); do
+		for K in $(seq 1 4) $(seq 6 4 22); do
 			N=$((1024*K))
 			B=$((N*N/D))
 			printf "%5s|%10s" ${K} ${D} 
@@ -56,21 +56,21 @@ function collect() {
 				printf " |%5s|%10s" ${TIME} ${SPACE}
 			done
 			printf "\n"
-		done | tee /tmp/graph/${D}/K.txt
+		done | tee ~/delme/graph/${D}/K.txt
 		echo
 	done
 }
 
 function plot() {
-	for D in 4 2; do
-		cat /tmp/graph/${D}/K.txt  > /tmp/time.dat
+	for D in 2 4 8; do
+		cat ~/delme/graph/${D}/K.txt  > /tmp/time.dat
 		gnuplot ${SCRIPTDIR}/time-array.gnuplot
 		mv /tmp/time-array.png /tmp/time-array-${D}.png 
 	done
 }
 
 function main() {
-	# collect
+	collect
 	plot
 }
 
