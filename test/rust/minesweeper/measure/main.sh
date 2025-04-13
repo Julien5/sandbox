@@ -4,6 +4,7 @@ set -e
 # set -x
 
 SCRIPTDIR="$(dirname "$(realpath "$0")")"
+DATADIR=${SCRIPTDIR}/data
 
 function measure-worker() {
 	TMPFILE2=$(mktemp /tmp/measure.XXX.txt)
@@ -54,10 +55,10 @@ function Ks() {
 	echo 1 2 4 8 16 32 64
 }
 
-function collect() {
+function collect-L() {
 	K=1
 	for D in $(Ds); do
-		mkdir -p ~/delme/graph/${K}/${D}/
+		mkdir -p ${DATADIR}/L/${D}/
 		for L in $(Ls); do
 			N=$((1024*L))
 			B=$((N*N/D))
@@ -69,7 +70,7 @@ function collect() {
 				printf " |%5s|%10s" ${TIME} ${SPACE}
 			done
 			printf "\n"
-		done | tee ~/delme/graph/${K}/${D}/data.txt
+		done | tee ${DATADIR}/L/${D}/measure.dat
 		echo
 	done
 }
@@ -78,6 +79,7 @@ function collect-K() {
 	CANDIDATE=$(programs 2);
 	L=8;
 	for D in 2; do
+		mkdir -p ${DATADIR}/K/${D}
 		for K in $(Ks); do
 			N=$((1024*L))
 			B=$((N*N/D))
@@ -87,30 +89,40 @@ function collect-K() {
 			SPACE=$(echo ${M} | cut -f2 -d" " | tr -d k)
 			printf " |%5s|%10s" ${TIME} ${SPACE}
 			printf "\n"
-		done | tee ~/delme/graph/${K}/${D}/measure.dat
+		done | tee ${DATADIR}/K/${D}/measure.dat
 		echo
 	done
 }
 
-function plot() {
+function plot-L() {
 	K=1;
 	for D in 2 4 8; do
-		cat ~/delme/graph/${K}/${D}/measure.dat  > /tmp/measure.dat
+		cat ${DATADIR}/L/${D}/measure.dat  > /tmp/measure.dat
 		gnuplot ${SCRIPTDIR}/time-array.gnuplot
 		mv /tmp/time-array.png /tmp/time-array-${D}.png 
 	done
-
-	D=4;
-	for K in 2 4 8; do
-		cat ~/delme/graph/${K}/${D}/measure.dat  > /tmp/measure.dat
-		gnuplot ${SCRIPTDIR}/time-array.gnuplot
-		mv /tmp/time-array.png /tmp/time-array-${D}.png 
+	for D in 2 4 8; do
+		cat ${DATADIR}/L/${D}/measure.dat  > /tmp/measure.dat
+		gnuplot ${SCRIPTDIR}/time-array-ratio.gnuplot
+		mv /tmp/time-array-ratio.png /tmp/time-array-ratio-${D}.png 
 	done
 }
 
+function plot-K() {
+	D=2;
+	cat ${DATADIR}/K/${D}/measure.dat  > /tmp/measure.dat
+	gnuplot ${SCRIPTDIR}/time-chunks.gnuplot
+}
+
+
 function main() {
-	collect-K
-	# plot
+	#collect-L
+	plot-L
+	xdg-open /tmp/time-array-2.png
+	
+	#collect-K
+	plot-K
+	xdg-open /tmp/time-chunks.png
 }
 
 main "$@"
