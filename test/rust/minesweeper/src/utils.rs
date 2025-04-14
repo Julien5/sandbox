@@ -102,4 +102,18 @@ mod tests {
 		let c = _2d(k,n,m);
 		debug_assert_eq!(c,(2,0));
     }
+	#[test]
+	fn b1() {
+		let mut rng = StdRng::from_os_rng();
+		let B=10;
+		let N=10;
+		let mut set=std::collections::HashSet::new();
+		while set.len() != B {
+			set.insert(rng.random_range(0..N*N));
+		}
+		assert_eq!(set.len(),B);
+		for k in set {
+			println!("{}",k);
+		}
+	}
 }

@@ -13,7 +13,8 @@ pub struct Tile {
 }
 
 pub fn merge(tile1: &mut Tile, tile2: &mut Tile) {
-	log::trace!("merging {} and {}",tile1.tile_index(),tile2.tile_index());
+	log::trace!("[{:?}] merging {} and {}",std::thread::current().id(),
+				tile1.tile_index(),tile2.tile_index());
 	debug_assert!(tile1.tile_index()<tile2.tile_index());
 	for kx in 0..tile1.X() {
 		let ktop=_1d((kx+1,1),tile1.LX(),tile1.LY());
@@ -39,7 +40,7 @@ impl Tile {
 	}
 	
 	pub fn with_chunk(chunk:BombChunk) -> Tile {
-		log::trace!("make tile for chunk index:{}",chunk.index());
+		log::trace!("[{:?}] make tile for chunk index:{}",std::thread::current().id(),chunk.index());
 		let LX=chunk.X()+2;
 		let LY=chunk.Y()+2;
 		let mut g=Tile {

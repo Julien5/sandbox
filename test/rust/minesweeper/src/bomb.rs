@@ -24,7 +24,7 @@ fn distinct_random_numbers(n:usize,m:usize,b:usize) -> BombPositions {
 
 impl BombChunk {
 	pub fn with_bomb_count(X:usize,Y:usize,index:usize,b:usize) -> BombChunk {
-		log::trace!("make bombs for chunk index:{}",index);
+		log::trace!("[{:?}] make bombs for chunk index:{}",std::thread::current().id(),index);
 		let chunk=BombChunk {
 			X,
 			Y,
