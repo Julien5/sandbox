@@ -49,7 +49,7 @@ function Ds() {
 }
 
 function Ls() {
-	echo $(seq 1 4) # $(seq 6 4 22)
+	echo $(seq 1 4) $(seq 6 4 22)
 }
 
 function Ks() {
@@ -119,11 +119,11 @@ function plot-K() {
 
 
 function main() {
-	#collect-L
+	collect-L
 	plot-L
 	xdg-open ${IMGDIR}/time-array-2.png
 	
-	#collect-K
+	collect-K
 	plot-K
 	xdg-open ${IMGDIR}/time-chunks.png
 }
