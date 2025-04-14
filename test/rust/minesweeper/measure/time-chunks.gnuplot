@@ -2,7 +2,7 @@ set terminal pngcairo size 800,400
 set output '/tmp/time-chunks.png'
 set datafile separator "|"
 
-set xlabel "chunks count"
+set xlabel "chunks count K"
 set ylabel "time [s]"
 
 set yrange [0:6]
