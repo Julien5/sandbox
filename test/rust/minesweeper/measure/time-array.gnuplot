@@ -1,4 +1,4 @@
-set terminal pngcairo size 800,800 
+set terminal pngcairo size 800,400 
 set output '/tmp/time-array.png'
 set datafile separator "|"
 

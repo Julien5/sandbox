@@ -5,6 +5,7 @@ set -e
 
 SCRIPTDIR="$(dirname "$(realpath "$0")")"
 DATADIR=${SCRIPTDIR}/data
+IMGDIR=$HOME/projects/julien5.github.io/assets/minesweeper/
 
 function measure-worker() {
 	TMPFILE2=$(mktemp /tmp/measure.XXX.txt)
@@ -48,11 +49,11 @@ function Ds() {
 }
 
 function Ls() {
-	echo $(seq 1 4) $(seq 6 4 22)
+	echo $(seq 1 4) # $(seq 6 4 22)
 }
 
 function Ks() {
-	echo 1 2 4 8 16 32 64
+	echo 1 2 4 8 16
 }
 
 function collect-L() {
@@ -106,23 +107,25 @@ function plot-L() {
 		gnuplot ${SCRIPTDIR}/time-array-ratio.gnuplot
 		mv /tmp/time-array-ratio.png /tmp/time-array-ratio-${D}.png 
 	done
+	mv /tmp/time-array*.png ${IMGDIR}/
 }
 
 function plot-K() {
 	D=2;
 	cat ${DATADIR}/K/${D}/measure.dat  > /tmp/measure.dat
 	gnuplot ${SCRIPTDIR}/time-chunks.gnuplot
+	mv /tmp/time-chunks*.png ${IMGDIR}/
 }
 
 
 function main() {
 	#collect-L
 	plot-L
-	xdg-open /tmp/time-array-2.png
+	xdg-open ${IMGDIR}/time-array-2.png
 	
 	#collect-K
 	plot-K
-	xdg-open /tmp/time-chunks.png
+	xdg-open ${IMGDIR}/time-chunks.png
 }
 
 main "$@"
