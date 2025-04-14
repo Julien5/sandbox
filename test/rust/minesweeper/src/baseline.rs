@@ -74,19 +74,19 @@ fn _count_bombs(grid:&mut [usize], n:usize,bombs_positions:&[usize]) {
 	}
 }
 
-pub fn main(n : usize, b: usize, quiet: bool) {
-	let mut grid : Vec<usize> = vec![ZERO; n*n];
+pub fn main(N : usize, B: usize, quiet: bool) {
+	let mut grid : Vec<usize> = vec![ZERO; N*N];
 	log::info!("make bombs");
-	let Bx = distinct_random_numbers(n*n,b);
+	let Bx = distinct_random_numbers(N*N,B);
 	for p in &Bx {
 		grid[*p]=BOMB;
-		increment_neighboors(&mut grid,n,*p);
+		increment_neighboors(&mut grid,N,*p);
 	}
 	let mut printer=utils::make_printer(quiet);
 	log::info!("print");
-	print_grid(&grid,n,&mut printer, false);
+	print_grid(&grid,N,&mut printer, false);
 	log::trace!("print");
-	print_grid(&grid,n,&mut printer, true);
+	print_grid(&grid,N,&mut printer, true);
 	log::info!("done");
 }
 
