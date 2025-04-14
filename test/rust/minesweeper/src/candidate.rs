@@ -55,6 +55,68 @@ impl TileAccumulator {
 	}
 }
 
+fn _main_for(X:usize,Y:usize,Bchunk:usize,K:usize,quiet:bool) {
+	let mut tiles = Vec::new();
+	for index in 0..K {
+		let chunk=BombChunk::with_bomb_count(X,Y,index,Bchunk);
+		tiles.push(make_tile(chunk));
+	}
+	let mut acc=TileAccumulator::init();
+	for tile in tiles {
+		acc.aggregate(tile);
+	}
+	let mut printer=make_printer(quiet);
+	acc.print_bombs(&mut printer);
+	acc.print_counts(&mut printer);
+}
+
+fn _main_iter(X:usize,Y:usize,Bchunk:usize,K:usize,quiet:bool) {
+	let tiles:Vec<Tile>=(0..K).into_iter()
+		.map(|index| {
+			let chunk=BombChunk::with_bomb_count(X,Y,index,Bchunk);
+			make_tile(chunk)
+		}).collect();
+	let mut acc=TileAccumulator::init();
+	for tile in tiles {
+		acc.aggregate(tile);
+	}
+	let mut printer=make_printer(quiet);
+	acc.print_bombs(&mut printer);
+	acc.print_counts(&mut printer);
+}
+
+fn _main_parallel(X:usize,Y:usize,Bchunk:usize,K:usize,quiet:bool) {
+	let acc=std::sync::Arc::new(std::sync::Mutex::new(TileAccumulator::init()));
+	let _:Vec<()>=(0..K).into_par_iter()
+		.map(|index| {
+			let chunk=BombChunk::with_bomb_count(X,Y,index,Bchunk);
+			let tile=make_tile(chunk);
+			acc.lock().unwrap().aggregate(tile);
+		}).collect();
+	let mut printer=make_printer(quiet);
+	log::info!("print bombs");
+	acc.lock().unwrap().print_bombs(&mut printer);
+	log::info!("print counts");
+	acc.lock().unwrap().print_counts(&mut printer);
+}
+
+fn main_parallel(X:usize,Y:usize,Bchunk:usize,K:usize,quiet:bool) {
+	let tiles:Vec<Tile>=(0..K).into_par_iter()
+		.map(|index| {
+			let chunk=BombChunk::with_bomb_count(X,Y,index,Bchunk);
+			make_tile(chunk)
+		}).collect();
+	let mut acc=TileAccumulator::init();
+	for tile in tiles {
+		acc.aggregate(tile);
+	}
+	let mut printer=make_printer(quiet);
+	log::info!("print bombs");
+	acc.print_bombs(&mut printer);
+	log::info!("print counts");
+	acc.print_counts(&mut printer);
+}
+
 
 pub fn main(X:usize,B:usize,quiet:bool,K:usize) {
 	/*
@@ -72,20 +134,9 @@ pub fn main(X:usize,B:usize,quiet:bool,K:usize) {
 	assert_eq!(Y*K,X);
 	let Bchunk = B/K;
 	
-	let indexes:Vec<usize>=(0..K).collect();
-	let acc0=std::sync::Arc::new(std::sync::Mutex::new(TileAccumulator::init()));
-
 	log::info!("make bombs and count");
-	let _:Vec<()>=indexes.clone().into_par_iter()
-		.map(|index| BombChunk::with_bomb_count(X,Y,index,Bchunk)).into_par_iter()
-		.map(|chunk| make_tile(chunk)).into_par_iter()
-		.map(|tile| acc0.lock().unwrap().aggregate(tile))
-		.collect();
-	
-	let mut printer=make_printer(quiet);
-	log::info!("print bombs");
-	acc0.lock().unwrap().print_bombs(&mut printer);
-	log::info!("print counts");
-	acc0.lock().unwrap().print_counts(&mut printer);
+	//_main_for(X,Y,Bchunk,K,quiet);
+	//_main_iter_2(X,Y,Bchunk,K,quiet);
+	main_parallel(X,Y,Bchunk,K,quiet);
 }
 
