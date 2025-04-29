@@ -8,3 +8,4 @@ add_executable(frontend-c src/main.c)
 
 target_include_directories(frontend-c PUBLIC ${PROJECTSDIR}/backend/export)
 target_link_libraries(frontend-c ${RUST_TARGET_DIR}/debug/libbackend.so)
+# todo: export compilation database.
