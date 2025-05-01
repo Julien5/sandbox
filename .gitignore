@@ -18,3 +18,4 @@ delme
 *.png
 
 Cargo.lock
+.dart_tool
