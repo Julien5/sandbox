@@ -36,10 +36,10 @@ fn print_grid(grid: &[usize], n: usize, printer: &mut utils::Printer, show_count
     }
 }
 
-fn distinct_random_numbers(N: usize, b: usize) -> Vec<usize> {
+fn distinct_random_numbers(N: usize, B: usize) -> Vec<usize> {
     // populate the available positions excluding the margins.
     let positions: Vec<usize> = (0..N).collect();
-    utils::distinct_random_numbers(positions, b)
+    utils::fisher_yates_shuffle(positions, B)
 }
 
 fn increment_neighboors(grid: &mut [usize], nu: usize, pos: usize) {

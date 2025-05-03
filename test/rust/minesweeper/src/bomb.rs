@@ -19,7 +19,7 @@ fn distinct_random_numbers(n: usize, m: usize, b: usize) -> BombPositions {
             k += 1;
         }
     }
-    utils::distinct_random_numbers(positions, b) as BombPositions
+    utils::fisher_yates_shuffle(positions, b) as BombPositions
 }
 
 impl BombChunk {

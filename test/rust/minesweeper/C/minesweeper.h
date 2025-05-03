@@ -5,6 +5,7 @@
 #include <vector>
 
 typedef std::size_t size;
+typedef int64_t isize;
 
 using Grid = std::vector<int8_t>;
 using Bombs = std::vector<std::size_t>;

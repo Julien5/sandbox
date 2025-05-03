@@ -1,4 +1,4 @@
-#include "margin.h"
+#include "baseline.h"
 #include "minesweeper.h"
 
 #include <cassert>
@@ -17,16 +17,21 @@ namespace {
         const auto &X = M.X;
         const auto &Y = M.Y;
         assert(X == Y);
-        point p = _2d(idx, X + 2, Y + 2);
-        assert(0 < p.x && p.x < X + 1);
-        assert(0 < p.y && p.y < Y + 1);
+        point p = _2d(idx, X, Y);
+        assert(0 <= p.x && p.x < X);
+        assert(0 <= p.y && p.y < Y);
         for (int dx = -1; dx < 2; ++dx) {
-            size nx = p.x + dx;
+            isize nx = isize(p.x) + dx;
+            if (nx < 0 || nx >= X)
+                continue;
             for (int dy = -1; dy < 2; ++dy) {
                 if (dx == 0 && dy == 0)
                     continue;
-                size ny = p.y + dy;
-                size nk = _1d(nx, ny, X + 2, Y + 2);
+                isize ny = isize(p.y) + dy;
+                if (ny < 0 || ny >= Y)
+                    continue;
+                size nk = _1d(nx, ny, X, Y);
+                assert(0 <= nk && nk <= (X * Y));
                 if (grid[nk] != BOMB)
                     grid[nk]++;
             }
@@ -37,9 +42,9 @@ namespace {
         std::cerr << "allocate: " << X * Y * sizeof(size) << " bytes\n";
         std::vector<size> positions(X * Y, 0);
         size i = 0;
-        for (size x = 1; x != X + 1; ++x) {
-            for (size y = 1; y != Y + 1; ++y) {
-                positions[i++] = y * (X + 2) + x;
+        for (size x = 0; x != X; ++x) {
+            for (size y = 0; y != Y; ++y) {
+                positions[i++] = y * X + x;
             }
         }
         return FisherYatesShuffle(positions, N, X, Y);
@@ -48,10 +53,10 @@ namespace {
     Minesweeper create(const size &X, const size &Y, const size &N) {
         Minesweeper ret;
         ret.bombs = create_bombs(X, Y, N);
-        ret.grid = Grid((X + 2) * (Y + 2), EMPTY);
+        ret.grid = Grid(X * Y, EMPTY);
         ret.X = X;
         ret.Y = Y;
-        size total = (X + 2) * (Y + 2);
+        size total = X * Y;
         for (const auto &idx : ret.bombs) {
             assert(idx < total);
             ret.grid[idx] = BOMB;
@@ -80,7 +85,7 @@ namespace {
         output[4 * X + 1] = '\n';
         for (size i = 0; i < Y; ++i) {
             for (size j = 0; j < X; ++j) {
-                const auto k = _1d(i + 1, j + 1, X + 2, Y + 2);
+                const auto k = _1d(i, j, X, Y);
                 const auto g = grid[k];
                 output[4 * j + 2] = lookup[g];
             }
@@ -90,7 +95,7 @@ namespace {
     }
 }
 
-int margin::run(size X, size Y, size N, bool quiet) {
+int baseline::run(size X, size Y, size N, bool quiet) {
     log("make bomb and counts");
     Minesweeper M = create(X, Y, N);
     log("print grid");

@@ -20,16 +20,16 @@ namespace {
         assert(0 <= p.x && p.x < X);
         assert(0 <= p.y && p.y < Y);
         for (int dx = -1; dx < 2; ++dx) {
-            const int64_t nx = int64_t(p.x) + dx;
+            const isize nx = isize(p.x) + dx;
             if (nx < 0 || nx >= X)
                 continue;
             for (int dy = -1; dy < 2; ++dy) {
                 if (dx == 0 && dy == 0)
                     continue;
-                const int64_t ny = int64_t(p.y) + dy;
+                const isize ny = isize(p.y) + dy;
                 if (ny < 0 || ny >= Y)
                     continue;
-                const int64_t nk = ny * X + nx;
+                const isize nk = ny * X + nx;
                 // std::cerr << "p.x=" << int(p.x) << " p.y=" << int(p.y)
                 //          << " ny=" << ny << " nx=" << nx << " nk=" << nk << std::endl;
                 //  out of bounds

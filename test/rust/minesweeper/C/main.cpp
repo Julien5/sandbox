@@ -2,6 +2,7 @@
 #include <vector>
 #include "printable.h"
 #include "margin.h"
+#include "baseline.h"
 #include "minesweeper.h"
 #include <cassert>
 
@@ -47,6 +48,8 @@ int run(const std::vector<std::string> &arguments) {
         return printable::run(global::X, global::Y, global::N, global::quiet);
     else if (global::algorithm == "margin")
         return margin::run(global::X, global::Y, global::N, global::quiet);
+    else if (global::algorithm == "baseline")
+        return baseline::run(global::X, global::Y, global::N, global::quiet);
     else {
         std::cerr << "unknown:" << global::algorithm << std::endl;
         return 1;

@@ -33,11 +33,13 @@ function programs() {
 		   ;;
 		2) echo ${CARGO_TARGET_DIR}/release/minesweeper candidate verbose
 		   ;;
-		3) echo /tmp/baseline-c margin verbose
+		3) echo /tmp/build/minesweeper-cpp margin verbose
 		   ;;
-		4) echo /tmp/baseline-c printable verbose
+		4) echo /tmp/build/minesweeper-cpp printable verbose
 		   ;;
-		5) echo /tmp/baseline-c orig verbose
+		5) echo WTF5
+		   ;;
+		6) echo /tmp/build/minesweeper-cpp baseline verbose
 		   ;;
 		*) echo WTF
 		   ;;
@@ -49,7 +51,7 @@ function Ds() {
 }
 
 function Ls() {
-	echo $(seq 1 4) $(seq 6 4 22)
+	echo $(seq 1 4) $(seq 6 2 16)
 }
 
 function Ks() {
@@ -64,7 +66,7 @@ function collect-L() {
 			N=$((1024*L))
 			B=$((N*N/D))
 			printf "%5s|%10s" ${L} ${D} 
-			for n in 1 2 3 4; do
+			for n in 1 2 3 4 6; do
 				M=$(measure $(programs $n) ${N} ${B})
 				TIME=$(echo ${M} | cut -f1 -d" " | tr -d s)
 				SPACE=$(echo ${M} | cut -f2 -d" " | tr -d k)
@@ -100,7 +102,9 @@ function plot-L() {
 	for D in 2 4 8; do
 		cat ${DATADIR}/L/${D}/measure.dat  > /tmp/measure.dat
 		gnuplot ${SCRIPTDIR}/time-array.gnuplot
-		mv /tmp/time-array.png /tmp/time-array-${D}.png 
+		mv /tmp/time-array-baseline.png /tmp/time-array-baseline-${D}.png
+		mv /tmp/time-array-margin.png /tmp/time-array-margin-${D}.png
+		mv /tmp/time-array-compare.png /tmp/time-array-compare-${D}.png 
 	done
 	for D in 2 4 8; do
 		cat ${DATADIR}/L/${D}/measure.dat  > /tmp/measure.dat
@@ -115,17 +119,35 @@ function plot-K() {
 	cat ${DATADIR}/K/${D}/measure.dat  > /tmp/measure.dat
 	gnuplot ${SCRIPTDIR}/time-chunks.gnuplot
 	mv /tmp/time-chunks*.png ${IMGDIR}/
+	mv /tmp/space-chunks*.png ${IMGDIR}/
+}
+
+function build() {
+	pushd ${SCRIPTDIR}/..
+	source ~/.profile
+	dev.rust
+	cargo build --release 
+	find . \( -name "*.cpp" -o -name "*.rs" \) -exec touch "{}" \;
+	echo rust build
+ 	time cargo --verbose build --release
+	echo C++ build
+	rm -Rf /tmp/build/
+	mkdir -p /tmp/build
+	cmake -B /tmp/build -S C -DCMAKE_BUILD_TYPE=Release
+	time VERBOSE=1 make -j8 -C /tmp/build
+	popd
 }
 
 
 function main() {
-	collect-L
-	plot-L
-	xdg-open ${IMGDIR}/time-array-2.png
+	cd ${SCRIPTDIR}
+	# build
 	
-	collect-K
+	#collect-L
+	plot-L
+	
+	#collect-K
 	plot-K
-	xdg-open ${IMGDIR}/time-chunks.png
 }
 
 main "$@"
