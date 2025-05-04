@@ -42,13 +42,13 @@ fn distinct_random_numbers(N: usize, B: usize) -> Vec<usize> {
     utils::fisher_yates_shuffle(positions, B)
 }
 
-fn increment_neighboors(grid: &mut [usize], nu: usize, pos: usize) {
-    let (posxu, posyu) = to_2d(pos, nu);
-    let n = nu as isize;
+fn increment_neighboors(grid: &mut [usize], _N: usize, pos: usize) {
+    let (posxu, posyu) = to_2d(pos, _N);
+    let N = _N as isize;
     let (posx, posy) = (posxu as isize, posyu as isize);
     for dx in [-1, 0, 1] {
         let posnx = posx + dx;
-        if posnx < 0 || posnx >= n {
+        if posnx < 0 || posnx >= N {
             continue;
         }
         for dy in [-1, 0, 1] {
@@ -56,10 +56,10 @@ fn increment_neighboors(grid: &mut [usize], nu: usize, pos: usize) {
                 continue;
             }
             let posny = posy + dy;
-            if posny < 0 || posny >= n {
+            if posny < 0 || posny >= N {
                 continue;
             }
-            let l = posny * n + posnx;
+            let l = posny * N + posnx;
             let lu = l as usize;
             if grid[lu] != BOMB {
                 grid[lu] += 1;
