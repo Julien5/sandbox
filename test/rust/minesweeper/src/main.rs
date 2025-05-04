@@ -1,6 +1,7 @@
 #![allow(non_snake_case)]
 
 mod baseline;
+mod baseline_manipulated;
 mod bomb;
 mod candidate;
 mod tile;
@@ -43,6 +44,7 @@ fn main() {
     match algorithm.as_str() {
         "baseline" => baseline::main(n, b, quiet),
         "candidate" => candidate::main(n, b, quiet, K),
+        "baseline_manipulated" => baseline_manipulated::main(n, b, quiet),
         &_ => {
             log::error!("unknown {}", algorithm);
         }

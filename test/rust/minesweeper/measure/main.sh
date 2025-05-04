@@ -141,12 +141,12 @@ function build() {
 
 function main() {
 	cd ${SCRIPTDIR}
-	# build
+	build
 	
-	#collect-L
+	collect-L
 	plot-L
 	
-	#collect-K
+	collect-K
 	plot-K
 }
 
