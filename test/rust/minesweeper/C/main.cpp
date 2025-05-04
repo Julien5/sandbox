@@ -33,8 +33,7 @@ void init(const std::vector<std::string> &arguments) {
         global::Y = global::X;
         global::N = readsize(arguments[3]);
     }
-    printf("algorithm: %s, X: %d, Y: %d, N: %d\n", global::algorithm.c_str(),
-           global::X, global::Y, global::N);
+    // printf("algorithm: %s, X: %d, Y: %d, N: %d\n", global::algorithm.c_str(),           global::X, global::Y, global::N);
 }
 
 int run(const std::vector<std::string> &arguments) {

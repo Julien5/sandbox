@@ -9,6 +9,7 @@ IMGDIR=$HOME/projects/julien5.github.io/assets/minesweeper/
 
 function measure-worker() {
 	TMPFILE2=$(mktemp /tmp/measure.XXX.txt)
+	export TEST=1
 	/usr/bin/time --output=${TMPFILE2} --format="%e s\n%M kB" \
 				  $@ > /tmp/devnull
 	cat ${TMPFILE2} | tr "\n" " "

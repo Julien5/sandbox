@@ -39,12 +39,12 @@ namespace {
     }
 
     std::vector<size> create_bombs(const size &X, const size &Y, const size &N) {
-        std::cerr << "allocate: " << X * Y * sizeof(size) << " bytes\n";
         std::vector<size> positions(X * Y, 0);
         size i = 0;
         for (size x = 0; x != X; ++x) {
             for (size y = 0; y != Y; ++y) {
-                positions[i++] = y * X + x;
+                positions[i] = i;
+                i++;
             }
         }
         return FisherYatesShuffle(positions, N, X, Y);
@@ -53,6 +53,9 @@ namespace {
     Minesweeper create(const size &X, const size &Y, const size &N) {
         Minesweeper ret;
         ret.bombs = create_bombs(X, Y, N);
+        // for (auto &b : ret.bombs) {
+        //    printf("b=%d\n", int(b));
+        //}
         ret.grid = Grid(X * Y, EMPTY);
         ret.X = X;
         ret.Y = Y;
@@ -70,7 +73,7 @@ namespace {
         const auto X = M.X;
         const auto Y = M.Y;
         char lookup[16] = {0};
-        lookup[EMPTY] = '.';
+        lookup[EMPTY] = ' ';
         lookup[BOMB] = '*';
         for (size i = 1; i < 9; ++i) {
             assert(i != EMPTY);
@@ -83,11 +86,11 @@ namespace {
             output[4 * j + 4] = '|';
         }
         output[4 * X + 1] = '\n';
-        for (size i = 0; i < Y; ++i) {
-            for (size j = 0; j < X; ++j) {
-                const auto k = _1d(i, j, X, Y);
+        for (size iy = 0; iy < Y; ++iy) {
+            for (size ix = 0; ix < X; ++ix) {
+                const auto k = _1d(ix, iy, X, Y);
                 const auto g = grid[k];
-                output[4 * j + 2] = lookup[g];
+                output[4 * ix + 2] = lookup[g];
             }
             if (!quiet)
                 fwrite(output.data(), sizeof(char), 4 * X + 2, stdout);

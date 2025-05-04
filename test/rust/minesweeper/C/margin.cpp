@@ -34,7 +34,6 @@ namespace {
     }
 
     std::vector<size> create_bombs(const size &X, const size &Y, const size &N) {
-        std::cerr << "allocate: " << X * Y * sizeof(size) << " bytes\n";
         std::vector<size> positions(X * Y, 0);
         size i = 0;
         for (size x = 1; x != X + 1; ++x) {
@@ -65,7 +64,7 @@ namespace {
         const auto X = M.X;
         const auto Y = M.Y;
         char lookup[16] = {0};
-        lookup[EMPTY] = '.';
+        lookup[EMPTY] = ' ';
         lookup[BOMB] = '*';
         for (size i = 1; i < 9; ++i) {
             assert(i != EMPTY);

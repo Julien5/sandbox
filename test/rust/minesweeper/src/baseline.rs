@@ -78,6 +78,9 @@ pub fn main(N: usize, B: usize, quiet: bool) {
     let mut grid: Vec<usize> = vec![ZERO; N * N];
     log::info!("make bombs");
     let Bx = distinct_random_numbers(N * N, B);
+    //for p in &Bx {
+    //   println!("b={}", p);
+    // }
     for p in &Bx {
         grid[*p] = BOMB;
         increment_neighbors(&mut grid, N, *p);

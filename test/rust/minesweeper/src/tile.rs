@@ -97,7 +97,7 @@ impl Tile {
 
     pub fn print_counts(&self, printer: &mut Printer) {
         let print_lookup: [u8; 11] = [
-            b'.', b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', b'*', b' ',
+            b' ', b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', b'*', b' ',
         ];
         debug_assert!(!self.grid.is_empty());
         let mut output: Vec<u8> = prepare_output(self.X());

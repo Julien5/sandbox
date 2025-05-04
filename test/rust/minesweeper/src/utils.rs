@@ -47,12 +47,40 @@ pub fn make_printer(quiet: bool) -> Printer {
 
 use rand::{Rng, SeedableRng};
 
+struct Random {
+    xn: usize,
+    params: (usize, usize, usize),
+    rng: rand::rngs::StdRng,
+}
+
+impl Random {
+    pub fn new(rng: rand::rngs::StdRng) -> Random {
+        Random {
+            xn: 0,
+            params: (1664525usize, 1013904223usize, (2usize).pow(32)),
+            rng: rng,
+        }
+    }
+    fn range(&mut self, begin: usize, end: usize) -> usize {
+        match std::env::var("TEST") {
+            Ok(_) => {
+                let d = end - begin;
+                let (a, b, modulus) = self.params;
+                self.xn = (a * self.xn + b) % modulus;
+                return (begin + self.xn) % d;
+            }
+            _ => {}
+        }
+        self.rng.random_range(0..end)
+    }
+}
+
 pub fn fisher_yates_shuffle(mut positions: Vec<usize>, B: usize) -> Vec<usize> {
-    let mut rng = StdRng::seed_from_u64(3);
+    let mut random = Random::new(StdRng::seed_from_u64(3));
     let L = positions.len();
     for i in 0..B {
         let end = L - i;
-        let j = rng.random_range(0..end);
+        let j = random.range(0, end);
         positions.swap(j, end - 1);
     }
     let mut G: Vec<usize> = vec![0; B];

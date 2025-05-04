@@ -6,6 +6,7 @@
 #include <random>
 
 void log(const std::string &msg) {
+    return;
     // get a precise timestamp as a string
     const auto now = std::chrono::system_clock::now();
     const auto nowAsTimeT = std::chrono::system_clock::to_time_t(now);
@@ -19,17 +20,32 @@ void log(const std::string &msg) {
         << msg << std::endl;
 }
 
+struct Random {
+    size xn = 0;
+    size a = 1664525;
+    size b = 1013904223;
+    size modulus = std::pow(2, 32);
+    std::default_random_engine gen;
+    size range(const size &begin, const size &end) {
+        if (std::getenv("TEST")) {
+            auto d = end - begin;
+            xn = (a * xn + b) % modulus;
+            return (begin + xn) % d;
+        }
+        std::uniform_int_distribution<> dis(0, end);
+        return dis(this->gen);
+    }
+};
+
 // Fisher–Yates_shuffle
 std::vector<size> FisherYatesShuffle(std::vector<size> &positions, const size &count, const size &X, const size &Y) {
     const auto max_size = X * Y;
-    std::default_random_engine gen{static_cast<long unsigned int>(0)};
-    // std::random_device rd;
-    // std::minstd_rand0 gen(rd());
+    Random random;
+    random.gen = std::default_random_engine{static_cast<long unsigned int>(0)};
     for (size i = 0; i != count; ++i) {
-        const auto end = max_size - i - 1;
-        std::uniform_int_distribution<> dis(0, end);
-        const size j = dis(gen); // rand() % end; // dis(gen);
-        std::swap(positions[j], positions[end]);
+        const auto end = max_size - i;
+        const size j = random.range(0, end);
+        std::swap(positions[j], positions[end - 1]);
     }
     std::vector<size> ret(count);
     for (size i = 0; i != count; ++i) {

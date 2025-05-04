@@ -22,7 +22,7 @@ fn main() {
                 record.args()
             )
         })
-        .filter(None, log::LevelFilter::Trace)
+        .filter(None, log::LevelFilter::Off)
         .init();
 
     let args: Vec<String> = env::args().collect();
