@@ -19,3 +19,4 @@ delme
 
 Cargo.lock
 .dart_tool
+.vscode
