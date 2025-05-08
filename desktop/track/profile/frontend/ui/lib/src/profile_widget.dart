@@ -23,8 +23,8 @@ class ProfileWidgetState extends State<ProfileWidget> {
   Future<void> loadCircle() async {
     setState(() {
       isLoading = true;
-      svgData = null; 
-      errorMessage = null; 
+      svgData = null;
+      errorMessage = null;
     });
     try {
       final data = await svgCircle();
@@ -40,7 +40,7 @@ class ProfileWidgetState extends State<ProfileWidget> {
     }
   }
 
-  Future<void> loadProfile(Frontend frontend) async {   
+  Future<void> loadProfile(Frontend frontend) async {
     try {
       final data = await frontend.svg();
       setState(() {
@@ -58,27 +58,57 @@ class ProfileWidgetState extends State<ProfileWidget> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 500.0, 
+      width: 500.0,
       height: 250.0,
       child: Builder(
         builder: (context) {
           if (isLoading) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           } else if (errorMessage != null) {
             return Center(child: Text(errorMessage!));
           } else if (svgData != null) {
-            return SvgPicture.string(
-              svgData!,
-              width: 500,
-              height: 250,
-            );
+            return SvgPicture.string(svgData!, width: 500, height: 250);
           } else {
             return const Center(child: Text('No data available'));
           }
         },
       ),
+    );
+  }
+}
+
+class ProfileWidgets extends StatefulWidget {
+  const ProfileWidgets({super.key});
+
+  @override
+  State<ProfileWidgets> createState() => ProfileWidgetsState();
+}
+
+class ProfileWidgetsState extends State<ProfileWidgets> {
+  final GlobalKey<ProfileWidgetState> key1 = GlobalKey<ProfileWidgetState>();
+  final GlobalKey<ProfileWidgetState> key2 = GlobalKey<ProfileWidgetState>();
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  Future<void> loadProfile(Frontend frontend) async {
+    key2.currentState?.loadProfile(frontend);
+  }
+
+  Future<void> loadCircle() async {
+    key1.currentState?.loadCircle();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: <Widget>[
+        Container(width: 500, height: 250, color: Colors.blue),
+        ProfileWidget(key: key1),
+        ProfileWidget(key: key2),
+      ],
     );
   }
 }

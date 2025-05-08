@@ -12,24 +12,36 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  final GlobalKey<ProfileWidgetState> _profileKey =
-      GlobalKey<ProfileWidgetState>();      
+  final GlobalKey<ProfileWidgetsState> _profilesKey =
+      GlobalKey<ProfileWidgetsState>();
   Frontend? frontend;
 
   @override
-  void initState() { 
+  void initState() {
     super.initState();
     _initializeFrontend();
   }
 
   Future<void> _initializeFrontend() async {
+    _profilesKey.currentState?.loadCircle();
     final instance = await Frontend.create();
     setState(() {
       frontend = instance;
     });
   }
 
-  void _reloadProfile() {
+  void _makeMorePoints() {
+    if (frontend == null) {
+      developer.log(name: 'screen', "frontend is null");
+      return;
+    }
+    developer.log(name: 'screen', "frontend is not null");
+    Frontend f = frontend!;
+    f.changeParameter(eps: -10.0);
+    _profilesKey.currentState?.loadProfile(f);
+  }
+
+  void _makeLessPoints() {
     if (frontend == null) {
       developer.log(name: 'screen', "frontend is null");
       return;
@@ -37,7 +49,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     developer.log(name: 'screen', "frontend is not null");
     Frontend f = frontend!;
     f.changeParameter(eps: 10.0);
-    _profileKey.currentState?.loadProfile(f);
+    _profilesKey.currentState?.loadProfile(f);
   }
 
   @override
@@ -45,24 +57,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Column(
       children: [
         Container(
-          padding: const EdgeInsets.all(
-            16.0,
-          ), // Add padding around ProfileWidget
+          padding: const EdgeInsets.all(16.0),
           decoration: BoxDecoration(
-            border: Border.all(
-              color: Colors.blue,
-              width: 2.0,
-            ), // Add a blue border
-            borderRadius: BorderRadius.circular(
-              8.0,
-            ), // Optional: Rounded corners
+            border: Border.all(color: Colors.blue, width: 2.0),
+            borderRadius: BorderRadius.circular(8.0),
           ),
-          child: ProfileWidget(
-            key: _profileKey,
-          ), // ProfileWidget inside the container
+          child: ProfileWidgets(key: _profilesKey),
         ),
         const SizedBox(height: 60),
-        PressButton(onCounterPressed: _reloadProfile),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            PressButton(label: "more", onCounterPressed: _makeMorePoints),
+            const SizedBox(width: 32),
+            PressButton(label: "less", onCounterPressed: _makeLessPoints),
+          ],
+        ),
       ],
     );
   }
