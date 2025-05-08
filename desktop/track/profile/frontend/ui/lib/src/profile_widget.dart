@@ -17,7 +17,6 @@ class ProfileWidgetState extends State<ProfileWidget> {
   @override
   void initState() {
     super.initState();
-    loadCircle();
   }
 
   Future<void> loadCircle() async {
@@ -40,9 +39,24 @@ class ProfileWidgetState extends State<ProfileWidget> {
     }
   }
 
-  Future<void> loadProfile(Frontend frontend) async {
+  Future<void> loadTrackProfile(Frontend frontend) async {
     try {
-      final data = await frontend.svg();
+      final data = await frontend.svgTrack();
+      setState(() {
+        svgData = data;
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        errorMessage = 'Error: $e';
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> loadWaypointsProfile(Frontend frontend) async {
+    try {
+      final data = await frontend.svgWaypoints();
       setState(() {
         svgData = data;
         isLoading = false;
@@ -93,19 +107,23 @@ class ProfileWidgetsState extends State<ProfileWidgets> {
     super.initState();
   }
 
-  Future<void> loadProfile(Frontend frontend) async {
-    key2.currentState?.loadProfile(frontend);
+  Future<void> loadTrackProfile(Frontend frontend) async {
+    key1.currentState?.loadTrackProfile(frontend);
+  }
+
+  Future<void> loadWaypointsProfile(Frontend frontend) async {
+    key2.currentState?.loadWaypointsProfile(frontend);
   }
 
   Future<void> loadCircle() async {
-    key1.currentState?.loadCircle();
+    //key1.currentState?.loadCircle();
   }
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
-        Container(width: 500, height: 250, color: Colors.blue),
+        Container(width: 500, height: 250, color: const Color.fromARGB(255, 232, 238, 238)),
         ProfileWidget(key: key1),
         ProfileWidget(key: key2),
       ],

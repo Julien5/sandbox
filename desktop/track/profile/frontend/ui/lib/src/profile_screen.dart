@@ -24,32 +24,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _initializeFrontend() async {
     _profilesKey.currentState?.loadCircle();
-    final instance = await Frontend.create();
+    Frontend instance = await Frontend.create();
     setState(() {
       frontend = instance;
     });
+    _makeTrack();
+    _makeMorePoints();
+  }
+
+  void _makeTrack() {
+    if (frontend == null) {
+      developer.log(name: '_makeTrack', "frontend is null");
+      return;
+    }
+    developer.log(name: '_makeTrack', "frontend is not null");
+    Frontend f = frontend!;
+    f.changeParameter(eps: -10.0);
+    _profilesKey.currentState?.loadTrackProfile(f);
   }
 
   void _makeMorePoints() {
     if (frontend == null) {
-      developer.log(name: 'screen', "frontend is null");
+      developer.log(name: '_makeMorePoints', "frontend is null");
       return;
     }
-    developer.log(name: 'screen', "frontend is not null");
+    developer.log(name: '_makeMorePoints', "frontend is not null");
     Frontend f = frontend!;
     f.changeParameter(eps: -10.0);
-    _profilesKey.currentState?.loadProfile(f);
+    _profilesKey.currentState?.loadTrackProfile(f);
+    _profilesKey.currentState?.loadWaypointsProfile(f);
   }
 
   void _makeLessPoints() {
     if (frontend == null) {
-      developer.log(name: 'screen', "frontend is null");
+      developer.log(name: '_makeLessPoints', "frontend is null");
       return;
     }
-    developer.log(name: 'screen', "frontend is not null");
+    developer.log(name: '_makeLessPoints', "frontend is not null");
     Frontend f = frontend!;
     f.changeParameter(eps: 10.0);
-    _profilesKey.currentState?.loadProfile(f);
+    _profilesKey.currentState?.loadWaypointsProfile(f);
   }
 
   @override

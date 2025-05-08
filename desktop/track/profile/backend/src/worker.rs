@@ -7,6 +7,7 @@ use crate::gpsdata::WaypointOrigin;
 use crate::pdf;
 use crate::project;
 use crate::render;
+use crate::render::ViewBox;
 
 pub struct Backend {
     track: gpsdata::Track,
@@ -65,10 +66,19 @@ impl Backend {
     pub fn changeParameter(&mut self, delta: f32) {
         self.epsilon += delta;
     }
-    pub fn svg(&mut self) -> String {
+    pub fn svg_track(&mut self) -> String {
         println!("render");
         self.enrichWaypoints();
-        render::test_svg(&self.track, &self.waypoints)
+        let range = 0..self.track.len();
+        let viewBox = ViewBox::from_track(&self.track, &range);
+        render::track_profile(&self.track, &range, &viewBox)
+    }
+    pub fn svg_waypoints(&mut self) -> String {
+        println!("render");
+        self.enrichWaypoints();
+        let range = 0..self.track.len();
+        let viewBox = ViewBox::from_track(&self.track, &range);
+        render::waypoints_profile(&self.track, &self.waypoints, &range, &viewBox)
     }
 }
 
