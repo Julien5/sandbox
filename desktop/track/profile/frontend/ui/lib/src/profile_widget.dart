@@ -23,8 +23,8 @@ class ProfileWidgetState extends State<ProfileWidget> {
   Future<void> loadCircle() async {
     setState(() {
       isLoading = true;
-      svgData = null; // Clear previous SVG data
-      errorMessage = null; // Clear previous error message
+      svgData = null; 
+      errorMessage = null; 
     });
     try {
       final data = await svgCircle();
@@ -40,14 +40,8 @@ class ProfileWidgetState extends State<ProfileWidget> {
     }
   }
 
-  Future<void> loadProfile(Frontend frontend) async {
-    /*setState(() {
-      isLoading = true;
-      svgData = null; // Clear previous SVG data
-      errorMessage = null; // Clear previous error message
-    });*/
+  Future<void> loadProfile(Frontend frontend) async {   
     try {
-      //final data = await svgCircle();
       final data = await frontend.svg();
       setState(() {
         svgData = data;
@@ -64,13 +58,13 @@ class ProfileWidgetState extends State<ProfileWidget> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 500.0, // Fixed width
-      height: 250.0, // Fixed height
+      width: 500.0, 
+      height: 250.0,
       child: Builder(
         builder: (context) {
           if (isLoading) {
             return const Center(
-              child: CircularProgressIndicator(), // CircularProgressIndicator without extra SizedBox
+              child: CircularProgressIndicator(),
             );
           } else if (errorMessage != null) {
             return Center(child: Text(errorMessage!));

@@ -2,10 +2,10 @@ import 'dart:developer' as developer;
 
 import 'package:flutter/material.dart';
 
-class Counter extends StatelessWidget {
+class PressButton extends StatelessWidget {
   final VoidCallback? onCounterPressed;
 
-  const Counter({super.key, required this.onCounterPressed});
+  const PressButton({super.key, required this.onCounterPressed});
 
   @override
   Widget build(BuildContext context) {
