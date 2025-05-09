@@ -19,15 +19,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _initialize();
+    });
+  }
+
+  Future<void> _initialize() async {
+    developer.log("start loadCircle");    
+    await _profilesKey.currentState?.loadCircle();
+    while (_profilesKey.currentState == null || _profilesKey.currentState!.isLoading()) {
+       await Future.delayed(const Duration(milliseconds: 100));
+       developer.log("waiting");
+    }
     _initializeFrontend();
   }
 
   Future<void> _initializeFrontend() async {
-    _profilesKey.currentState?.loadCircle();
     Frontend instance = await Frontend.create();
     setState(() {
       frontend = instance;
     });
+    developer.log("make track and points");
     _makeTrack();
     _makeMorePoints();
   }

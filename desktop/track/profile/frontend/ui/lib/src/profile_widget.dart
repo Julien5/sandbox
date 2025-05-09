@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ui/src/rust/api/frontend.dart';
+import 'dart:developer' as developer;
 
 class ProfileWidget extends StatefulWidget {
   const ProfileWidget({super.key});
@@ -19,14 +20,16 @@ class ProfileWidgetState extends State<ProfileWidget> {
     super.initState();
   }
 
-  Future<void> loadCircle() async {
+  void loadCircle() async {
     setState(() {
       isLoading = true;
       svgData = null;
       errorMessage = null;
     });
     try {
+      developer.log("start loading circle");
       final data = await svgCircle();
+      developer.log("loaded circle");
       setState(() {
         svgData = data;
         isLoading = false;
@@ -105,6 +108,7 @@ class ProfileWidgetsState extends State<ProfileWidgets> {
   @override
   void initState() {
     super.initState();
+    loadCircle();
   }
 
   Future<void> loadTrackProfile(Frontend frontend) async {
@@ -116,7 +120,17 @@ class ProfileWidgetsState extends State<ProfileWidgets> {
   }
 
   Future<void> loadCircle() async {
-    //key1.currentState?.loadCircle();
+    key1.currentState?.loadCircle();
+  }
+
+  bool isLoading() {
+    if (key1.currentState == null) {
+      return true;
+    }
+    if (key2.currentState == null) {
+      return true;
+    }
+    return key1.currentState!.isLoading;
   }
 
   @override
