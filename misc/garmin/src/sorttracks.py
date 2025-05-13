@@ -142,7 +142,10 @@ def test_join_intervals():
 def remove_spurious_train_interval(intervals):
 	ret=[];
 	for interval in intervals:
-		if interval.typename == "train" and interval.end==interval.begin+1: # length=1
+		# not good yet:
+		# test on /home/julien/projects/tracks/5423206c7a9a35268c6d4fb9901cb1eb
+		# /home/julien/tracks/2025.05.11/Track_10-MAY-25 033018.gpx
+		if interval.typename == "train" and interval.end-interval.begin<2: # length=1
 			if ret:
 				ret[-1].end=interval.end;
 		else:
