@@ -25,13 +25,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _initialize() async {
-    developer.log("start loadCircle");    
+    developer.log("start loadCircle");
+    // this returns immediately
     await _profilesKey.currentState?.loadCircle();
-    while (_profilesKey.currentState == null || _profilesKey.currentState!.isLoading()) {
-       await Future.delayed(const Duration(milliseconds: 100));
-       developer.log("waiting");
-    }
-    _initializeFrontend();
+    setState(() {});
+    // so the track and points are drawn right away...
+    await _initializeFrontend();
+    // .. and the red circle is drawn on top.
+    // we need to pass _initializeFrontend as a callback to 
+    // the child widgets.
   }
 
   Future<void> _initializeFrontend() async {
