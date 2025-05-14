@@ -19,13 +19,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await _initialize();
-    });
-  }
-
-  Future<void> _initialize() async {
-    developer.log("start loadCircle");
     _initializeFrontend();
   }
 
@@ -40,10 +33,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _makeTrack() {
-    if (frontend == null) {
-      developer.log(name: '_makeTrack', "frontend is null");
-      return;
-    }
+    assert(frontend != null);
     developer.log(name: '_makeTrack', "frontend is not null");
     Frontend f = frontend!;
     f.changeParameter(eps: -10.0);
@@ -51,10 +41,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _makeMorePoints() {
-    if (frontend == null) {
-      developer.log(name: '_makeMorePoints', "frontend is null");
-      return;
-    }
+    assert(frontend != null);
     developer.log(name: '_makeMorePoints', "frontend is not null");
     Frontend f = frontend!;
     f.changeParameter(eps: -10.0);
