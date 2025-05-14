@@ -3,7 +3,7 @@
 use flutter_rust_bridge::frb;
 
 pub struct Frontend {
-    backend: Box<tracks::worker::Backend>,
+    backend: Box<tracks::backend::Backend>,
 }
 
 use std::{str::FromStr, time::Duration};
@@ -12,7 +12,7 @@ use tokio::time::sleep;
 impl Frontend {
     pub fn create() -> Frontend {
         Frontend {
-            backend: Box::new(tracks::worker::Backend::new()),
+            backend: Box::new(tracks::backend::Backend::new()),
         }
     }
     #[frb(sync)]
