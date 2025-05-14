@@ -64,7 +64,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.9.0';
 
   @override
-  int get rustContentHash => 1070445521;
+  int get rustContentHash => -128470910;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -82,9 +82,11 @@ abstract class RustLibApi extends BaseApi {
 
   Future<Frontend> crateApiFrontendFrontendCreate();
 
-  Future<String> crateApiFrontendFrontendSvgTrack({required Frontend that});
+  Future<String> crateApiFrontendFrontendRenderTrack({required Frontend that});
 
-  Future<String> crateApiFrontendFrontendSvgWaypoints({required Frontend that});
+  Future<String> crateApiFrontendFrontendRenderWaypoints({
+    required Frontend that,
+  });
 
   Future<void> crateApiFrontendInitApp();
 
@@ -169,7 +171,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       const TaskConstMeta(debugName: "Frontend_create", argNames: []);
 
   @override
-  Future<String> crateApiFrontendFrontendSvgTrack({required Frontend that}) {
+  Future<String> crateApiFrontendFrontendRenderTrack({required Frontend that}) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
@@ -189,18 +191,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_String,
           decodeErrorData: null,
         ),
-        constMeta: kCrateApiFrontendFrontendSvgTrackConstMeta,
+        constMeta: kCrateApiFrontendFrontendRenderTrackConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateApiFrontendFrontendSvgTrackConstMeta =>
-      const TaskConstMeta(debugName: "Frontend_svg_track", argNames: ["that"]);
+  TaskConstMeta get kCrateApiFrontendFrontendRenderTrackConstMeta =>
+      const TaskConstMeta(
+        debugName: "Frontend_renderTrack",
+        argNames: ["that"],
+      );
 
   @override
-  Future<String> crateApiFrontendFrontendSvgWaypoints({
+  Future<String> crateApiFrontendFrontendRenderWaypoints({
     required Frontend that,
   }) {
     return handler.executeNormal(
@@ -222,16 +227,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_String,
           decodeErrorData: null,
         ),
-        constMeta: kCrateApiFrontendFrontendSvgWaypointsConstMeta,
+        constMeta: kCrateApiFrontendFrontendRenderWaypointsConstMeta,
         argValues: [that],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateApiFrontendFrontendSvgWaypointsConstMeta =>
+  TaskConstMeta get kCrateApiFrontendFrontendRenderWaypointsConstMeta =>
       const TaskConstMeta(
-        debugName: "Frontend_svg_waypoints",
+        debugName: "Frontend_renderWaypoints",
         argNames: ["that"],
       );
 
@@ -558,9 +563,9 @@ class FrontendImpl extends RustOpaque implements Frontend {
   void changeParameter({required double eps}) => RustLib.instance.api
       .crateApiFrontendFrontendChangeParameter(that: this, eps: eps);
 
-  Future<String> svgTrack() =>
-      RustLib.instance.api.crateApiFrontendFrontendSvgTrack(that: this);
+  Future<String> renderTrack() =>
+      RustLib.instance.api.crateApiFrontendFrontendRenderTrack(that: this);
 
-  Future<String> svgWaypoints() =>
-      RustLib.instance.api.crateApiFrontendFrontendSvgWaypoints(that: this);
+  Future<String> renderWaypoints() =>
+      RustLib.instance.api.crateApiFrontendFrontendRenderWaypoints(that: this);
 }

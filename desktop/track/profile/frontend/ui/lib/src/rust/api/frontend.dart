@@ -15,7 +15,7 @@ abstract class Frontend implements RustOpaqueInterface {
   static Future<Frontend> create() =>
       RustLib.instance.api.crateApiFrontendFrontendCreate();
 
-  Future<String> svgTrack();
+  Future<String> renderTrack();
 
-  Future<String> svgWaypoints();
+  Future<String> renderWaypoints();
 }

@@ -19,10 +19,10 @@ impl Frontend {
     pub fn changeParameter(&mut self, eps: f32) {
         self.backend.changeParameter(eps);
     }
-    pub async fn svg_track(&mut self) -> String {
+    pub async fn renderTrack(&mut self) -> String {
         self.backend.svg_track()
     }
-    pub async fn svg_waypoints(&mut self) -> String {
+    pub async fn renderWaypoints(&mut self) -> String {
         self.backend.svg_waypoints()
     }
 }

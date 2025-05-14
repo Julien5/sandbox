@@ -38,7 +38,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.9.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 1070445521;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -128470910;
 
 // Section: executor
 
@@ -127,7 +127,7 @@ fn wire__crate__api__frontend__Frontend_create_impl(
         },
     )
 }
-fn wire__crate__api__frontend__Frontend_svg_track_impl(
+fn wire__crate__api__frontend__Frontend_renderTrack_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
@@ -135,7 +135,7 @@ fn wire__crate__api__frontend__Frontend_svg_track_impl(
 ) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
         flutter_rust_bridge::for_generated::TaskInfo {
-            debug_name: "Frontend_svg_track",
+            debug_name: "Frontend_renderTrack",
             port: Some(port_),
             mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
         },
@@ -174,7 +174,7 @@ fn wire__crate__api__frontend__Frontend_svg_track_impl(
                         }
                         let mut api_that_guard = api_that_guard.unwrap();
                         let output_ok = Result::<_, ()>::Ok(
-                            crate::api::frontend::Frontend::svg_track(&mut *api_that_guard).await,
+                            crate::api::frontend::Frontend::renderTrack(&mut *api_that_guard).await,
                         )?;
                         Ok(output_ok)
                     })()
@@ -184,7 +184,7 @@ fn wire__crate__api__frontend__Frontend_svg_track_impl(
         },
     )
 }
-fn wire__crate__api__frontend__Frontend_svg_waypoints_impl(
+fn wire__crate__api__frontend__Frontend_renderWaypoints_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
@@ -192,7 +192,7 @@ fn wire__crate__api__frontend__Frontend_svg_waypoints_impl(
 ) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
         flutter_rust_bridge::for_generated::TaskInfo {
-            debug_name: "Frontend_svg_waypoints",
+            debug_name: "Frontend_renderWaypoints",
             port: Some(port_),
             mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
         },
@@ -231,7 +231,7 @@ fn wire__crate__api__frontend__Frontend_svg_waypoints_impl(
                         }
                         let mut api_that_guard = api_that_guard.unwrap();
                         let output_ok = Result::<_, ()>::Ok(
-                            crate::api::frontend::Frontend::svg_waypoints(&mut *api_that_guard)
+                            crate::api::frontend::Frontend::renderWaypoints(&mut *api_that_guard)
                                 .await,
                         )?;
                         Ok(output_ok)
@@ -411,8 +411,10 @@ fn pde_ffi_dispatcher_primary_impl(
     // Codec=Pde (Serialization + dispatch), see doc to use other codecs
     match func_id {
         2 => wire__crate__api__frontend__Frontend_create_impl(port, ptr, rust_vec_len, data_len),
-        3 => wire__crate__api__frontend__Frontend_svg_track_impl(port, ptr, rust_vec_len, data_len),
-        4 => wire__crate__api__frontend__Frontend_svg_waypoints_impl(
+        3 => {
+            wire__crate__api__frontend__Frontend_renderTrack_impl(port, ptr, rust_vec_len, data_len)
+        }
+        4 => wire__crate__api__frontend__Frontend_renderWaypoints_impl(
             port,
             ptr,
             rust_vec_len,

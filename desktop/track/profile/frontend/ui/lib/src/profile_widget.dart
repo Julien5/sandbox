@@ -44,7 +44,7 @@ class ProfileWidgetState extends State<ProfileWidget> {
 
   Future<void> loadTrackProfile(Frontend frontend) async {
     try {
-      final data = await frontend.svgTrack();
+      final data = await frontend.renderTrack();
       setState(() {
         svgData = data;
         isLoading = false;
@@ -59,7 +59,7 @@ class ProfileWidgetState extends State<ProfileWidget> {
 
   Future<void> loadWaypointsProfile(Frontend frontend) async {
     try {
-      final data = await frontend.svgWaypoints();
+      final data = await frontend.renderWaypoints();
       setState(() {
         svgData = data;
         isLoading = false;
