@@ -26,3 +26,4 @@ Cargo.lock
 **/lib/src/rust
 .flutter*
 pubspec.lock
+**/.idea
