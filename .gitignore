@@ -20,3 +20,9 @@ delme
 Cargo.lock
 .dart_tool
 .vscode
+
+*frb_generated*
+
+**/lib/src/rust
+.flutter*
+pubspec.lock
