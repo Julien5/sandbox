@@ -3,6 +3,7 @@ import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ui/src/backendmodel.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 class TrackWidget extends StatefulWidget {
   final TrackData trackData;
@@ -17,7 +18,6 @@ class TrackWidgetState extends State<TrackWidget> {
   void initState() {
     super.initState();
     developer.log("TrackWidgetState init state");
-    ensureStart();
   }
 
   void ensureStart() {
@@ -26,55 +26,62 @@ class TrackWidgetState extends State<TrackWidget> {
     });
   }
 
+  void onVisibilityChanged(VisibilityInfo info) {
+    var visiblePercentage = info.visibleFraction * 100;
+    if (visiblePercentage >= 50) {
+      start();
+    }
+    debugPrint('${info.key} => $visiblePercentage% visible');
+  }
+
   void start() {
     if (!mounted) {
       return;
     }
     final renderings = Segment.of(context);
     if (widget.trackData == TrackData.track) {
-      if (renderings.track.needsStart()) {
-        renderings.track.start();
-      }
+      renderings.track.start();
     }
     if (widget.trackData == TrackData.waypoints) {
-      if (renderings.waypoints.needsStart()) {
-        renderings.waypoints.start();
-      }
+      renderings.waypoints.start();
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final renderings = Segment.of(context);
-    FutureRendering? sender;
+    FutureRendering? future;
     if (widget.trackData == TrackData.track) {
-      sender = renderings.track;
+      future = renderings.track;
     } else {
-      sender = renderings.waypoints;
+      future = renderings.waypoints;
     }
-    return ListenableBuilder(
-      listenable: sender,
-      builder: (context, _) {
-        return buildWorker(context, sender!);
-      },
+    return VisibilityDetector(
+      key: Key('id:${future.id()}'),
+      onVisibilityChanged: onVisibilityChanged,
+      child: ListenableBuilder(
+        listenable: future,
+        builder: (context, _) {
+          return LittleWidget(future: future!);
+        },
+      ),
     );
   }
+}
 
-  Widget? child;
+class LittleWidget extends StatelessWidget {
+  final FutureRendering future;
 
-  Widget buildWorker(BuildContext context, FutureRendering future) {
-    if (child == null) {
-      developer.log("START ${widget.trackData} ${future.id()}");
-      child = Text("START ${widget.trackData} ${future.segment.id()}");
-    }
+  const LittleWidget({super.key, required this.future});
 
+  @override
+  Widget build(BuildContext context) {
+    Widget child = Text("START ${future.segment.id()}");
     if (future.done()) {
-      developer.log("SVG DONE ${widget.trackData} ${future.id()}");
+      developer.log("SVG DONE ${future.id()}");
       child = SvgPicture.string(future.result(), width: 600, height: 150);
-    }
-    developer.log("TrackWidgetState buildWorker");
-    ensureStart();
-    return SizedBox(width: 600.0, child: Column(children: [child!]));
+    } 
+    return SizedBox(width: 600.0, child: Column(children: [child]));
   }
 }
 
@@ -98,3 +105,5 @@ class _SegmentStackState extends State<SegmentStack> {
     );
   }
 }
+
+
