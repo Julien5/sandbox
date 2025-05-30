@@ -1,12 +1,14 @@
 import 'dart:developer' as developer;
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:ui/src/backendmodel.dart';
 import 'package:ui/src/counter.dart';
 import 'package:ui/src/segment_stack.dart';
 
 class SegmentsWidget extends StatefulWidget {
-  const SegmentsWidget({super.key});
+  final SegmentsProvider? segmentsProvider;
+  const SegmentsWidget({super.key, this.segmentsProvider});
 
   @override
   State<SegmentsWidget> createState() => SegmentsWidgetState();
@@ -19,44 +21,11 @@ class SegmentsWidgetState extends State<SegmentsWidget> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      updateSegments();
-    });
   }
 
-  void postInit() {
-    if (provider != null) {
-      return;
-    }
-    provider = SegmentsProvider.of(context);
-    provider!.notifier.addListener(() {
-      onSegmentsChanged();
-    });
-  }
-
-  @override
-  void dispose() {
-    provider!.notifier.removeListener(() {
-      onSegmentsChanged();
-    });
-    super.dispose();
-  }
-
-  void onSegmentsChanged() {
-    updateSegments();
-  }
-
-  // called immediately after initState() with safe context.
-  @override
-  void didChangeDependencies() {
-    developer.log("[didChangeDependencies]");
-    postInit();
-    super.didChangeDependencies();
-  }
-
-  void updateSegments() {
-    var segmentsProvider = SegmentsProvider.of(context);
-    var S = segmentsProvider.segments();
+  void buildSegments() {
+    var segmentsProvider = widget.segmentsProvider;
+    var S = segmentsProvider!.segments();
     if (S.length != _segments.length) {
       _segments.clear();
       for (var segment in S) {
@@ -71,22 +40,22 @@ class SegmentsWidgetState extends State<SegmentsWidget> {
         segment.renderings.waypoints.reset();
       }
     }
-    setState(() {});
   }
 
   void makeMorePoints() {
-    var backend = SegmentsProvider.of(context);
+    var backend = widget.segmentsProvider!;
     backend.decrementDelta();
   }
 
   void makeLessPoints() {
-    var backend = SegmentsProvider.of(context);
+    var backend = widget.segmentsProvider!;
     backend.incrementDelta();
   }
 
   @override
   Widget build(BuildContext context) {
     developer.log("[segments] [build] #segments=${_segments.length}");
+    buildSegments();
     if (_segments.isEmpty) {
       return Text("segments is empty");
     }
@@ -109,5 +78,17 @@ class SegmentsWidgetState extends State<SegmentsWidget> {
         ),
       ],
     );
+  }
+}
+
+class SegmentConsumer extends StatelessWidget {
+  const SegmentConsumer({super.key});
+
+  @override
+  Widget build(BuildContext ctx) {
+   return Consumer<SegmentsProvider>(
+      builder: (context, segmentsProvider, child) {
+        return SegmentsWidget(segmentsProvider:segmentsProvider);
+      });
   }
 }

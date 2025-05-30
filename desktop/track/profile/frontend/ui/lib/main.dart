@@ -1,6 +1,7 @@
 import 'dart:developer' as developer;
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:ui/src/backendmodel.dart';
 import 'package:ui/src/rust/api/frontend.dart';
 import 'package:ui/src/rust/frb_generated.dart';
@@ -31,10 +32,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     var scaffold=Scaffold(
         appBar: AppBar(title: const Text('WPX')),
-        body: SegmentsWidget(key:ValueKey(frontend.epsilon())),
+        body: SegmentConsumer(),
       );
-    var home=SegmentsProvider(
-      notifier: FrontendNotifier(frontend: frontend),
+    var home=ChangeNotifierProvider(
+      create: (ctx) => SegmentsProvider(frontend),
       child: scaffold,
     );
 

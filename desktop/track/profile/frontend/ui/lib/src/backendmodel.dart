@@ -67,13 +67,7 @@ class FutureRendering with ChangeNotifier {
   }
 }
 
-class FrontendNotifier extends ChangeNotifier {
-  final Frontend frontend;
-  FrontendNotifier({required this.frontend});
-  void notify() {
-    notifyListeners();
-  }
-}
+
 
 class Renderings {
   final FutureRendering track;
@@ -105,39 +99,33 @@ class RenderingsProvider extends InheritedWidget {
   }
 }
 
-class SegmentsProvider extends InheritedWidget {
-  final FrontendNotifier notifier;
-  const SegmentsProvider({
-    super.key,
-    required super.child,
-    required this.notifier,
-  });
+class SegmentsProvider extends ChangeNotifier {
+  Frontend? _frontend;
 
-  Frontend _frontend() {
-    return notifier.frontend;
-  }
+  SegmentsProvider(  Frontend f  ){_frontend=f;}
+
 
   void incrementDelta() {
-    _frontend().changeParameter(eps: 10.0);
-    notifier.notify();
+    _frontend!.changeParameter(eps: 10.0);
+    notifyListeners();
   }
 
   void decrementDelta() {
-    _frontend().changeParameter(eps: -10.0);
-    notifier.notify();
+    _frontend!.changeParameter(eps: -10.0);
+     notifyListeners();
   }
 
   List<FSegment> segments() {
-    return _frontend().segments();
+    return _frontend!.segments();
   }
 
   String renderSegmentWaypointsSync(FSegment segment) {
-    return _frontend().renderSegmentWaypointsSync(segment: segment);
+    return _frontend!.renderSegmentWaypointsSync(segment: segment);
   }
 
   FutureRendering _renderSegmentWaypoints(FSegment segment) {
     return FutureRendering(
-      frontend: _frontend(),
+      frontend: _frontend!,
       segment: segment,
       trackData: TrackData.waypoints,
     );
@@ -145,7 +133,7 @@ class SegmentsProvider extends InheritedWidget {
 
   FutureRendering _renderSegmentTrack(FSegment segment) {
     return FutureRendering(
-      frontend: _frontend(),
+      frontend: _frontend!,
       segment: segment,
       trackData: TrackData.track,
     );
@@ -156,20 +144,5 @@ class SegmentsProvider extends InheritedWidget {
       track: _renderSegmentTrack(segment),
       waypoints: _renderSegmentWaypoints(segment),
     );
-  }
-  @override
-  bool updateShouldNotify(covariant SegmentsProvider oldWidget) {
-    // i dont understand this.
-    return true;
-  }
-
-  static SegmentsProvider? maybeOf(BuildContext context) {
-    return context.dependOnInheritedWidgetOfExactType<SegmentsProvider>();
-  }
-
-  static SegmentsProvider of(BuildContext context) {
-    final SegmentsProvider? ret = maybeOf(context);
-    assert(ret != null);
-    return ret!;
   }
 }
