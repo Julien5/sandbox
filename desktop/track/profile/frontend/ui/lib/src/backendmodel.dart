@@ -1,6 +1,7 @@
 import 'dart:developer' as developer;
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:ui/src/rust/api/frontend.dart';
 
 enum TrackData { track, waypoints }
@@ -9,6 +10,7 @@ class FutureRendering with ChangeNotifier {
   final FSegment segment;
   final TrackData trackData;
   final Frontend _frontend;
+
   Future<String>? _future;
   String? _result;
 
@@ -19,6 +21,7 @@ class FutureRendering with ChangeNotifier {
   }) : _frontend = frontend;
 
   void start() {
+    _result = null;
     developer.log("START rendering for ${segment.id()} $trackData");
     if (trackData == TrackData.track) {
       _future = _frontend.renderSegmentTrack(segment: segment);
@@ -31,15 +34,6 @@ class FutureRendering with ChangeNotifier {
 
   BigInt id() {
     return segment.id();
-  }
-
-  void reset() {
-    _future = null;
-    _result = null;
-    developer.log(
-      "[future rendering] notify for id ${segment.id()} and $trackData",
-    );
-    notifyListeners();
   }
 
   bool started() {
@@ -67,47 +61,52 @@ class FutureRendering with ChangeNotifier {
   }
 }
 
-
-
-class Renderings {
-  final FutureRendering track;
-  final FutureRendering waypoints;
-  const Renderings({
-    required this.track,
-    required this.waypoints,
-  });
-  BigInt id() {
-    return track.segment.id();
-  }
+class TrackRendering extends FutureRendering {
+  TrackRendering(Frontend frontend, FSegment segment)
+    : super(frontend: frontend, segment: segment, trackData: TrackData.track);
 }
 
-class RenderingsProvider extends InheritedWidget {
-  final Renderings renderings;
-  const RenderingsProvider({super.key, required super.child, required this.renderings});
+class WaypointsRendering extends FutureRendering {
+  double visibility = 0;
+  WaypointsRendering(Frontend frontend, FSegment segment)
+    : super(
+        frontend: frontend,
+        segment: segment,
+        trackData: TrackData.waypoints,
+      );
 
-  @override
-  bool updateShouldNotify(covariant InheritedWidget oldWidget) {
-    // i dont understand this.
-
-    assert(false);
-    return true;
+  void updateVisibility(double v) {
+    visibility = v;
+    _update();
   }
-  static RenderingsProvider of(BuildContext context) {
-    final RenderingsProvider? ret = context.dependOnInheritedWidgetOfExactType<RenderingsProvider>();
-    assert(ret != null);
-    return ret!;
+
+  void reset() {
+    _future = null;
+    _result = null;
+    developer.log(
+      "[future rendering] notify for id ${segment.id()} and $trackData",
+    );
+    _update();
+  }
+
+  void _update() {
+    if (visibility < 0.5) {
+      return;
+    }
+    if (needsStart()) {
+      start();
+    }
   }
 }
 
 class SegmentsProvider extends ChangeNotifier {
   Frontend? _frontend;
-  List<FSegment> _segments=[];
+  List<FSegment> _segments = [];
 
-  SegmentsProvider(  Frontend f  ){
-    _frontend=f;
+  SegmentsProvider(Frontend f) {
+    _frontend = f;
     _updateSegments();
   }
-
 
   void incrementDelta() {
     _frontend!.changeParameter(eps: 10.0);
@@ -120,7 +119,7 @@ class SegmentsProvider extends ChangeNotifier {
   }
 
   void _updateSegments() {
-    _segments=_frontend!.segments();
+    _segments = _frontend!.segments();
     notifyListeners();
   }
 
@@ -132,26 +131,29 @@ class SegmentsProvider extends ChangeNotifier {
     return _frontend!.renderSegmentWaypointsSync(segment: segment);
   }
 
-  FutureRendering _renderSegmentWaypoints(FSegment segment) {
-    return FutureRendering(
-      frontend: _frontend!,
-      segment: segment,
-      trackData: TrackData.waypoints,
-    );
+  Renderings createRenderings(FSegment segment, Widget child) {
+    TrackRendering track = TrackRendering(_frontend!, segment);
+    WaypointsRendering waypoints = WaypointsRendering(_frontend!, segment);
+    return Renderings(track, waypoints, child);
   }
+}
 
-  FutureRendering _renderSegmentTrack(FSegment segment) {
-    return FutureRendering(
-      frontend: _frontend!,
-      segment: segment,
-      trackData: TrackData.track,
-    );
-  }
+class Renderings extends MultiProvider {
+  final WaypointsRendering waypointsRendering;
+  final TrackRendering trackRendering;
 
-  Renderings createRenderings(FSegment segment) {
-    return Renderings(
-      track: _renderSegmentTrack(segment),
-      waypoints: _renderSegmentWaypoints(segment),
-    );
-  }
+  Renderings(
+    TrackRendering track,
+    WaypointsRendering waypoints,
+    Widget child, {
+    super.key,
+  }) : waypointsRendering = waypoints,
+       trackRendering = track,
+       super(
+         providers: [
+           ChangeNotifierProvider.value(value: track),
+           ChangeNotifierProvider.value(value: waypoints),
+         ],
+         child: child,
+       );
 }

@@ -14,13 +14,15 @@ class SegmentsWidget extends StatefulWidget {
   State<SegmentsWidget> createState() => SegmentsWidgetState();
 }
 
+
 class SegmentsWidgetState extends State<SegmentsWidget> {
-  final List<RenderingsProvider> _segments = [];
+  final List<Renderings> _segments = [];
   SegmentsProvider? provider;
 
   @override
   void initState() {
     super.initState();
+    provider=widget.segmentsProvider;
   }
 
   void _buildSegments() {
@@ -29,15 +31,14 @@ class SegmentsWidgetState extends State<SegmentsWidget> {
     if (S.length != _segments.length) {
       _segments.clear();
       for (var segment in S) {
-        var provider = RenderingsProvider(
-          renderings: segmentsProvider.createRenderings(segment),
-          child: SegmentStack(),
-        );
-        _segments.add(provider);
+        var w=provider!.createRenderings(segment,SegmentStack());
+        w.trackRendering.start();
+        w.waypointsRendering.start();
+        _segments.add(w);
       }
     } else {
       for (var segment in _segments) {
-        segment.renderings.waypoints.reset();
+        segment.waypointsRendering.reset();
       }
     }
   }
