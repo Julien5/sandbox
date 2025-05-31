@@ -23,7 +23,7 @@ class SegmentsWidgetState extends State<SegmentsWidget> {
     super.initState();
   }
 
-  void buildSegments() {
+  void _buildSegments() {
     var segmentsProvider = widget.segmentsProvider;
     var S = segmentsProvider!.segments();
     if (S.length != _segments.length) {
@@ -55,7 +55,7 @@ class SegmentsWidgetState extends State<SegmentsWidget> {
   @override
   Widget build(BuildContext context) {
     developer.log("[segments] [build] #segments=${_segments.length}");
-    buildSegments();
+    _buildSegments();
     if (_segments.isEmpty) {
       return Text("segments is empty");
     }
@@ -81,14 +81,15 @@ class SegmentsWidgetState extends State<SegmentsWidget> {
   }
 }
 
-class SegmentConsumer extends StatelessWidget {
-  const SegmentConsumer({super.key});
+class SegmentsConsumer extends StatelessWidget {
+  const SegmentsConsumer({super.key});
 
   @override
   Widget build(BuildContext ctx) {
-   return Consumer<SegmentsProvider>(
+    return Consumer<SegmentsProvider>(
       builder: (context, segmentsProvider, child) {
-        return SegmentsWidget(segmentsProvider:segmentsProvider);
-      });
+        return SegmentsWidget(segmentsProvider: segmentsProvider);
+      },
+    );
   }
 }

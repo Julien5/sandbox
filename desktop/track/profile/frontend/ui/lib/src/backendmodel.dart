@@ -101,22 +101,31 @@ class RenderingsProvider extends InheritedWidget {
 
 class SegmentsProvider extends ChangeNotifier {
   Frontend? _frontend;
+  List<FSegment> _segments=[];
 
-  SegmentsProvider(  Frontend f  ){_frontend=f;}
+  SegmentsProvider(  Frontend f  ){
+    _frontend=f;
+    _updateSegments();
+  }
 
 
   void incrementDelta() {
     _frontend!.changeParameter(eps: 10.0);
-    notifyListeners();
+    _updateSegments();
   }
 
   void decrementDelta() {
     _frontend!.changeParameter(eps: -10.0);
-     notifyListeners();
+    _updateSegments();
+  }
+
+  void _updateSegments() {
+    _segments=_frontend!.segments();
+    notifyListeners();
   }
 
   List<FSegment> segments() {
-    return _frontend!.segments();
+    return _segments;
   }
 
   String renderSegmentWaypointsSync(FSegment segment) {
