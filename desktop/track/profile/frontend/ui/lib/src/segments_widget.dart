@@ -14,31 +14,31 @@ class SegmentsWidget extends StatefulWidget {
   State<SegmentsWidget> createState() => SegmentsWidgetState();
 }
 
-
 class SegmentsWidgetState extends State<SegmentsWidget> {
-  final List<Renderings> _segments = [];
-  SegmentsProvider? provider;
+  final List<RenderingsProvider> _segments = [];
 
   @override
   void initState() {
     super.initState();
-    provider=widget.segmentsProvider;
   }
 
-  void _buildSegments() {
+  @override
+  void didChangeDependencies() {
+    SegmentsProvider p = Provider.of<SegmentsProvider>(context, listen: false);
+    _initRenderingProviders(p);
+    super.didChangeDependencies();
+  }
+
+  void _initRenderingProviders(SegmentsProvider segmentsProvider) {
     var segmentsProvider = widget.segmentsProvider;
     var S = segmentsProvider!.segments();
     if (S.length != _segments.length) {
       _segments.clear();
       for (var segment in S) {
-        var w=provider!.createRenderings(segment,SegmentStack());
+        var w = segmentsProvider.createRenderings(segment, SegmentStack());
         w.trackRendering.start();
         w.waypointsRendering.start();
         _segments.add(w);
-      }
-    } else {
-      for (var segment in _segments) {
-        segment.waypointsRendering.reset();
       }
     }
   }
@@ -46,17 +46,24 @@ class SegmentsWidgetState extends State<SegmentsWidget> {
   void makeMorePoints() {
     var backend = widget.segmentsProvider!;
     backend.decrementDelta();
+    updateWaypoints();
   }
 
   void makeLessPoints() {
     var backend = widget.segmentsProvider!;
     backend.incrementDelta();
+    updateWaypoints();
+  }
+
+  void updateWaypoints() {
+    for (var segment in _segments) {
+      segment.waypointsRendering.reset();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     developer.log("[segments] [build] #segments=${_segments.length}");
-    _buildSegments();
     if (_segments.isEmpty) {
       return Text("segments is empty");
     }

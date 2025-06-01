@@ -6,18 +6,8 @@ import 'package:ui/src/backendmodel.dart';
 import 'package:ui/src/future_rendering_widget.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
-class SegmentStack extends StatefulWidget {
+class SegmentStack extends StatelessWidget {
   const SegmentStack({super.key});
-
-  @override
-  State<SegmentStack> createState() => _SegmentStackState();
-}
-
-class _SegmentStackState extends State<SegmentStack> {
-  @override
-  void initState() {
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,11 +39,11 @@ class _WaypointsConsumerState extends State<WaypointsConsumer> {
   double visibility = 0;
 
   void onVisibilityChanged(VisibilityInfo info) {
-    developer.log("[on vis changed] ${info.visibleFraction}");
     if (!mounted) {
       return;
     }
     WaypointsRendering wp=Provider.of<WaypointsRendering>(context,listen:false);
+    developer.log("[waypoint consumer] id:${wp.id()} vis:${info.visibleFraction}");
     wp.updateVisibility(info.visibleFraction);
   }
 
@@ -61,6 +51,9 @@ class _WaypointsConsumerState extends State<WaypointsConsumer> {
   Widget build(BuildContext ctx) {
     return Consumer<WaypointsRendering>(
       builder: (context, waypointsRendering, child) {
+        // It would be more accurate to check visibility with a scroll controller
+        // at the list view level. Because "Callbacks are not fired immediately 
+        // on visibility changes."
         return VisibilityDetector(
           key: Key('id:${waypointsRendering.id()}'),
           onVisibilityChanged: onVisibilityChanged,

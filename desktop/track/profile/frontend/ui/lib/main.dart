@@ -6,18 +6,10 @@ import 'package:ui/src/backendmodel.dart';
 import 'package:ui/src/rust/api/frontend.dart';
 import 'package:ui/src/rust/frb_generated.dart';
 import 'package:ui/src/segments_widget.dart';
-import 'package:window_size/window_size.dart';
 
 Future<void> main() async {
   developer.log("START");
   WidgetsFlutterBinding.ensureInitialized();
-  
-  if (Platform.isLinux || Platform.isMacOS || Platform.isWindows) {
-    setWindowTitle('WPX');
-    setWindowMinSize(const Size(700, 400));
-    setWindowMaxSize(const Size(700, 400));
-  }
-  
   await RustLib.init();
   Frontend instance = await Frontend.create();
   developer.log("frontend loaded");
