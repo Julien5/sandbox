@@ -28,12 +28,12 @@ class _FutureRenderingWidgetState extends State<FutureRenderingWidget> {
       svg = SvgPicture.string(widget.future.result(), width: 600, height: 150);
     }
     if (!widget.future.done() && svg == null) {
-      return Text("starting");
+      return Text("starting ${widget.future.trackData} ${widget.future.id()}");
     }
 
     if (!widget.future.done()) {
       return Stack(
-        children: <Widget>[grayBackground(),Text("loading ${widget.future.id()}"), svg!],
+        children: <Widget>[grayBackground(),Text("updating ${widget.future.trackData} ${widget.future.id()}"), svg!],
       );
     }
     return svg!;

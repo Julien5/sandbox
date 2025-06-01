@@ -20,7 +20,7 @@ class TrackConsumer extends StatelessWidget {
 
   @override
   Widget build(BuildContext ctx) {
-    return Consumer<TrackRendering>(
+    return Consumer<TrackRenderer>(
       builder: (context, trackRendering, child) {
         return FutureRenderingWidget(future: trackRendering);
       },
@@ -42,14 +42,14 @@ class _WaypointsConsumerState extends State<WaypointsConsumer> {
     if (!mounted) {
       return;
     }
-    WaypointsRendering wp=Provider.of<WaypointsRendering>(context,listen:false);
+    WaypointsRenderer wp=Provider.of<WaypointsRenderer>(context,listen:false);
     developer.log("[waypoint consumer] id:${wp.id()} vis:${info.visibleFraction}");
     wp.updateVisibility(info.visibleFraction);
   }
 
   @override
   Widget build(BuildContext ctx) {
-    return Consumer<WaypointsRendering>(
+    return Consumer<WaypointsRenderer>(
       builder: (context, waypointsRendering, child) {
         // It would be more accurate to check visibility with a scroll controller
         // at the list view level. Because "Callbacks are not fired immediately 

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:ui/src/rust/api/frontend.dart';
@@ -58,14 +57,14 @@ class FutureRenderer with ChangeNotifier {
   }
 }
 
-class TrackRendering extends FutureRenderer {
-  TrackRendering(Frontend frontend, FSegment segment)
+class TrackRenderer extends FutureRenderer {
+  TrackRenderer(Frontend frontend, FSegment segment)
     : super(frontend: frontend, segment: segment, trackData: TrackData.track);
 }
 
-class WaypointsRendering extends FutureRenderer {
+class WaypointsRenderer extends FutureRenderer {
   double visibility = 0;
-  WaypointsRendering(Frontend frontend, FSegment segment)
+  WaypointsRenderer(Frontend frontend, FSegment segment)
     : super(
         frontend: frontend,
         segment: segment,
@@ -93,9 +92,34 @@ class WaypointsRendering extends FutureRenderer {
   }
 }
 
+class Renderers {
+  final TrackRenderer trackRendering;
+  final WaypointsRenderer waypointsRendering;
+  Renderers(TrackRenderer track, WaypointsRenderer waypoints)
+    : trackRendering = track,
+      waypointsRendering = waypoints;
+}
+
+class RenderingsProvider extends MultiProvider {
+  final Renderers renderers;
+
+  RenderingsProvider(
+    Renderers r,
+    Widget child, {
+    super.key,
+  }) : renderers = r,
+       super(
+         providers: [
+           ChangeNotifierProvider.value(value: r.trackRendering),
+           ChangeNotifierProvider.value(value: r.waypointsRendering),
+         ],
+         child: child,
+       );
+}
+
 class SegmentsProvider extends ChangeNotifier {
   Frontend? _frontend;
-  List<FSegment> _segments = [];
+  final List<Renderers> _segments = [];
 
   SegmentsProvider(Frontend f) {
     _frontend = f;
@@ -113,41 +137,27 @@ class SegmentsProvider extends ChangeNotifier {
   }
 
   void _updateSegments() {
-    _segments = _frontend!.segments();
+    var segments = _frontend!.segments();
+    assert(_segments.isEmpty || _segments.length == segments.length);
+    if (_segments.isEmpty) {
+      for(var segment in segments) {
+        var t=TrackRenderer(_frontend!,segment);
+        var w=WaypointsRenderer(_frontend!,segment);
+        _segments.add(Renderers(t,w));
+      }
+    } else {
+      for(var renderers in _segments) {
+        renderers.waypointsRendering.reset();
+      }
+    }
     notifyListeners();
   }
 
-  List<FSegment> segments() {
+  List<Renderers> segments() {
     return _segments;
   }
 
   String renderSegmentWaypointsSync(FSegment segment) {
     return _frontend!.renderSegmentWaypointsSync(segment: segment);
   }
-
-  RenderingsProvider createRenderings(FSegment segment, Widget child) {
-    TrackRendering track = TrackRendering(_frontend!, segment);
-    WaypointsRendering waypoints = WaypointsRendering(_frontend!, segment);
-    return RenderingsProvider(track, waypoints, child);
-  }
-}
-
-class RenderingsProvider extends MultiProvider {
-  final WaypointsRendering waypointsRendering;
-  final TrackRendering trackRendering;
-
-  RenderingsProvider(
-    TrackRendering track,
-    WaypointsRendering waypoints,
-    Widget child, {
-    super.key,
-  }) : waypointsRendering = waypoints,
-       trackRendering = track,
-       super(
-         providers: [
-           ChangeNotifierProvider.value(value: track),
-           ChangeNotifierProvider.value(value: waypoints),
-         ],
-         child: child,
-       );
 }
