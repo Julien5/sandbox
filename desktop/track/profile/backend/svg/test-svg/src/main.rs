@@ -33,11 +33,12 @@ fn _testpath() -> Data {
     Data::new().move_to((0, 0)).line_to((20, 20))
 }
 
+fn rect(id: &str, color: &str, data: Data) -> Rect {
+    Rect::new().set("id", id).set("fill", color).set("d", data)
+}
+
 fn simplerect(id: &str, color: &str, W: i32, H: i32) -> Rect {
-    Rect::new()
-        .set("id", id)
-        .set("fill", color)
-        .set("d", simple(W, H))
+    rect(id, color, simple(W, H))
 }
 
 fn simpleblackrect(id: &str, W: i32, H: i32) -> Rect {
@@ -45,10 +46,7 @@ fn simpleblackrect(id: &str, W: i32, H: i32) -> Rect {
 }
 
 fn bbrect(id: &str, color: &str, TL: (i32, i32), BR: (i32, i32)) -> Rect {
-    Rect::new()
-        .set("id", id)
-        .set("fill", color)
-        .set("d", bbox(TL, BR))
+    rect(id, color, bbox(TL, BR))
 }
 
 fn testpath() -> Rect {
