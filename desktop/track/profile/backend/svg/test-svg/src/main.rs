@@ -59,7 +59,7 @@ fn main() {
     use svg::Document;
 
     let W = 600;
-    let H = 300;
+    let H = 600;
     let Mleft = 100;
     let Mbottom = 100;
 
@@ -69,20 +69,26 @@ fn main() {
 
     let SL = Group::new()
         .set("id", "SL")
-        .set("transform", "translate(100 200) scale(-1 -1)")
+        .set(
+            "transform",
+            format!("translate({} {}) scale(-1 -1)", Mleft, H - Mbottom),
+        )
         .add(bbrect("bg", "gray", (0, -Mbottom), (Mleft, H - Mbottom)))
         .add(testpath());
 
     let SB = Group::new()
         .set("id", "SB")
-        .set("transform", "translate(100 200)")
+        .set("transform", format!("translate({} {})", Mleft, H - Mbottom))
         .add(bbrect("bg", "lightgray", (0, 0), (W - Mleft, Mbottom)))
         .add(testpath());
 
     let SD = Group::new()
         .set("id", "SB")
-        .set("transform", "translate(100 200) scale(1 -1)")
-        .add(bbrect("bg", "lightblue", (0, 0), (500, 200)))
+        .set(
+            "transform",
+            format!("translate({} {}) scale(1 -1)", Mleft, H - Mbottom),
+        )
+        .add(bbrect("bg", "lightblue", (0, 0), (W - Mleft, H - Mbottom)))
         .add(testpath());
 
     let world = Group::new()
