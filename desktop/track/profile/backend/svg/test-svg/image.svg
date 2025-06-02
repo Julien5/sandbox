@@ -1,20 +1,20 @@
 <svg height="700" viewBox="0 0 700 700" width="700" xmlns="http://www.w3.org/2000/svg">
 <path d="M0,0 L1000,0 L1000,1000 L0,1000 L0,0" fill="black" id="world"/>
 <g id="world" transform="translate(50 50)">
-<path d="M0,0 L600,0 L600,600 L0,600 L0,0" fill="black" id="world"/>
+<path d="M0,0 L600,0 L600,400 L0,400 L0,0" fill="black" id="world"/>
 <g id="frame">
-<path d="M0,0 L0,600 L600,600 L600,0 L0,0" fill="red" id="bg"/>
+<path d="M0,0 L0,400 L600,400 L600,0 L0,0" fill="red" id="bg"/>
 </g>
-<g id="SL" transform="translate(100 500) scale(-1 -1)">
-<path d="M0,-100 L0,500 L100,500 L100,-100 L0,-100" fill="gray" id="bg"/>
+<g id="SL" transform="translate(100 300) scale(-1 -1)">
+<path d="M0,-100 L0,300 L100,300 L100,-100 L0,-100" fill="gray" id="bg"/>
 <path d="M0,0 L20,20" fill="yellow" id="test" stroke="yellow" stroke-width="4"/>
 </g>
-<g id="SB" transform="translate(100 500)">
+<g id="SB" transform="translate(100 300)">
 <path d="M0,0 L0,100 L500,100 L500,0 L0,0" fill="lightgray" id="bg"/>
 <path d="M0,0 L20,20" fill="yellow" id="test" stroke="yellow" stroke-width="4"/>
 </g>
-<g id="SB" transform="translate(100 500) scale(1 -1)">
-<path d="M0,0 L0,500 L500,500 L500,0 L0,0" fill="lightblue" id="bg"/>
+<g id="SB" transform="translate(100 300) scale(1 -1)">
+<path d="M0,0 L0,300 L500,300 L500,0 L0,0" fill="lightblue" id="bg"/>
 <path d="M0,0 L20,20" fill="yellow" id="test" stroke="yellow" stroke-width="4"/>
 </g>
 </g>

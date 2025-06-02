@@ -55,11 +55,23 @@ fn testpath() -> Rect {
         .set("d", _testpath())
 }
 
+fn transformSL(W: i32, H: i32, Mleft: i32, Mbottom: i32) -> String {
+    format!("translate({} {}) scale(-1 -1)", Mleft, H - Mbottom)
+}
+
+fn transformSB(W: i32, H: i32, Mleft: i32, Mbottom: i32) -> String {
+    format!("translate({} {})", Mleft, H - Mbottom)
+}
+
+fn transformSD(W: i32, H: i32, Mleft: i32, Mbottom: i32) -> String {
+    format!("translate({} {}) scale(1 -1)", Mleft, H - Mbottom)
+}
+
 fn main() {
     use svg::Document;
 
     let W = 600;
-    let H = 600;
+    let H = 400;
     let Mleft = 100;
     let Mbottom = 100;
 
@@ -69,25 +81,19 @@ fn main() {
 
     let SL = Group::new()
         .set("id", "SL")
-        .set(
-            "transform",
-            format!("translate({} {}) scale(-1 -1)", Mleft, H - Mbottom),
-        )
+        .set("transform", transformSL(W, H, Mleft, Mbottom))
         .add(bbrect("bg", "gray", (0, -Mbottom), (Mleft, H - Mbottom)))
         .add(testpath());
 
     let SB = Group::new()
         .set("id", "SB")
-        .set("transform", format!("translate({} {})", Mleft, H - Mbottom))
+        .set("transform", transformSB(W, H, Mleft, Mbottom))
         .add(bbrect("bg", "lightgray", (0, 0), (W - Mleft, Mbottom)))
         .add(testpath());
 
     let SD = Group::new()
         .set("id", "SB")
-        .set(
-            "transform",
-            format!("translate({} {}) scale(1 -1)", Mleft, H - Mbottom),
-        )
+        .set("transform", transformSD(W, H, Mleft, Mbottom))
         .add(bbrect("bg", "lightblue", (0, 0), (W - Mleft, H - Mbottom)))
         .add(testpath());
 
