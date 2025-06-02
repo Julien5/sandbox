@@ -5,6 +5,11 @@ extern crate svg;
 type Data = svg::node::element::path::Data;
 type Group = svg::node::element::Group;
 type Rect = svg::node::element::Path;
+type Path = svg::node::element::Path;
+
+fn line(p1: (i32, i32), p2: (i32, i32)) -> Data {
+    Data::new().move_to(p1).line_to(p2)
+}
 
 fn simple(W: i32, H: i32) -> Data {
     Data::new()
@@ -55,18 +60,33 @@ fn testpath() -> Rect {
         .set("d", _testpath())
 }
 
-fn transformSL(W: i32, H: i32, Mleft: i32, Mbottom: i32) -> String {
+fn transformSL(_W: i32, H: i32, Mleft: i32, Mbottom: i32) -> String {
     format!("translate({} {}) scale(-1 -1)", Mleft, H - Mbottom)
 }
 
-fn transformSB(W: i32, H: i32, Mleft: i32, Mbottom: i32) -> String {
+fn transformSB(_W: i32, H: i32, Mleft: i32, Mbottom: i32) -> String {
     format!("translate({} {})", Mleft, H - Mbottom)
 }
 
-fn transformSD(W: i32, H: i32, Mleft: i32, Mbottom: i32) -> String {
+fn transformSD(_W: i32, H: i32, Mleft: i32, Mbottom: i32) -> String {
     format!("translate({} {}) scale(1 -1)", Mleft, H - Mbottom)
 }
 
+fn dashed(from: (i32, i32), to: (i32, i32)) -> Group {
+    let p = Path::new()
+        .set("stroke", "black")
+        .set("stroke-dasharray", "1.0,2.5,5.0,5.0,10.0,5.0")
+        .set("stroke-dasharray", "1.0,2.5,5.0,5.0,10.0,5.0")
+        .set("d", line(from, to));
+
+    Group::new()
+        .set("fill", "none")
+        .set("color", "black")
+        .set("stroke-width", "1")
+        .set("stroke-linecap", "butt")
+        .set("stroke-linejoin", "miter")
+        .add(p)
+}
 fn main() {
     use svg::Document;
 
@@ -95,25 +115,23 @@ fn main() {
         .set("id", "SB")
         .set("transform", transformSD(W, H, Mleft, Mbottom))
         .add(bbrect("bg", "lightblue", (0, 0), (W - Mleft, H - Mbottom)))
-        .add(testpath());
+        .add(testpath())
+        .add(dashed((0, 100), (W - Mleft, 100)));
 
     let world = Group::new()
         .set("id", "world")
-        .set("transform", "translate(50 50)")
+        .set("transform", "translate(5 5)")
         .add(simpleblackrect("world", W, H))
         .add(BG)
         .add(SL)
         .add(SB)
         .add(SD);
 
-    let Wm = W + 400;
-    let Hm = H + 700;
-
     let document = Document::new()
         .set("width", 700)
         .set("height", 700)
         .set("viewBox", (0, 0, 700, 700))
-        .add(simpleblackrect("world", 1000, 1000))
+        .add(simpleblackrect("table", 700, 700))
         .add(world);
 
     svg::save("image.svg", &document).unwrap();
