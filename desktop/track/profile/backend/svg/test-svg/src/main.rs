@@ -6,6 +6,7 @@ type Data = svg::node::element::path::Data;
 type Group = svg::node::element::Group;
 type Rect = svg::node::element::Path;
 type Path = svg::node::element::Path;
+type Text = svg::node::element::Text;
 
 fn line(p1: (i32, i32), p2: (i32, i32)) -> Data {
     Data::new().move_to(p1).line_to(p2)
@@ -66,7 +67,7 @@ fn transformSB(_W: i32, H: i32, Mleft: i32, Mbottom: i32) -> String {
     format!("translate({} {})", Mleft, H - Mbottom)
 }
 
-fn transformSD(_W: i32, H: i32, Mleft: i32, Mbottom: i32, WD: i32) -> String {
+fn transformSD(_W: i32, H: i32, Mleft: i32, Mbottom: i32, _WD: i32) -> String {
     let alpha = 1; //WD as f64 / 100f64;
     format!(
         "translate({} {}) scale(1 -1) scale({} 1)",
@@ -84,74 +85,97 @@ fn dashed(from: (i32, i32), to: (i32, i32)) -> Path {
     p
 }
 
-fn stroke(width: &str, from: (i32, i32), to: (i32, i32)) -> Group {
-    let p = Path::new().set("stroke", "black").set("d", line(from, to));
-
-    Group::new()
-        .set("fill", "none")
-        .set("color", "darkgray")
+fn stroke(width: &str, from: (i32, i32), to: (i32, i32)) -> Path {
+    let p = Path::new()
         .set("stroke-width", width)
-        .set("stroke-linecap", "butt")
-        .set("stroke-linejoin", "miter")
-        .add(p)
+        .set("stroke", "black")
+        .set("d", line(from, to));
+    p
+}
+
+fn textx(label: &str, pos: (i32, i32)) -> Text {
+    let ret = Text::new(label)
+        .set("font-family", "sans")
+        .set("text-anchor", "middle")
+        .set("transform", format!("translate({} {})", pos.0, pos.1));
+    ret
+}
+
+fn texty(label: &str, pos: (i32, i32)) -> Text {
+    let ret = Text::new(label)
+        .set("text-anchor", "end")
+        .set("font-family", "sans")
+        .set(
+            "transform",
+            format!("translate({} {}) scale(-1 -1)", pos.0, pos.1),
+        );
+    ret
 }
 
 fn main() {
     use svg::Document;
 
-    let W = 600;
+    let W = 1200;
     let H = 400;
     let Mleft = 50;
     let Mbottom = 50;
     let WD = W - Mleft;
     let HD = H - Mbottom;
 
-    let BG = Group::new()
-        .set("id", "frame")
-        .add(bbrect("bg", "red", (0, 0), (W, H)));
+    let BG = Group::new().set("id", "frame");
 
-    let SL = Group::new()
+    let mut SL = Group::new()
         .set("id", "SL")
-        .set("transform", transformSL(W, H, Mleft, Mbottom))
-        .add(bbrect("bg", "gray", (0, -Mbottom), (Mleft, HD)))
-        .add(testpath());
+        .set("transform", transformSL(W, H, Mleft, Mbottom));
 
-    let SB = Group::new()
+    let mut SB = Group::new()
         .set("id", "SB")
-        .set("transform", transformSB(W, H, Mleft, Mbottom))
-        .add(bbrect("bg", "lightgray", (0, 0), (WD, Mbottom)))
-        .add(testpath());
+        .set("transform", transformSB(W, H, Mleft, Mbottom));
 
     let mut SD = Group::new()
         .set("id", "SD")
         .set("transform", transformSD(W, H, Mleft, Mbottom, WD))
-        .add(bbrect("bg", "lightblue", (0, 0), (WD, HD)))
-        .add(testpath())
+        .add(bbrect("bg", "lightgray", (0, 0), (WD, HD)))
         .add(stroke("3", (0, 0), (WD, 0)))
-        .add(stroke("3", (0, 0), (0, HD)));
+        .add(stroke("3", (0, 0), (0, HD)))
+        .add(stroke("3", (0, HD), (WD, HD)))
+        .add(stroke("3", (WD, 0), (WD, HD)));
 
-    for d in 1..5 {
-        let yd = 50 + (d - 1) * 100;
-        let ys = (d - 1) * 100;
+    for dy in 1..8 {
+        let ys = (dy - 1) * 50;
+        let yd = 25 + (dy - 1) * 50;
         SD = SD.add(dashed((0, yd), (WD, yd)));
         SD = SD.add(stroke("1", (0, ys), (WD, ys)));
+        SD = SD.add(stroke("1", (0, ys), (WD, ys)));
+    }
+
+    let deltax = 200;
+    for dx in 1..7 {
+        let xd = (dx - 1) * deltax;
+        let xdd = xd - deltax / 2;
+        SD = SD.add(stroke("1", (xd, 0), (xd, HD)));
+        SD = SD.add(dashed((xdd, 0), (xdd, HD)));
+        SB = SB.add(textx(format!("{}", (dx - 1) * 20).as_str(), (xd, 25)));
+    }
+
+    for d in 1..8 {
+        let ys = (d - 1) * 50;
+        SL = SL.add(texty(format!("{}", (d - 1) * 200).as_str(), (10, ys - 5)));
     }
 
     let world = Group::new()
         .set("id", "world")
         .set("shape-rendering", "crispEdges")
         .set("transform", "translate(5 5)")
-        .add(simpleblackrect("world", W, H))
         .add(BG)
         .add(SL)
         .add(SB)
         .add(SD);
 
     let document = Document::new()
-        .set("width", 700)
-        .set("height", 700)
-        .set("viewBox", (0, 0, 700, 700))
-        .add(simpleblackrect("table", 700, 700))
+        .set("width", 1700)
+        .set("height", 500)
+        .set("viewBox", (0, 0, 1700, 500))
         .add(world);
 
     svg::save("image.svg", &document).unwrap();
