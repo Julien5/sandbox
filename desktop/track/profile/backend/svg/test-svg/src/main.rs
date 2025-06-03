@@ -11,7 +11,7 @@ fn line(p1: (i32, i32), p2: (i32, i32)) -> Data {
     Data::new().move_to(p1).line_to(p2)
 }
 
-fn simple(W: i32, H: i32) -> Data {
+fn bboxWH(W: i32, H: i32) -> Data {
     Data::new()
         .move_to((0, 0))
         .line_to((W, 0))
@@ -38,7 +38,7 @@ fn rect(id: &str, color: &str, data: Data) -> Rect {
 }
 
 fn simplerect(id: &str, color: &str, W: i32, H: i32) -> Rect {
-    rect(id, color, simple(W, H))
+    rect(id, color, bboxWH(W, H))
 }
 
 fn simpleblackrect(id: &str, W: i32, H: i32) -> Rect {
@@ -66,23 +66,22 @@ fn transformSB(_W: i32, H: i32, Mleft: i32, Mbottom: i32) -> String {
     format!("translate({} {})", Mleft, H - Mbottom)
 }
 
-fn transformSD(_W: i32, H: i32, Mleft: i32, Mbottom: i32) -> String {
-    format!("translate({} {}) scale(1 -1)", Mleft, H - Mbottom)
+fn transformSD(_W: i32, H: i32, Mleft: i32, Mbottom: i32, WD: i32) -> String {
+    let alpha = 1; //WD as f64 / 100f64;
+    format!(
+        "translate({} {}) scale(1 -1) scale({} 1)",
+        Mleft,
+        H - Mbottom,
+        alpha
+    )
 }
 
-fn dashed(from: (i32, i32), to: (i32, i32)) -> Group {
+fn dashed(from: (i32, i32), to: (i32, i32)) -> Path {
     let p = Path::new()
         .set("stroke", "black")
         .set("stroke-dasharray", "1.0,2.5,5.0,5.0,10.0,5.0")
         .set("d", line(from, to));
-
-    Group::new()
-        .set("fill", "none")
-        .set("color", "black")
-        .set("stroke-width", "1")
-        .set("stroke-linecap", "butt")
-        .set("stroke-linejoin", "miter")
-        .add(p)
+    p
 }
 
 fn stroke(width: &str, from: (i32, i32), to: (i32, i32)) -> Group {
@@ -90,7 +89,7 @@ fn stroke(width: &str, from: (i32, i32), to: (i32, i32)) -> Group {
 
     Group::new()
         .set("fill", "none")
-        .set("color", "black")
+        .set("color", "darkgray")
         .set("stroke-width", width)
         .set("stroke-linecap", "butt")
         .set("stroke-linejoin", "miter")
@@ -123,19 +122,24 @@ fn main() {
         .add(bbrect("bg", "lightgray", (0, 0), (WD, Mbottom)))
         .add(testpath());
 
-    let SD = Group::new()
-        .set("id", "SB")
-        .set("transform", transformSD(W, H, Mleft, Mbottom))
+    let mut SD = Group::new()
+        .set("id", "SD")
+        .set("transform", transformSD(W, H, Mleft, Mbottom, WD))
         .add(bbrect("bg", "lightblue", (0, 0), (WD, HD)))
         .add(testpath())
-        .add(dashed((0, 300), (WD, 300)))
-        .add(dashed((0, 200), (WD, 200)))
-        .add(dashed((0, 100), (WD, 100)))
-        .add(stroke("2", (0, 0), (WD, 0)))
-        .add(stroke("2", (0, 0), (0, HD)));
+        .add(stroke("3", (0, 0), (WD, 0)))
+        .add(stroke("3", (0, 0), (0, HD)));
+
+    for d in 1..5 {
+        let yd = 50 + (d - 1) * 100;
+        let ys = (d - 1) * 100;
+        SD = SD.add(dashed((0, yd), (WD, yd)));
+        SD = SD.add(stroke("1", (0, ys), (WD, ys)));
+    }
 
     let world = Group::new()
         .set("id", "world")
+        .set("shape-rendering", "crispEdges")
         .set("transform", "translate(5 5)")
         .add(simpleblackrect("world", W, H))
         .add(BG)
