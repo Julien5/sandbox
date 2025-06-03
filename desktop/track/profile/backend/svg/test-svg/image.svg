@@ -5,19 +5,31 @@
 <g id="frame">
 <path d="M0,0 L0,400 L600,400 L600,0 L0,0" fill="red" id="bg"/>
 </g>
-<g id="SL" transform="translate(100 300) scale(-1 -1)">
-<path d="M0,-100 L0,300 L100,300 L100,-100 L0,-100" fill="gray" id="bg"/>
+<g id="SL" transform="translate(50 350) scale(-1 -1)">
+<path d="M0,-50 L0,350 L50,350 L50,-50 L0,-50" fill="gray" id="bg"/>
 <path d="M0,0 L20,20" fill="yellow" id="test" stroke="yellow" stroke-width="4"/>
 </g>
-<g id="SB" transform="translate(100 300)">
-<path d="M0,0 L0,100 L500,100 L500,0 L0,0" fill="lightgray" id="bg"/>
+<g id="SB" transform="translate(50 350)">
+<path d="M0,0 L0,50 L550,50 L550,0 L0,0" fill="lightgray" id="bg"/>
 <path d="M0,0 L20,20" fill="yellow" id="test" stroke="yellow" stroke-width="4"/>
 </g>
-<g id="SB" transform="translate(100 300) scale(1 -1)">
-<path d="M0,0 L0,300 L500,300 L500,0 L0,0" fill="lightblue" id="bg"/>
+<g id="SB" transform="translate(50 350) scale(1 -1)">
+<path d="M0,0 L0,350 L550,350 L550,0 L0,0" fill="lightblue" id="bg"/>
 <path d="M0,0 L20,20" fill="yellow" id="test" stroke="yellow" stroke-width="4"/>
 <g color="black" fill="none" stroke-linecap="butt" stroke-linejoin="miter" stroke-width="1">
-<path d="M0,100 L500,100" stroke="black" stroke-dasharray="1.0,2.5,5.0,5.0,10.0,5.0"/>
+<path d="M0,300 L550,300" stroke="black" stroke-dasharray="1.0,2.5,5.0,5.0,10.0,5.0"/>
+</g>
+<g color="black" fill="none" stroke-linecap="butt" stroke-linejoin="miter" stroke-width="1">
+<path d="M0,200 L550,200" stroke="black" stroke-dasharray="1.0,2.5,5.0,5.0,10.0,5.0"/>
+</g>
+<g color="black" fill="none" stroke-linecap="butt" stroke-linejoin="miter" stroke-width="1">
+<path d="M0,100 L550,100" stroke="black" stroke-dasharray="1.0,2.5,5.0,5.0,10.0,5.0"/>
+</g>
+<g color="black" fill="none" stroke-linecap="butt" stroke-linejoin="miter" stroke-width="2">
+<path d="M0,0 L550,0" stroke="black"/>
+</g>
+<g color="black" fill="none" stroke-linecap="butt" stroke-linejoin="miter" stroke-width="2">
+<path d="M0,0 L0,350" stroke="black"/>
 </g>
 </g>
 </g>

@@ -74,7 +74,6 @@ fn dashed(from: (i32, i32), to: (i32, i32)) -> Group {
     let p = Path::new()
         .set("stroke", "black")
         .set("stroke-dasharray", "1.0,2.5,5.0,5.0,10.0,5.0")
-        .set("stroke-dasharray", "1.0,2.5,5.0,5.0,10.0,5.0")
         .set("d", line(from, to));
 
     Group::new()
@@ -85,13 +84,28 @@ fn dashed(from: (i32, i32), to: (i32, i32)) -> Group {
         .set("stroke-linejoin", "miter")
         .add(p)
 }
+
+fn stroke(width: &str, from: (i32, i32), to: (i32, i32)) -> Group {
+    let p = Path::new().set("stroke", "black").set("d", line(from, to));
+
+    Group::new()
+        .set("fill", "none")
+        .set("color", "black")
+        .set("stroke-width", width)
+        .set("stroke-linecap", "butt")
+        .set("stroke-linejoin", "miter")
+        .add(p)
+}
+
 fn main() {
     use svg::Document;
 
     let W = 600;
     let H = 400;
-    let Mleft = 100;
-    let Mbottom = 100;
+    let Mleft = 50;
+    let Mbottom = 50;
+    let WD = W - Mleft;
+    let HD = H - Mbottom;
 
     let BG = Group::new()
         .set("id", "frame")
@@ -100,21 +114,25 @@ fn main() {
     let SL = Group::new()
         .set("id", "SL")
         .set("transform", transformSL(W, H, Mleft, Mbottom))
-        .add(bbrect("bg", "gray", (0, -Mbottom), (Mleft, H - Mbottom)))
+        .add(bbrect("bg", "gray", (0, -Mbottom), (Mleft, HD)))
         .add(testpath());
 
     let SB = Group::new()
         .set("id", "SB")
         .set("transform", transformSB(W, H, Mleft, Mbottom))
-        .add(bbrect("bg", "lightgray", (0, 0), (W - Mleft, Mbottom)))
+        .add(bbrect("bg", "lightgray", (0, 0), (WD, Mbottom)))
         .add(testpath());
 
     let SD = Group::new()
         .set("id", "SB")
         .set("transform", transformSD(W, H, Mleft, Mbottom))
-        .add(bbrect("bg", "lightblue", (0, 0), (W - Mleft, H - Mbottom)))
+        .add(bbrect("bg", "lightblue", (0, 0), (WD, HD)))
         .add(testpath())
-        .add(dashed((0, 100), (W - Mleft, 100)));
+        .add(dashed((0, 300), (WD, 300)))
+        .add(dashed((0, 200), (WD, 200)))
+        .add(dashed((0, 100), (WD, 100)))
+        .add(stroke("2", (0, 0), (WD, 0)))
+        .add(stroke("2", (0, 0), (0, HD)));
 
     let world = Group::new()
         .set("id", "world")
