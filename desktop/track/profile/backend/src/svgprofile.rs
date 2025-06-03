@@ -1,7 +1,5 @@
 #![allow(non_snake_case)]
 
-extern crate svg;
-
 type Data = svg::node::element::path::Data;
 type Group = svg::node::element::Group;
 type Rect = svg::node::element::Path;
@@ -12,7 +10,7 @@ fn line(p1: (i32, i32), p2: (i32, i32)) -> Data {
     Data::new().move_to(p1).line_to(p2)
 }
 
-fn bboxWH(W: i32, H: i32) -> Data {
+fn _bboxWH(W: i32, H: i32) -> Data {
     Data::new()
         .move_to((0, 0))
         .line_to((W, 0))
@@ -38,25 +36,8 @@ fn rect(id: &str, color: &str, data: Data) -> Rect {
     Rect::new().set("id", id).set("fill", color).set("d", data)
 }
 
-fn simplerect(id: &str, color: &str, W: i32, H: i32) -> Rect {
-    rect(id, color, bboxWH(W, H))
-}
-
-fn simpleblackrect(id: &str, W: i32, H: i32) -> Rect {
-    simplerect(id, "black", W, H)
-}
-
 fn bbrect(id: &str, color: &str, TL: (i32, i32), BR: (i32, i32)) -> Rect {
     rect(id, color, bbox(TL, BR))
-}
-
-fn testpath() -> Rect {
-    Rect::new()
-        .set("id", "test")
-        .set("fill", "yellow")
-        .set("stroke", "yellow")
-        .set("stroke-width", "4")
-        .set("d", _testpath())
 }
 
 fn transformSL(_W: i32, H: i32, Mleft: i32, Mbottom: i32) -> String {
@@ -112,9 +93,22 @@ fn texty(label: &str, pos: (i32, i32)) -> Text {
     ret
 }
 
-fn main() {
-    use svg::Document;
+fn track(d: Data, WD: i32, HD: i32) -> Path {
+    let p = Path::new()
+        .set(
+            "transform",
+            format!("translate({} {}) scale(1 -1)", 200, HD - 100),
+        )
+        .set("stroke", "black")
+        .set("stroke-width", 2)
+        .set("stroke-linecap", "round")
+        .set("stroke-linejoin", "round")
+        .set("fill", "transparent")
+        .set("d", d);
+    p
+}
 
+pub fn canvas(data: Data) -> svg::Document {
     let W = 1400;
     let H = 400;
     let Mleft = 50;
@@ -165,6 +159,8 @@ fn main() {
         }
     }
 
+    SD = SD.add(track(data, WD, HD));
+
     for d in 1..8 {
         let ys = (d - 1) * 50;
         SL = SL.add(texty(format!("{}", (d - 1) * 200).as_str(), (10, ys - 5)));
@@ -179,11 +175,11 @@ fn main() {
         .add(SB)
         .add(SD);
 
-    let document = Document::new()
+    let document = svg::Document::new()
         .set("width", 1700)
         .set("height", 500)
         .set("viewBox", (0, 0, 1700, 500))
         .add(world);
 
-    svg::save("image.svg", &document).unwrap();
+    document
 }

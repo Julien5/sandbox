@@ -1,6 +1,7 @@
 #![allow(non_snake_case)]
 
 use crate::gpsdata::{self, UTMPoint};
+use crate::svgprofile;
 
 use svg::node::element::path::{Command, Data, Position};
 use svg::node::element::Path;
@@ -37,7 +38,7 @@ impl ViewBox {
 pub fn track_profile(
     geodata: &gpsdata::Track,
     range: &std::ops::Range<usize>,
-    viewbox: &ViewBox,
+    _viewbox: &ViewBox,
 ) -> String {
     let mut data = Data::new();
     for k in range.start..range.end {
@@ -49,21 +50,7 @@ pub fn track_profile(
         data.append(Command::Line(Position::Absolute, (xg, yg).into()));
     }
 
-    let svgpath = Path::new()
-        .set("fill", "none")
-        .set("stroke", "black")
-        .set("stroke-width", 2)
-        .set("stroke-linecap", "round")
-        .set("stroke-linejoin", "round")
-        .set("d", data);
-
-    let document = Document::new()
-        .set(
-            "viewBox",
-            (viewbox.tlx, viewbox.tly, viewbox.width, viewbox.height),
-        )
-        .add(svgpath);
-
+    let document = svgprofile::canvas(data);
     document.to_string()
 }
 
@@ -108,24 +95,7 @@ fn profile_data(
         data.append(Command::Line(Position::Absolute, (xg, yg).into()));
     }
 
-    let svgpath = Path::new()
-        .set("fill", "none")
-        .set("stroke", "black")
-        .set("stroke-width", 2)
-        .set("stroke-linecap", "round")
-        .set("stroke-linejoin", "round")
-        .set("d", data);
-
-    let start = geodata.distance(range.start);
-    let end = geodata.distance(range.end - 1);
-    let (TLx, TLy) = to_view(start, 1250f64);
-    let width = end - start;
-    let width = width.max(100000f64);
-    let (W, H) = to_view(width, 0f64);
-    let mut document = Document::new()
-        .set("viewBox", (TLx, TLy, W, H))
-        .add(svgpath);
-
+    let mut document = svgprofile::canvas(data);
     for w in waypoints {
         let k = w.track_index;
         if !range.contains(&k) {
@@ -138,6 +108,7 @@ fn profile_data(
             .set("r", 10);
         document = document.add(dot);
     }
+
     document.to_string()
 }
 

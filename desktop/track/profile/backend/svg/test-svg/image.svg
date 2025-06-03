@@ -25,64 +25,67 @@
 </text>
 </g>
 <g id="SB" transform="translate(50 350)">
-<text font-family="sans" text-anchor="middle" transform="translate(0 25)">
+<text font-family="sans" text-anchor="middle" transform="translate(200 25)">
 0
 </text>
-<text font-family="sans" text-anchor="middle" transform="translate(200 25)">
+<text font-family="sans" text-anchor="middle" transform="translate(400 25)">
 20
 </text>
-<text font-family="sans" text-anchor="middle" transform="translate(400 25)">
+<text font-family="sans" text-anchor="middle" transform="translate(600 25)">
 40
 </text>
-<text font-family="sans" text-anchor="middle" transform="translate(600 25)">
+<text font-family="sans" text-anchor="middle" transform="translate(800 25)">
 60
 </text>
-<text font-family="sans" text-anchor="middle" transform="translate(800 25)">
+<text font-family="sans" text-anchor="middle" transform="translate(1000 25)">
 80
 </text>
-<text font-family="sans" text-anchor="middle" transform="translate(1000 25)">
+<text font-family="sans" text-anchor="middle" transform="translate(1200 25)">
 100
 </text>
 </g>
 <g id="SD" transform="translate(50 350) scale(1 -1) scale(1 1)">
-<path d="M0,0 L0,350 L1150,350 L1150,0 L0,0" fill="lightgray" id="bg"/>
-<path d="M0,0 L1150,0" stroke="black" stroke-width="3"/>
+<path d="M0,0 L0,350 L1350,350 L1350,0 L0,0" fill="lightgray" id="bg"/>
+<path d="M0,0 L1350,0" stroke="black" stroke-width="3"/>
 <path d="M0,0 L0,350" stroke="black" stroke-width="3"/>
-<path d="M0,350 L1150,350" stroke="black" stroke-width="3"/>
-<path d="M1150,0 L1150,350" stroke="black" stroke-width="3"/>
-<path d="M0,25 L1150,25" stroke="black" stroke-dasharray="1.0,2.5,5.0,5.0,10.0,5.0"/>
-<path d="M0,0 L1150,0" stroke="black" stroke-width="1"/>
-<path d="M0,0 L1150,0" stroke="black" stroke-width="1"/>
-<path d="M0,75 L1150,75" stroke="black" stroke-dasharray="1.0,2.5,5.0,5.0,10.0,5.0"/>
-<path d="M0,50 L1150,50" stroke="black" stroke-width="1"/>
-<path d="M0,50 L1150,50" stroke="black" stroke-width="1"/>
-<path d="M0,125 L1150,125" stroke="black" stroke-dasharray="1.0,2.5,5.0,5.0,10.0,5.0"/>
-<path d="M0,100 L1150,100" stroke="black" stroke-width="1"/>
-<path d="M0,100 L1150,100" stroke="black" stroke-width="1"/>
-<path d="M0,175 L1150,175" stroke="black" stroke-dasharray="1.0,2.5,5.0,5.0,10.0,5.0"/>
-<path d="M0,150 L1150,150" stroke="black" stroke-width="1"/>
-<path d="M0,150 L1150,150" stroke="black" stroke-width="1"/>
-<path d="M0,225 L1150,225" stroke="black" stroke-dasharray="1.0,2.5,5.0,5.0,10.0,5.0"/>
-<path d="M0,200 L1150,200" stroke="black" stroke-width="1"/>
-<path d="M0,200 L1150,200" stroke="black" stroke-width="1"/>
-<path d="M0,275 L1150,275" stroke="black" stroke-dasharray="1.0,2.5,5.0,5.0,10.0,5.0"/>
-<path d="M0,250 L1150,250" stroke="black" stroke-width="1"/>
-<path d="M0,250 L1150,250" stroke="black" stroke-width="1"/>
-<path d="M0,325 L1150,325" stroke="black" stroke-dasharray="1.0,2.5,5.0,5.0,10.0,5.0"/>
-<path d="M0,300 L1150,300" stroke="black" stroke-width="1"/>
-<path d="M0,300 L1150,300" stroke="black" stroke-width="1"/>
-<path d="M0,0 L0,350" stroke="black" stroke-width="1"/>
+<path d="M0,350 L1350,350" stroke="black" stroke-width="3"/>
+<path d="M1350,0 L1350,350" stroke="black" stroke-width="3"/>
+<path d="M0,25 L1350,25" stroke="black" stroke-dasharray="1.0,2.5,5.0,5.0,10.0,5.0"/>
+<path d="M0,0 L1350,0" stroke="black" stroke-width="1"/>
+<path d="M0,0 L1350,0" stroke="black" stroke-width="1"/>
+<path d="M0,75 L1350,75" stroke="black" stroke-dasharray="1.0,2.5,5.0,5.0,10.0,5.0"/>
+<path d="M0,50 L1350,50" stroke="black" stroke-width="1"/>
+<path d="M0,50 L1350,50" stroke="black" stroke-width="1"/>
+<path d="M0,125 L1350,125" stroke="black" stroke-dasharray="1.0,2.5,5.0,5.0,10.0,5.0"/>
+<path d="M0,100 L1350,100" stroke="black" stroke-width="1"/>
+<path d="M0,100 L1350,100" stroke="black" stroke-width="1"/>
+<path d="M0,175 L1350,175" stroke="black" stroke-dasharray="1.0,2.5,5.0,5.0,10.0,5.0"/>
+<path d="M0,150 L1350,150" stroke="black" stroke-width="1"/>
+<path d="M0,150 L1350,150" stroke="black" stroke-width="1"/>
+<path d="M0,225 L1350,225" stroke="black" stroke-dasharray="1.0,2.5,5.0,5.0,10.0,5.0"/>
+<path d="M0,200 L1350,200" stroke="black" stroke-width="1"/>
+<path d="M0,200 L1350,200" stroke="black" stroke-width="1"/>
+<path d="M0,275 L1350,275" stroke="black" stroke-dasharray="1.0,2.5,5.0,5.0,10.0,5.0"/>
+<path d="M0,250 L1350,250" stroke="black" stroke-width="1"/>
+<path d="M0,250 L1350,250" stroke="black" stroke-width="1"/>
+<path d="M0,325 L1350,325" stroke="black" stroke-dasharray="1.0,2.5,5.0,5.0,10.0,5.0"/>
+<path d="M0,300 L1350,300" stroke="black" stroke-width="1"/>
+<path d="M0,300 L1350,300" stroke="black" stroke-width="1"/>
 <path d="M-100,0 L-100,350" stroke="black" stroke-dasharray="1.0,2.5,5.0,5.0,10.0,5.0"/>
-<path d="M200,0 L200,350" stroke="black" stroke-width="1"/>
+<path d="M0,0 L0,350" stroke="black" stroke-width="1"/>
 <path d="M100,0 L100,350" stroke="black" stroke-dasharray="1.0,2.5,5.0,5.0,10.0,5.0"/>
-<path d="M400,0 L400,350" stroke="black" stroke-width="1"/>
+<path d="M200,0 L200,350" stroke="black" stroke-width="1"/>
 <path d="M300,0 L300,350" stroke="black" stroke-dasharray="1.0,2.5,5.0,5.0,10.0,5.0"/>
-<path d="M600,0 L600,350" stroke="black" stroke-width="1"/>
+<path d="M400,0 L400,350" stroke="black" stroke-width="1"/>
 <path d="M500,0 L500,350" stroke="black" stroke-dasharray="1.0,2.5,5.0,5.0,10.0,5.0"/>
-<path d="M800,0 L800,350" stroke="black" stroke-width="1"/>
+<path d="M600,0 L600,350" stroke="black" stroke-width="1"/>
 <path d="M700,0 L700,350" stroke="black" stroke-dasharray="1.0,2.5,5.0,5.0,10.0,5.0"/>
-<path d="M1000,0 L1000,350" stroke="black" stroke-width="1"/>
+<path d="M800,0 L800,350" stroke="black" stroke-width="1"/>
 <path d="M900,0 L900,350" stroke="black" stroke-dasharray="1.0,2.5,5.0,5.0,10.0,5.0"/>
+<path d="M1000,0 L1000,350" stroke="black" stroke-width="1"/>
+<path d="M1100,0 L1100,350" stroke="black" stroke-dasharray="1.0,2.5,5.0,5.0,10.0,5.0"/>
+<path d="M1200,0 L1200,350" stroke="black" stroke-width="1"/>
+<path d="M1300,0 L1300,350" stroke="black" stroke-dasharray="1.0,2.5,5.0,5.0,10.0,5.0"/>
 </g>
 </g>
 </svg>
