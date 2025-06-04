@@ -165,7 +165,7 @@ impl ProfileBoundingBox {
         self.xmin = self.xmin - 10000f64;
         self.xmax = self.xmax + 10000f64;
         self.ymin = snap_floor(self.ymin - 20f64);
-        self.ymax = snap_ceil(self.ymax + 20f64);
+        self.ymax = snap_ceil(self.ymax + 20f64).max(snap_floor(self.ymin + 1000f64));
     }
 }
 
