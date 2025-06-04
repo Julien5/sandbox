@@ -6,6 +6,7 @@ use svg::node::element::path::Position;
 type Data = svg::node::element::path::Data;
 type Group = svg::node::element::Group;
 type Rect = svg::node::element::Path;
+type Circle = svg::node::element::Circle;
 type Path = svg::node::element::Path;
 type Text = svg::node::element::Text;
 use crate::gpsdata;
@@ -190,8 +191,17 @@ pub fn yticks_dashed(bbox: &ProfileBoundingBox) -> Vec<f64> {
     ret
 }
 
+fn dot((x, y): (i32, i32)) -> Circle {
+    let dot = svg::node::element::Circle::new()
+        .set("cx", x)
+        .set("cy", y)
+        .set("r", 10);
+    dot
+}
+
 pub fn canvas(
     geodata: &gpsdata::Track,
+    waypoints: Option<&Vec<gpsdata::Waypoint>>,
     range: &std::ops::Range<usize>,
     bbox: &gpsdata::ProfileBoundingBox,
 ) -> svg::Document {
@@ -262,6 +272,19 @@ pub fn canvas(
     }
 
     SD = SD.add(track(data(geodata, range, (WD, HD), bbox)));
+    match waypoints {
+        Some(W) => {
+            for w in W {
+                let k = w.track_index;
+                if !range.contains(&k) {
+                    continue;
+                }
+                let (x, y) = toSD((geodata.distance(k), geodata.elevation(k)), WD, HD, bbox);
+                SD = SD.add(dot((x, y)));
+            }
+        }
+        _ => {}
+    }
 
     let world = Group::new()
         .set("id", "world")

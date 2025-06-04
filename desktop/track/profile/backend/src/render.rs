@@ -40,7 +40,7 @@ pub fn track_profile(
     range: &std::ops::Range<usize>,
     bbox: &ProfileBoundingBox,
 ) -> String {
-    let document = svgprofile::canvas(geodata, range, bbox);
+    let document = svgprofile::canvas(geodata, None, range, bbox);
     document.to_string()
 }
 
@@ -73,20 +73,7 @@ fn profile_data(
     range: &std::ops::Range<usize>,
 ) -> String {
     let bbox = ProfileBoundingBox::from_track(geodata, range);
-    let mut document = svgprofile::canvas(geodata, range, &bbox);
-    for w in waypoints {
-        let k = w.track_index;
-        if !range.contains(&k) {
-            continue;
-        }
-        let (x, y) = to_view(geodata.distance(k), geodata.elevation(k));
-        let dot = svg::node::element::Circle::new()
-            .set("cx", x)
-            .set("cy", y)
-            .set("r", 10);
-        document = document.add(dot);
-    }
-
+    let document = svgprofile::canvas(geodata, Some(&waypoints), range, &bbox);
     document.to_string()
 }
 
