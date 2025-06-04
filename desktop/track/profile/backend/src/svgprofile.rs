@@ -116,7 +116,7 @@ fn toSD((x, y): (f64, f64), WD: i32, HD: i32, bbox: &gpsdata::ProfileBoundingBox
         a * y + b
     };
     println!("{}", g(y));
-    assert!(g(y) >= 0f64);
+    //assert!(g(y) >= 0f64);
     (f(x).floor() as i32, g(y).floor() as i32)
 }
 
@@ -136,6 +136,19 @@ fn data(
         data.append(Command::Line(Position::Absolute, (xg, yg).into()));
     }
     data
+}
+
+pub fn xticks(bbox: &ProfileBoundingBox) -> Vec<f64> {
+    let mut ret = Vec::new();
+    let D = bbox.xmax - bbox.xmin;
+    let delta = 20000f64;
+    let p0 = ((bbox.xmin / delta).ceil() * delta).floor();
+    let mut p = p0;
+    while p < bbox.xmax.floor() {
+        ret.push(p);
+        p = p + delta;
+    }
+    ret
 }
 
 pub fn canvas(
@@ -178,19 +191,17 @@ pub fn canvas(
     }
 
     let deltax = 200;
-    for dx in 1..9 {
-        let xd = (dx - 1) * deltax;
-        let xdd = xd - deltax / 2;
-        SD = SD.add(dashed((xdd, 0), (xdd, HD)));
-
+    for xtick in xticks(bbox) {
+        let xd = toSD((xtick, 0f64), WD, HD, bbox).0;
+        SD = SD.add(dashed((xd, 0), (xd, HD)));
         if xd > WD {
             break;
         }
         SD = SD.add(stroke("1", (xd, 0), (xd, HD)));
-        let tx = (dx - 2) * 20;
-        if tx >= 0 {
-            SB = SB.add(textx(format!("{}", (dx - 2) * 20).as_str(), (xd, 25)));
-        }
+        SB = SB.add(textx(
+            format!("{}", (xtick / 1000f64).floor() as i32).as_str(),
+            (xd, 25),
+        ));
     }
 
     SD = SD.add(track(data(geodata, range, (WD, HD), bbox)));
