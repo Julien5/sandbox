@@ -151,6 +151,45 @@ pub fn xticks(bbox: &ProfileBoundingBox) -> Vec<f64> {
     ret
 }
 
+pub fn xticks_dashed(bbox: &ProfileBoundingBox) -> Vec<f64> {
+    let mut ret = Vec::new();
+    let D = bbox.xmax - bbox.xmin;
+    let delta = 20000f64;
+    let p0 = ((bbox.xmin / delta).ceil() * delta).floor();
+    let mut p = p0;
+    while p < bbox.xmax.floor() {
+        ret.push(p + delta / 2f64);
+        p = p + delta;
+    }
+    ret
+}
+
+pub fn yticks(bbox: &ProfileBoundingBox) -> Vec<f64> {
+    let mut ret = Vec::new();
+    let D = bbox.ymax - bbox.ymin;
+    let delta = 200f64;
+    let p0 = ((bbox.ymin / delta).ceil() * delta).floor();
+    let mut p = p0;
+    while p < bbox.ymax.floor() {
+        ret.push(p);
+        p = p + delta;
+    }
+    ret
+}
+
+pub fn yticks_dashed(bbox: &ProfileBoundingBox) -> Vec<f64> {
+    let mut ret = Vec::new();
+    let D = bbox.ymax - bbox.ymin;
+    let delta = 200f64;
+    let p0 = ((bbox.ymin / delta).ceil() * delta).floor();
+    let mut p = p0;
+    while p < bbox.ymax.floor() {
+        ret.push(p + delta / 2f64);
+        p = p + delta;
+    }
+    ret
+}
+
 pub fn canvas(
     geodata: &gpsdata::Track,
     range: &std::ops::Range<usize>,
@@ -182,18 +221,8 @@ pub fn canvas(
         .add(stroke("3", (0, HD), (WD, HD)))
         .add(stroke("3", (WD, 0), (WD, HD)));
 
-    for dy in 1..8 {
-        let ys = (dy - 1) * 50;
-        let yd = 25 + (dy - 1) * 50;
-        SD = SD.add(dashed((0, yd), (WD, yd)));
-        SD = SD.add(stroke("1", (0, ys), (WD, ys)));
-        SD = SD.add(stroke("1", (0, ys), (WD, ys)));
-    }
-
-    let deltax = 200;
     for xtick in xticks(bbox) {
         let xd = toSD((xtick, 0f64), WD, HD, bbox).0;
-        SD = SD.add(dashed((xd, 0), (xd, HD)));
         if xd > WD {
             break;
         }
@@ -204,12 +233,35 @@ pub fn canvas(
         ));
     }
 
-    SD = SD.add(track(data(geodata, range, (WD, HD), bbox)));
-
-    for d in 1..8 {
-        let ys = (d - 1) * 50;
-        SL = SL.add(texty(format!("{}", (d - 1) * 200).as_str(), (10, ys - 5)));
+    for xtick in xticks_dashed(bbox) {
+        let xd = toSD((xtick, 0f64), WD, HD, bbox).0;
+        if xd > WD {
+            break;
+        }
+        SD = SD.add(dashed((xd, 0), (xd, HD)));
     }
+
+    for ytick in yticks(bbox) {
+        let yd = toSD((bbox.xmin, ytick), WD, HD, bbox).1;
+        if yd > HD {
+            break;
+        }
+        SD = SD.add(stroke("1", (0, yd), (WD, yd)));
+        SL = SL.add(texty(
+            format!("{}", ytick.floor() as i32).as_str(),
+            (10, yd - 5),
+        ));
+    }
+
+    for ytick in yticks_dashed(bbox) {
+        let yd = toSD((bbox.xmin, ytick), WD, HD, bbox).1;
+        if yd > HD {
+            break;
+        }
+        SD = SD.add(dashed((0, yd), (WD, yd)));
+    }
+
+    SD = SD.add(track(data(geodata, range, (WD, HD), bbox)));
 
     let world = Group::new()
         .set("id", "world")

@@ -134,6 +134,14 @@ pub struct ProfileBoundingBox {
     pub ymax: f64,
 }
 
+fn snap_ceil(x: f64) -> f64 {
+    (x / 100f64).ceil() * 100f64
+}
+
+fn snap_floor(x: f64) -> f64 {
+    (x / 200f64).floor() * 200f64
+}
+
 impl ProfileBoundingBox {
     pub fn from_track(track: &Track, range: &std::ops::Range<usize>) -> ProfileBoundingBox {
         let mut ymin = f64::MAX;
@@ -152,11 +160,12 @@ impl ProfileBoundingBox {
         p.fix_margins();
         p
     }
+
     fn fix_margins(&mut self) {
         self.xmin = self.xmin - 10000f64;
         self.xmax = self.xmax + 10000f64;
-        self.ymin = self.ymin - 20f64;
-        self.ymax = self.ymax + 20f64;
+        self.ymin = snap_floor(self.ymin - 20f64);
+        self.ymax = snap_ceil(self.ymax + 20f64);
     }
 }
 
