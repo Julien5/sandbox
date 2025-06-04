@@ -116,8 +116,6 @@ fn toSD((x, y): (f64, f64), WD: i32, HD: i32, bbox: &gpsdata::ProfileBoundingBox
         let b = -bbox.ymin * a;
         a * y + b
     };
-    println!("{}", g(y));
-    //assert!(g(y) >= 0f64);
     (f(x).floor() as i32, g(y).floor() as i32)
 }
 
