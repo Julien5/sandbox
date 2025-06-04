@@ -48,22 +48,9 @@ pub fn waypoints_profile(
     geodata: &gpsdata::Track,
     waypoints: &Vec<gpsdata::Waypoint>,
     range: &std::ops::Range<usize>,
-    _bbox: &ProfileBoundingBox,
+    bbox: &ProfileBoundingBox,
 ) -> String {
-    let mut document = Document::new();
-
-    for w in waypoints {
-        let k = w.track_index;
-        if !range.contains(&k) {
-            continue;
-        }
-        let (x, y) = to_view(geodata.distance(k), geodata.elevation(k));
-        let dot = svg::node::element::Circle::new()
-            .set("cx", x)
-            .set("cy", y)
-            .set("r", 10);
-        document = document.add(dot);
-    }
+    let document = svgprofile::canvas(geodata, Some(waypoints), range, bbox);
     document.to_string()
 }
 
