@@ -1,6 +1,6 @@
 #![allow(non_snake_case)]
 
-use crate::gpsdata::{self, UTMPoint};
+use crate::gpsdata::{self, ProfileBoundingBox, UTMPoint};
 use crate::svgprofile;
 
 use svg::node::element::path::{Command, Data, Position};
@@ -38,9 +38,9 @@ impl ViewBox {
 pub fn track_profile(
     geodata: &gpsdata::Track,
     range: &std::ops::Range<usize>,
-    viewbox: &ViewBox,
+    bbox: &ProfileBoundingBox,
 ) -> String {
-    let document = svgprofile::canvas(geodata, range, viewbox);
+    let document = svgprofile::canvas(geodata, range, bbox);
     document.to_string()
 }
 
@@ -48,12 +48,9 @@ pub fn waypoints_profile(
     geodata: &gpsdata::Track,
     waypoints: &Vec<gpsdata::Waypoint>,
     range: &std::ops::Range<usize>,
-    viewbox: &ViewBox,
+    _bbox: &ProfileBoundingBox,
 ) -> String {
-    let mut document = Document::new().set(
-        "viewBox",
-        (viewbox.tlx, viewbox.tly, viewbox.width, viewbox.height),
-    );
+    let mut document = Document::new();
 
     for w in waypoints {
         let k = w.track_index;
@@ -75,8 +72,8 @@ fn profile_data(
     waypoints: &Vec<gpsdata::Waypoint>,
     range: &std::ops::Range<usize>,
 ) -> String {
-    let viewbox = ViewBox::from_track(geodata, range);
-    let mut document = svgprofile::canvas(geodata, range, &viewbox);
+    let bbox = ProfileBoundingBox::from_track(geodata, range);
+    let mut document = svgprofile::canvas(geodata, range, &bbox);
     for w in waypoints {
         let k = w.track_index;
         if !range.contains(&k) {

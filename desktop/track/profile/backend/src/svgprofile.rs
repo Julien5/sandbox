@@ -1,6 +1,6 @@
 #![allow(non_snake_case)]
 
-use crate::render;
+use crate::gpsdata::ProfileBoundingBox;
 use svg::node::element::path::Command;
 use svg::node::element::path::Position;
 type Data = svg::node::element::path::Data;
@@ -92,12 +92,8 @@ fn to_view(x: f64, y: f64) -> (f64, f64) {
     ((x / 100f64), 250f64 - (y / 5f64))
 }
 
-fn track(d: Data, _WD: i32, HD: i32) -> Path {
+fn track(d: Data) -> Path {
     let p = Path::new()
-        .set(
-            "transform",
-            format!("translate({} {}) scale(1 -1)", 200, HD - 100),
-        )
         .set("stroke", "black")
         .set("stroke-width", 2)
         .set("shape-rendering", "geometricPrecision")
@@ -106,20 +102,34 @@ fn track(d: Data, _WD: i32, HD: i32) -> Path {
     p
 }
 
-fn toSD((x,y):(f64,f64), viewBox) -> (i32,i32) {
-	
-	(0,0)
+fn toSD((x, y): (f64, f64), WD: i32, HD: i32, bbox: &gpsdata::ProfileBoundingBox) -> (i32, i32) {
+    assert!(bbox.xmin <= bbox.xmax);
+    assert!(bbox.ymin <= bbox.ymax);
+    let f = |x: f64| -> f64 {
+        let a = WD as f64 / (bbox.xmax - bbox.xmin);
+        let b = -bbox.xmin * a;
+        a * x + b
+    };
+    let g = |y: f64| -> f64 {
+        let a = HD as f64 / (bbox.ymax - bbox.ymin);
+        let b = -bbox.ymin * a;
+        a * y + b
+    };
+    println!("{}", g(y));
+    assert!(g(y) >= 0f64);
+    (f(x).floor() as i32, g(y).floor() as i32)
 }
 
 fn data(
     geodata: &gpsdata::Track,
     range: &std::ops::Range<usize>,
-    viewbox: &render::ViewBox,
+    (WD, HD): (i32, i32),
+    bbox: &ProfileBoundingBox,
 ) -> Data {
     let mut data = Data::new();
     for k in range.start..range.end {
         let (x, y) = (geodata.distance(k), geodata.elevation(k));
-        let (xg, yg) = to_view(x, y);
+        let (xg, yg) = toSD((x, y), WD, HD, bbox);
         if data.is_empty() {
             data.append(Command::Move(Position::Absolute, (xg, yg).into()));
         }
@@ -131,7 +141,7 @@ fn data(
 pub fn canvas(
     geodata: &gpsdata::Track,
     range: &std::ops::Range<usize>,
-    viewbox: &render::ViewBox,
+    bbox: &gpsdata::ProfileBoundingBox,
 ) -> svg::Document {
     let W = 1400;
     let H = 400;
@@ -183,7 +193,7 @@ pub fn canvas(
         }
     }
 
-    SD = SD.add(track(data(geodata, range, viewbox), WD, HD));
+    SD = SD.add(track(data(geodata, range, (WD, HD), bbox)));
 
     for d in 1..8 {
         let ys = (d - 1) * 50;
