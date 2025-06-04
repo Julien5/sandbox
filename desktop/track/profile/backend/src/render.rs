@@ -40,17 +40,7 @@ pub fn track_profile(
     range: &std::ops::Range<usize>,
     _viewbox: &ViewBox,
 ) -> String {
-    let mut data = Data::new();
-    for k in range.start..range.end {
-        let (x, y) = (geodata.distance(k), geodata.elevation(k));
-        let (xg, yg) = to_view(x, y);
-        if data.is_empty() {
-            data.append(Command::Move(Position::Absolute, (xg, yg).into()));
-        }
-        data.append(Command::Line(Position::Absolute, (xg, yg).into()));
-    }
-
-    let document = svgprofile::canvas(data);
+    let document = svgprofile::canvas(geodata, range);
     document.to_string()
 }
 
@@ -85,17 +75,7 @@ fn profile_data(
     waypoints: &Vec<gpsdata::Waypoint>,
     range: &std::ops::Range<usize>,
 ) -> String {
-    let mut data = Data::new();
-    for k in range.start..range.end {
-        let (x, y) = (geodata.distance(k), geodata.elevation(k));
-        let (xg, yg) = to_view(x, y);
-        if data.is_empty() {
-            data.append(Command::Move(Position::Absolute, (xg, yg).into()));
-        }
-        data.append(Command::Line(Position::Absolute, (xg, yg).into()));
-    }
-
-    let mut document = svgprofile::canvas(data);
+    let mut document = svgprofile::canvas(geodata, range);
     for w in waypoints {
         let k = w.track_index;
         if !range.contains(&k) {

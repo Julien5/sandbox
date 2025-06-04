@@ -1,22 +1,16 @@
 #![allow(non_snake_case)]
 
+use svg::node::element::path::Command;
+use svg::node::element::path::Position;
 type Data = svg::node::element::path::Data;
 type Group = svg::node::element::Group;
 type Rect = svg::node::element::Path;
 type Path = svg::node::element::Path;
 type Text = svg::node::element::Text;
+use crate::gpsdata;
 
 fn line(p1: (i32, i32), p2: (i32, i32)) -> Data {
     Data::new().move_to(p1).line_to(p2)
-}
-
-fn _bboxWH(W: i32, H: i32) -> Data {
-    Data::new()
-        .move_to((0, 0))
-        .line_to((W, 0))
-        .line_to((W, H))
-        .line_to((0, H))
-        .line_to((0, 0))
 }
 
 fn bbox(TL: (i32, i32), BR: (i32, i32)) -> Data {
@@ -93,7 +87,11 @@ fn texty(label: &str, pos: (i32, i32)) -> Text {
     ret
 }
 
-fn track(d: Data, WD: i32, HD: i32) -> Path {
+fn to_view(x: f64, y: f64) -> (f64, f64) {
+    ((x / 100f64), 250f64 - (y / 5f64))
+}
+
+fn track(d: Data, _WD: i32, HD: i32) -> Path {
     let p = Path::new()
         .set(
             "transform",
@@ -101,14 +99,26 @@ fn track(d: Data, WD: i32, HD: i32) -> Path {
         )
         .set("stroke", "black")
         .set("stroke-width", 2)
-        .set("stroke-linecap", "round")
-        .set("stroke-linejoin", "round")
+        .set("shape-rendering", "geometricPrecision")
         .set("fill", "transparent")
         .set("d", d);
     p
 }
 
-pub fn canvas(data: Data) -> svg::Document {
+fn data(geodata: &gpsdata::Track, range: &std::ops::Range<usize>) -> Data {
+    let mut data = Data::new();
+    for k in range.start..range.end {
+        let (x, y) = (geodata.distance(k), geodata.elevation(k));
+        let (xg, yg) = to_view(x, y);
+        if data.is_empty() {
+            data.append(Command::Move(Position::Absolute, (xg, yg).into()));
+        }
+        data.append(Command::Line(Position::Absolute, (xg, yg).into()));
+    }
+    data
+}
+
+pub fn canvas(geodata: &gpsdata::Track, range: &std::ops::Range<usize>) -> svg::Document {
     let W = 1400;
     let H = 400;
     let Mleft = 50;
@@ -159,7 +169,7 @@ pub fn canvas(data: Data) -> svg::Document {
         }
     }
 
-    SD = SD.add(track(data, WD, HD));
+    SD = SD.add(track(data(geodata, range), WD, HD));
 
     for d in 1..8 {
         let ys = (d - 1) * 50;
