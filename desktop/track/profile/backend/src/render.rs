@@ -38,9 +38,9 @@ impl ViewBox {
 pub fn track_profile(
     geodata: &gpsdata::Track,
     range: &std::ops::Range<usize>,
-    _viewbox: &ViewBox,
+    viewbox: &ViewBox,
 ) -> String {
-    let document = svgprofile::canvas(geodata, range);
+    let document = svgprofile::canvas(geodata, range, viewbox);
     document.to_string()
 }
 
@@ -75,7 +75,8 @@ fn profile_data(
     waypoints: &Vec<gpsdata::Waypoint>,
     range: &std::ops::Range<usize>,
 ) -> String {
-    let mut document = svgprofile::canvas(geodata, range);
+    let viewbox = ViewBox::from_track(geodata, range);
+    let mut document = svgprofile::canvas(geodata, range, &viewbox);
     for w in waypoints {
         let k = w.track_index;
         if !range.contains(&k) {

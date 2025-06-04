@@ -1,5 +1,6 @@
 #![allow(non_snake_case)]
 
+use crate::render;
 use svg::node::element::path::Command;
 use svg::node::element::path::Position;
 type Data = svg::node::element::path::Data;
@@ -105,7 +106,16 @@ fn track(d: Data, _WD: i32, HD: i32) -> Path {
     p
 }
 
-fn data(geodata: &gpsdata::Track, range: &std::ops::Range<usize>) -> Data {
+fn toSD((x,y):(f64,f64), viewBox) -> (i32,i32) {
+	
+	(0,0)
+}
+
+fn data(
+    geodata: &gpsdata::Track,
+    range: &std::ops::Range<usize>,
+    viewbox: &render::ViewBox,
+) -> Data {
     let mut data = Data::new();
     for k in range.start..range.end {
         let (x, y) = (geodata.distance(k), geodata.elevation(k));
@@ -118,7 +128,11 @@ fn data(geodata: &gpsdata::Track, range: &std::ops::Range<usize>) -> Data {
     data
 }
 
-pub fn canvas(geodata: &gpsdata::Track, range: &std::ops::Range<usize>) -> svg::Document {
+pub fn canvas(
+    geodata: &gpsdata::Track,
+    range: &std::ops::Range<usize>,
+    viewbox: &render::ViewBox,
+) -> svg::Document {
     let W = 1400;
     let H = 400;
     let Mleft = 50;
@@ -169,7 +183,7 @@ pub fn canvas(geodata: &gpsdata::Track, range: &std::ops::Range<usize>) -> svg::
         }
     }
 
-    SD = SD.add(track(data(geodata, range), WD, HD));
+    SD = SD.add(track(data(geodata, range, viewbox), WD, HD));
 
     for d in 1..8 {
         let ys = (d - 1) * 50;
