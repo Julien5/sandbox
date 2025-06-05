@@ -1,22 +1,25 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ui/src/rust/frb_generated.dart';
-import 'package:ui/src/rust/api/frontend.dart';
+import 'package:ui/src/rust/api/bridge.dart';
 
-void test1(Frontend frontend) {}
+bool testSvg(String svg) {
+  return svg.length > 2000;
+}
 
-void main() async {
+void main() {
   test('add() should return the sum of two integers', () {
     int result = 5;
     expect(result, equals(5));
   });
   test("This is async", () async {
     await RustLib.init();
-    Frontend instance = await Frontend.create();
-    var S = instance.segments();
+    Bridge bridge = await Bridge.create();
+    var S = bridge.segments();
     expect(S.length, equals(6));
     for(FSegment segment in S) {
-      String svg=await instance.renderSegmentTrack(segment: segment);
-      expect(svg.length, greaterThan(1000));
+      String svg=await bridge.renderSegmentTrack(segment: segment);
+      print("svg length: ${svg.length}");
+      expect(testSvg(svg), true);
     }
     
   }, timeout: Timeout(Duration(seconds: 5)));

@@ -3,7 +3,7 @@
 use flutter_rust_bridge::frb;
 
 #[frb(opaque)]
-pub struct Frontend {
+pub struct Bridge {
     backend: tracks::backend::Backend,
 }
 
@@ -16,9 +16,9 @@ pub struct FSegment {
 use std::{str::FromStr, time::Duration};
 use tokio::time::sleep;
 
-impl Frontend {
-    pub fn create() -> Frontend {
-        Frontend {
+impl Bridge {
+    pub fn create() -> Bridge {
+        Bridge {
             backend: tracks::backend::Backend::new(),
         }
     }
