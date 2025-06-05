@@ -17,8 +17,8 @@ void main() {
     var S = bridge.segments();
     Segment s;
     expect(S.length, equals(6));
-    for (FSegment segment in S) {
-      print("segment id: ${segment.id()}");
+    for (Segment segment in S) {
+      print("segment id: ${segment.id}");
       String svg = await bridge.renderSegmentTrack(segment: segment);
       print("svg length: ${svg.length}");
       expect(testSvg(svg), true);
