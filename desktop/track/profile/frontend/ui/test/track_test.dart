@@ -15,12 +15,13 @@ void main() {
     await RustLib.init();
     Bridge bridge = await Bridge.create();
     var S = bridge.segments();
+    Segment s;
     expect(S.length, equals(6));
-    for(FSegment segment in S) {
-      String svg=await bridge.renderSegmentTrack(segment: segment);
+    for (FSegment segment in S) {
+      print("segment id: ${segment.id()}");
+      String svg = await bridge.renderSegmentTrack(segment: segment);
       print("svg length: ${svg.length}");
       expect(testSvg(svg), true);
     }
-    
   }, timeout: Timeout(Duration(seconds: 5)));
 }

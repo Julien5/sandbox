@@ -2,6 +2,10 @@
 
 use flutter_rust_bridge::frb;
 
+// must be exported for mirroring Segment.
+pub use std::ops::Range;
+pub use tracks::backend::Segment;
+
 #[frb(opaque)]
 pub struct Bridge {
     backend: tracks::backend::Backend,
@@ -11,6 +15,12 @@ pub struct Bridge {
 #[frb(opaque)]
 pub struct FSegment {
     _backend: tracks::backend::Segment,
+}
+
+#[frb(mirror(Segment))]
+pub struct _Segment {
+    pub id: usize,
+    pub range: Range<usize>,
 }
 
 use std::{str::FromStr, time::Duration};
