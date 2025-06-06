@@ -15,7 +15,6 @@ void main() {
     await RustLib.init();
     Bridge bridge = await Bridge.create();
     var S = bridge.segments();
-    Segment s;
     expect(S.length, equals(6));
     for (Segment segment in S) {
       print("segment id: ${segment.id}");

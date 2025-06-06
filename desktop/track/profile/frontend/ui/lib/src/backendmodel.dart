@@ -5,7 +5,7 @@ import 'package:ui/src/rust/api/bridge.dart';
 enum TrackData { track, waypoints }
 
 class FutureRenderer with ChangeNotifier {
-  final FSegment segment;
+  final Segment segment;
   final TrackData trackData;
   final Bridge _bridge;
 
@@ -30,7 +30,7 @@ class FutureRenderer with ChangeNotifier {
   }
 
   BigInt id() {
-    return segment.id();
+    return segment.id;
   }
 
   bool started() {
@@ -58,13 +58,13 @@ class FutureRenderer with ChangeNotifier {
 }
 
 class TrackRenderer extends FutureRenderer {
-  TrackRenderer(Bridge bridge, FSegment segment)
+  TrackRenderer(Bridge bridge, Segment segment)
     : super(bridge: bridge, segment: segment, trackData: TrackData.track);
 }
 
 class WaypointsRenderer extends FutureRenderer {
   double visibility = 0;
-  WaypointsRenderer(Bridge bridge, FSegment segment)
+  WaypointsRenderer(Bridge bridge, Segment segment)
     : super(
         bridge: bridge,
         segment: segment,
@@ -157,7 +157,7 @@ class SegmentsProvider extends ChangeNotifier {
     return _segments;
   }
 
-  String renderSegmentWaypointsSync(FSegment segment) {
+  String renderSegmentWaypointsSync(Segment segment) {
     return _bridge!.renderSegmentWaypointsSync(segment: segment);
   }
 }
