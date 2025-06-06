@@ -1,9 +1,15 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ui/src/rust/frb_generated.dart';
 import 'package:ui/src/rust/api/bridge.dart';
+import 'package:sprintf/sprintf.dart';
 
-bool testSvg(String svg) {
-  return svg.length > 2000;
+Future<bool> testSegment(Bridge bridge, Segment segment) async {
+  String svg = await bridge.renderSegmentTrack(segment: segment);
+  print(sprintf("            ID: %d", [segment.id.toInt()]));
+  print(sprintf("        length: %5.2f km", [segment.length / 1000]));
+  print(sprintf("elevation gain: %5.2f m", [segment.elevationGain]));
+  print(sprintf("    svg length: %d bytes", [svg.length]));
+  return segment.length > 1 && svg.length > 2000;
 }
 
 void main() {
@@ -17,10 +23,8 @@ void main() {
     var S = bridge.segments();
     expect(S.length, equals(6));
     for (Segment segment in S) {
-      print("segment id: ${segment.id}");
-      String svg = await bridge.renderSegmentTrack(segment: segment);
-      print("svg length: ${svg.length}");
-      expect(testSvg(svg), true);
+      bool ok = await testSegment(bridge,segment);
+      expect(ok, true);
     }
   }, timeout: Timeout(Duration(seconds: 5)));
 }

@@ -15,6 +15,8 @@ pub struct Bridge {
 pub struct _Segment {
     pub id: usize,
     pub range: Range<usize>,
+    pub length: f64,
+    pub elevation_gain: f64,
 }
 
 use std::{str::FromStr, time::Duration};

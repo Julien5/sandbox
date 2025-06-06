@@ -89,10 +89,6 @@ fn texty(label: &str, pos: (i32, i32)) -> Text {
     ret
 }
 
-fn to_view(x: f64, y: f64) -> (f64, f64) {
-    ((x / 100f64), 250f64 - (y / 5f64))
-}
-
 fn track(d: Data) -> Path {
     let p = Path::new()
         .set("stroke", "black")
@@ -139,7 +135,7 @@ fn data(
 
 pub fn xticks(bbox: &ProfileBoundingBox) -> Vec<f64> {
     let mut ret = Vec::new();
-    let D = bbox.xmax - bbox.xmin;
+    let _D = bbox.xmax - bbox.xmin;
     let delta = 20000f64;
     let p0 = ((bbox.xmin / delta).ceil() * delta).floor();
     let mut p = p0;
@@ -152,7 +148,7 @@ pub fn xticks(bbox: &ProfileBoundingBox) -> Vec<f64> {
 
 pub fn xticks_dashed(bbox: &ProfileBoundingBox) -> Vec<f64> {
     let mut ret = Vec::new();
-    let D = bbox.xmax - bbox.xmin;
+    let _D = bbox.xmax - bbox.xmin;
     let delta = 20000f64;
     let p0 = ((bbox.xmin / delta).ceil() * delta).floor();
     let mut p = p0;
@@ -165,7 +161,7 @@ pub fn xticks_dashed(bbox: &ProfileBoundingBox) -> Vec<f64> {
 
 pub fn yticks(bbox: &ProfileBoundingBox) -> Vec<f64> {
     let mut ret = Vec::new();
-    let D = bbox.ymax - bbox.ymin;
+    let _D = bbox.ymax - bbox.ymin;
     let delta = 200f64;
     let p0 = ((bbox.ymin / delta).ceil() * delta).floor();
     let mut p = p0;
@@ -178,7 +174,7 @@ pub fn yticks(bbox: &ProfileBoundingBox) -> Vec<f64> {
 
 pub fn yticks_dashed(bbox: &ProfileBoundingBox) -> Vec<f64> {
     let mut ret = Vec::new();
-    let D = bbox.ymax - bbox.ymin;
+    let _D = bbox.ymax - bbox.ymin;
     let delta = 200f64;
     let p0 = ((bbox.ymin / delta).ceil() * delta).floor();
     let mut p = p0;

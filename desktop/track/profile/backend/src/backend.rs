@@ -19,11 +19,23 @@ pub struct Backend {
 pub struct Segment {
     pub id: usize,
     pub range: std::ops::Range<usize>,
+    pub length: f64,
+    pub elevation_gain: f64,
 }
 
 impl Segment {
-    pub fn new(id: usize, range: std::ops::Range<usize>) -> Segment {
-        Segment { id, range }
+    pub fn new(
+        id: usize,
+        range: std::ops::Range<usize>,
+        length: f64,
+        elevation_gain: f64,
+    ) -> Segment {
+        Segment {
+            id,
+            range,
+            length,
+            elevation_gain,
+        }
     }
 }
 
@@ -104,7 +116,9 @@ impl Backend {
             if range.is_empty() {
                 break;
             }
-            ret.push(Segment::new(k, range));
+            let length = self.track.distance(range.end - 1) - self.track.distance(range.start);
+            let elevation_gain = self.track.elevation_gain(&range);
+            ret.push(Segment::new(k, range, length, elevation_gain));
             start = start + 50f64 * km;
             k = k + 1;
         }

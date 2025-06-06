@@ -49,6 +49,17 @@ impl Track {
     pub fn elevation(&self, index: usize) -> f64 {
         self.wgs84[index].2
     }
+    pub fn elevation_gain(&self, range: &std::ops::Range<usize>) -> f64 {
+        // TODO: compute it.
+        let mut ret = 0f64;
+        for k in range.start + 1..range.end {
+            let d = self.elevation(k) - self.elevation(k - 1);
+            if d > 0.0 {
+                ret = ret + d;
+            }
+        }
+        ret
+    }
     pub fn distance(&self, index: usize) -> f64 {
         self._distance[index]
     }
