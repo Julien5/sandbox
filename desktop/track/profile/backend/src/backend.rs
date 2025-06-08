@@ -126,7 +126,10 @@ impl Backend {
         let range = &segment.range;
         self.enrichWaypoints();
         let bbox = ProfileBoundingBox::from_track(&self.track, &range);
-        render::track_profile(&self.track, &range, &bbox)
+        let ret = render::track_profile(&self.track, &range, &bbox);
+        let filename = std::format!("/tmp/track-{}.svg", segment.id);
+        std::fs::write(filename, &ret).expect("Unable to write file");
+        ret
     }
     pub fn render_segment_waypoints(&mut self, segment: &Segment) -> String {
         println!("render_segment_waypoints:{}", segment.id);
