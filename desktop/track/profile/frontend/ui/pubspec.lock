@@ -502,6 +502,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.1"
+  svg_provider:
+    dependency: "direct main"
+    description:
+      name: svg_provider
+      sha256: c9d5c2beb52bef166b1105609ddf8e22e67b9ad18117b00fee36d71516498bc2
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
   sync_http:
     dependency: transitive
     description:
@@ -672,4 +680,4 @@ packages:
     version: "3.1.3"
 sdks:
   dart: ">=3.7.2 <4.0.0"
-  flutter: ">=3.22.0"
+  flutter: ">=3.29.0"
