@@ -1,3 +1,8 @@
 <svg height="400" width="400" xmlns="http://www.w3.org/2000/svg">
 <path d="M50,50 L150,150" stroke="blue" stroke-width="4"/>
+<g id="SL" transform="translate(50 350) scale(-1 -1.5)">
+<text font-family="sans" text-anchor="end" transform="scale(-1 -1) translate(10 -5)">
+0
+</text>
+</g>
 </svg>
