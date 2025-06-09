@@ -15,11 +15,8 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       home: Scaffold(
         appBar: AppBar(title: const Text('Custom Painter Example')),
-        body: Center(
-          child: CustomPaint(
-            size: const Size(200, 200), // Specify the size of the canvas
-            painter: SvgPainter(root:root),
-          ),
+        body: CustomPaint(
+          painter: SvgPainter(root: root),
         ),
       ),
     );
@@ -33,13 +30,6 @@ class SvgPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Example: Draw a red circle
-    final paint =
-        Paint()
-          ..color = Colors.red
-          ..style = PaintingStyle.fill;
-
-    canvas.drawCircle(Offset(size.width / 2, size.height / 2), 50, paint);
     root.paintElement(canvas, size);
   }
 

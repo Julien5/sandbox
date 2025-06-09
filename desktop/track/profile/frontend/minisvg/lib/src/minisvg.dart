@@ -165,9 +165,6 @@ class PathElement extends Element {
     }
     if (e.getAttribute("fill") != null) {
       fill = parseColor(e.getAttribute("fill")!);
-      developer.log("[fill] $stroke");
-    } else {
-      developer.log("[no fill]");
     }
     if (e.getAttribute("stroke-width") != null) {
       strokeWidth = double.parse(e.getAttribute("stroke-width")!);
@@ -199,13 +196,57 @@ class PathElement extends Element {
   }
 }
 
+TextAlign readTextAlign(String textAnchor) {
+  switch (textAnchor) {
+    case "middle":
+      return TextAlign.center;
+    case "end":
+      return TextAlign.right;
+    case "start":
+      return TextAlign.left;
+    default:
+      throw Exception('Unknown color: $textAnchor');
+  }
+}
+
 class TextElement extends Element {
-  TextElement(super.e);
+  late String text;
+  late TextAlign textAlign;
+  TextElement(super.e) {
+    text = e.innerText;
+    textAlign = TextAlign.right;
+    if (e.getAttribute("text-anchor") != null) {
+      textAlign = readTextAlign(e.getAttribute("text-anchor")!);
+    }
+    textAlign = TextAlign.right;
+  }
 
   @override
   void paintElement(Canvas canvas, Size size) {
     installTransforms(canvas);
     developer.log('text paint ${super.e.name.local}');
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: const TextStyle(
+          color: Colors.black, 
+          fontSize: 16.0, 
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+      textAlign: textAlign,
+    );
+
+    textPainter.layout(); 
+    // Calculate the position based on textAlign
+    double dx = 0;
+    if (textAlign == TextAlign.center) {
+      dx = -textPainter.width / 2; 
+    } else if (textAlign == TextAlign.right) {
+      dx = -textPainter.width; 
+    }    
+    double dy = -textPainter.height/2; 
+    textPainter.paint(canvas, Offset(dx, dy));
     deinstallTransforms(canvas);
   }
 }
