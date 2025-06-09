@@ -92,7 +92,7 @@ abstract class Element {
       return PathElement(e);
     } else if (e.name.local == "text") {
       return TextElement(e);
-      } else if (e.name.local == "circle") {
+    } else if (e.name.local == "circle") {
       return GroupElement(e);
     } else if (e.name.local == "svg") {
       return GroupElement(e);
@@ -180,7 +180,10 @@ class PathElement extends Element {
     installTransforms(canvas);
     developer.log('path paint ${super.e.name.local} with ${d.length}');
     final paint = Paint()..style = PaintingStyle.stroke;
-    paint.isAntiAlias = false;
+    paint.isAntiAlias = true;
+    if (d.length < 50) {
+      paint.isAntiAlias = false;
+    }
     developer.log('strokeWidth=$strokeWidth');
     paint.strokeWidth = strokeWidth;
 
@@ -230,24 +233,21 @@ class TextElement extends Element {
     final textPainter = TextPainter(
       text: TextSpan(
         text: text,
-        style: const TextStyle(
-          color: Colors.black, 
-          fontSize: 16.0, 
-        ),
+        style: const TextStyle(color: Colors.black, fontSize: 16.0),
       ),
       textDirection: TextDirection.ltr,
       textAlign: textAlign,
     );
 
-    textPainter.layout(); 
+    textPainter.layout();
     // Calculate the position based on textAlign
     double dx = 0;
     if (textAlign == TextAlign.center) {
-      dx = -textPainter.width / 2; 
+      dx = -textPainter.width / 2;
     } else if (textAlign == TextAlign.right) {
-      dx = -textPainter.width; 
-    }    
-    double dy = -textPainter.height/2; 
+      dx = -textPainter.width;
+    }
+    double dy = -textPainter.height / 2;
     textPainter.paint(canvas, Offset(dx, dy));
     deinstallTransforms(canvas);
   }
@@ -270,7 +270,12 @@ class MiniSvgWidget extends StatelessWidget {
     return Element.fromXml(doc.rootElement);
   }
 
-  const MiniSvgWidget({super.key, required this.svg, required this.width, required this.height});
+  const MiniSvgWidget({
+    super.key,
+    required this.svg,
+    required this.width,
+    required this.height,
+  });
 
   @override
   Widget build(BuildContext context) {
