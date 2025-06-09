@@ -75,18 +75,15 @@ abstract class Element {
     canvas.save();
     for (var t in T) {
       if (t is Translate) {
-        developer.log('install translate (${t.tx},${t.ty})');
         canvas.translate(t.tx, t.ty);
       }
       if (t is Scale) {
-        developer.log('install scale (${t.sx},${t.sy})');
         canvas.scale(t.sx, t.sy);
       }
     }
   }
 
   void deinstallTransforms(Canvas canvas) {
-    developer.log('desinstall transforms');
     canvas.restore();
   }
 
@@ -144,7 +141,7 @@ Color parseColor(String colorName) {
     case 'magenta':
       return Colors.purple;
     case 'lightgray':
-      return Colors.lightBlue;
+      return const Color.fromARGB(255, 231, 226, 226);
     case 'transparent':
       return Colors.transparent;
     default:
@@ -155,14 +152,22 @@ Color parseColor(String colorName) {
 class PathElement extends Element {
   late String d;
   late Color stroke;
+  late Color fill;
   late double strokeWidth;
   late Path path;
   PathElement(super.e) {
     d = e.getAttribute("d")!;
     stroke = Colors.black;
+    fill = Colors.transparent;
     strokeWidth = 1.0;
     if (e.getAttribute("stroke") != null) {
       stroke = parseColor(e.getAttribute("stroke")!);
+    }
+    if (e.getAttribute("fill") != null) {
+      fill = parseColor(e.getAttribute("fill")!);
+      developer.log("[fill] $stroke");
+    } else {
+      developer.log("[no fill]");
     }
     if (e.getAttribute("stroke-width") != null) {
       strokeWidth = double.parse(e.getAttribute("stroke-width")!);
@@ -182,6 +187,12 @@ class PathElement extends Element {
 
     developer.log('stroke=$stroke');
     paint.color = stroke;
+
+    if (fill != Colors.transparent) {
+      developer.log("fill = $fill");
+      paint.style = PaintingStyle.fill;
+      paint.color = fill;
+    }
 
     canvas.drawPath(path, paint);
     deinstallTransforms(canvas);
