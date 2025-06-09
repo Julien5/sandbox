@@ -93,7 +93,7 @@ abstract class Element {
     } else if (e.name.local == "text") {
       return TextElement(e);
     } else if (e.name.local == "circle") {
-      return GroupElement(e);
+      return CircleElement(e);
     } else if (e.name.local == "svg") {
       return GroupElement(e);
     } else if (e.name.local == "g") {
@@ -197,6 +197,49 @@ class PathElement extends Element {
     }
 
     canvas.drawPath(path, paint);
+    deinstallTransforms(canvas);
+  }
+}
+
+
+class CircleElement extends Element {
+  late Color stroke;
+  late Color fill;
+  late double strokeWidth;
+  late double cx, cy, r;
+
+  CircleElement(super.e) {
+    stroke = Colors.black;
+    fill = Colors.transparent;
+    strokeWidth = 1.0;
+    if (e.getAttribute("stroke") != null) {
+      stroke = parseColor(e.getAttribute("stroke")!);
+    }
+    if (e.getAttribute("fill") != null) {
+      fill = parseColor(e.getAttribute("fill")!);
+    }
+    if (e.getAttribute("stroke-width") != null) {
+      strokeWidth = double.parse(e.getAttribute("stroke-width")!);
+    }
+    cx = double.parse(e.getAttribute("cx")!);
+    cy = double.parse(e.getAttribute("cy")!);
+    r = double.parse(e.getAttribute("r")!);
+  }
+
+  @override
+  void paintElement(Canvas canvas, Size size) {
+    installTransforms(canvas);
+    final paint = Paint()..style = PaintingStyle.stroke;
+    paint.isAntiAlias = true;
+    paint.strokeWidth = strokeWidth;
+    paint.color = stroke;
+
+    if (fill != Colors.transparent) {
+      developer.log("fill = $fill");
+      paint.style = PaintingStyle.fill;
+      paint.color = fill;
+    }
+    canvas.drawCircle(Offset(cx,cy),r, paint);
     deinstallTransforms(canvas);
   }
 }
