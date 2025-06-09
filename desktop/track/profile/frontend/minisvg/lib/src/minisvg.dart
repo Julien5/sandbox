@@ -1,8 +1,7 @@
 import 'dart:developer' as developer;
 import 'dart:io';
-import 'dart:ui';
-
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:svg_path_parser/svg_path_parser.dart';
 import 'package:xml/xml.dart';
 
 class Transform {
@@ -46,7 +45,7 @@ class Translate extends Transform {
     final translateMatch = translateRegex.firstMatch(s);
     assert(translateMatch != null);
     tx = double.parse(translateMatch!.group(1)!);
-    ty = double.parse(translateMatch  .group(2)!);
+    ty = double.parse(translateMatch.group(2)!);
   }
 }
 
@@ -126,13 +125,65 @@ class GroupElement extends Element {
   }
 }
 
+Color parseColor(String colorName) {
+  switch (colorName.toLowerCase()) {
+    case 'black':
+      return Colors.black;
+    case 'white':
+      return Colors.white;
+    case 'red':
+      return Colors.red;
+    case 'green':
+      return Colors.green;
+    case 'blue':
+      return Colors.blue;
+    case 'yellow':
+      return Colors.yellow;
+    case 'cyan':
+      return Colors.cyan;
+    case 'magenta':
+      return Colors.purple;
+    case 'lightgray':
+      return Colors.lightBlue;
+    case 'transparent':
+      return Colors.transparent;
+    default:
+      throw Exception('Unknown color: $colorName');
+  }
+}
+
 class PathElement extends Element {
-  PathElement(super.e);
+  late String d;
+  late Color stroke;
+  late double strokeWidth;
+  late Path path;
+  PathElement(super.e) {
+    d = e.getAttribute("d")!;
+    stroke = Colors.black;
+    strokeWidth = 1.0;
+    if (e.getAttribute("stroke") != null) {
+      stroke = parseColor(e.getAttribute("stroke")!);
+    }
+    if (e.getAttribute("stroke-width") != null) {
+      strokeWidth = double.parse(e.getAttribute("stroke-width")!);
+    }
+
+    path = parseSvgPath(d);
+  }
 
   @override
   void paintElement(Canvas canvas, Size size) {
     installTransforms(canvas);
-    developer.log('path paint ${super.e.name.local}');
+    developer.log('path paint ${super.e.name.local} with ${d.length}');
+    final paint = Paint()..style = PaintingStyle.stroke;
+    paint.isAntiAlias = false;
+    developer.log('strokeWidth=$strokeWidth');
+    paint.strokeWidth = strokeWidth;
+
+    developer.log('stroke=$stroke');
+    paint.color = stroke;
+
+    canvas.drawPath(path, paint);
     deinstallTransforms(canvas);
   }
 }
@@ -148,13 +199,9 @@ class TextElement extends Element {
   }
 }
 
-String mini() {
+Element rootElement() {
   /// read xml from file
-  String xml = File('test.svg').readAsStringSync();
+  String xml = File('track-0.svg').readAsStringSync();
   XmlDocument doc = XmlDocument.parse(xml);
-  Element root = Element.fromXml(doc.rootElement);
-  Canvas canvas = Canvas(PictureRecorder());
-  Size size = Size(100, 100); // Example size, adjust as needed
-  root.paintElement(canvas, size);
-  return "hi";
+  return Element.fromXml(doc.rootElement);
 }
