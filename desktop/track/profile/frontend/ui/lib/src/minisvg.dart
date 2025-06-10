@@ -254,12 +254,11 @@ class TextElement extends Element {
   late String text;
   late TextAlign textAlign;
   TextElement(super.e) {
-    text = e.innerText;
-    textAlign = TextAlign.right;
+    text = e.innerText.trim();
+    textAlign = TextAlign.center;
     if (e.getAttribute("text-anchor") != null) {
       textAlign = readTextAlign(e.getAttribute("text-anchor")!);
     }
-    textAlign = TextAlign.right;
   }
 
   @override
@@ -276,12 +275,16 @@ class TextElement extends Element {
     textPainter.layout();
     // Calculate the position based on textAlign
     double dx = 0;
+    
     if (textAlign == TextAlign.center) {
-      dx = -textPainter.width / 2;
+      dx = -textPainter.width/2;
     } else if (textAlign == TextAlign.right) {
       dx = -textPainter.width;
     }
-    double dy = -textPainter.height / 2;
+    //double dy = -textPainter.height/2-textPainter.preferredLineHeight;
+    // TODO: fix that hardcoded 4.
+    double dy = -textPainter.height/2-4;
+    developer.log("[${textAlign}] ${text} ${dy}");
     textPainter.paint(canvas, Offset(dx, dy));
   }
 }
