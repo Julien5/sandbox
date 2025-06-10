@@ -55,6 +55,12 @@ abstract class Element {
 
   void paintElement(Canvas canvas, Size size);
 
+  void paint(Canvas canvas, Size size) {
+    _installTransforms(canvas);
+    paintElement(canvas,size);
+    _deinstallTransforms(canvas);
+  }
+
   late XmlElement e;
   Element(XmlElement pe) : e = pe {
     if (e.attributes.isNotEmpty) {
@@ -71,7 +77,7 @@ abstract class Element {
     }
   }
 
-  void installTransforms(Canvas canvas) {
+  void _installTransforms(Canvas canvas) {
     canvas.save();
     for (var t in T) {
       if (t is Translate) {
@@ -83,7 +89,7 @@ abstract class Element {
     }
   }
 
-  void deinstallTransforms(Canvas canvas) {
+  void _deinstallTransforms(Canvas canvas) {
     canvas.restore();
   }
 
@@ -116,11 +122,9 @@ class GroupElement extends Element {
   @override
   void paintElement(Canvas canvas, Size size) {
     developer.log('group paint ${super.e.name.local}');
-    installTransforms(canvas);
     for (var child in children) {
-      child.paintElement(canvas, size);
+      child.paint(canvas, size);
     }
-    deinstallTransforms(canvas);
   }
 }
 
@@ -177,30 +181,23 @@ class PathElement extends Element {
 
   @override
   void paintElement(Canvas canvas, Size size) {
-    installTransforms(canvas);
     developer.log('path paint ${super.e.name.local} with ${d.length}');
     final paint = Paint()..style = PaintingStyle.stroke;
     paint.isAntiAlias = true;
     if (d.length < 50) {
       paint.isAntiAlias = false;
     }
-    developer.log('strokeWidth=$strokeWidth');
     paint.strokeWidth = strokeWidth;
-
-    developer.log('stroke=$stroke');
     paint.color = stroke;
 
     if (fill != Colors.transparent) {
-      developer.log("fill = $fill");
       paint.style = PaintingStyle.fill;
       paint.color = fill;
     }
 
     canvas.drawPath(path, paint);
-    deinstallTransforms(canvas);
   }
 }
-
 
 class CircleElement extends Element {
   late Color stroke;
@@ -228,19 +225,16 @@ class CircleElement extends Element {
 
   @override
   void paintElement(Canvas canvas, Size size) {
-    installTransforms(canvas);
     final paint = Paint()..style = PaintingStyle.stroke;
     paint.isAntiAlias = true;
     paint.strokeWidth = strokeWidth;
     paint.color = stroke;
 
     if (fill != Colors.transparent) {
-      developer.log("fill = $fill");
       paint.style = PaintingStyle.fill;
       paint.color = fill;
     }
     canvas.drawCircle(Offset(cx,cy),r, paint);
-    deinstallTransforms(canvas);
   }
 }
 
@@ -271,8 +265,6 @@ class TextElement extends Element {
 
   @override
   void paintElement(Canvas canvas, Size size) {
-    installTransforms(canvas);
-    developer.log('text paint ${super.e.name.local}');
     final textPainter = TextPainter(
       text: TextSpan(
         text: text,
@@ -292,7 +284,6 @@ class TextElement extends Element {
     }
     double dy = -textPainter.height / 2;
     textPainter.paint(canvas, Offset(dx, dy));
-    deinstallTransforms(canvas);
   }
 }
 
