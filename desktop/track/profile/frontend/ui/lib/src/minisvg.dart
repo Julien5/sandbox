@@ -181,7 +181,6 @@ class PathElement extends Element {
 
   @override
   void paintElement(Canvas canvas, Size size) {
-    developer.log('path paint ${super.e.name.local} with ${d.length}');
     final paint = Paint()..style = PaintingStyle.stroke;
     paint.isAntiAlias = true;
     if (d.length < 50) {
@@ -207,7 +206,7 @@ class CircleElement extends Element {
 
   CircleElement(super.e) {
     stroke = Colors.black;
-    fill = Colors.transparent;
+    fill = Colors.black;
     strokeWidth = 1.0;
     if (e.getAttribute("stroke") != null) {
       stroke = parseColor(e.getAttribute("stroke")!);
