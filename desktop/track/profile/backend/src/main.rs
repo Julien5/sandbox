@@ -6,6 +6,7 @@ pub mod gpsdata;
 pub mod pdf;
 pub mod project;
 pub mod render;
+pub mod renderpdf;
 pub mod speed;
 pub mod svgprofile;
 pub mod utm;
@@ -36,4 +37,5 @@ fn main() {
             w.elevation
         );
     }
+    renderpdf::test();
 }
