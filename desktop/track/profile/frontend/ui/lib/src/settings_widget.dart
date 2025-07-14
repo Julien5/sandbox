@@ -226,7 +226,7 @@ class _WidthSettingsState extends State<WidthSettings> {
         );
         return Center(
           child: Container(
-            constraints: const BoxConstraints(maxWidth: 1500),
+            constraints: const BoxConstraints(maxWidth: 300),
             child: Column(
               children: [
                 Selector(

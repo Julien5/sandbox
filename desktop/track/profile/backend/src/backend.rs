@@ -5,6 +5,7 @@ pub use crate::gpsdata;
 use crate::gpsdata::ProfileBoundingBox;
 use crate::gpsdata::WaypointOrigin;
 use crate::project;
+use crate::renderpdf;
 use crate::speed;
 use crate::svgprofile;
 use crate::utm::UTMPoint;
@@ -144,6 +145,9 @@ impl Backend {
     }
     pub fn setSegmentLength(&mut self, length: f64) {
         self.segment_length = length;
+    }
+    pub fn testPdf(&mut self) -> Vec<u8> {
+        renderpdf::test()
     }
     fn enrichWaypoints(&mut self) {
         // not fast.

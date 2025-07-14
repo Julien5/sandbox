@@ -165,16 +165,6 @@ class SegmentsProvider extends ChangeNotifier {
     _updateSegments();
   }
 
-  void incrementDelta() async {
-    await _bridge.adjustEpsilon(eps: 10.0);
-    _updateSegments();
-  }
-
-  void decrementDelta() async {
-    await _bridge.adjustEpsilon(eps: -10.0);
-    _updateSegments();
-  }
-
   void setStartTime(DateTime dateTime) {
     _bridge.setStartTime(iso8601: dateTime.toIso8601String());
     _updateSegments();
@@ -194,6 +184,10 @@ class SegmentsProvider extends ChangeNotifier {
   void setSmoothWidth(double width) {
     _bridge.setSmoothWidth(w: width);
     _updateSegments();
+  }
+
+  Future<List<int>> testPdf() {
+    return _bridge.testPdf();
   }
 
   void _updateSegments() {

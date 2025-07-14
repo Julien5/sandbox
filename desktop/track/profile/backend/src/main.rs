@@ -37,5 +37,6 @@ fn main() {
             w.elevation
         );
     }
-    renderpdf::test();
+    let pdfbytes = renderpdf::test();
+    std::fs::write("/tmp/test.pdf", pdfbytes).expect("Could not write pdf.");
 }

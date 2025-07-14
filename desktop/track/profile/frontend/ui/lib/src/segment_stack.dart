@@ -8,6 +8,36 @@ import 'package:ui/src/settings_widget.dart';
 import 'package:ui/src/waypoints_widget.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
+class TestPdfButton extends StatefulWidget {
+  const TestPdfButton({super.key});
+
+  @override
+  State<TestPdfButton> createState() => _TestPdfButtonState();
+}
+
+class _TestPdfButtonState extends State<TestPdfButton> {
+  int pdflength=0;
+
+  void onPressed(SegmentsProvider model) async {
+    var data = await model.testPdf();
+    setState(() {
+      developer.log("pdf length: ${data.length}");
+      pdflength=data.length;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    SegmentsProvider model = Provider.of<SegmentsProvider>(context);
+    return Row(
+      children: [
+        ElevatedButton(onPressed: () => onPressed(model), child: Text("PDF")),
+        Text("length: $pdflength"),
+      ],
+    );
+  }
+}
+
 class SegmentStack extends StatelessWidget {
   const SegmentStack({super.key});
 
@@ -21,7 +51,13 @@ class SegmentStack extends StatelessWidget {
       child: Stack(children: <Widget>[TrackConsumer(), WaypointsConsumer()]),
     );
     var wp = SizedBox(height: 150, child: WayPointsConsumer());
-    return Column(children: [stack, WidthSettings(),wp]);
+    return Column(
+      children: [
+        stack,
+        Row(children: [WidthSettings(), TestPdfButton()]),
+        wp,
+      ],
+    );
   }
 }
 
