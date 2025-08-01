@@ -373,13 +373,10 @@ class MiniSvgWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     //return buildtest(context);
     // FIXME: do not parse in the build method.
-    return Container(
-      width: size!.width+20,
-      alignment: Alignment.center,
-      child:CustomPaint(
+    return CustomPaint(
       size: size!,
       painter: SvgPainter(root: MiniSvgWidget.parse(svg)),
-    ));
+    );
   }
 }
 

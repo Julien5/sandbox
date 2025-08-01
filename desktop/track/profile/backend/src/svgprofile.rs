@@ -351,7 +351,12 @@ impl Profile {
     }
 
     pub fn reset_size(&mut self, W: i32, H: i32) {
-        let Mleft = ((W as f64) * 0.05f64).floor() as i32;
+        let Mleft = if self.render_device == RenderDevice::PDF {
+            ((W as f64) * 0.05f64).floor() as i32
+        } else {
+            0i32
+        };
+        println!("Mleft={}", Mleft);
         let Mbottom = ((H as f64) / 10f64).floor() as i32;
         self.W = W;
         self.H = H;
@@ -410,7 +415,6 @@ impl Profile {
         } else {
             30f64 * font_size_factor
         };
-        println!("font-size={}", font_size);
         let mut world = Group::new()
             .set("id", "world")
             .set("shape-rendering", "crispEdges")
@@ -418,11 +422,12 @@ impl Profile {
             .set("font-size", format!("{}", font_size))
             .set("transform", "translate(5 5)");
         world.append(self.BG.clone());
-        world.append(self.SL.clone());
+        if self.Mleft > 0 {
+            world.append(self.SL.clone());
+        }
         world.append(self.SB.clone());
         world.append(self.SD.clone());
 
-        println!("font-size:{}", font_size);
         let document = svg::Document::new()
             .set("width", self.W + 20)
             .set("height", self.H)
@@ -538,7 +543,6 @@ impl Profile {
             if !self.shows_waypoint(w) {
                 continue;
             }
-            println!("value[{}]={}", k, w.info.as_ref().unwrap().value.unwrap());
             self.add_waypoint(&waypoints, k, V.contains(&k));
         }
     }

@@ -7,12 +7,28 @@ import 'package:ui/src/future_rendering_widget.dart';
 import 'package:ui/src/waypoints_widget.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
-class XXX extends StatelessWidget {
-  const XXX({super.key});
+class SegmentStack extends StatelessWidget {
+  const SegmentStack({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Text("hi");
+    var scrollView = SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Stack(children: <Widget>[TrackConsumer(), WaypointsConsumer()]),
+    );
+    return SizedBox(
+      height: 285, // Set a fixed height of 450 pixels
+      child: Row(
+        children: [
+          Container(
+            color: Colors.orange[500],
+            width: 48.0,
+            height: 285
+          ),
+          scrollView,
+        ],
+      ),
+    );
   }
 }
 
@@ -40,14 +56,6 @@ class SegmentView extends StatelessWidget {
       developer.log("Visible rows: $firstVisibleRow to $lastVisibleRow");
     });
 
-    var stack = SizedBox(
-      height: 310, // Set a fixed height of 450 pixels
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Stack(children: <Widget>[TrackConsumer(), WaypointsConsumer()]),
-      ),
-    );
-
     var table = SingleChildScrollView(
       controller: scrollController, // Attach the ScrollController here
       scrollDirection: Axis.vertical,
@@ -56,7 +64,7 @@ class SegmentView extends StatelessWidget {
 
     return Column(
       children: [
-        stack,
+        SegmentStack(),
         const Divider(
           height: 1, // Thickness of the divider
           color: Colors.grey, // Light stroke color
