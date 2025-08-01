@@ -7,8 +7,17 @@ import 'package:ui/src/future_rendering_widget.dart';
 import 'package:ui/src/waypoints_widget.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
-class SegmentStack extends StatelessWidget {
-  const SegmentStack({super.key});
+class XXX extends StatelessWidget {
+  const XXX({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Text("hi");
+  }
+}
+
+class SegmentView extends StatelessWidget {
+  const SegmentView({super.key});
 
   @override
   Widget build(BuildContext context) {
