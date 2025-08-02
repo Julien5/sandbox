@@ -21,12 +21,11 @@ class Legend extends StatelessWidget {
           trackRenderer.segment,
           Size(1000, 285),
         );
-        
         return Stack(children:[
           Container(
             color: Colors.white, // Set the background color to white
           ),
-          MiniSvgWidget(svg: svg, size: Size(50, 285))
+          MiniSvgWidget(svg: svg, size: Size(20, 285))
           ]);
       },
     );
