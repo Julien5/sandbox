@@ -426,9 +426,25 @@ impl Profile {
         if C.is_some() && !C.unwrap().is_empty() {
             world.append(self.SB.clone());
             world.append(self.SD.clone());
-            world.append(self.SL.clone());
+            if self.render_device == RenderDevice::PDF {
+                world.append(self.SL.clone());
+            }
         } else {
-            world.append(self.SL.clone());
+            debug_assert!(self.render_device != RenderDevice::PDF);
+            let mut SL = self.SL.clone();
+            // <rect x="5" y="-25" width="100" height="500"  fill="white"/>
+            SL.append(bbrect("bg", "lightgray", (0, -25), (100, 500)));
+            // <path d="M3,-2 L3,258" stroke="black" stroke-width="3"/>
+            let mut d = Data::new();
+            d.append(Command::Move(Position::Absolute, (3f64, -2).into()));
+            d.append(Command::Line(Position::Absolute, (3f64, self.HD()).into()));
+            SL.append(
+                Path::new()
+                    .set("stroke", "black")
+                    .set("stroke-width", 3)
+                    .set("d", d),
+            );
+            world.append(SL);
         }
 
         let document = svg::Document::new()

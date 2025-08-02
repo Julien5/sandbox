@@ -277,8 +277,8 @@ impl Backend {
         profile.add_canvas();
         profile.add_track(&self.track, &self.track_smooth_elevation);
         let ret = profile.render();
-        //let filename = std::format!("/tmp/segment-{}.svg", segment.id);
-        //std::fs::write(filename, &ret).expect("Unable to write file");
+        let filename = std::format!("/tmp/segment-{}.svg", segment.id);
+        std::fs::write(filename, &ret).expect("Unable to write file");
         ret
     }
     pub fn render_segment_waypoints(
