@@ -431,17 +431,30 @@ impl Profile {
             }
         } else {
             debug_assert!(self.render_device != RenderDevice::PDF);
-            let mut SL = self.SL.clone();
+            let mut SL = Group::new().set("id", "SL").set(
+                "transform",
+                transformSL(self.W, self.H, self.Mleft, self.Mbottom),
+            );
             // <rect x="5" y="-25" width="100" height="500"  fill="white"/>
-            SL.append(bbrect("bg", "lightgray", (0, -25), (100, 500)));
+            //SL.append(bbrect("bg", "lightgray", (0, -25), (self.Mleft, self.HD())));
+            for ytick in yticks(&self.bbox) {
+                let yd = toSD((self.bbox.xmin, ytick), self.WD(), self.HD(), &self.bbox).1;
+                if yd > self.HD() {
+                    break;
+                }
+                SL.append(texty(
+                    format!("{}", ytick.floor() as i32).as_str(),
+                    (10, yd - 5),
+                ));
+            }
             // <path d="M3,-2 L3,258" stroke="black" stroke-width="3"/>
             let mut d = Data::new();
-            d.append(Command::Move(Position::Absolute, (3f64, -2).into()));
-            d.append(Command::Line(Position::Absolute, (3f64, self.HD()).into()));
+            d.append(Command::Move(Position::Absolute, (1f64, -2).into()));
+            d.append(Command::Line(Position::Absolute, (1f64, self.HD()).into()));
             SL.append(
                 Path::new()
                     .set("stroke", "black")
-                    .set("stroke-width", 3)
+                    .set("stroke-width", 4)
                     .set("d", d),
             );
             world.append(SL);
