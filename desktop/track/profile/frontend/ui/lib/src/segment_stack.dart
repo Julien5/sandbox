@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:ui/src/backendmodel.dart';
 import 'package:ui/src/future_rendering_widget.dart';
+import 'package:ui/src/hardlegend.dart';
 import 'package:ui/src/minisvg.dart';
 import 'package:ui/src/waypoints_widget.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -20,6 +21,7 @@ class Legend extends StatelessWidget {
           trackRenderer.segment,
           Size(1000, 285),
         );
+        svg = hardlegend();
         return MiniSvgWidget(svg: svg, size: Size(50, 285));
       },
     );
@@ -75,7 +77,6 @@ class SegmentView extends StatelessWidget {
     final ScrollController scrollController = ScrollController();
 
     scrollController.addListener(() {
-      // Calculate visible rows based on scroll position
       double headerHeight = 56;
       double scrollOffset = max(scrollController.offset - headerHeight, 0);
       developer.log("offset: $scrollController.offset");
