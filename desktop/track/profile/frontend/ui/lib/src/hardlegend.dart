@@ -1,12 +1,10 @@
 String hardlegend() {
   return '''
 <svg height="285" width="1020" xmlns="http://www.w3.org/2000/svg">
-  <g font-family="Libertinus Serif" font-size="15" id="world" shape-rendering="crispEdges" transform="translate(5 5)">
+  <g font-size="15" id="world" shape-rendering="crispEdges" transform="translate(5 5)">
 	<g id="BG"/>
 	<g id="SL" transform="translate(50 257) scale(-1 -1)">
-	  <rect x="5" y="-25" width="100" height="500"  fill="white" stroke="black"
-             stroke-width="10"
-			/>
+	  <rect x="5" y="-25" width="100" height="500"  fill="white"/>
     <path d="M3,-2 L3,258" stroke="black" stroke-width="3"/> 
 	  <text text-anchor="end" transform="translate(10 -5) scale(-1 -1)">
 		0
