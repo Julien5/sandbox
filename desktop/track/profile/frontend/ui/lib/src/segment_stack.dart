@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:ui/src/backendmodel.dart';
 import 'package:ui/src/future_rendering_widget.dart';
-import 'package:ui/src/hardlegend.dart';
 import 'package:ui/src/minisvg.dart';
 import 'package:ui/src/waypoints_widget.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -14,7 +13,14 @@ class Legend extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MiniSvgWidget(svg: hardlegend(), size: Size(50,285));
+    return Consumer<TrackRenderer>(
+      builder: (context, trackRenderer, child) {
+        SegmentsProvider model=Provider.of<SegmentsProvider>(context);
+        var size=Size(50, 285);
+        String svg = model.renderSegmentYAxis(trackRenderer.segment,size);
+        return MiniSvgWidget(svg: svg, size: size);
+      },
+    );
   }
 }
 
@@ -30,13 +36,7 @@ class SegmentStack extends StatelessWidget {
 
     return SizedBox(
       height: 285,
-      child: Stack(
-        children: [
-          Flexible(child: scrollView),
-          Legend()
-          //Container(color: Colors.orange[500], width: 48.0, height: 285),
-        ],
-      ),
+      child: Stack(children: [Flexible(child: scrollView), Legend()]),
     );
   }
 }

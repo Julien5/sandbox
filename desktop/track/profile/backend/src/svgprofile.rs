@@ -425,10 +425,6 @@ impl Profile {
             world.append(self.SD.clone());
             world.append(self.SL.clone());
         } else {
-            let SL = self
-                .SL
-                .clone()
-                .set("transform", transformSL(self.W, self.H, 40, self.Mbottom));
             world.append(self.SL.clone());
         }
 
