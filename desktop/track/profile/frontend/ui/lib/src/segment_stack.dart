@@ -26,34 +26,43 @@ class Legend extends StatelessWidget {
   }
 }
 
+class SegmentScrollView extends StatelessWidget {
+  const SegmentScrollView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Stack(children: <Widget>[TrackConsumer(), WaypointsConsumer()]),
+    );
+  }
+}
+
 class SegmentStack extends StatelessWidget {
   const SegmentStack({super.key});
 
   @override
   Widget build(BuildContext context) {
-    var scrollView = SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Stack(children: <Widget>[TrackConsumer(), WaypointsConsumer()]),
-    );
-
-    return SizedBox(
+    var scrollView = SegmentScrollView();
+    var box = SizedBox(
       height: 285,
       child: Stack(
         children: [
-          Positioned.fill(
-            child: scrollView,
-          ),
+          Positioned.fill(child: scrollView),
           Positioned(
             left: 0,
             top: 0,
             bottom: 0,
-            child: SizedBox(
-              width: 50, // Fixed width for the legend
-              child: Legend(),
-            ),
+            child: SizedBox(width: 50, child: Legend()),
           ),
         ],
       ),
+    );
+    return ConstrainedBox(
+      constraints: const BoxConstraints(
+        maxWidth: 1000, // Constrain the width to a maximum of 1000 pixels
+      ),
+      child: box,
     );
   }
 }
