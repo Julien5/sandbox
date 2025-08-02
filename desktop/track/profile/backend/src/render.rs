@@ -108,7 +108,7 @@ pub fn compile_pdf(backend: &mut Backend, debug: bool, (W, H): (i32, i32)) -> St
         }
         let waypoints_table = backend.get_waypoint_table(&segment);
         let table = points_table(&templates, &backend.track, &waypoints_table);
-        let p = backend.render_segment(segment, (W, H), RenderDevice::Native);
+        let p = backend.render_segment(segment, (W, H), RenderDevice::PDF);
         if debug {
             let f = format!("/tmp/segment-{}.svg", segment.id);
             std::fs::write(&f, &p).unwrap();

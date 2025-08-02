@@ -353,6 +353,9 @@ impl Profile {
     }
 
     pub fn reset_size(&mut self, W: i32, H: i32) {
+        if self.render_device != RenderDevice::PDF {
+            self.bbox.xmin = self.bbox.xmin.max(0f64);
+        }
         let Mleft = ((W as f64) * 0.05f64).floor() as i32;
         let Mbottom = ((H as f64) / 10f64).floor() as i32;
         self.W = W;
