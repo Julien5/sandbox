@@ -16,9 +16,8 @@ class Legend extends StatelessWidget {
     return Consumer<TrackRenderer>(
       builder: (context, trackRenderer, child) {
         SegmentsProvider model=Provider.of<SegmentsProvider>(context);
-        var size=Size(50, 285);
-        String svg = model.renderSegmentYAxis(trackRenderer.segment,size);
-        return MiniSvgWidget(svg: svg, size: size);
+        String svg = model.renderSegmentYAxis(trackRenderer.segment,Size(1000, 285));
+        return MiniSvgWidget(svg: svg, size: Size(50, 285));
       },
     );
   }
@@ -36,7 +35,9 @@ class SegmentStack extends StatelessWidget {
 
     return SizedBox(
       height: 285,
-      child: Stack(children: [Flexible(child: scrollView), Legend()]),
+      child: Stack(children: [Flexible(child: scrollView), 
+      Container(color: Colors.grey[500], width: 50.0, height: 285),
+      Legend(),]),
     );
   }
 }
