@@ -4,8 +4,19 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:ui/src/backendmodel.dart';
 import 'package:ui/src/future_rendering_widget.dart';
+import 'package:ui/src/hardlegend.dart';
+import 'package:ui/src/minisvg.dart';
 import 'package:ui/src/waypoints_widget.dart';
 import 'package:visibility_detector/visibility_detector.dart';
+
+class Legend extends StatelessWidget {
+  const Legend({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MiniSvgWidget(svg: hardlegend(), size: Size(50,285));
+  }
+}
 
 class SegmentStack extends StatelessWidget {
   const SegmentStack({super.key});
@@ -19,10 +30,11 @@ class SegmentStack extends StatelessWidget {
 
     return SizedBox(
       height: 285,
-      child: Row(
+      child: Stack(
         children: [
-          Container(color: Colors.orange[500], width: 48.0, height: 285),
           Flexible(child: scrollView),
+          Legend()
+          //Container(color: Colors.orange[500], width: 48.0, height: 285),
         ],
       ),
     );
