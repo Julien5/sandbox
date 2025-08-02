@@ -9,12 +9,14 @@ use crate::waypoints_table;
 use svg::node::element::path::Command;
 use svg::node::element::path::Position;
 use svg::Node;
+
 type Data = svg::node::element::path::Data;
 type Group = svg::node::element::Group;
 type Rect = svg::node::element::Path;
 type Circle = svg::node::element::Circle;
 type Path = svg::node::element::Path;
 type Text = svg::node::element::Text;
+
 use crate::gpsdata;
 
 fn line(p1: (i32, i32), p2: (i32, i32)) -> Data {
@@ -422,9 +424,7 @@ impl Profile {
             .set("font-size", format!("{}", font_size))
             .set("transform", "translate(5 5)");
         world.append(self.BG.clone());
-        if self.Mleft > 0 {
-            world.append(self.SL.clone());
-        }
+        world.append(self.SL.clone());
         world.append(self.SB.clone());
         world.append(self.SD.clone());
 
