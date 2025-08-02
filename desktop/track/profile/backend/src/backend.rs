@@ -251,6 +251,19 @@ impl Backend {
         profile.add_waypoints(&W);
         profile.render()
     }
+    pub fn render_yaxis_labels(
+        &mut self,
+        segment: &Segment,
+        (W, H): (i32, i32),
+        render_device: RenderDevice,
+    ) -> String {
+        println!("render_segment_track:{}", segment.id);
+        let mut profile = segment.profile.clone();
+        profile.set_render_device(render_device);
+        profile.reset_size(W, H);
+        profile.add_yaxis_labels();
+        profile.render()
+    }
     pub fn render_segment_track(
         &mut self,
         segment: &Segment,

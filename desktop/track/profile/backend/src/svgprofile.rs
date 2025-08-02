@@ -353,12 +353,7 @@ impl Profile {
     }
 
     pub fn reset_size(&mut self, W: i32, H: i32) {
-        let Mleft = if self.render_device == RenderDevice::PDF {
-            ((W as f64) * 0.05f64).floor() as i32
-        } else {
-            0i32
-        };
-        println!("Mleft={}", Mleft);
+        let Mleft = ((W as f64) * 0.05f64).floor() as i32;
         let Mbottom = ((H as f64) / 10f64).floor() as i32;
         self.W = W;
         self.H = H;
@@ -424,9 +419,18 @@ impl Profile {
             .set("font-size", format!("{}", font_size))
             .set("transform", "translate(5 5)");
         world.append(self.BG.clone());
-        world.append(self.SL.clone());
-        world.append(self.SB.clone());
-        world.append(self.SD.clone());
+        let C = self.SD.get_children();
+        if C.is_some() && !C.unwrap().is_empty() {
+            world.append(self.SB.clone());
+            world.append(self.SD.clone());
+            world.append(self.SL.clone());
+        } else {
+            let SL = self
+                .SL
+                .clone()
+                .set("transform", transformSL(self.W, self.H, 40, self.Mbottom));
+            world.append(self.SL.clone());
+        }
 
         let document = svg::Document::new()
             .set("width", self.W + 20)
@@ -435,9 +439,23 @@ impl Profile {
 
         document.to_string()
     }
-}
 
-impl Profile {
+    pub fn add_yaxis_labels(&mut self) {
+        let WD = self.WD();
+        let HD = self.HD();
+
+        for ytick in yticks(&self.bbox) {
+            let yd = toSD((self.bbox.xmin, ytick), WD, HD, &self.bbox).1;
+            if yd > HD {
+                break;
+            }
+            self.SL.append(texty(
+                format!("{}", ytick.floor() as i32).as_str(),
+                (10, yd - 5),
+            ));
+        }
+    }
+
     pub fn add_canvas(&mut self) {
         let WD = self.WD();
         let HD = self.HD();
@@ -470,16 +488,13 @@ impl Profile {
             self.SD.append(dashed((xd, 0), (xd, HD)));
         }
 
+        self.add_yaxis_labels();
         for ytick in yticks(&self.bbox) {
             let yd = toSD((self.bbox.xmin, ytick), WD, HD, &self.bbox).1;
             if yd > HD {
                 break;
             }
             self.SD.append(stroke("1", (0, yd), (WD, yd)));
-            self.SL.append(texty(
-                format!("{}", ytick.floor() as i32).as_str(),
-                (10, yd - 5),
-            ));
         }
 
         for ytick in yticks_dashed(&self.bbox) {
