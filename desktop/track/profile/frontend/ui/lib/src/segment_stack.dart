@@ -16,16 +16,13 @@ class SegmentStack extends StatelessWidget {
       scrollDirection: Axis.horizontal,
       child: Stack(children: <Widget>[TrackConsumer(), WaypointsConsumer()]),
     );
+
     return SizedBox(
-      height: 285, // Set a fixed height of 450 pixels
+      height: 285,
       child: Row(
         children: [
-          Container(
-            color: Colors.orange[500],
-            width: 48.0,
-            height: 285
-          ),
-          scrollView,
+          Container(color: Colors.orange[500], width: 48.0, height: 285),
+          Flexible(child: scrollView),
         ],
       ),
     );
@@ -62,9 +59,11 @@ class SegmentView extends StatelessWidget {
       child: WayPointsConsumer(),
     );
 
+    var stack = SegmentStack();
+
     return Column(
       children: [
-        SegmentStack(),
+        stack,
         const Divider(
           height: 1, // Thickness of the divider
           color: Colors.grey, // Light stroke color
