@@ -263,7 +263,10 @@ impl Backend {
         profile.reset_size(W, H);
         profile.add_canvas();
         profile.add_track(&self.track, &self.track_smooth_elevation);
-        profile.render()
+        let ret = profile.render();
+        let filename = std::format!("/tmp/segment-{}.svg", segment.id);
+        std::fs::write(filename, &ret).expect("Unable to write file");
+        ret
     }
     pub fn render_segment_waypoints(
         &mut self,
@@ -277,9 +280,8 @@ impl Backend {
         profile.reset_size(W, H);
         profile.add_waypoints(&self.get_waypoints());
         let ret = profile.render();
-        let _filename = std::format!("/tmp/waypoints-{}.svg", segment.id);
-        // TODO: compile if not wasm
-        //std::fs::write(filename, &ret).expect("Unable to write file");
+        let filename = std::format!("/tmp/waypoints-{}.svg", segment.id);
+        std::fs::write(filename, &ret).expect("Unable to write file");
         ret
     }
     pub fn segment_statistics(&self, segment: &Segment) -> SegmentStatistics {
