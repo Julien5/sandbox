@@ -153,6 +153,27 @@ impl Backend {
     pub fn setSegmentLength(&mut self, length: f64) {
         self.parameters.segment_length = length;
     }
+    pub fn export_labels(&self, segment: &Segment) {
+        let waypoints = self.get_waypoints();
+        let W = 400;
+        let H = W;
+        let ret = svgmap::map(&self.track, &waypoints, &segment, W, H);
+        let filename = std::format!("/tmp/map-labels-{}.svg", segment.id);
+        std::fs::write(filename, &ret).expect("Unable to write file");
+
+        {
+            let mut profile = segment.profile.clone();
+            profile.set_render_device(RenderDevice::Native);
+            profile.reset_size(1000, 400);
+            profile.add_track(&self.track, &self.track_smooth_elevation);
+            let W = self.get_waypoints();
+            profile.add_waypoints(&W);
+            let ret = profile.renderSD();
+            let filename = std::format!("/tmp/profile-labels-{}.svg", segment.id);
+            std::fs::write(filename, &ret).expect("Unable to write file");
+        }
+    }
+
     pub fn elevation_gain(&self, from: usize, to: usize) -> f64 {
         debug_assert!(from <= to);
         let mut ret = 0f64;

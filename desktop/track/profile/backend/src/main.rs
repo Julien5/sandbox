@@ -18,6 +18,8 @@ struct Cli {
     interval_length: Option<i32>,
     #[arg(short, long, value_name = "max_step_length")]
     max_step_length: Option<i32>,
+    #[arg(short, long, value_name = "export_labels")]
+    export_labels: Option<bool>,
     #[arg(value_name = "gpx")]
     filename: std::path::PathBuf,
 }
@@ -98,6 +100,15 @@ fn main() -> Result<(), error::Error> {
         let name = format!("/tmp/yaxis-{}.svg", k);
         println!("make: {}", name);
         std::fs::write(name, &bytes).expect("Could not write gpx.");
+
+        match args.export_labels {
+            Some(b) => {
+                if b {
+                    backend.export_labels(&segment);
+                }
+            }
+            _ => {}
+        }
     }
     Ok(())
 }
