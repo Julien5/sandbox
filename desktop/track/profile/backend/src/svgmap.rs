@@ -140,11 +140,13 @@ pub fn map(
         let (x, y) = bbox.to_graphics_coordinates(&w.utm, W, H);
         if V.contains(&k) {
             let dot = svg::node::element::Circle::new()
+                .set("id", format!("wp-{}/circle", k))
                 .set("cx", x)
                 .set("cy", y)
                 .set("r", 4);
             document = document.add(dot);
             let text = svg::node::element::Text::new(w.info.as_ref().unwrap().profile_label())
+                .set("id", format!("wp-{}/text", k))
                 .set("text-anchor", "left")
                 .set("font-size", "16")
                 .set("x", x + 4f64)
