@@ -86,11 +86,12 @@ fn textx(label: &str, pos: (i32, i32)) -> Text {
     ret
 }
 
-fn texty(label: &str, pos: (i32, i32)) -> Text {
-    let ret = Text::new(label).set("text-anchor", "end").set(
-        "transform",
-        format!("translate({} {}) scale(-1 -1)", pos.0, pos.1),
-    );
+fn ytick_text(label: &str, pos: (i32, i32)) -> Text {
+    let ret = Text::new(label)
+        .set("text-anchor", "end")
+        .set("transform", format!("scale(-1 -1)"))
+        .set("x", -pos.0)
+        .set("y", -pos.1);
     ret
 }
 
@@ -526,7 +527,7 @@ impl Profile {
             if yd > HD {
                 break;
             }
-            self.SL.append(texty(
+            self.SL.append(ytick_text(
                 format!("{}", ytick.floor() as i32).as_str(),
                 (10, yd - 5),
             ));
