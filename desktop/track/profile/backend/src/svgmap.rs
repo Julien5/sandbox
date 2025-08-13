@@ -123,7 +123,8 @@ pub fn map(
         .set("fill", "none")
         .set("stroke", "black")
         .set("stroke-width", 2)
-        .set("d", data);
+        .set("d", data)
+        .set("id", "polyline");
 
     let mut document = Document::new()
         .set("viewBox", (0, 0, W, H))
