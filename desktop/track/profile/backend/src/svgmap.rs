@@ -99,6 +99,7 @@ pub fn map(
     segment: &segment::Segment,
     W: i32,
     H: i32,
+    debug: bool,
 ) -> String {
     let mut data = Data::new();
     let path = &geodata.utm;
@@ -145,13 +146,33 @@ pub fn map(
                 .set("cy", y)
                 .set("r", 4);
             document = document.add(dot);
-            let text = svg::node::element::Text::new(w.info.as_ref().unwrap().profile_label())
+            let label = w.info.as_ref().unwrap().profile_label();
+            let trimmed = label.trim();
+            let text = svg::node::element::Text::new(trimmed)
                 .set("id", format!("wp-{}/text", k))
                 .set("text-anchor", "left")
                 .set("font-size", "16")
-                .set("x", x + 4f64)
+                .set("x", x + 6f64)
                 .set("y", y + 4.5f64);
             document = document.add(text);
+            if debug {
+                let rwidth = match label.trim().len() {
+                    0 => 0,
+                    1 => 15,
+                    2 => 30,
+                    n => 10 * n + 10,
+                };
+                println!("text: [{}] trim:[{}] width:{}", label, trimmed, rwidth);
+                let rect = svg::node::element::Rectangle::new()
+                    .set("id", format!("wp-{}/rect", k))
+                    .set("x", x)
+                    .set("y", y - 10f64)
+                    .set("width", rwidth)
+                    .set("height", 20)
+                    .set("fill", "transparent")
+                    .set("stroke", "blue");
+                document = document.add(rect);
+            }
         } else {
             let dot = svg::node::element::Circle::new()
                 .set("cx", x)

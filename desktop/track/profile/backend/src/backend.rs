@@ -155,9 +155,10 @@ impl Backend {
     }
     pub fn export_labels(&self, segment: &Segment) {
         let waypoints = self.get_waypoints();
+        let debug = self.get_parameters().debug;
         let W = 400;
         let H = W;
-        let ret = svgmap::map(&self.track, &waypoints, &segment, W, H);
+        let ret = svgmap::map(&self.track, &waypoints, &segment, W, H, debug);
         let filename = std::format!("/tmp/map-labels-{}.svg", segment.id);
         std::fs::write(filename, &ret).expect("Unable to write file");
 
@@ -344,7 +345,8 @@ impl Backend {
 
     pub fn render_segment_map(&self, segment: &Segment, (W, H): (i32, i32)) -> String {
         let waypoints = self.get_waypoints();
-        let ret = svgmap::map(&self.track, &waypoints, &segment, W, H);
+        let debug = self.get_parameters().debug;
+        let ret = svgmap::map(&self.track, &waypoints, &segment, W, H, debug);
         if self.get_parameters().debug {
             let filename = std::format!("/tmp/map-{}.svg", segment.id);
             std::fs::write(filename, &ret).expect("Unable to write file");
