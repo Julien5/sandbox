@@ -124,7 +124,11 @@ pub fn map(
         .set("stroke-width", 2)
         .set("d", data);
 
-    let mut document = Document::new().set("viewBox", (0, 0, W, H)).add(svgpath);
+    let mut document = Document::new()
+        .set("viewBox", (0, 0, W, H))
+        .set("width", W)
+        .set("height", H)
+        .add(svgpath);
 
     let V = waypoints_table::show_waypoints_in_table(&waypoints, &segment.profile.bbox);
 
