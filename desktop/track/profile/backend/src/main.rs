@@ -6,6 +6,7 @@ use clap::Parser;
 use tracks::backend::Backend;
 use tracks::error;
 use tracks::render_device;
+use tracks::svgmap;
 
 /// Search for a pattern in a file and display the lines that contain it.
 #[derive(Parser)]
@@ -18,6 +19,8 @@ struct Cli {
     interval_length: Option<i32>,
     #[arg(short, long, value_name = "max_step_length")]
     max_step_length: Option<i32>,
+    #[arg(long, value_name = "import_labels")]
+    import_labels: Option<std::path::PathBuf>,
     #[arg(short, long, value_name = "export_labels")]
     export_labels: Option<bool>,
     #[arg(value_name = "gpx")]
@@ -64,6 +67,14 @@ fn main() -> Result<(), error::Error> {
     match args.debug {
         Some(d) => {
             parameters.debug = d;
+        }
+        _ => {}
+    }
+
+    match args.import_labels {
+        Some(filename) => {
+            svgmap::import(filename);
+            return Ok(());
         }
         _ => {}
     }

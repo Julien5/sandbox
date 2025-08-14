@@ -187,3 +187,41 @@ pub fn map(
     }
     document.to_string()
 }
+
+pub fn import(filename: std::path::PathBuf) {
+    use svg::node::element::tag::Circle;
+    use svg::node::element::tag::Path;
+    use svg::node::element::tag::Text;
+    use svg::parser::Event;
+
+    let mut content = String::new();
+    for event in svg::open(filename, &mut content).unwrap() {
+        //        println!("{:?}", event);
+        match event {
+            Event::Tag(Circle, _, attributes) => {
+                if attributes.contains_key("id") {
+                    let id = attributes.get("id").unwrap();
+                    println!("{}: {:?}", id, attributes);
+                }
+            }
+            Event::Tag(Text, _, attributes) => {
+                if attributes.contains_key("id") {
+                    let id = attributes.get("id").unwrap();
+                    println!("{}: {:?}", id, attributes);
+                }
+            }
+            Event::Tag(Path, _, attributes) => {
+                let data = attributes.get("d").unwrap();
+                let data = Data::parse(data).unwrap();
+                for command in data.iter() {
+                    match command {
+                        &Command::Move(..) => { /* … */ }
+                        &Command::Line(..) => { /* … */ }
+                        _ => {}
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+}
