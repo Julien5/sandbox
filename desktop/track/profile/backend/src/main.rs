@@ -73,7 +73,7 @@ fn main() -> Result<(), error::Error> {
 
     match args.import_labels {
         Some(filename) => {
-            svgmap::import(filename);
+            svgmap::SvgMap::import(filename);
             return Ok(());
         }
         _ => {}

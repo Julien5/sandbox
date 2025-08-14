@@ -1,11 +1,13 @@
 #![allow(non_snake_case)]
 
+use std::collections::HashMap;
+use std::str::FromStr;
+
 use crate::utm::UTMPoint;
 use crate::{gpsdata, waypoints_table};
 use crate::{segment, waypoint};
 
 use svg::node::element::path::{Command, Data, Position};
-use svg::node::element::Path;
 use svg::Document;
 
 struct BoundingBox {
@@ -188,38 +190,80 @@ pub fn map(
     document.to_string()
 }
 
-pub fn import(filename: std::path::PathBuf) {
-    use svg::node::element::*;
-    use svg::parser::Event;
+type Path = svg::node::element::Path;
+type Attributes = HashMap<String, svg::node::Value>;
 
-    let mut content = String::new();
-    for event in svg::open(filename, &mut content).unwrap() {
-        //        println!("{:?}", event);
-        match event {
-            Event::Tag(tag::Circle, _, attributes) => {
-                if attributes.contains_key("id") {
-                    let id = attributes.get("id").unwrap();
-                    println!("{}: {:?}", id, attributes);
-                }
-            }
-            Event::Tag(tag::Text, _, attributes) => {
-                if attributes.contains_key("id") {
-                    let id = attributes.get("id").unwrap();
-                    println!("{}: {:?}", id, attributes);
-                }
-            }
-            Event::Tag(tag::Path, _, attributes) => {
-                let data = attributes.get("d").unwrap();
-                let data = Data::parse(data).unwrap();
-                for command in data.iter() {
-                    match command {
-                        &Command::Move(..) => { /* … */ }
-                        &Command::Line(..) => { /* … */ }
-                        _ => {}
+struct SvgPoint {
+    circle: Attributes,
+    label: Attributes,
+    text: String,
+}
+
+pub struct SvgMap {
+    polyline: Attributes,
+    points: Vec<SvgPoint>,
+}
+
+fn readid(id: &str) -> (&str, &str) {
+    id.split_once("/").unwrap()
+}
+
+impl SvgMap {
+    pub fn import(filename: std::path::PathBuf) -> SvgMap {
+        use svg::node::element::*;
+        use svg::parser::Event;
+        let mut polyline = Attributes::new();
+        let mut circles = HashMap::<String, SvgPoint>::new();
+        let mut content = String::new();
+        let mut current_circle_id = String::new();
+        for event in svg::open(filename, &mut content).unwrap() {
+            match event {
+                Event::Tag(tag::Circle, _, attributes) => {
+                    if attributes.contains_key("id") {
+                        let id = attributes.get("id").unwrap().clone().to_string();
+                        let (p_id, _p_attr) = readid(id.as_str());
+                        circles.get_mut(p_id).unwrap().circle = attributes.clone();
+                        current_circle_id = String::from_str(p_id).unwrap();
+                        println!("{}: {:?}", id, attributes);
                     }
                 }
+                Event::Tag(tag::Text, _, attributes) => {
+                    if attributes.contains_key("id") {
+                        let id = attributes.get("id").unwrap();
+                        let (p_id, _p_attr) = readid(id);
+                        circles.get_mut(p_id).unwrap().label = attributes.clone();
+                        debug_assert!(current_circle_id == p_id);
+                        println!("{}: {:?}", id, attributes);
+                    }
+                }
+                Event::Text(data) => {
+                    println!("Event::Text {:?}", data);
+                    circles.get_mut(current_circle_id.as_str()).unwrap().text =
+                        String::from_str(data).unwrap();
+                }
+                Event::Tag(tag::Path, _, attributes) => {
+                    if attributes.contains_key("id") {
+                        let id = attributes.get("id").unwrap();
+                        println!("{}: {:?} attributes", id, attributes.len());
+                    }
+                    polyline = attributes.clone();
+                    let data = attributes.get("d").unwrap();
+                    let data = Data::parse(data).unwrap();
+                    for command in data.iter() {
+                        match command {
+                            &Command::Move(..) => { /* … */ }
+                            &Command::Line(..) => { /* … */ }
+                            _ => {}
+                        }
+                    }
+                }
+                _ => {}
             }
-            _ => {}
         }
+        let mut points = Vec::new();
+        for (_key, circle) in circles {
+            points.push(circle);
+        }
+        SvgMap { polyline, points }
     }
 }
