@@ -194,14 +194,27 @@ type Path = svg::node::element::Path;
 type Attributes = HashMap<String, svg::node::Value>;
 
 struct SvgPoint {
+    id: String,
     circle: Attributes,
     label: Attributes,
     text: String,
 }
 
+impl SvgPoint {
+    fn new() -> SvgPoint {
+        SvgPoint {
+            id: String::new(),
+            circle: Attributes::new(),
+            label: Attributes::new(),
+            text: String::new(),
+        }
+    }
+}
+
 pub struct SvgMap {
     polyline: Attributes,
     points: Vec<SvgPoint>,
+    document: Attributes,
 }
 
 fn readid(id: &str) -> (&str, &str) {
@@ -213,33 +226,34 @@ impl SvgMap {
         use svg::node::element::*;
         use svg::parser::Event;
         let mut polyline = Attributes::new();
-        let mut circles = HashMap::<String, SvgPoint>::new();
+        let mut document = Attributes::new();
         let mut content = String::new();
-        let mut current_circle_id = String::new();
+        let mut points = Vec::new();
+        let mut current_circle = SvgPoint::new();
         for event in svg::open(filename, &mut content).unwrap() {
             match event {
                 Event::Tag(tag::Circle, _, attributes) => {
                     if attributes.contains_key("id") {
                         let id = attributes.get("id").unwrap().clone().to_string();
                         let (p_id, _p_attr) = readid(id.as_str());
-                        circles.get_mut(p_id).unwrap().circle = attributes.clone();
-                        current_circle_id = String::from_str(p_id).unwrap();
+                        current_circle.id = String::from_str(p_id).unwrap();
+                        current_circle.circle = attributes.clone();
                         println!("{}: {:?}", id, attributes);
                     }
                 }
                 Event::Tag(tag::Text, _, attributes) => {
                     if attributes.contains_key("id") {
                         let id = attributes.get("id").unwrap();
-                        let (p_id, _p_attr) = readid(id);
-                        circles.get_mut(p_id).unwrap().label = attributes.clone();
-                        debug_assert!(current_circle_id == p_id);
+                        current_circle.label = attributes.clone();
                         println!("{}: {:?}", id, attributes);
                     }
                 }
                 Event::Text(data) => {
                     println!("Event::Text {:?}", data);
-                    circles.get_mut(current_circle_id.as_str()).unwrap().text =
-                        String::from_str(data).unwrap();
+                    current_circle.text = String::from_str(data).unwrap();
+                    debug_assert!(!current_circle.id.is_empty());
+                    points.push(current_circle);
+                    current_circle = SvgPoint::new();
                 }
                 Event::Tag(tag::Path, _, attributes) => {
                     if attributes.contains_key("id") {
@@ -257,13 +271,50 @@ impl SvgMap {
                         }
                     }
                 }
-                _ => {}
+                Event::Tag(tag::SVG, _, attributes) => {
+                    if !attributes.is_empty() {
+                        document = attributes.clone();
+                    }
+                }
+                _ => {
+                    println!("event {:?}", event);
+                }
             }
         }
-        let mut points = Vec::new();
-        for (_key, circle) in circles {
-            points.push(circle);
+
+        SvgMap {
+            polyline,
+            points,
+            document,
         }
-        SvgMap { polyline, points }
+    }
+
+    pub fn export(self) -> String {
+        let mut document = Document::new();
+        for (k, v) in self.document {
+            println!("export {} -> {}", k, v);
+            document = document.set(k, v);
+        }
+
+        let mut svgpath = Path::new();
+        for (k, v) in self.polyline {
+            svgpath = svgpath.set(k, v);
+        }
+        document = document.add(svgpath);
+
+        for point in self.points {
+            let mut circle = svg::node::element::Circle::new();
+            for (k, v) in point.circle {
+                circle = circle.set(k, v);
+            }
+            document = document.add(circle);
+
+            let mut label = svg::node::element::Text::new(point.text);
+            for (k, v) in point.label {
+                label = label.set(k, v);
+            }
+            document = document.add(label);
+        }
+        document.to_string()
     }
 }

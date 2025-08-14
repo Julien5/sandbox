@@ -73,7 +73,11 @@ fn main() -> Result<(), error::Error> {
 
     match args.import_labels {
         Some(filename) => {
-            svgmap::SvgMap::import(filename);
+            let map = svgmap::SvgMap::import(filename);
+            let bytes = map.export();
+            let name = "/tmp/map-export-labels.svg";
+            println!("make: {}", name);
+            std::fs::write(name, &bytes).expect("Could not write svg.");
             return Ok(());
         }
         _ => {}
