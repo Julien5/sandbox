@@ -372,7 +372,7 @@ impl Backend {
         }
     }
     pub fn generatePdf(&mut self) -> Vec<u8> {
-        let typbytes = render::compile_pdf(self, (1000, 285));
+        let typbytes = render::make_typst_document(self, (1000, 285));
         //let typbytes = render::compile_pdf(self, debug, (1400, 400));
         let ret = pdf::compile(&typbytes, self.get_parameters().debug);
         println!("generated {} bytes", ret.len());
