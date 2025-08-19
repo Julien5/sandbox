@@ -153,7 +153,7 @@ impl Backend {
     pub fn setSegmentLength(&mut self, length: f64) {
         self.parameters.segment_length = length;
     }
-    pub fn export_labels(&self, segment: &Segment) {
+    pub fn experiment_labels(&self, segment: &Segment) {
         let waypoints = self.get_waypoints();
         let debug = self.get_parameters().debug;
         let W = 400;

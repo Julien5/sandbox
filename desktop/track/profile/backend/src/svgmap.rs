@@ -165,7 +165,7 @@ pub fn map(
                     2 => 30,
                     n => 10 * n + 10,
                 };
-                println!("text: [{}] trim:[{}] width:{}", label, trimmed, rwidth);
+                // println!("text: [{}] trim:[{}] width:{}", label, trimmed, rwidth);
                 let rect = svg::node::element::Rectangle::new()
                     .set("id", format!("wp-{}/rect", k))
                     .set("x", x)
