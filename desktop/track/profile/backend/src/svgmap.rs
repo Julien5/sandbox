@@ -95,101 +95,6 @@ impl BoundingBox {
     }
 }
 
-pub fn map(
-    geodata: &gpsdata::Track,
-    waypoints: &Vec<waypoint::Waypoint>,
-    segment: &segment::Segment,
-    W: i32,
-    H: i32,
-    debug: bool,
-) -> String {
-    let mut data = Data::new();
-    let path = &geodata.utm;
-    let mut bbox = BoundingBox::new();
-    let range = &segment.range;
-    for k in range.start..range.end {
-        bbox.update(&geodata.utm[k]);
-    }
-    bbox.fix_aspect_ratio(W, H);
-    // todo: path in the bbox, which more than the path in the range.
-    for k in range.start..range.end {
-        let p = &path[k];
-        let (xg, yg) = bbox.to_graphics_coordinates(p, W, H);
-        if data.is_empty() {
-            data.append(Command::Move(Position::Absolute, (xg, yg).into()));
-        }
-        data.append(Command::Line(Position::Absolute, (xg, yg).into()));
-    }
-
-    let svgpath = Path::new()
-        .set("fill", "none")
-        .set("stroke", "black")
-        .set("stroke-width", 2)
-        .set("d", data)
-        .set("id", "polyline");
-
-    let mut document = Document::new()
-        .set("viewBox", (0, 0, W, H))
-        .set("width", W)
-        .set("height", H)
-        .add(svgpath);
-
-    let V = waypoints_table::show_waypoints_in_table(&waypoints, &segment.profile.bbox);
-
-    for k in 0..waypoints.len() {
-        let w = &waypoints[k];
-        if !bbox.contains(&w.utm) {
-            continue;
-        }
-        let (x, y) = bbox.to_graphics_coordinates(&w.utm, W, H);
-        if V.contains(&k) {
-            let dot = svg::node::element::Circle::new()
-                .set("id", format!("wp-{}/circle", k))
-                .set("cx", x)
-                .set("cy", y)
-                .set("r", 4);
-            document = document.add(dot);
-            let label = w.info.as_ref().unwrap().profile_label();
-            let trimmed = label.trim();
-            let text = svg::node::element::Text::new(trimmed)
-                .set("id", format!("wp-{}/text", k))
-                .set("text-anchor", "left")
-                .set("font-size", "16")
-                .set("x", x + 6f64)
-                .set("y", y + 4.5f64);
-            document = document.add(text);
-            if debug {
-                let rwidth = match label.trim().len() {
-                    0 => 0,
-                    1 => 15,
-                    2 => 30,
-                    n => 10 * n + 10,
-                };
-                // println!("text: [{}] trim:[{}] width:{}", label, trimmed, rwidth);
-                let rect = svg::node::element::Rectangle::new()
-                    .set("id", format!("wp-{}/rect", k))
-                    .set("x", x)
-                    .set("y", y - 10f64)
-                    .set("width", rwidth)
-                    .set("height", 20)
-                    .set("fill", "transparent")
-                    .set("stroke", "blue");
-                document = document.add(rect);
-            }
-        } else {
-            let dot = svg::node::element::Circle::new()
-                .set("cx", x)
-                .set("cy", y)
-                .set("fill", "blue")
-                .set("stroke", "black")
-                .set("stroke-width", "2")
-                .set("r", 3);
-            document = document.add(dot);
-        }
-    }
-    document.to_string()
-}
-
 type Path = svg::node::element::Path;
 type Attributes = HashMap<String, svg::node::Value>;
 
@@ -221,7 +126,100 @@ fn readid(id: &str) -> (&str, &str) {
     id.split_once("/").unwrap()
 }
 
+fn set_attr(attr: &mut Attributes, k: &str, v: &str) {
+    attr.insert(String::from_str(k).unwrap(), svg::node::Value::from(v));
+}
+
+fn set_attr_data(attr: &mut Attributes, k: &str, v: &Data) {
+    attr.insert(
+        String::from_str(k).unwrap(),
+        svg::node::Value::from(v.clone()),
+    );
+}
+
 impl SvgMap {
+    pub fn make(
+        geodata: &gpsdata::Track,
+        waypoints: &Vec<waypoint::Waypoint>,
+        segment: &segment::Segment,
+        W: i32,
+        H: i32,
+        _debug: bool,
+    ) -> SvgMap {
+        let mut data = Data::new();
+        let path = &geodata.utm;
+        let mut bbox = BoundingBox::new();
+        let range = &segment.range;
+        for k in range.start..range.end {
+            bbox.update(&geodata.utm[k]);
+        }
+        bbox.fix_aspect_ratio(W, H);
+        // todo: path in the bbox, which more than the path in the range.
+        for k in range.start..range.end {
+            let p = &path[k];
+            let (xg, yg) = bbox.to_graphics_coordinates(p, W, H);
+            if data.is_empty() {
+                data.append(Command::Move(Position::Absolute, (xg, yg).into()));
+            }
+            data.append(Command::Line(Position::Absolute, (xg, yg).into()));
+        }
+
+        let mut polyline = Attributes::new();
+        // TODO better .set for Attributes.
+        set_attr(&mut polyline, "fill", "none");
+        set_attr(&mut polyline, "stroke", "black");
+        set_attr(&mut polyline, "stroke-width", "2");
+        set_attr_data(&mut polyline, "d", &data);
+        set_attr(&mut polyline, "id", "polyline");
+
+        let mut document = Attributes::new();
+        set_attr(
+            &mut document,
+            "viewBox",
+            format!("(0, 0, {W}, {H})").as_str(),
+        );
+        set_attr(&mut document, "width", format!("{W})").as_str());
+        set_attr(&mut document, "height", format!("{H})").as_str());
+
+        let V = waypoints_table::show_waypoints_in_table(&waypoints, &segment.profile.bbox);
+        let mut points = Vec::new();
+        for k in 0..waypoints.len() {
+            let w = &waypoints[k];
+            if !bbox.contains(&w.utm) {
+                continue;
+            }
+            let mut svgPoint = SvgPoint::new();
+            let (x, y) = bbox.to_graphics_coordinates(&w.utm, W, H);
+            set_attr(
+                &mut svgPoint.circle,
+                "id",
+                format!("wp-{}/circle", k).as_str(),
+            );
+            set_attr(&mut svgPoint.circle, "cx", format!("{x}").as_str());
+            set_attr(&mut svgPoint.circle, "cy", format!("{y}").as_str());
+            set_attr(&mut svgPoint.circle, "r", "4");
+            if V.contains(&k) {
+                let label = w.info.as_ref().unwrap().profile_label();
+                svgPoint.text = String::from_str(label.trim()).unwrap();
+                set_attr(&mut svgPoint.label, "id", format!("wp-{}/text", k).as_str());
+                set_attr(&mut svgPoint.label, "text-anchor", "left");
+                set_attr(&mut svgPoint.label, "font-size", "16");
+                set_attr(&mut svgPoint.label, "x", format!("{}", x + 6f64).as_str());
+                set_attr(&mut svgPoint.label, "y", format!("{}", y + 4.5f64).as_str());
+            } else {
+                set_attr(&mut svgPoint.circle, "fill", "blue");
+                set_attr(&mut svgPoint.circle, "stroke", "black");
+                set_attr(&mut svgPoint.circle, "stroke-width", "2");
+                set_attr(&mut svgPoint.circle, "r", "3");
+            }
+            points.push(svgPoint);
+        }
+        SvgMap {
+            polyline,
+            points,
+            document,
+        }
+    }
     pub fn import(filename: std::path::PathBuf) -> SvgMap {
         use svg::node::element::*;
         use svg::parser::Event;
@@ -317,4 +315,16 @@ impl SvgMap {
         }
         document.to_string()
     }
+}
+
+pub fn map(
+    geodata: &gpsdata::Track,
+    waypoints: &Vec<waypoint::Waypoint>,
+    segment: &segment::Segment,
+    W: i32,
+    H: i32,
+    debug: bool,
+) -> String {
+    let svgMap = SvgMap::make(geodata, waypoints, segment, W, H, debug);
+    svgMap.export()
 }

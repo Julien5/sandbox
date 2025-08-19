@@ -24,9 +24,9 @@ function exp() {
 }
 
 function main() {
-	rm /tmp/*.svg /tmp/*.pdf
+	rm -f /tmp/*.{svg,pdf,gpx,typ} /tmp/document.*
 	pdf
-	exp
+	# exp
 	ls /tmp/*.svg
 	ls /tmp/*.pdf
 }

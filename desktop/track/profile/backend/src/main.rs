@@ -1,12 +1,8 @@
 #![allow(non_snake_case)]
 
-use std::str::FromStr;
-
 use clap::Parser;
 use tracks::backend::Backend;
 use tracks::error;
-use tracks::render_device;
-use tracks::svgmap;
 
 /// Search for a pattern in a file and display the lines that contain it.
 #[derive(Parser)]
