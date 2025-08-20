@@ -361,10 +361,11 @@ fn set_attr(attr: &mut Attributes, k: &str, v: &str) {
 
 fn candidates() -> Vec<(f64, f64, String)> {
     let mut ret = Vec::new();
-    ret.push((0f64, 0f64, "start".to_string()));
-    ret.push((0f64, 0f64, "end".to_string()));
-    ret.push((0f64, 16f64, "end".to_string()));
-    ret.push((0f64, 16f64, "start".to_string()));
+    let eps = 5f64;
+    ret.push((eps, -eps, "start".to_string()));
+    ret.push((-eps, -eps, "end".to_string()));
+    ret.push((-eps, 16f64 + eps, "end".to_string()));
+    ret.push((eps, 16f64 + eps, "start".to_string()));
     ret
 }
 
@@ -376,10 +377,9 @@ fn place_label(point: &mut Point, polyline: &Polyline) {
         label.y = point.circle.cy + dy;
         label.text_anchor = anchor;
         println!(
-            "[{}][x={:.1},y={:.1}][a={}] bb={}",
+            "[{}][dy={:.1}][a={}] bb={}",
             label.text,
-            label.x,
-            label.y,
+            dy,
             label.text_anchor,
             label.bounding_box()
         );
