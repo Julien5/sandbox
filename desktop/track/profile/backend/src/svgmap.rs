@@ -119,7 +119,7 @@ impl Circle {
             id: String::new(),
             cx: 0f64,
             cy: 0f64,
-            r: 0f64,
+            r: 4f64,
             fill: None,
         }
     }
@@ -360,42 +360,94 @@ fn set_attr(attr: &mut Attributes, k: &str, v: &str) {
     attr.insert(String::from_str(k).unwrap(), svg::node::Value::from(v));
 }
 
-fn candidates(epsx: f64, epsy: f64) -> Vec<(f64, f64, String)> {
+fn offset_at(r: f64, angle: f64) -> (f64, f64) {
+    let x = r * angle.cos();
+    let y = r * angle.sin();
+    (x, y)
+}
+
+fn candidates(
+    distance: f64,
+    angle_index: i32,
+    (width, height): (f64, f64),
+) -> Vec<(f64, f64, String)> {
     let mut ret = Vec::new();
-    ret.push((epsx, -epsy, "start".to_string()));
-    ret.push((-epsx, -epsy, "end".to_string()));
-    ret.push((-epsx, 16f64 + epsy, "end".to_string()));
-    ret.push((epsx, 16f64 + epsy, "start".to_string()));
+    let steps = 10;
+
+    let end = "end".to_string();
+    let start = "start".to_string();
+
+    let height_step = height / (steps as f64);
+    let width_step = width / (steps as f64);
+    match angle_index {
+        0 => {
+            for i in 0..steps {
+                let dy = i as f64 * height_step;
+                ret.push((distance, dy, start.clone()));
+            }
+            return ret;
+        }
+        25 => {
+            for i in 0..steps {
+                let dx = i as f64 * width_step;
+                ret.push((-dx, -distance, start.clone()));
+            }
+            return ret;
+        }
+        50 => {
+            for i in 0..steps {
+                let dy = i as f64 * height_step;
+                ret.push((-distance, dy, end.clone()));
+            }
+            return ret;
+        }
+        75 => {
+            for i in 0..steps {
+                let dx = i as f64 * width_step;
+                ret.push((dx, distance, end.clone()));
+            }
+            return ret;
+        }
+        _ => {}
+    }
+
+    let angle = (angle_index as f64) * 2f64 * std::f64::consts::PI;
+    let (mut epsx, mut epsy) = offset_at(distance, angle);
+    let mut anchor = start.clone();
+    if epsx < 0f64 {
+        anchor = end.clone();
+    }
+    if epsy > 0f64 {
+        epsy += height;
+    }
+    ret.push((epsx, epsy, anchor));
     ret
 }
 
 fn place_label(point: &mut Point, polyline: &Polyline) {
     let label = &mut point.label;
-    for n in 0..4 {
-        for epsx in 1..10 {
-            for epsy in 1..10 {
-                let C = candidates(epsx as f64, epsy as f64);
-                let c = C.get(n).unwrap().clone();
+    let bb = label.bounding_box();
+    let (width, height) = (bb.width(), bb.height());
+    for n in 5..10 {
+        for a in 0..100 {
+            let C = candidates(n as f64, a, (width, height));
+            for c in C {
                 let (dx, dy, anchor) = c;
                 label.x = point.circle.cx + dx;
                 label.y = point.circle.cy + dy;
                 label.text_anchor = anchor;
                 println!(
-                    "[{}][dy={:.1}][n={}][eps={epsx},{epsy}][a={}] bb={}",
-                    label.text,
-                    dy,
-                    n,
-                    label.text_anchor,
-                    label.bounding_box()
+                    "[{}][n={n}][a={a}] => [d=({dx:.1},{dy:.1})][{}]",
+                    label.text, label.text_anchor,
                 );
                 if !polyline_hits_label(polyline, label) {
-                    println!("OK");
+                    println!("[{}] OK", label.text);
                     return;
                 }
             }
         }
     }
-    println!("FAIL");
+    println!("[{}] FAIL", label.text);
 }
 
 impl Map {
@@ -443,7 +495,6 @@ impl Map {
             svgPoint.circle.id = format!("wp-{}/circle", k);
             svgPoint.circle.cx = x;
             svgPoint.circle.cy = y;
-            svgPoint.circle.r = 4f64;
             if V.contains(&k) {
                 let label = w.info.as_ref().unwrap().profile_label();
                 svgPoint.label.text = String::from_str(label.trim()).unwrap();
@@ -546,8 +597,8 @@ impl Map {
                 circle = circle.set(k, v);
             }
             document = document.add(circle);
-
-            let mut label = svg::node::element::Text::new(point.label.text.clone());
+            let text = format!("{}", point.label.text);
+            let mut label = svg::node::element::Text::new(text);
             for (k, v) in point.label.to_attributes() {
                 label = label.set(k, v);
             }
