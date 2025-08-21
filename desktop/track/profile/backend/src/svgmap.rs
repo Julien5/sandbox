@@ -156,7 +156,12 @@ impl Label {
             _ => ((self.x, self.y - height), (self.x + width, self.y)),
         };
 
-        LabelBoundingBox::new(top_left, bottom_right, &self.text_anchor)
+        let eps = match self.text_anchor.as_str() {
+            "end" => (2f64, 2f64),
+            _ => (-2f64, 2f64),
+        };
+
+        LabelBoundingBox::new(offset(&top_left, eps), offset(&bottom_right, eps))
     }
 }
 
@@ -170,14 +175,10 @@ fn offset(p: &(f64, f64), d: (f64, f64)) -> (f64, f64) {
 }
 
 impl LabelBoundingBox {
-    fn new(top_left: (f64, f64), bottom_right: (f64, f64), anchor: &String) -> Self {
-        let eps = match anchor.as_str() {
-            "end" => (2f64, 2f64),
-            _ => (-2f64, 2f64),
-        };
+    fn new(top_left: (f64, f64), bottom_right: (f64, f64)) -> Self {
         LabelBoundingBox {
-            top_left: offset(&top_left, eps),
-            bottom_right: offset(&bottom_right, eps),
+            top_left,
+            bottom_right,
         }
     }
 
@@ -326,7 +327,7 @@ impl SvgElement for Polyline {
         let d = dv.join(" ");
         set_attr(&mut ret, "id", self.id.as_str());
         set_attr(&mut ret, "fill", "transparent");
-        set_attr(&mut ret, "stroke-width", "3");
+        set_attr(&mut ret, "stroke-width", "2");
         set_attr(&mut ret, "stroke", "black");
         set_attr(&mut ret, "d", d.as_str());
         ret
@@ -359,33 +360,39 @@ fn set_attr(attr: &mut Attributes, k: &str, v: &str) {
     attr.insert(String::from_str(k).unwrap(), svg::node::Value::from(v));
 }
 
-fn candidates() -> Vec<(f64, f64, String)> {
+fn candidates(epsx: f64, epsy: f64) -> Vec<(f64, f64, String)> {
     let mut ret = Vec::new();
-    let eps = 5f64;
-    ret.push((eps, -eps, "start".to_string()));
-    ret.push((-eps, -eps, "end".to_string()));
-    ret.push((-eps, 16f64 + eps, "end".to_string()));
-    ret.push((eps, 16f64 + eps, "start".to_string()));
+    ret.push((epsx, -epsy, "start".to_string()));
+    ret.push((-epsx, -epsy, "end".to_string()));
+    ret.push((-epsx, 16f64 + epsy, "end".to_string()));
+    ret.push((epsx, 16f64 + epsy, "start".to_string()));
     ret
 }
 
 fn place_label(point: &mut Point, polyline: &Polyline) {
     let label = &mut point.label;
-    for c in candidates() {
-        let (dx, dy, anchor) = c;
-        label.x = point.circle.cx + dx;
-        label.y = point.circle.cy + dy;
-        label.text_anchor = anchor;
-        println!(
-            "[{}][dy={:.1}][a={}] bb={}",
-            label.text,
-            dy,
-            label.text_anchor,
-            label.bounding_box()
-        );
-        if !polyline_hits_label(polyline, label) {
-            println!("OK");
-            return;
+    for n in 0..4 {
+        for epsx in 1..10 {
+            for epsy in 1..10 {
+                let C = candidates(epsx as f64, epsy as f64);
+                let c = C.get(n).unwrap().clone();
+                let (dx, dy, anchor) = c;
+                label.x = point.circle.cx + dx;
+                label.y = point.circle.cy + dy;
+                label.text_anchor = anchor;
+                println!(
+                    "[{}][dy={:.1}][n={}][eps={epsx},{epsy}][a={}] bb={}",
+                    label.text,
+                    dy,
+                    n,
+                    label.text_anchor,
+                    label.bounding_box()
+                );
+                if !polyline_hits_label(polyline, label) {
+                    println!("OK");
+                    return;
+                }
+            }
         }
     }
     println!("FAIL");
@@ -552,7 +559,7 @@ impl Map {
             debug_bb = debug_bb.set("width", bb.width());
             debug_bb = debug_bb.set("height", bb.height());
             debug_bb = debug_bb.set("fill", "transparent");
-            debug_bb = debug_bb.set("stroke-width", "2");
+            debug_bb = debug_bb.set("stroke-width", "1");
             debug_bb = debug_bb.set("stroke", "blue");
             document = document.add(debug_bb);
         }
