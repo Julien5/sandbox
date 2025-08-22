@@ -1,3 +1,23 @@
+enum Anchor {
+    Start,
+    End,
+}
+
+impl Anchor {
+    pub fn as_str(&self) -> String {
+        match self {
+            Anchor::Start => "start".to_string(),
+            Anchor::End => "end".to_string(),
+        }
+    }
+    pub fn from_string(s: &str) -> Anchor {
+        match s {
+            "end" => Anchor::End,
+            _ => Anchor::Start,
+        }
+    }
+}
+
 pub trait SvgElement {
     fn from_attributes(a: &Attributes) -> Self
     where
@@ -37,7 +57,7 @@ pub struct Label {
     x: f64,
     y: f64,
     pub text: String,
-    text_anchor: String,
+    text_anchor: Anchor,
 }
 
 impl Label {
@@ -47,7 +67,7 @@ impl Label {
             x: 0f64,
             y: 0f64,
             text: String::new(),
-            text_anchor: "start".to_string(),
+            text_anchor: Anchor::Start,
         }
     }
 
@@ -55,16 +75,16 @@ impl Label {
         let width = self.text.len() as f64 * 10.0; // 10 pixels per character
         let height = 16.0; // Assuming a fixed height of 16 pixels for the font size
 
-        let (top_left, bottom_right) = match self.text_anchor.as_str() {
-            "end" => (
+        let (top_left, bottom_right) = match self.text_anchor {
+            Anchor::End => (
                 (self.x - width, self.y - height), // Adjust for right alignment
                 (self.x, self.y),
             ),
             _ => ((self.x, self.y - height), (self.x + width, self.y)),
         };
 
-        let eps = match self.text_anchor.as_str() {
-            "end" => (2f64, 2f64),
+        let eps = match self.text_anchor {
+            Anchor::End => (2f64, 2f64),
             _ => (-2f64, 2f64),
         };
 
@@ -184,19 +204,23 @@ impl SvgElement for Circle {
 
 impl SvgElement for Label {
     fn from_attributes(a: &Attributes) -> Label {
+        let anchor = match a.get("text-anchor") {
+            Some(string) => Anchor::from_string(string),
+            _ => Anchor::Start,
+        };
         Label {
             id: a.get("id").unwrap().to_string(),
             x: a.get("x").unwrap().to_string().parse::<f64>().unwrap(),
             y: a.get("y").unwrap().to_string().parse::<f64>().unwrap(),
             text: String::new(),
-            text_anchor: "start".to_string(),
+            text_anchor: anchor,
         }
     }
 
     fn to_attributes(&self) -> Attributes {
         let mut ret = Attributes::new();
         set_attr(&mut ret, "id", self.id.as_str());
-        set_attr(&mut ret, "text-anchor", self.text_anchor.as_str());
+        set_attr(&mut ret, "text-anchor", self.text_anchor.as_str().as_str());
         set_attr(&mut ret, "font-size", "16");
         set_attr(&mut ret, "x", format!("{}", self.x).as_str());
         set_attr(&mut ret, "y", format!("{}", self.y).as_str());
@@ -265,12 +289,9 @@ fn candidates(
     distance: f64,
     angle_index: i32,
     (width, height): (f64, f64),
-) -> Vec<(f64, f64, String)> {
+) -> Vec<(f64, f64, Anchor)> {
     let mut ret = Vec::new();
     let steps = 5;
-
-    let end = "end".to_string();
-    let start = "start".to_string();
 
     let height_step = height / (steps as f64);
     let width_step = width / (steps as f64);
@@ -278,28 +299,28 @@ fn candidates(
         0 => {
             for i in 0..steps {
                 let dy = i as f64 * height_step;
-                ret.push((distance, dy, start.clone()));
+                ret.push((distance, dy, Anchor::Start));
             }
             return ret;
         }
         25 => {
             for i in 0..steps {
                 let dx = i as f64 * width_step;
-                ret.push((-dx, -distance, start.clone()));
+                ret.push((-dx, -distance, Anchor::Start));
             }
             return ret;
         }
         50 => {
             for i in 0..steps {
                 let dy = i as f64 * height_step;
-                ret.push((-distance, dy, end.clone()));
+                ret.push((-distance, dy, Anchor::End));
             }
             return ret;
         }
         75 => {
             for i in 0..steps {
                 let dx = i as f64 * width_step;
-                ret.push((dx, distance, end.clone()));
+                ret.push((dx, distance, Anchor::End));
             }
             return ret;
         }
@@ -308,15 +329,22 @@ fn candidates(
 
     let angle = (angle_index as f64) * 2f64 * std::f64::consts::PI;
     let (epsx, mut epsy) = offset_at(distance, angle);
-    let mut anchor = start.clone();
-    if epsx < 0f64 {
-        anchor = end.clone();
-    }
+    let anchor = if epsx < 0f64 {
+        Anchor::End
+    } else {
+        Anchor::Start
+    };
     if epsy > 0f64 {
         epsy += height;
     }
     ret.push((epsx, epsy, anchor));
     ret
+}
+
+struct Candidate {
+    x: f64,
+    y: f64,
+    anchor: Anchor,
 }
 
 pub fn place_label(point: &mut Point, polyline: &Polyline) {
@@ -333,7 +361,8 @@ pub fn place_label(point: &mut Point, polyline: &Polyline) {
                 if !polyline_hits_label(polyline, label) {
                     println!(
                         "[{:4}][n={n}][a={a:2}] => [d=({dx:.1},{dy:.1})][{}]",
-                        label.text, label.text_anchor,
+                        label.text,
+                        label.text_anchor.as_str(),
                     );
                     return;
                 }
@@ -341,4 +370,10 @@ pub fn place_label(point: &mut Point, polyline: &Polyline) {
         }
     }
     println!("[{}] FAIL", label.text);
+}
+
+pub fn place_labels(points: &mut Vec<Point>, polyline: &Polyline) {
+    for p in points {
+        place_label(p, polyline);
+    }
 }

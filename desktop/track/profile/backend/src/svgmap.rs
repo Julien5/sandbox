@@ -161,12 +161,12 @@ impl Map {
                 let label = w.info.as_ref().unwrap().profile_label();
                 svgPoint.label.text = String::from_str(label.trim()).unwrap();
                 svgPoint.label.id = format!("wp-{}/text", k);
-                crate::label_placement::place_label(&mut svgPoint, &polyline);
             } else {
                 svgPoint.circle.fill = Some(String::from_str("blue").unwrap());
             }
             points.push(svgPoint);
         }
+        crate::label_placement::place_labels(&mut points, &polyline);
         Map {
             polyline,
             points,
