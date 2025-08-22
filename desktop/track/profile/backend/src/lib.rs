@@ -4,6 +4,7 @@ pub mod elevation;
 pub mod error;
 pub mod gpsdata;
 pub mod gpxexport;
+mod label_placement;
 pub mod parameters;
 pub mod pdf;
 pub mod project;
