@@ -325,8 +325,7 @@ pub fn place_label(point: &mut Point, polyline: &Polyline) {
     let (width, height) = (bb.width(), bb.height());
     for n in 5..10 {
         for a in (0..100).step_by(25) {
-            let C = candidates(n as f64, a, (width, height));
-            for c in C {
+            for c in candidates(n as f64, a, (width, height)) {
                 let (dx, dy, anchor) = c;
                 label.x = point.circle.cx + dx;
                 label.y = point.circle.cy + dy;
