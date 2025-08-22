@@ -372,7 +372,7 @@ fn candidates(
     (width, height): (f64, f64),
 ) -> Vec<(f64, f64, String)> {
     let mut ret = Vec::new();
-    let steps = 10;
+    let steps = 5;
 
     let end = "end".to_string();
     let start = "start".to_string();
@@ -429,19 +429,18 @@ fn place_label(point: &mut Point, polyline: &Polyline) {
     let bb = label.bounding_box();
     let (width, height) = (bb.width(), bb.height());
     for n in 5..10 {
-        for a in 0..100 {
+        for a in (0..100).step_by(25) {
             let C = candidates(n as f64, a, (width, height));
             for c in C {
                 let (dx, dy, anchor) = c;
                 label.x = point.circle.cx + dx;
                 label.y = point.circle.cy + dy;
                 label.text_anchor = anchor;
-                println!(
-                    "[{}][n={n}][a={a}] => [d=({dx:.1},{dy:.1})][{}]",
-                    label.text, label.text_anchor,
-                );
                 if !polyline_hits_label(polyline, label) {
-                    println!("[{}] OK", label.text);
+                    println!(
+                        "[{:4}][n={n}][a={a:2}] => [d=({dx:.1},{dy:.1})][{}]",
+                        label.text, label.text_anchor,
+                    );
                     return;
                 }
             }
