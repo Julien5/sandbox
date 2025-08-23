@@ -148,7 +148,7 @@ impl LabelBoundingBox {
     pub fn height(&self) -> f64 {
         self.y_max() - self.y_min()
     }
-    pub fn distance_to_point(&self, p: (f64, f64)) -> f64 {
+    pub fn distance(&self, p: (f64, f64)) -> f64 {
         let mut candidates = Vec::new();
 
         candidates.push((self.x_min(), self.y_min()));
@@ -463,18 +463,16 @@ fn _candidates(points: &Vec<Point>) -> HashMap<Point, Vec<Candidate>> {
     ret
 }
 
-fn distance_to_others(candidate: &Candidate, points: &Vec<Point>, k: usize) -> f64 {
-    let mut ret = f64::MAX;
+fn distance_to_others(candidate: &Candidate, points: &Vec<Point>, k: usize) -> (f64, usize) {
+    let mut ret = (f64::MAX, 0);
     for l in 0..points.len() {
         if l == k {
             continue;
         }
         let other = &points[l];
-        let d = candidate
-            .bbox
-            .distance_to_point((other.circle.cx, other.circle.cy));
-        if d < ret {
-            ret = d;
+        let d = candidate.bbox.distance((other.circle.cx, other.circle.cy));
+        if d < ret.0 {
+            ret = (d, l);
         }
     }
     ret
@@ -487,21 +485,29 @@ fn place_label(points: &mut Vec<Point>, polyline: &Polyline, k: usize) {
     }
     let target = &points[k];
     let mut result: Option<LabelBoundingBox> = None;
+    let mut dothers_max = 0f64;
     let candidates = generate_candidates(target);
-    for k in 0..candidates.len() {
-        let c = &candidates[k];
-        if !polyline_hits_bbox(polyline, &c.bbox) {
-            println!("[{:4}][{k:3}] => [d=({})]", target.label.text, c.bbox);
-            result = Some(c.bbox.clone());
-            break;
+    let dtarget_min = candidates[k]
+        .bbox
+        .distance((target.circle.cx, target.circle.cy));
+    for index in 0..candidates.len() {
+        let c = &candidates[index];
+        if polyline_hits_bbox(polyline, &c.bbox) {
+            continue;
         }
-        let dtarget = c
-            .bbox
-            .distance_to_point((target.circle.cx, target.circle.cy));
-        let dothers = distance_to_others(c, &points, k);
-        println!("[{}] [{dtarget:.1}] [{dothers:.1}]", target.label.text);
-        // c close to target ?
-        // c far rom others ?
+        let dtarget = c.bbox.distance((target.circle.cx, target.circle.cy));
+
+        if true || dtarget < dtarget_min * 1.1f64 {
+            let (dothers, kother) = distance_to_others(c, &points, k);
+            if dothers > dothers_max {
+                result = Some(c.bbox.clone());
+                println!(
+                    "[{k:2}][{}] dmin={dtarget_min:.1} other => {kother:2} [{}]",
+                    points[kother].label.text, target.label.text
+                );
+                dothers_max = dothers;
+            }
+        }
     }
     match result {
         Some(bbox) => {
