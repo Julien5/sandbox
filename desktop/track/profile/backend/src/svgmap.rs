@@ -276,7 +276,7 @@ impl Map {
             debug_bb = debug_bb.set("fill", "transparent");
             debug_bb = debug_bb.set("stroke-width", "1");
             debug_bb = debug_bb.set("stroke", "blue");
-            document = document.add(debug_bb);
+            //document = document.add(debug_bb);
         }
         document.to_string()
     }

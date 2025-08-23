@@ -13,6 +13,8 @@ struct Cli {
     output_directory: Option<std::path::PathBuf>,
     #[arg(short, long, value_name = "interval_length")]
     interval_length: Option<i32>,
+    #[arg(short, long, value_name = "start_time")]
+    start_time: Option<String>,
     #[arg(short, long, value_name = "max_step_length")]
     max_step_length: Option<i32>,
     #[arg(short, long, value_name = "experiment_labels")]
@@ -47,6 +49,13 @@ fn main() -> Result<(), error::Error> {
     match args.interval_length {
         Some(length) => {
             parameters.segment_length = 1000f64 * (length as f64);
+        }
+        _ => {}
+    }
+
+    match args.start_time {
+        Some(time) => {
+            parameters.start_time = time.clone();
         }
         _ => {}
     }

@@ -11,6 +11,12 @@ fn distance((x1, y1): (f64, f64), (x2, y2): (f64, f64)) -> f64 {
     (dx * dx + dy * dy).sqrt()
 }
 
+const FONTSIZE: f64 = 16f64;
+
+fn text_width(s: &str) -> f64 {
+    s.len() as f64 * 8f64
+}
+
 #[derive(Clone)]
 pub struct Circle {
     pub id: String,
@@ -55,8 +61,8 @@ impl Label {
 
     pub fn set_text(&mut self, s: &str) {
         self.text = String::from_str(s).unwrap();
-        let width = 10f64 * s.len() as f64;
-        self.bbox = LabelBoundingBox::new_blwh((0f64, 0f64), width, 16f64);
+        let width = text_width(s);
+        self.bbox = LabelBoundingBox::new_blwh((0f64, 0f64), width, FONTSIZE);
     }
 
     pub fn bounding_box(&self) -> LabelBoundingBox {
@@ -265,8 +271,8 @@ impl Label {
         };
         let x = a.get("x").unwrap().to_string().parse::<f64>().unwrap();
         let y = a.get("y").unwrap().to_string().parse::<f64>().unwrap();
-        let height = 16f64;
-        let width = 10f64 * text.len() as f64;
+        let height = FONTSIZE;
+        let width = text_width(text);
         let (top_left, bottom_right) = if anchor == "start" {
             ((x, y - height), (x + width, y))
         } else {
@@ -294,7 +300,7 @@ impl Label {
         set_attr(&mut ret, "text-anchor", anchor);
         let y = self.bbox.bottom_right.1 - 2f64;
         set_attr(&mut ret, "id", self.id.as_str());
-        set_attr(&mut ret, "font-size", "16");
+        set_attr(&mut ret, "font-size", format!("{:.1}", FONTSIZE).as_str());
         set_attr(&mut ret, "x", format!("{}", x).as_str());
         set_attr(&mut ret, "y", format!("{}", y).as_str());
         ret
@@ -499,11 +505,11 @@ fn place_label(points: &mut Vec<Point>, polyline: &Polyline, k: usize) {
 
         if dtarget < dtarget_min * 1.1f64 {
             let (dothers, kother) = distance_to_others(c, &points, k);
-            if dothers > dothers_max {
+            if (dothers > dothers_max && dothers < 30f64) || result.is_none() {
                 result = Some(c.bbox.clone());
                 println!(
-                    "[{k:2}][{}] dmin={dtarget_min:.1} other => {kother:2} [{}]",
-                    points[kother].label.text, target.label.text
+                    "d([{}],[{}]) = {dothers:.1}]",
+                    target.label.text, points[kother].label.text,
                 );
                 dothers_max = dothers;
             }
