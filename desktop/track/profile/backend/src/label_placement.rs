@@ -53,6 +53,12 @@ impl Label {
         }
     }
 
+    pub fn set_text(&mut self, s: &str) {
+        self.text = String::from_str(s).unwrap();
+        let width = 10f64 * s.len() as f64;
+        self.bbox = LabelBoundingBox::new_blwh((0f64, 0f64), width, 16f64);
+    }
+
     pub fn bounding_box(&self) -> LabelBoundingBox {
         self.bbox.clone()
     }
@@ -434,29 +440,22 @@ fn candidates_at(distance: f64, angle_index: i32, point: &Point) -> Vec<Candidat
     ret
 }
 
-fn generate_candidates(point: &Point, polyline: &Polyline) -> Vec<Candidate> {
+fn generate_candidates(point: &Point) -> Vec<Candidate> {
     let mut ret = Vec::new();
     for n in 5..10 {
         for a in (0..100).step_by(25) {
             for c in candidates_at(n as f64, a, point) {
-                if !polyline_hits_bbox(polyline, &c.bbox) {
-                    println!(
-                        "[{:4}][n={n}][a={a:2}] => [d=({})]",
-                        point.label.text, c.bbox
-                    );
-                    ret.push(c);
-                }
+                ret.push(c);
             }
         }
     }
-    println!("[{}] FAIL", point.label.text);
     ret
 }
 
-fn _candidates(points: &Vec<Point>, polyline: &Polyline) -> HashMap<Point, Vec<Candidate>> {
+fn _candidates(points: &Vec<Point>) -> HashMap<Point, Vec<Candidate>> {
     let mut ret = HashMap::new();
     for p in points {
-        ret.insert(p.clone(), generate_candidates(p, polyline));
+        ret.insert(p.clone(), generate_candidates(p));
     }
     ret
 }
@@ -480,14 +479,24 @@ fn distance_to_others(candidate: &Candidate, points: &Vec<Point>, k: usize) -> f
 
 fn place_label(points: &mut Vec<Point>, polyline: &Polyline, k: usize) {
     // find one that is close to p and away from other points
-    let target = &points[k];
-    let candidates = generate_candidates(target, polyline);
+    let target = &mut points[k];
+    if target.label.text.is_empty() {
+        return;
+    }
+    let candidates = generate_candidates(target);
     for k in 0..candidates.len() {
         let c = &candidates[k];
+        if !polyline_hits_bbox(polyline, &c.bbox) {
+            println!("[{:4}][{k:3}] => [d=({})]", target.label.text, c.bbox);
+            target.label.bbox = c.bbox.clone();
+            break;
+        }
+        /*
         let _dtarget = c
             .bbox
             .distance_to_point((target.circle.cx, target.circle.cy));
         let _dothers = distance_to_others(c, points, k);
+        */
         // c close to target ?
         // c far rom others ?
     }
