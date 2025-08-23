@@ -282,14 +282,17 @@ impl Label {
 
     pub fn to_attributes(&self, cx: f64) -> Attributes {
         let mut ret = Attributes::new();
-        let mut x = self.bbox.top_left.0;
-        if self.bounding_box().x_max() < cx {
-            set_attr(&mut ret, "text-anchor", "end");
-            x = self.bbox.bottom_right.0;
+        let mut x = self.bbox.top_left.0 + 2f64;
+        let anchor = if self.bounding_box().x_max() < cx {
+            "end"
         } else {
-            set_attr(&mut ret, "text-anchor", "start");
+            "start"
+        };
+        if anchor == "end" {
+            x = self.bbox.bottom_right.0 - 2f64;
         }
-        let y = self.bbox.bottom_right.1;
+        set_attr(&mut ret, "text-anchor", anchor);
+        let y = self.bbox.bottom_right.1 - 2f64;
         set_attr(&mut ret, "id", self.id.as_str());
         set_attr(&mut ret, "font-size", "16");
         set_attr(&mut ret, "x", format!("{}", x).as_str());
@@ -479,26 +482,32 @@ fn distance_to_others(candidate: &Candidate, points: &Vec<Point>, k: usize) -> f
 
 fn place_label(points: &mut Vec<Point>, polyline: &Polyline, k: usize) {
     // find one that is close to p and away from other points
-    let target = &mut points[k];
-    if target.label.text.is_empty() {
+    if points[k].label.text.is_empty() {
         return;
     }
+    let target = &points[k];
+    let mut result: Option<LabelBoundingBox> = None;
     let candidates = generate_candidates(target);
     for k in 0..candidates.len() {
         let c = &candidates[k];
         if !polyline_hits_bbox(polyline, &c.bbox) {
             println!("[{:4}][{k:3}] => [d=({})]", target.label.text, c.bbox);
-            target.label.bbox = c.bbox.clone();
+            result = Some(c.bbox.clone());
             break;
         }
-        /*
-        let _dtarget = c
+        let dtarget = c
             .bbox
             .distance_to_point((target.circle.cx, target.circle.cy));
-        let _dothers = distance_to_others(c, points, k);
-        */
+        let dothers = distance_to_others(c, &points, k);
+        println!("[{}] [{dtarget:.1}] [{dothers:.1}]", target.label.text);
         // c close to target ?
         // c far rom others ?
+    }
+    match result {
+        Some(bbox) => {
+            points[k].label.bbox = bbox;
+        }
+        _ => {}
     }
 }
 
