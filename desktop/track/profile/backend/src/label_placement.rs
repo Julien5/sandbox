@@ -497,7 +497,7 @@ fn place_label(points: &mut Vec<Point>, polyline: &Polyline, k: usize) {
         }
         let dtarget = c.bbox.distance((target.circle.cx, target.circle.cy));
 
-        if true || dtarget < dtarget_min * 1.1f64 {
+        if dtarget < dtarget_min * 1.1f64 {
             let (dothers, kother) = distance_to_others(c, &points, k);
             if dothers > dothers_max {
                 result = Some(c.bbox.clone());
