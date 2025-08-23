@@ -104,7 +104,6 @@ use crate::label_placement::Circle;
 use crate::label_placement::Label;
 use crate::label_placement::Point;
 use crate::label_placement::Polyline;
-use crate::label_placement::SvgElement;
 
 pub struct Map {
     polyline: Polyline,
@@ -181,6 +180,7 @@ impl Map {
         let mut content = String::new();
         let mut points = Vec::new();
         let mut current_circle = Point::new();
+        let mut current_text_attributes = Attributes::new();
         for event in svg::open(filename, &mut content).unwrap() {
             match event {
                 Event::Tag(tag::Circle, _, attributes) => {
@@ -195,13 +195,14 @@ impl Map {
                 Event::Tag(tag::Text, _, attributes) => {
                     if attributes.contains_key("id") {
                         let id = attributes.get("id").unwrap();
-                        current_circle.label = Label::from_attributes(&attributes);
+                        current_text_attributes = attributes.clone();
                         println!("{}: {:?}", id, attributes);
                     }
                 }
                 Event::Text(data) => {
                     println!("Event::Text {:?}", data);
-                    current_circle.label.text = String::from_str(data).unwrap();
+                    current_circle.label = Label::from_attributes(&current_text_attributes, data);
+                    current_text_attributes.clear();
                     debug_assert!(!current_circle.id.is_empty());
                     points.push(current_circle);
                     current_circle = Point::new();
@@ -261,9 +262,10 @@ impl Map {
             document = document.add(circle);
             let text = format!("{}", point.label.text);
             let mut label = svg::node::element::Text::new(text);
-            for (k, v) in point.label.to_attributes() {
+            for (k, v) in point.label.to_attributes(point.circle.cx) {
                 label = label.set(k, v);
             }
+
             document = document.add(label);
             let mut debug_bb = svg::node::element::Rectangle::new();
             let bb = point.label.bounding_box();
