@@ -531,7 +531,7 @@ fn place_label(points: &mut Vec<PointFeature>, polyline: &Polyline, k: usize) {
         }
         let dtarget = c.bbox.distance((target.circle.cx, target.circle.cy));
 
-        if dtarget < dtarget_min * 1.2f64 {
+        if dtarget < dtarget_min * 1.5f64 {
             let (dothers, kother) = distance_to_others(c, &points, k);
             if target.label.text == "Isny" {
                 println!(
@@ -543,7 +543,7 @@ fn place_label(points: &mut Vec<PointFeature>, polyline: &Polyline, k: usize) {
                     points[kother].label.text,
                 );
             }
-            if (dothers > dothers_max && dothers < 150f64) || result.is_none() {
+            if (dothers > dothers_max && dothers < 50f64) || result.is_none() {
                 result = Some(c.bbox.clone());
                 println!(
                     "d([{}],[{}]) = {dothers:.1}]",
