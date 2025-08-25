@@ -13,8 +13,36 @@ fn distance((x1, y1): (f64, f64), (x2, y2): (f64, f64)) -> f64 {
 
 const FONTSIZE: f64 = 16f64;
 
+fn check(ret: &mut f64, s: &str, c: &char, w: &f64) -> bool {
+    if s.find(*c).is_some() {
+        *ret += w;
+        return true;
+    }
+    false
+}
+
+// from https://stackoverflow.com/questions/16007743/roughly-approximate-the-width-of-a-string-of-text-in-python
+fn char_width(s: &char) -> f64 {
+    let mut size = 0f64;
+    if check(&mut size, "lij|\' '", s, &37f64) {
+    } else if check(&mut size, "![]fI.,:;/\\t", s, &50f64) {
+    } else if check(&mut size, "`-(){}r\"", s, &60f64) {
+    } else if check(&mut size, "*^zcsJkvxy", s, &85f64) {
+    } else if check(&mut size, "aebdhnopqug#$L+<>=?_~FZT", s, &95f64) {
+    } else if check(&mut size, "0123456789", s, &95f64) {
+    } else if check(&mut size, "BSPEAKVXY&UwNRCHD", s, &112f64) {
+    } else if check(&mut size, "QGOMm%W@", s, &135f64) {
+    }
+    let ret = size * 6f64 / 1000.0;
+    (ret / 0.57f64) * (FONTSIZE / 16f64) * 9f64
+}
+
 fn text_width(s: &str) -> f64 {
-    s.len() as f64 * 8f64
+    let mut ret = 0f64;
+    for c in s.chars() {
+        ret += char_width(&c);
+    }
+    return ret;
 }
 
 #[derive(Clone)]
@@ -392,7 +420,7 @@ impl Candidate {
 
 fn candidates_at(distance: f64, angle_index: i32, point: &Point) -> Vec<Candidate> {
     let mut ret = Vec::new();
-    let steps = 5;
+    let steps = 10;
     let bbox = point.label.bounding_box();
     let width = bbox.width();
     let height = bbox.height();
@@ -452,7 +480,7 @@ fn candidates_at(distance: f64, angle_index: i32, point: &Point) -> Vec<Candidat
 fn generate_candidates(point: &Point) -> Vec<Candidate> {
     let mut ret = Vec::new();
     for n in 5..10 {
-        for a in (0..100).step_by(25) {
+        for a in (0..100).step_by(5) {
             for c in candidates_at(n as f64, a, point) {
                 ret.push(c);
             }
@@ -503,9 +531,19 @@ fn place_label(points: &mut Vec<Point>, polyline: &Polyline, k: usize) {
         }
         let dtarget = c.bbox.distance((target.circle.cx, target.circle.cy));
 
-        if dtarget < dtarget_min * 1.1f64 {
+        if dtarget < dtarget_min * 1.2f64 {
             let (dothers, kother) = distance_to_others(c, &points, k);
-            if (dothers > dothers_max && dothers < 30f64) || result.is_none() {
+            if target.label.text == "Isny" {
+                println!(
+                    "c({:.1},{:.1}) d_t={:.1} d_o([{}],[{}]) = {dothers:.1}]",
+                    c.bbox.x_min(),
+                    c.bbox.y_max(),
+                    dtarget,
+                    target.label.text,
+                    points[kother].label.text,
+                );
+            }
+            if (dothers > dothers_max && dothers < 50f64) || result.is_none() {
                 result = Some(c.bbox.clone());
                 println!(
                     "d([{}],[{}]) = {dothers:.1}]",
