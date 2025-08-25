@@ -102,12 +102,12 @@ use crate::label_placement::set_attr;
 use crate::label_placement::Attributes;
 use crate::label_placement::Circle;
 use crate::label_placement::Label;
-use crate::label_placement::Point;
+use crate::label_placement::PointFeature;
 use crate::label_placement::Polyline;
 
 pub struct Map {
     polyline: Polyline,
-    points: Vec<Point>,
+    points: Vec<PointFeature>,
     document: Attributes,
 }
 
@@ -151,7 +151,7 @@ impl Map {
             if !bbox.contains(&w.utm) {
                 continue;
             }
-            let mut svgPoint = Point::new();
+            let mut svgPoint = PointFeature::new();
             let (x, y) = bbox.to_graphics_coordinates(&w.utm, W, H);
             svgPoint.circle.id = format!("wp-{}/circle", k);
             svgPoint.circle.cx = x;
@@ -179,7 +179,7 @@ impl Map {
         let mut document = Attributes::new();
         let mut content = String::new();
         let mut points = Vec::new();
-        let mut current_circle = Point::new();
+        let mut current_circle = PointFeature::new();
         let mut current_text_attributes = Attributes::new();
         for event in svg::open(filename, &mut content).unwrap() {
             match event {
@@ -205,7 +205,7 @@ impl Map {
                     current_text_attributes.clear();
                     debug_assert!(!current_circle.id.is_empty());
                     points.push(current_circle);
-                    current_circle = Point::new();
+                    current_circle = PointFeature::new();
                 }
                 Event::Tag(tag::Path, _, attributes) => {
                     if attributes.contains_key("id") {
@@ -276,7 +276,7 @@ impl Map {
             debug_bb = debug_bb.set("fill", "transparent");
             debug_bb = debug_bb.set("stroke-width", "1");
             debug_bb = debug_bb.set("stroke", "blue");
-            //document = document.add(debug_bb);
+            document = document.add(debug_bb);
         }
         document.to_string()
     }
