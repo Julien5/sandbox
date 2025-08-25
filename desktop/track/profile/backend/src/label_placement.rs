@@ -220,30 +220,30 @@ impl fmt::Display for LabelBoundingBox {
 }
 
 #[derive(Clone)]
-pub struct Point {
+pub struct PointFeature {
     pub id: String,
     pub circle: Circle,
     pub label: Label,
 }
 
-impl PartialEq for Point {
+impl PartialEq for PointFeature {
     fn eq(&self, other: &Self) -> bool {
         self.id == other.id
     }
 }
 
-impl Eq for Point {}
+impl Eq for PointFeature {}
 use std::hash::Hash;
 use std::hash::Hasher;
-impl Hash for Point {
+impl Hash for PointFeature {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.id.hash(state);
     }
 }
 
-impl Point {
-    pub fn new() -> Point {
-        Point {
+impl PointFeature {
+    pub fn new() -> PointFeature {
+        PointFeature {
             id: String::new(),
             circle: Circle::new(),
             label: Label::new(),
@@ -418,7 +418,7 @@ impl Candidate {
     }
 }
 
-fn candidates_at(distance: f64, angle_index: i32, point: &Point) -> Vec<Candidate> {
+fn candidates_at(distance: f64, angle_index: i32, point: &PointFeature) -> Vec<Candidate> {
     let mut ret = Vec::new();
     let steps = 10;
     let bbox = point.label.bounding_box();
@@ -477,7 +477,7 @@ fn candidates_at(distance: f64, angle_index: i32, point: &Point) -> Vec<Candidat
     ret
 }
 
-fn generate_candidates(point: &Point) -> Vec<Candidate> {
+fn generate_candidates(point: &PointFeature) -> Vec<Candidate> {
     let mut ret = Vec::new();
     for n in 5..10 {
         for a in (0..100).step_by(5) {
@@ -489,7 +489,7 @@ fn generate_candidates(point: &Point) -> Vec<Candidate> {
     ret
 }
 
-fn _candidates(points: &Vec<Point>) -> HashMap<Point, Vec<Candidate>> {
+fn _candidates(points: &Vec<PointFeature>) -> HashMap<PointFeature, Vec<Candidate>> {
     let mut ret = HashMap::new();
     for p in points {
         ret.insert(p.clone(), generate_candidates(p));
@@ -497,7 +497,7 @@ fn _candidates(points: &Vec<Point>) -> HashMap<Point, Vec<Candidate>> {
     ret
 }
 
-fn distance_to_others(candidate: &Candidate, points: &Vec<Point>, k: usize) -> (f64, usize) {
+fn distance_to_others(candidate: &Candidate, points: &Vec<PointFeature>, k: usize) -> (f64, usize) {
     let mut ret = (f64::MAX, 0);
     for l in 0..points.len() {
         if l == k {
@@ -512,7 +512,7 @@ fn distance_to_others(candidate: &Candidate, points: &Vec<Point>, k: usize) -> (
     ret
 }
 
-fn place_label(points: &mut Vec<Point>, polyline: &Polyline, k: usize) {
+fn place_label(points: &mut Vec<PointFeature>, polyline: &Polyline, k: usize) {
     // find one that is close to p and away from other points
     if points[k].label.text.is_empty() {
         return;
@@ -561,7 +561,7 @@ fn place_label(points: &mut Vec<Point>, polyline: &Polyline, k: usize) {
     }
 }
 
-pub fn place_labels(points: &mut Vec<Point>, polyline: &Polyline) {
+pub fn place_labels(points: &mut Vec<PointFeature>, polyline: &Polyline) {
     for k in 0..points.len() {
         place_label(points, polyline, k);
     }
