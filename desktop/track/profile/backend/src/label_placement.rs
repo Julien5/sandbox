@@ -543,7 +543,7 @@ fn place_label(points: &mut Vec<PointFeature>, polyline: &Polyline, k: usize) {
                     points[kother].label.text,
                 );
             }
-            if (dothers > dothers_max && dothers < 50f64) || result.is_none() {
+            if (dothers > dothers_max && dothers < 150f64) || result.is_none() {
                 result = Some(c.bbox.clone());
                 println!(
                     "d([{}],[{}]) = {dothers:.1}]",
