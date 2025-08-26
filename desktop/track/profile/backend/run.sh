@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 set -e
-set -x
+# set -x
 
 function pdf() {
 	echo "args:"$@
@@ -15,19 +15,11 @@ function pdf() {
 		  --output-directory /tmp/ \
 		  --debug true \
 		  --interval-length 180 \
+		  "$@" \
 		  ${file}
 	TYPST=/opt/typst/typst-x86_64-unknown-linux-musl/typst
 	${TYPST} compile /tmp/document.typst
 	echo xdg-open /tmp/document.pdf 
-}
-
-function exp() {
-	echo make exp
-	cargo run -- \
-		  --output-directory /tmp/ \
-		  --experiment-labels true \
-		  --debug true \
-		  data/blackforest.gpx
 }
 
 function main() {

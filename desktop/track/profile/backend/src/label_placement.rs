@@ -235,6 +235,9 @@ impl PartialEq for PointFeature {
 impl Eq for PointFeature {}
 use std::hash::Hash;
 use std::hash::Hasher;
+
+use crate::backend;
+use crate::parameters;
 impl Hash for PointFeature {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.id.hash(state);
@@ -512,16 +515,27 @@ fn distance_to_others(candidate: &Candidate, points: &Vec<PointFeature>, k: usiz
     ret
 }
 
-fn place_label(points: &mut Vec<PointFeature>, polyline: &Polyline, k: usize) {
+fn place_label(
+    parameters: &parameters::ExperimentalParameters,
+    points: &mut Vec<PointFeature>,
+    polyline: &Polyline,
+    k: usize,
+) {
     // find one that is close to p and away from other points
     if points[k].label.text.is_empty() {
         return;
     }
     let target = &points[k];
-    let mut result: Option<LabelBoundingBox> = None;
+    type Dtarget = f64;
+    type Dother = f64;
+    let mut result: Option<(LabelBoundingBox, Dtarget, usize, Dother)> = None;
     let mut dothers_max = 0f64;
     let candidates = generate_candidates(target);
     let mut dtarget_min = None;
+    let dtarget_max = match parameters.dtarget_max {
+        Some(d) => d,
+        _ => 10.0,
+    };
     for index in 0..candidates.len() {
         let c = &candidates[index];
         let dtarget = c.bbox.distance((target.circle.cx, target.circle.cy));
@@ -529,7 +543,6 @@ fn place_label(points: &mut Vec<PointFeature>, polyline: &Polyline, k: usize) {
             dtarget_min = Some(dtarget);
         }
     }
-    let dtarget_min = dtarget_min.unwrap();
     for index in 0..candidates.len() {
         let c = &candidates[index];
         if polyline_hits_bbox(polyline, &c.bbox) {
@@ -537,38 +550,36 @@ fn place_label(points: &mut Vec<PointFeature>, polyline: &Polyline, k: usize) {
         }
         let dtarget = c.bbox.distance((target.circle.cx, target.circle.cy));
 
-        if dtarget < 10.0 {
+        if dtarget < dtarget_max {
             let (dothers, kother) = distance_to_others(c, &points, k);
-            if target.label.text == "Schlier" || true {
-                println!(
-                    "c({:.1},{:.1}) d_t={:.1} d_o([{}],[{}]) = {dothers:.1}]",
-                    c.bbox.x_min(),
-                    c.bbox.y_max(),
-                    dtarget,
-                    target.label.text,
-                    points[kother].label.text,
-                );
-            }
             if (dothers > dothers_max && dothers < 50f64) || result.is_none() {
-                result = Some(c.bbox.clone());
-                println!(
-                    "d([{}],[{}]) = {dothers:.1}]",
-                    target.label.text, points[kother].label.text,
-                );
+                result = Some((c.bbox.clone(), dtarget, kother, dothers));
                 dothers_max = dothers;
             }
         }
     }
     match result {
-        Some(bbox) => {
+        Some((bbox, dtarget, kother, dothers)) => {
+            println!(
+                "[{dtarget_max:.1}] [{:12}] c({:.1},{:.1}) d_t={:.1} d_o([{:10}]) = {dothers:.1}]",
+                target.label.text,
+                bbox.x_min(),
+                bbox.y_max(),
+                dtarget,
+                points[kother].label.text,
+            );
             points[k].label.bbox = bbox;
         }
         _ => {}
     }
 }
 
-pub fn place_labels(points: &mut Vec<PointFeature>, polyline: &Polyline) {
+pub fn place_labels(
+    backend: &backend::Backend,
+    points: &mut Vec<PointFeature>,
+    polyline: &Polyline,
+) {
     for k in 0..points.len() {
-        place_label(points, polyline, k);
+        place_label(&backend.get_eparameters(), points, polyline, k);
     }
 }

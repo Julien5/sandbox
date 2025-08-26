@@ -2,9 +2,9 @@
 
 use std::str::FromStr;
 
+use crate::segment;
 use crate::utm::UTMPoint;
-use crate::{gpsdata, waypoints_table};
-use crate::{segment, waypoint};
+use crate::{backend, waypoints_table};
 
 use svg::node::element::path::{Command, Data};
 use svg::Document;
@@ -113,13 +113,14 @@ pub struct Map {
 
 impl Map {
     pub fn make(
-        geodata: &gpsdata::Track,
-        waypoints: &Vec<waypoint::Waypoint>,
+        backend: &backend::Backend,
         segment: &segment::Segment,
         W: i32,
         H: i32,
         _debug: bool,
     ) -> Map {
+        let geodata = &backend.track;
+        let waypoints = backend.get_waypoints();
         let path = &geodata.utm;
         let mut bbox = UTMBoundingBox::new();
         let range = &segment.range;
@@ -165,7 +166,7 @@ impl Map {
             }
             points.push(svgPoint);
         }
-        crate::label_placement::place_labels(&mut points, &polyline);
+        crate::label_placement::place_labels(&backend, &mut points, &polyline);
         Map {
             polyline,
             points,
@@ -283,13 +284,12 @@ impl Map {
 }
 
 pub fn map(
-    geodata: &gpsdata::Track,
-    waypoints: &Vec<waypoint::Waypoint>,
+    backend: &backend::Backend,
     segment: &segment::Segment,
     W: i32,
     H: i32,
     debug: bool,
 ) -> String {
-    let svgMap = Map::make(geodata, waypoints, segment, W, H, debug);
+    let svgMap = Map::make(backend, segment, W, H, debug);
     svgMap.render()
 }

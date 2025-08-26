@@ -13,12 +13,14 @@ struct Cli {
     output_directory: Option<std::path::PathBuf>,
     #[arg(short, long, value_name = "interval_length")]
     interval_length: Option<i32>,
-    #[arg(short, long, value_name = "start_time")]
+    #[arg(long, value_name = "start_time")]
     start_time: Option<String>,
-    #[arg(short, long, value_name = "max_step_length")]
+    #[arg(long, value_name = "max_step_length")]
     max_step_length: Option<i32>,
-    #[arg(short, long, value_name = "experiment_labels")]
+    #[arg(long, value_name = "experiment_labels")]
     experiment_labels: Option<bool>,
+    #[arg(long, value_name = "dtarget_max")]
+    dtarget_max: Option<f64>,
     #[arg(value_name = "gpx")]
     filename: std::path::PathBuf,
 }
@@ -46,6 +48,7 @@ fn main() -> Result<(), error::Error> {
     let mut backend = Backend::from_filename(gpxinput)?;
 
     let mut parameters = backend.get_parameters();
+    let mut eparameters = backend.get_eparameters();
     match args.interval_length {
         Some(length) => {
             parameters.segment_length = 1000f64 * (length as f64);
@@ -74,7 +77,15 @@ fn main() -> Result<(), error::Error> {
         _ => {}
     }
 
+    match args.dtarget_max {
+        Some(d) => {
+            eparameters.dtarget_max = Some(d);
+        }
+        _ => {}
+    }
+
     backend.set_parameters(&parameters);
+    backend.set_eparameters(&eparameters);
 
     let pdfbytes = backend.generatePdf();
     let pdfname = format!(
