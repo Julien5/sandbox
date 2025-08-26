@@ -480,22 +480,15 @@ fn candidates_at(distance: f64, angle_index: i32, point: &PointFeature) -> Vec<C
     ret
 }
 
-fn generate_candidates(point: &PointFeature) -> Vec<Candidate> {
+fn generate_candidates(point: &PointFeature, dtarget_max: f64) -> Vec<Candidate> {
     let mut ret = Vec::new();
-    for n in 5..10 {
+    for n in (5..100).rev().step_by(5) {
         for a in (0..100).step_by(5) {
-            for c in candidates_at(n as f64, a, point) {
+            let dtarget = (n as f64 / 100f64) * dtarget_max;
+            for c in candidates_at(dtarget, a, point) {
                 ret.push(c);
             }
         }
-    }
-    ret
-}
-
-fn _candidates(points: &Vec<PointFeature>) -> HashMap<PointFeature, Vec<Candidate>> {
-    let mut ret = HashMap::new();
-    for p in points {
-        ret.insert(p.clone(), generate_candidates(p));
     }
     ret
 }
@@ -528,14 +521,14 @@ fn place_label(
     let target = &points[k];
     type Dtarget = f64;
     type Dother = f64;
-    let mut result: Option<(LabelBoundingBox, Dtarget, usize, Dother)> = None;
+    let mut result: Option<(LabelBoundingBox, Dtarget, Dother)> = None;
     let mut dothers_max = 0f64;
-    let candidates = generate_candidates(target);
     let mut dtarget_min = None;
     let dtarget_max = match parameters.dtarget_max {
         Some(d) => d,
         _ => 10.0,
     };
+    let candidates = generate_candidates(target, dtarget_max);
     for index in 0..candidates.len() {
         let c = &candidates[index];
         let dtarget = c.bbox.distance((target.circle.cx, target.circle.cy));
@@ -543,34 +536,36 @@ fn place_label(
             dtarget_min = Some(dtarget);
         }
     }
+    let dtarget_min = dtarget_min.unwrap();
     for index in 0..candidates.len() {
         let c = &candidates[index];
         if polyline_hits_bbox(polyline, &c.bbox) {
             continue;
         }
         let dtarget = c.bbox.distance((target.circle.cx, target.circle.cy));
-
-        if dtarget < dtarget_max {
-            let (dothers, kother) = distance_to_others(c, &points, k);
-            if (dothers > dothers_max && dothers < 50f64) || result.is_none() {
-                result = Some((c.bbox.clone(), dtarget, kother, dothers));
-                dothers_max = dothers;
-            }
+        let (dothers, _) = distance_to_others(c, &points, k);
+        if dothers < dtarget {
+            continue;
         }
+        if result.is_none() {
+            result = Some((c.bbox.clone(), dtarget, dothers));
+        }
+        result = Some((c.bbox.clone(), dtarget, dothers));
     }
     match result {
-        Some((bbox, dtarget, kother, dothers)) => {
+        Some((bbox, dtarget, dothers)) => {
             println!(
-                "[{dtarget_max:.1}] [{:12}] c({:.1},{:.1}) d_t={:.1} d_o([{:10}]) = {dothers:.1}]",
+                "[{dtarget_max:.1}] [{:12}] c({:.1},{:.1}) d_t={:.1} d_o = {dothers:.1}]",
                 target.label.text,
                 bbox.x_min(),
                 bbox.y_max(),
                 dtarget,
-                points[kother].label.text,
             );
             points[k].label.bbox = bbox;
         }
-        _ => {}
+        _ => {
+            println!("failed to find any candidate for [{}]", target.label.text);
+        }
     }
 }
 
