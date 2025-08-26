@@ -521,9 +521,15 @@ fn place_label(points: &mut Vec<PointFeature>, polyline: &Polyline, k: usize) {
     let mut result: Option<LabelBoundingBox> = None;
     let mut dothers_max = 0f64;
     let candidates = generate_candidates(target);
-    let dtarget_min = candidates[k]
-        .bbox
-        .distance((target.circle.cx, target.circle.cy));
+    let mut dtarget_min = None;
+    for index in 0..candidates.len() {
+        let c = &candidates[index];
+        let dtarget = c.bbox.distance((target.circle.cx, target.circle.cy));
+        if dtarget_min.is_none() || dtarget_min.unwrap() > dtarget {
+            dtarget_min = Some(dtarget);
+        }
+    }
+    let dtarget_min = dtarget_min.unwrap();
     for index in 0..candidates.len() {
         let c = &candidates[index];
         if polyline_hits_bbox(polyline, &c.bbox) {
@@ -531,9 +537,9 @@ fn place_label(points: &mut Vec<PointFeature>, polyline: &Polyline, k: usize) {
         }
         let dtarget = c.bbox.distance((target.circle.cx, target.circle.cy));
 
-        if dtarget < dtarget_min * 1.5f64 {
+        if dtarget < 10.0 {
             let (dothers, kother) = distance_to_others(c, &points, k);
-            if target.label.text == "Isny" {
+            if target.label.text == "Schlier" || true {
                 println!(
                     "c({:.1},{:.1}) d_t={:.1} d_o([{}],[{}]) = {dothers:.1}]",
                     c.bbox.x_min(),

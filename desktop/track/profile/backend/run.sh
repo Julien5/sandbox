@@ -14,6 +14,7 @@ function pdf() {
 	cargo run -- \
 		  --output-directory /tmp/ \
 		  --debug true \
+		  --interval-length 180 \
 		  ${file}
 	TYPST=/opt/typst/typst-x86_64-unknown-linux-musl/typst
 	${TYPST} compile /tmp/document.typst
