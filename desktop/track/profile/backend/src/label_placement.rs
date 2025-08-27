@@ -67,11 +67,6 @@ impl Circle {
 }
 
 #[derive(Clone)]
-struct Candidate {
-    bbox: LabelBoundingBox,
-}
-
-#[derive(Clone)]
 pub struct Label {
     pub id: String,
     pub bbox: LabelBoundingBox,
@@ -436,38 +431,11 @@ fn cartesian(r: f64, angle: f64) -> (f64, f64) {
     (x, y)
 }
 
-impl Candidate {
-    fn _new_tlbr(top_left: (f64, f64), bottom_right: (f64, f64)) -> Self {
-        Candidate {
-            bbox: LabelBoundingBox::new_tlbr(top_left, bottom_right),
-        }
-    }
-    fn new_blwh(bottom_left: (f64, f64), width: f64, height: f64) -> Self {
-        Candidate {
-            bbox: LabelBoundingBox::new_blwh(bottom_left, width, height),
-        }
-    }
-    fn new_brwh(bottom_right: (f64, f64), width: f64, height: f64) -> Self {
-        Candidate {
-            bbox: LabelBoundingBox::new_brwh(bottom_right, width, height),
-        }
-    }
-    fn new_tlwh(top_left: (f64, f64), width: f64, height: f64) -> Self {
-        Candidate {
-            bbox: LabelBoundingBox::new_tlwh(top_left, width, height),
-        }
-    }
-    fn new_trwh(top_right: (f64, f64), width: f64, height: f64) -> Self {
-        Candidate {
-            bbox: LabelBoundingBox::new_trwh(top_right, width, height),
-        }
-    }
-    fn intersect(&self, other: &Self) -> bool {
-        self.bbox.insersect(&other.bbox)
-    }
-}
-
-fn candidates_at(distance: f64, angle_index: i32, point: &PointFeature) -> Vec<Candidate> {
+fn candidates_bbox_at(
+    distance: f64,
+    angle_index: i32,
+    point: &PointFeature,
+) -> Vec<LabelBoundingBox> {
     let mut ret = Vec::new();
     let steps = 10;
     let bbox = point.label.bounding_box();
@@ -481,7 +449,7 @@ fn candidates_at(distance: f64, angle_index: i32, point: &PointFeature) -> Vec<C
         0 => {
             for i in 0..steps {
                 let dy = i as f64 * height_step;
-                let c = Candidate::new_blwh((cx + distance, cy + dy), width, height);
+                let c = LabelBoundingBox::new_blwh((cx + distance, cy + dy), width, height);
                 ret.push(c);
             }
             return ret;
@@ -489,7 +457,7 @@ fn candidates_at(distance: f64, angle_index: i32, point: &PointFeature) -> Vec<C
         25 => {
             for i in 0..steps {
                 let dx = i as f64 * width_step;
-                let c = Candidate::new_blwh((cx - dx, cy - distance), width, height);
+                let c = LabelBoundingBox::new_blwh((cx - dx, cy - distance), width, height);
                 ret.push(c);
             }
             return ret;
@@ -497,7 +465,7 @@ fn candidates_at(distance: f64, angle_index: i32, point: &PointFeature) -> Vec<C
         50 => {
             for i in 0..steps {
                 let dy = i as f64 * height_step;
-                let c = Candidate::new_brwh((cx - distance, cy + dy), width, height);
+                let c = LabelBoundingBox::new_brwh((cx - distance, cy + dy), width, height);
                 ret.push(c);
             }
             return ret;
@@ -505,7 +473,7 @@ fn candidates_at(distance: f64, angle_index: i32, point: &PointFeature) -> Vec<C
         75 => {
             for i in 0..steps {
                 let dx = i as f64 * width_step;
-                let c = Candidate::new_trwh((cx + dx, cy + distance), width, height);
+                let c = LabelBoundingBox::new_trwh((cx + dx, cy + distance), width, height);
                 ret.push(c);
             }
             return ret;
@@ -517,16 +485,16 @@ fn candidates_at(distance: f64, angle_index: i32, point: &PointFeature) -> Vec<C
     let (epsx, epsy) = cartesian(distance, angle);
     let p = (cx + epsx, cy + epsy);
     let c = match (epsx > 0f64, epsy > 0f64) {
-        (true, false) => Candidate::new_blwh(p, width, height),
-        (false, false) => Candidate::new_brwh(p, width, height),
-        (false, true) => Candidate::new_trwh(p, width, height),
-        (true, true) => Candidate::new_tlwh(p, width, height),
+        (true, false) => LabelBoundingBox::new_blwh(p, width, height),
+        (false, false) => LabelBoundingBox::new_brwh(p, width, height),
+        (false, true) => LabelBoundingBox::new_trwh(p, width, height),
+        (true, true) => LabelBoundingBox::new_tlwh(p, width, height),
     };
     ret.push(c);
     ret
 }
 
-fn generate_candidates(point: &PointFeature, dtarget_max: f64) -> Vec<Candidate> {
+fn generate_bbox(point: &PointFeature, dtarget_max: f64) -> Vec<LabelBoundingBox> {
     let mut ret = Vec::new();
     let mut dtarget_min = f64::MAX;
     let angle_indices = [0, 12, 25, 38, 50, 62, 75, 90];
@@ -536,7 +504,7 @@ fn generate_candidates(point: &PointFeature, dtarget_max: f64) -> Vec<Candidate>
             if dtarget_min > dtarget {
                 dtarget_min = dtarget;
             }
-            for c in candidates_at(dtarget, a, point) {
+            for c in candidates_bbox_at(dtarget, a, point) {
                 ret.push(c);
             }
         }
@@ -544,7 +512,7 @@ fn generate_candidates(point: &PointFeature, dtarget_max: f64) -> Vec<Candidate>
     let dtarget_min = dtarget_min.ceil() as i32;
     for dtarget in (2..dtarget_min).rev() {
         for a in angle_indices {
-            for c in candidates_at(dtarget as f64, a, point) {
+            for c in candidates_bbox_at(dtarget as f64, a, point) {
                 // println!("{dtarget} {a} {})", point.id);
                 ret.push(c);
             }
@@ -554,7 +522,7 @@ fn generate_candidates(point: &PointFeature, dtarget_max: f64) -> Vec<Candidate>
 }
 
 fn distance_to_others(
-    candidate: &Candidate,
+    bbox: &LabelBoundingBox,
     points: &Vec<PointFeature>,
     target_id: &String,
 ) -> (f64, usize) {
@@ -564,12 +532,26 @@ fn distance_to_others(
         if other.id == *target_id {
             continue;
         }
-        let d = candidate.bbox.distance((other.circle.cx, other.circle.cy));
+        let d = bbox.distance((other.circle.cx, other.circle.cy));
         if d < ret.0 {
             ret = (d, l);
         }
     }
     ret
+}
+
+#[derive(Clone)]
+struct Candidate {
+    bbox: LabelBoundingBox,
+}
+
+impl Candidate {
+    fn new(bbox: LabelBoundingBox) -> Candidate {
+        Candidate { bbox }
+    }
+    fn intersect(&self, other: &Self) -> bool {
+        self.bbox.insersect(&other.bbox)
+    }
 }
 
 type Candidates = Vec<Candidate>;
@@ -589,19 +571,19 @@ fn candidates_for_point(
         Some(d) => d,
         _ => 200.0,
     };
-    let all = generate_candidates(target, dtarget_max);
+    let all = generate_bbox(target, dtarget_max);
     let mut ret = Vec::new();
     for index in 0..all.len() {
         let c = &all[index];
-        if polyline_hits_bbox(polyline, &c.bbox) {
+        if polyline_hits_bbox(polyline, &c) {
             continue;
         }
-        let dtarget = c.bbox.distance((target.circle.cx, target.circle.cy));
+        let dtarget = c.distance((target.circle.cx, target.circle.cy));
         let (dothers, _) = distance_to_others(c, &points, &target.id);
         if dothers < dtarget {
             continue;
         }
-        ret.push(c.clone());
+        ret.push(Candidate::new(c.clone()));
     }
     return ret;
 }
@@ -635,7 +617,7 @@ pub fn place_labels(
         match best {
             Some(candidate) => {
                 let bbox = &candidate.bbox;
-                let dothers = distance_to_others(candidate, points, &target.id);
+                let dothers = distance_to_others(bbox, points, &target.id);
                 let dtarget = candidate
                     .bbox
                     .distance((target.circle.cx, target.circle.cy));
