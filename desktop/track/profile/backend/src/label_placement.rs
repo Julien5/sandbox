@@ -190,28 +190,38 @@ impl LabelBoundingBox {
     pub fn height(&self) -> f64 {
         self.y_max() - self.y_min()
     }
-    pub fn distance(&self, p: (f64, f64)) -> f64 {
-        let mut candidates = Vec::new();
+    pub fn project_on_border(&self, q: (f64, f64)) -> (f64, f64) {
+        let (qx, qy) = q;
 
-        candidates.push((self.x_min(), self.y_min()));
-        candidates.push((self.x_min(), self.y_max()));
-        candidates.push((self.x_max(), self.y_min()));
-        candidates.push((self.x_max(), self.y_max()));
+        // Calculate distances to each edge
+        let left = self.x_min();
+        let right = self.x_max();
+        let top = self.y_min();
+        let bottom = self.y_max();
 
-        candidates.push((self.x_mid(), self.y_max()));
-        candidates.push((self.x_max(), self.y_mid()));
+        let dist_left = (qx - left).abs();
+        let dist_right = (qx - right).abs();
+        let dist_top = (qy - top).abs();
+        let dist_bottom = (qy - bottom).abs();
 
-        candidates.push((self.x_mid(), self.y_min()));
-        candidates.push((self.x_min(), self.y_mid()));
+        // Find the closest edge
+        let min_dist = dist_left.min(dist_right).min(dist_top).min(dist_bottom);
 
-        let mut ret = f64::MAX;
-        for c in candidates {
-            let d = distance(c, p);
-            if d < ret {
-                ret = d;
-            }
+        if min_dist == dist_left {
+            (left, qy.clamp(top, bottom)) // Project onto the left edge
+        } else if min_dist == dist_right {
+            (right, qy.clamp(top, bottom)) // Project onto the right edge
+        } else if min_dist == dist_top {
+            (qx.clamp(left, right), top) // Project onto the top edge
+        } else {
+            (qx.clamp(left, right), bottom) // Project onto the bottom edge
         }
-        ret
+    }
+    pub fn distance(&self, q: (f64, f64)) -> f64 {
+        let p = self.project_on_border(q);
+        let dx = p.0 - q.0;
+        let dy = p.1 - q.1;
+        (dx * dx + dy * dy).sqrt()
     }
     fn contains(&self, (x, y): (f64, f64)) -> bool {
         if x >= self.x_min() && x <= self.x_max() && y >= self.y_min() && y <= self.y_max() {
