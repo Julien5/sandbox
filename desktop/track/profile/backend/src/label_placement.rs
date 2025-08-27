@@ -243,6 +243,12 @@ impl LabelBoundingBox {
     }
 }
 
+impl PartialEq for LabelBoundingBox {
+    fn eq(&self, other: &Self) -> bool {
+        self.top_left == other.top_left && self.bottom_right == other.bottom_right
+    }
+}
+
 use std::fmt;
 use std::str::FromStr;
 impl fmt::Display for LabelBoundingBox {
@@ -493,7 +499,7 @@ fn generate_bboxes(point: &PointFeature, dtarget_max: f64) -> Vec<LabelBoundingB
     let dtarget_start = 2i32;
     let mut dtarget_min = f64::MAX;
     let angle_indices = [0, 12, 25, 38, 50, 62, 75, 90];
-    for n in (5..100).rev().step_by(10) {
+    for n in (5..100).step_by(10) {
         for a in angle_indices {
             let dtarget = (n as f64 / 100f64) * dtarget_max;
             if dtarget < dtarget_start as f64 {
@@ -508,7 +514,7 @@ fn generate_bboxes(point: &PointFeature, dtarget_max: f64) -> Vec<LabelBoundingB
         }
     }
     let dtarget_min = dtarget_min.ceil() as i32;
-    for dtarget in (dtarget_start..dtarget_min).rev() {
+    for dtarget in dtarget_start..dtarget_min {
         for a in angle_indices {
             for c in bbox_at(dtarget as f64, a, point) {
                 // println!("{dtarget} {a} {})", point.id);
@@ -555,6 +561,38 @@ impl Candidate {
     }
     fn intersect(&self, other: &Self) -> bool {
         self.bbox.insersect(&other.bbox)
+    }
+}
+
+impl PartialEq for Candidate {
+    fn eq(&self, other: &Self) -> bool {
+        self.bbox == other.bbox
+    }
+}
+
+impl Eq for Candidate {}
+
+use std::cmp::Ordering;
+impl PartialOrd for Candidate {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        if self.dtarget != other.dtarget {
+            return self.dtarget.partial_cmp(&other.dtarget);
+        }
+        self.dothers.partial_cmp(&other.dothers)
+    }
+}
+
+impl Ord for Candidate {
+    fn cmp(&self, other: &Self) -> Ordering {
+        if self.dtarget != other.dtarget {
+            return self
+                .dtarget
+                .partial_cmp(&other.dtarget)
+                .unwrap_or(Ordering::Equal);
+        }
+        (-self.dothers)
+            .partial_cmp(&(-other.dothers))
+            .unwrap_or(Ordering::Equal)
     }
 }
 
@@ -617,7 +655,9 @@ pub fn place_labels(
     for k in 0..points.len() {
         let target = &points[k];
         debug_assert!(map.contains_key(target));
-        let best = map.get(target).unwrap().last();
+        // sort in descending order
+        let candidates = map.get(target).unwrap();
+        let best = candidates.iter().min();
         match best {
             Some(candidate) => {
                 let bbox = &candidate.bbox;
