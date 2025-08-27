@@ -157,10 +157,10 @@ impl Map {
             svgPoint.circle.id = format!("wp-{}/circle", k);
             svgPoint.circle.cx = x;
             svgPoint.circle.cy = y;
+            svgPoint.label.id = format!("wp-{}/text", k);
             if V.contains(&k) {
                 let label = w.info.as_ref().unwrap().profile_label();
                 svgPoint.label.set_text(label.trim());
-                svgPoint.label.id = format!("wp-{}/text", k);
             } else {
                 svgPoint.circle.fill = Some(String::from_str("blue").unwrap());
             }
