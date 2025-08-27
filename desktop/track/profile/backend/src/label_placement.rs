@@ -1,6 +1,7 @@
 use crate::label_candidates::Candidate;
 use crate::label_candidates::Candidates;
 use crate::label_candidates::LabelBoundingBox;
+use crate::label_graph::Graph;
 
 use std::collections::HashMap;
 pub type Attributes = HashMap<String, svg::node::Value>;
@@ -375,8 +376,6 @@ fn distance_to_others(
     ret
 }
 
-type CandidateMap = HashMap<usize, Candidates>;
-
 fn candidates_for_point(
     parameters: &parameters::ExperimentalParameters,
     points: &Vec<PointFeature>,
@@ -408,16 +407,16 @@ fn candidates_for_point(
     return ret;
 }
 
-fn build_candidate_map(
+fn build_graph(
     backend: &backend::Backend,
     points: &Vec<PointFeature>,
     polyline: &Polyline,
-) -> CandidateMap {
-    let mut ret = CandidateMap::new();
+) -> Graph {
+    let mut ret = Graph::new();
     for k in 0..points.len() {
         let candidates = candidates_for_point(&backend.get_eparameters(), points, polyline, k);
-        assert!(!ret.contains_key(&k));
-        ret.insert(k, candidates);
+        assert!(!ret.candidates.contains_key(&k));
+        ret.candidates.insert(k, candidates);
     }
     ret
 }
@@ -427,14 +426,14 @@ pub fn place_labels(
     points: &mut Vec<PointFeature>,
     polyline: &Polyline,
 ) {
-    let map = build_candidate_map(backend, points, polyline);
-    debug_assert!(!map.is_empty());
+    let G = build_graph(backend, points, polyline);
+    debug_assert!(!G.candidates.is_empty());
     for k in 0..points.len() {
         let target = k;
         let target_text = &points[k].label.text;
-        debug_assert!(map.contains_key(&target));
+        debug_assert!(G.candidates.contains_key(&target));
         // sort in descending order
-        let candidates = map.get(&target).unwrap();
+        let candidates = G.candidates.get(&target).unwrap();
         let best = candidates.iter().min();
         match best {
             Some(candidate) => {
