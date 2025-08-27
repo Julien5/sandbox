@@ -551,15 +551,6 @@ fn build_candidate_map(
     for k in 0..points.len() {
         let target = &points[k];
         let candidates = candidates_for_point(&backend.get_eparameters(), points, polyline, k);
-        println!(
-            "{} candidates for [{}] id={}",
-            candidates.len(),
-            target.label.text,
-            target.id
-        );
-        for key in ret.keys() {
-            println!("key={}", key.id);
-        }
         assert!(!ret.contains_key(target));
         ret.insert(target.clone(), candidates);
     }
@@ -577,11 +568,6 @@ pub fn place_labels(
         let target = &points[k];
         debug_assert!(map.contains_key(target));
         let candidates = map.get(target).unwrap();
-        println!(
-            "get {} candidates for [{}]",
-            candidates.len(),
-            target.label.text
-        );
         let best = map.get(target).unwrap().last();
         match best {
             Some(candidate) => {
