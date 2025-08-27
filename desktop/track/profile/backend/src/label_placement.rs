@@ -496,11 +496,15 @@ fn candidates_bbox_at(
 
 fn generate_bbox(point: &PointFeature, dtarget_max: f64) -> Vec<LabelBoundingBox> {
     let mut ret = Vec::new();
+    let dtarget_start = 2i32;
     let mut dtarget_min = f64::MAX;
     let angle_indices = [0, 12, 25, 38, 50, 62, 75, 90];
     for n in (5..100).rev().step_by(10) {
         for a in angle_indices {
             let dtarget = (n as f64 / 100f64) * dtarget_max;
+            if dtarget < dtarget_start as f64 {
+                continue;
+            }
             if dtarget_min > dtarget {
                 dtarget_min = dtarget;
             }
@@ -510,7 +514,7 @@ fn generate_bbox(point: &PointFeature, dtarget_max: f64) -> Vec<LabelBoundingBox
         }
     }
     let dtarget_min = dtarget_min.ceil() as i32;
-    for dtarget in (2..dtarget_min).rev() {
+    for dtarget in (dtarget_start..dtarget_min).rev() {
         for a in angle_indices {
             for c in candidates_bbox_at(dtarget as f64, a, point) {
                 // println!("{dtarget} {a} {})", point.id);
@@ -543,11 +547,17 @@ fn distance_to_others(
 #[derive(Clone)]
 struct Candidate {
     bbox: LabelBoundingBox,
+    dtarget: f64,
+    dothers: f64,
 }
 
 impl Candidate {
-    fn new(bbox: LabelBoundingBox) -> Candidate {
-        Candidate { bbox }
+    fn new(bbox: LabelBoundingBox, dtarget: f64, dothers: f64) -> Candidate {
+        Candidate {
+            bbox,
+            dtarget,
+            dothers,
+        }
     }
     fn intersect(&self, other: &Self) -> bool {
         self.bbox.insersect(&other.bbox)
@@ -583,7 +593,7 @@ fn candidates_for_point(
         if dothers < dtarget {
             continue;
         }
-        ret.push(Candidate::new(c.clone()));
+        ret.push(Candidate::new(c.clone(), dtarget, dothers));
     }
     return ret;
 }
@@ -617,17 +627,15 @@ pub fn place_labels(
         match best {
             Some(candidate) => {
                 let bbox = &candidate.bbox;
-                let dothers = distance_to_others(bbox, points, &target.id);
-                let dtarget = candidate
-                    .bbox
-                    .distance((target.circle.cx, target.circle.cy));
+                let dothers = &candidate.dothers;
+                let dtarget = &candidate.dtarget;
                 println!(
                     "[{:12}] c({:.1},{:.1}) d_t={:.1} d_o = {:.1}]",
                     target.label.text,
                     bbox.x_min(),
                     bbox.y_max(),
                     dtarget,
-                    dothers.0
+                    dothers
                 );
                 points[k].label.bbox = bbox.clone();
             }
