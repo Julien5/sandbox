@@ -521,9 +521,6 @@ fn candidates_for_point(
         return Vec::new();
     }
     let target = &points[k];
-    type Dtarget = f64;
-    type Dother = f64;
-    let mut result: Option<(LabelBoundingBox, Dtarget, Dother)> = None;
     let dtarget_max = match parameters.dtarget_max {
         Some(d) => d,
         _ => 50.0,
@@ -545,23 +542,54 @@ fn candidates_for_point(
     return ret;
 }
 
+fn build_candidate_map(
+    backend: &backend::Backend,
+    points: &Vec<PointFeature>,
+    polyline: &Polyline,
+) -> CandidateMap {
+    let mut ret = CandidateMap::new();
+    for k in 0..points.len() {
+        let target = &points[k];
+        let candidates = candidates_for_point(&backend.get_eparameters(), points, polyline, k);
+        println!(
+            "{} candidates for [{}] id={}",
+            candidates.len(),
+            target.label.text,
+            target.id
+        );
+        for key in ret.keys() {
+            println!("key={}", key.id);
+        }
+        assert!(!ret.contains_key(target));
+        ret.insert(target.clone(), candidates);
+    }
+    ret
+}
+
 pub fn place_labels(
     backend: &backend::Backend,
     points: &mut Vec<PointFeature>,
     polyline: &Polyline,
 ) {
-    let dtarget_max = 50; //backend.get_eparameters().dtarget_max;
+    let map = build_candidate_map(backend, points, polyline);
+    debug_assert!(!map.is_empty());
     for k in 0..points.len() {
         let target = &points[k];
-        let candidates = candidates_for_point(&backend.get_eparameters(), points, polyline, k);
-        let best = candidates.last();
+        debug_assert!(map.contains_key(target));
+        let candidates = map.get(target).unwrap();
+        println!(
+            "get {} candidates for [{}]",
+            candidates.len(),
+            target.label.text
+        );
+        let best = map.get(target).unwrap().last();
         match best {
             Some(candidate) => {
                 let bbox = &candidate.bbox;
                 let dothers = 0.0;
                 let dtarget = 0.0;
                 println!(
-                    "[{dtarget_max:.1}] [{:12}] c({:.1},{:.1}) d_t={:.1} d_o = {dothers:.1}]",
+                    "[{:12}] c({:.1},{:.1}) d_t={:.1} d_o = {dothers:.1}]",
                     target.label.text,
                     bbox.x_min(),
                     bbox.y_max(),
