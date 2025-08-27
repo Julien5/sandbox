@@ -161,6 +161,14 @@ impl LabelBoundingBox {
         self.top_left.1
     }
 
+    pub fn bottom_left(&self) -> (f64, f64) {
+        (self.x_min(), self.y_max())
+    }
+
+    pub fn top_right(&self) -> (f64, f64) {
+        (self.x_max(), self.y_min())
+    }
+
     pub fn x_max(&self) -> f64 {
         self.bottom_right.0
     }
@@ -204,6 +212,31 @@ impl LabelBoundingBox {
             }
         }
         ret
+    }
+    fn contains(&self, (x, y): (f64, f64)) -> bool {
+        if x >= self.x_min() && x <= self.x_max() && y >= self.y_min() && y <= self.y_max() {
+            return true;
+        }
+        false
+    }
+    fn intersect_x(&self, other: &Self) -> bool {
+        for p in [
+            self.top_left,
+            self.bottom_right,
+            self.bottom_left(),
+            self.top_right(),
+        ] {
+            if other.contains(p) {
+                return true;
+            }
+        }
+        false
+    }
+    fn insersect(&self, other: &Self) -> bool {
+        if other.intersect_x(self) || self.intersect_x(other) {
+            return true;
+        }
+        false
     }
 }
 
@@ -379,7 +412,7 @@ impl Polyline {
 
 fn polyline_hits_bbox(polyline: &Polyline, bbox: &LabelBoundingBox) -> bool {
     for &(x, y) in &polyline.points {
-        if x >= bbox.x_min() && x <= bbox.x_max() && y >= bbox.y_min() && y <= bbox.y_max() {
+        if bbox.contains((x, y)) {
             return true;
         }
     }
@@ -567,7 +600,6 @@ pub fn place_labels(
     for k in 0..points.len() {
         let target = &points[k];
         debug_assert!(map.contains_key(target));
-        let candidates = map.get(target).unwrap();
         let best = map.get(target).unwrap().last();
         match best {
             Some(candidate) => {
