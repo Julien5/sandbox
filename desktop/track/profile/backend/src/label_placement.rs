@@ -383,7 +383,7 @@ fn candidates_for_point(
     k: usize,
 ) -> Candidates {
     if points[k].label.text.is_empty() {
-        return Vec::new();
+        return Candidates::new();
     }
     let target = &points[k];
     let dtarget_max = match parameters.dtarget_max {
@@ -391,7 +391,7 @@ fn candidates_for_point(
         _ => 200.0,
     };
     let all = generate_bboxes(target, dtarget_max);
-    let mut ret = Vec::new();
+    let mut ret = Candidates::new();
     for index in 0..all.len() {
         let c = &all[index];
         if polyline_hits_bbox(polyline, &c) {
@@ -402,7 +402,7 @@ fn candidates_for_point(
         if dothers < dtarget {
             continue;
         }
-        ret.push(Candidate::new(c.clone(), dtarget, dothers));
+        ret.insert(Candidate::new(c.clone(), dtarget, dothers));
     }
     return ret;
 }

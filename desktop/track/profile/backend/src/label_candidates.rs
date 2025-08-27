@@ -140,7 +140,7 @@ impl LabelBoundingBox {
         }
         false
     }
-    fn insersect(&self, other: &Self) -> bool {
+    pub fn intersect(&self, other: &Self) -> bool {
         if other.intersect_self(self) || self.intersect_self(other) {
             return true;
         }
@@ -154,6 +154,7 @@ impl PartialEq for LabelBoundingBox {
     }
 }
 
+use std::collections::BTreeSet;
 use std::fmt;
 impl fmt::Display for LabelBoundingBox {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -181,7 +182,7 @@ impl Candidate {
         }
     }
     fn _intersect(&self, other: &Self) -> bool {
-        self.bbox.insersect(&other.bbox)
+        self.bbox.intersect(&other.bbox)
     }
 }
 
@@ -222,4 +223,4 @@ impl Ord for Candidate {
     }
 }
 
-pub type Candidates = Vec<Candidate>;
+pub type Candidates = BTreeSet<Candidate>;
