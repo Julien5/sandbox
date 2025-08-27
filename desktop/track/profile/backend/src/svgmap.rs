@@ -2,11 +2,14 @@
 
 use std::str::FromStr;
 
+use crate::label_placement::Circle;
+use crate::label_placement::Label;
+use crate::label_placement::Polyline;
 use crate::segment;
 use crate::utm::UTMPoint;
 use crate::{backend, waypoints_table};
 
-use svg::node::element::path::{Command, Data};
+use svg::node::element::path::Data;
 use svg::Document;
 
 struct UTMBoundingBox {
@@ -100,10 +103,7 @@ fn readid(id: &str) -> (&str, &str) {
 
 use crate::label_placement::set_attr;
 use crate::label_placement::Attributes;
-use crate::label_placement::Circle;
-use crate::label_placement::Label;
 use crate::label_placement::PointFeature;
-use crate::label_placement::Polyline;
 
 pub struct Map {
     polyline: Polyline,
@@ -174,7 +174,7 @@ impl Map {
             document,
         }
     }
-    pub fn import(filename: std::path::PathBuf) -> Map {
+    fn _import(filename: std::path::PathBuf) -> Map {
         use svg::node::element::tag;
         use svg::parser::Event;
         let mut polyline = crate::svgmap::Polyline::new();
@@ -190,7 +190,7 @@ impl Map {
                         let id = attributes.get("id").unwrap().clone().to_string();
                         let (p_id, _p_attr) = readid(id.as_str());
                         current_circle.id = String::from_str(p_id).unwrap();
-                        current_circle.circle = Circle::from_attributes(&attributes);
+                        current_circle.circle = Circle::_from_attributes(&attributes);
                         println!("{}: {:?}", id, attributes);
                     }
                 }
@@ -203,7 +203,7 @@ impl Map {
                 }
                 Event::Text(data) => {
                     println!("Event::Text {:?}", data);
-                    current_circle.label = Label::from_attributes(&current_text_attributes, data);
+                    current_circle.label = Label::_from_attributes(&current_text_attributes, data);
                     current_text_attributes.clear();
                     debug_assert!(!current_circle.id.is_empty());
                     points.push(current_circle);
@@ -214,9 +214,10 @@ impl Map {
                         let id = attributes.get("id").unwrap();
                         println!("{}: {:?} attributes", id, attributes.len());
                     }
-                    polyline = crate::svgmap::Polyline::from_attributes(&attributes);
+                    polyline = crate::svgmap::Polyline::_from_attributes(&attributes);
                     let data = attributes.get("d").unwrap();
                     let data = Data::parse(data).unwrap();
+                    use svg::node::element::path::Command;
                     for command in data.iter() {
                         match command {
                             &Command::Move(..) => { /* … */ }

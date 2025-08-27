@@ -1,14 +1,12 @@
+use crate::label_candidates::Candidate;
+use crate::label_candidates::Candidates;
+use crate::label_candidates::LabelBoundingBox;
+
 use std::collections::HashMap;
 pub type Attributes = HashMap<String, svg::node::Value>;
 
 pub fn set_attr(attr: &mut Attributes, k: &str, v: &str) {
     attr.insert(String::from_str(k).unwrap(), svg::node::Value::from(v));
-}
-
-fn distance((x1, y1): (f64, f64), (x2, y2): (f64, f64)) -> f64 {
-    let dx = x2 - x1;
-    let dy = y2 - y1;
-    (dx * dx + dy * dy).sqrt()
 }
 
 const FONTSIZE: f64 = 16f64;
@@ -94,174 +92,6 @@ impl Label {
 }
 
 #[derive(Clone)]
-pub struct LabelBoundingBox {
-    top_left: (f64, f64),
-    bottom_right: (f64, f64),
-}
-
-impl LabelBoundingBox {
-    fn zero() -> Self {
-        LabelBoundingBox {
-            top_left: (0f64, 0f64),
-            bottom_right: (0f64, 0f64),
-        }
-    }
-
-    fn new_tlbr(top_left: (f64, f64), bottom_right: (f64, f64)) -> Self {
-        LabelBoundingBox {
-            top_left,
-            bottom_right,
-        }
-    }
-
-    fn new_blwh(bottom_left: (f64, f64), width: f64, height: f64) -> Self {
-        let top_left = (bottom_left.0, bottom_left.1 - height);
-        let bottom_right = (bottom_left.0 + width, bottom_left.1);
-        LabelBoundingBox {
-            top_left,
-            bottom_right,
-        }
-    }
-
-    fn new_brwh(bottom_right: (f64, f64), width: f64, height: f64) -> Self {
-        let top_left = (bottom_right.0 - width, bottom_right.1 - height);
-        LabelBoundingBox {
-            top_left,
-            bottom_right,
-        }
-    }
-
-    fn new_tlwh(top_left: (f64, f64), width: f64, height: f64) -> Self {
-        let bottom_right = (top_left.0 + width, top_left.1 + height);
-        LabelBoundingBox {
-            top_left,
-            bottom_right,
-        }
-    }
-
-    fn new_trwh(top_right: (f64, f64), width: f64, height: f64) -> Self {
-        let top_left = (top_right.0 - width, top_right.1);
-        let bottom_right = (top_right.0, top_right.1 + height);
-        LabelBoundingBox {
-            top_left,
-            bottom_right,
-        }
-    }
-
-    pub fn x_min(&self) -> f64 {
-        self.top_left.0
-    }
-
-    pub fn y_min(&self) -> f64 {
-        self.top_left.1
-    }
-
-    pub fn bottom_left(&self) -> (f64, f64) {
-        (self.x_min(), self.y_max())
-    }
-
-    pub fn top_right(&self) -> (f64, f64) {
-        (self.x_max(), self.y_min())
-    }
-
-    pub fn x_max(&self) -> f64 {
-        self.bottom_right.0
-    }
-
-    pub fn y_max(&self) -> f64 {
-        self.bottom_right.1
-    }
-    pub fn y_mid(&self) -> f64 {
-        0.5 * (self.y_min() + self.y_max())
-    }
-    pub fn x_mid(&self) -> f64 {
-        0.5 * (self.x_min() + self.x_max())
-    }
-
-    pub fn width(&self) -> f64 {
-        self.x_max() - self.x_min()
-    }
-
-    pub fn height(&self) -> f64 {
-        self.y_max() - self.y_min()
-    }
-    pub fn project_on_border(&self, q: (f64, f64)) -> (f64, f64) {
-        let (qx, qy) = q;
-
-        // Calculate distances to each edge
-        let left = self.x_min();
-        let right = self.x_max();
-        let top = self.y_min();
-        let bottom = self.y_max();
-
-        let dist_left = (qx - left).abs();
-        let dist_right = (qx - right).abs();
-        let dist_top = (qy - top).abs();
-        let dist_bottom = (qy - bottom).abs();
-
-        // Find the closest edge
-        let min_dist = dist_left.min(dist_right).min(dist_top).min(dist_bottom);
-
-        if min_dist == dist_left {
-            (left, qy.clamp(top, bottom)) // Project onto the left edge
-        } else if min_dist == dist_right {
-            (right, qy.clamp(top, bottom)) // Project onto the right edge
-        } else if min_dist == dist_top {
-            (qx.clamp(left, right), top) // Project onto the top edge
-        } else {
-            (qx.clamp(left, right), bottom) // Project onto the bottom edge
-        }
-    }
-    pub fn distance(&self, q: (f64, f64)) -> f64 {
-        let p = self.project_on_border(q);
-        distance(p, q)
-    }
-    fn contains(&self, (x, y): (f64, f64)) -> bool {
-        if x >= self.x_min() && x <= self.x_max() && y >= self.y_min() && y <= self.y_max() {
-            return true;
-        }
-        false
-    }
-    fn intersect_self(&self, other: &Self) -> bool {
-        for p in [
-            self.top_left,
-            self.bottom_right,
-            self.bottom_left(),
-            self.top_right(),
-        ] {
-            if other.contains(p) {
-                return true;
-            }
-        }
-        false
-    }
-    fn insersect(&self, other: &Self) -> bool {
-        if other.intersect_self(self) || self.intersect_self(other) {
-            return true;
-        }
-        false
-    }
-}
-
-impl PartialEq for LabelBoundingBox {
-    fn eq(&self, other: &Self) -> bool {
-        self.top_left == other.top_left && self.bottom_right == other.bottom_right
-    }
-}
-
-use std::fmt;
-use std::str::FromStr;
-impl fmt::Display for LabelBoundingBox {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "LabelBoundingBox {{ top_left: ({:.0}, {:.0}), bottom_right: ({:.0}, {:.0}) }}",
-            self.top_left.0, self.top_left.1, self.bottom_right.0, self.bottom_right.1
-        )
-    }
-}
-
-#[derive(Clone)]
 pub struct PointFeature {
     pub id: String,
     pub circle: Circle,
@@ -277,6 +107,7 @@ impl PartialEq for PointFeature {
 impl Eq for PointFeature {}
 use std::hash::Hash;
 use std::hash::Hasher;
+use std::str::FromStr;
 
 use crate::backend;
 use crate::parameters;
@@ -311,7 +142,7 @@ impl Polyline {
 }
 
 impl Circle {
-    pub fn from_attributes(a: &Attributes) -> Circle {
+    pub fn _from_attributes(a: &Attributes) -> Circle {
         let fill = match a.get("fill") {
             Some(value) => Some(value.to_string()),
             _ => None,
@@ -337,7 +168,7 @@ impl Circle {
 }
 
 impl Label {
-    pub fn from_attributes(a: &Attributes, text: &str) -> Label {
+    pub fn _from_attributes(a: &Attributes, text: &str) -> Label {
         let anchor = match a.get("text-anchor") {
             Some(data) => data,
             _ => "start",
@@ -381,7 +212,7 @@ impl Label {
 }
 
 impl Polyline {
-    pub fn from_attributes(a: &Attributes) -> Polyline {
+    pub fn _from_attributes(a: &Attributes) -> Polyline {
         let data = a.get("d").unwrap();
         let mut points = Vec::new();
         for tok in data.split(" ") {
@@ -544,64 +375,6 @@ fn distance_to_others(
     ret
 }
 
-#[derive(Clone)]
-struct Candidate {
-    bbox: LabelBoundingBox,
-    dtarget: f64,
-    dothers: f64,
-}
-
-impl Candidate {
-    fn new(bbox: LabelBoundingBox, dtarget: f64, dothers: f64) -> Candidate {
-        Candidate {
-            bbox,
-            dtarget,
-            dothers,
-        }
-    }
-    fn intersect(&self, other: &Self) -> bool {
-        self.bbox.insersect(&other.bbox)
-    }
-}
-
-impl PartialEq for Candidate {
-    fn eq(&self, other: &Self) -> bool {
-        self.bbox == other.bbox
-    }
-}
-
-impl Eq for Candidate {}
-
-fn fuzzy_equal(x: f64, y: f64) -> bool {
-    let epsilon = 0.1f64; // effective if epsilon >= 1.
-    (x - y).abs() < epsilon
-}
-
-use std::cmp::Ordering;
-impl PartialOrd for Candidate {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        if !fuzzy_equal(self.dtarget, other.dtarget) {
-            return self.dtarget.partial_cmp(&other.dtarget);
-        }
-        self.dothers.partial_cmp(&other.dothers)
-    }
-}
-
-impl Ord for Candidate {
-    fn cmp(&self, other: &Self) -> Ordering {
-        if !fuzzy_equal(self.dtarget, other.dtarget) {
-            return self
-                .dtarget
-                .partial_cmp(&other.dtarget)
-                .unwrap_or(Ordering::Equal);
-        }
-        (-self.dothers)
-            .partial_cmp(&(-other.dothers))
-            .unwrap_or(Ordering::Equal)
-    }
-}
-
-type Candidates = Vec<Candidate>;
 type CandidateMap = HashMap<PointFeature, Candidates>;
 
 fn candidates_for_point(

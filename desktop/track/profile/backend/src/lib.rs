@@ -4,6 +4,7 @@ mod elevation;
 pub mod error;
 pub mod gpsdata;
 mod gpxexport;
+mod label_candidates;
 mod label_graph;
 mod label_placement;
 pub mod parameters;
