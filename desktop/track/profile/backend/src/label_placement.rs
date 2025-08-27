@@ -452,6 +452,9 @@ impl Candidate {
             bbox: LabelBoundingBox::new_trwh(top_right, width, height),
         }
     }
+    fn intersect(&self, other: &Self) -> bool {
+        self.bbox.insersect(&other.bbox)
+    }
 }
 
 fn candidates_at(distance: f64, angle_index: i32, point: &PointFeature) -> Vec<Candidate> {
@@ -540,13 +543,17 @@ fn generate_candidates(point: &PointFeature, dtarget_max: f64) -> Vec<Candidate>
     ret
 }
 
-fn distance_to_others(candidate: &Candidate, points: &Vec<PointFeature>, k: usize) -> (f64, usize) {
+fn distance_to_others(
+    candidate: &Candidate,
+    points: &Vec<PointFeature>,
+    target_id: &String,
+) -> (f64, usize) {
     let mut ret = (f64::MAX, 0);
     for l in 0..points.len() {
-        if l == k {
+        let other = &points[l];
+        if other.id == *target_id {
             continue;
         }
-        let other = &points[l];
         let d = candidate.bbox.distance((other.circle.cx, other.circle.cy));
         if d < ret.0 {
             ret = (d, l);
@@ -580,7 +587,7 @@ fn candidates_for_point(
             continue;
         }
         let dtarget = c.bbox.distance((target.circle.cx, target.circle.cy));
-        let (dothers, _) = distance_to_others(c, &points, k);
+        let (dothers, _) = distance_to_others(c, &points, &target.id);
         if dothers < dtarget {
             continue;
         }
@@ -618,14 +625,17 @@ pub fn place_labels(
         match best {
             Some(candidate) => {
                 let bbox = &candidate.bbox;
-                let dothers = 0.0;
-                let dtarget = 0.0;
+                let dothers = distance_to_others(candidate, points, &target.id);
+                let dtarget = candidate
+                    .bbox
+                    .distance((target.circle.cx, target.circle.cy));
                 println!(
-                    "[{:12}] c({:.1},{:.1}) d_t={:.1} d_o = {dothers:.1}]",
+                    "[{:12}] c({:.1},{:.1}) d_t={:.1} d_o = {:.1}]",
                     target.label.text,
                     bbox.x_min(),
                     bbox.y_max(),
                     dtarget,
+                    dothers.0
                 );
                 points[k].label.bbox = bbox.clone();
             }
