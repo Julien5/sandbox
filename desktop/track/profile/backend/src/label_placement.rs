@@ -375,7 +375,7 @@ fn distance_to_others(
     ret
 }
 
-type CandidateMap = HashMap<PointFeature, Candidates>;
+type CandidateMap = HashMap<usize, Candidates>;
 
 fn candidates_for_point(
     parameters: &parameters::ExperimentalParameters,
@@ -415,10 +415,9 @@ fn build_candidate_map(
 ) -> CandidateMap {
     let mut ret = CandidateMap::new();
     for k in 0..points.len() {
-        let target = &points[k];
         let candidates = candidates_for_point(&backend.get_eparameters(), points, polyline, k);
-        assert!(!ret.contains_key(target));
-        ret.insert(target.clone(), candidates);
+        assert!(!ret.contains_key(&k));
+        ret.insert(k, candidates);
     }
     ret
 }
@@ -431,10 +430,11 @@ pub fn place_labels(
     let map = build_candidate_map(backend, points, polyline);
     debug_assert!(!map.is_empty());
     for k in 0..points.len() {
-        let target = &points[k];
-        debug_assert!(map.contains_key(target));
+        let target = k;
+        let target_text = &points[k].label.text;
+        debug_assert!(map.contains_key(&target));
         // sort in descending order
-        let candidates = map.get(target).unwrap();
+        let candidates = map.get(&target).unwrap();
         let best = candidates.iter().min();
         match best {
             Some(candidate) => {
@@ -443,7 +443,7 @@ pub fn place_labels(
                 let dtarget = &candidate.dtarget;
                 println!(
                     "[{:12}] c({:.1},{:.1}) d_t={:.1} d_o = {:.1}]",
-                    target.label.text,
+                    target_text,
                     bbox.x_min(),
                     bbox.y_max(),
                     dtarget,
@@ -452,7 +452,7 @@ pub fn place_labels(
                 points[k].label.bbox = bbox.clone();
             }
             _ => {
-                println!("failed to find any candidate for [{}]", target.label.text);
+                println!("failed to find any candidate for [{}]", target_text);
             }
         }
     }
