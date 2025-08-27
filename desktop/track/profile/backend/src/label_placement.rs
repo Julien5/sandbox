@@ -229,7 +229,7 @@ impl LabelBoundingBox {
         }
         false
     }
-    fn intersect_x(&self, other: &Self) -> bool {
+    fn intersect_self(&self, other: &Self) -> bool {
         for p in [
             self.top_left,
             self.bottom_right,
@@ -243,7 +243,7 @@ impl LabelBoundingBox {
         false
     }
     fn insersect(&self, other: &Self) -> bool {
-        if other.intersect_x(self) || self.intersect_x(other) {
+        if other.intersect_self(self) || self.intersect_self(other) {
             return true;
         }
         false
