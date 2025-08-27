@@ -515,10 +515,24 @@ fn candidates_at(distance: f64, angle_index: i32, point: &PointFeature) -> Vec<C
 
 fn generate_candidates(point: &PointFeature, dtarget_max: f64) -> Vec<Candidate> {
     let mut ret = Vec::new();
-    for n in (1..100).rev().step_by(5) {
-        for a in (0..100).step_by(5) {
+    let mut dtarget_min = f64::MAX;
+    let angle_indices = [0, 12, 25, 38, 50, 62, 75, 90];
+    for n in (5..100).rev().step_by(10) {
+        for a in angle_indices {
             let dtarget = (n as f64 / 100f64) * dtarget_max;
+            if dtarget_min > dtarget {
+                dtarget_min = dtarget;
+            }
             for c in candidates_at(dtarget, a, point) {
+                ret.push(c);
+            }
+        }
+    }
+    let dtarget_min = dtarget_min.ceil() as i32;
+    for dtarget in (2..dtarget_min).rev() {
+        for a in angle_indices {
+            for c in candidates_at(dtarget as f64, a, point) {
+                // println!("{dtarget} {a} {})", point.id);
                 ret.push(c);
             }
         }
@@ -556,7 +570,7 @@ fn candidates_for_point(
     let target = &points[k];
     let dtarget_max = match parameters.dtarget_max {
         Some(d) => d,
-        _ => 50.0,
+        _ => 200.0,
     };
     let all = generate_candidates(target, dtarget_max);
     let mut ret = Vec::new();
