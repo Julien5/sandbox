@@ -572,10 +572,15 @@ impl PartialEq for Candidate {
 
 impl Eq for Candidate {}
 
+fn fuzzy_equal(x: f64, y: f64) -> bool {
+    let epsilon = 0.1f64; // effective if epsilon >= 1.
+    (x - y).abs() < epsilon
+}
+
 use std::cmp::Ordering;
 impl PartialOrd for Candidate {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        if self.dtarget != other.dtarget {
+        if !fuzzy_equal(self.dtarget, other.dtarget) {
             return self.dtarget.partial_cmp(&other.dtarget);
         }
         self.dothers.partial_cmp(&other.dothers)
@@ -584,7 +589,7 @@ impl PartialOrd for Candidate {
 
 impl Ord for Candidate {
     fn cmp(&self, other: &Self) -> Ordering {
-        if self.dtarget != other.dtarget {
+        if !fuzzy_equal(self.dtarget, other.dtarget) {
             return self
                 .dtarget
                 .partial_cmp(&other.dtarget)
