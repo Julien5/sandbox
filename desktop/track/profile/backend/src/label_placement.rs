@@ -508,15 +508,17 @@ fn distance_to_others(candidate: &Candidate, points: &Vec<PointFeature>, k: usiz
     ret
 }
 
+type Candidates = Vec<Candidate>;
+type CandidateMap = HashMap<PointFeature, Candidates>;
+
 fn place_label(
     parameters: &parameters::ExperimentalParameters,
-    points: &mut Vec<PointFeature>,
+    points: &Vec<PointFeature>,
     polyline: &Polyline,
     k: usize,
-) {
-    // find one that is close to p and away from other points
+) -> Candidates {
     if points[k].label.text.is_empty() {
-        return;
+        return Vec::new();
     }
     let target = &points[k];
     type Dtarget = f64;
@@ -526,9 +528,10 @@ fn place_label(
         Some(d) => d,
         _ => 50.0,
     };
-    let candidates = generate_candidates(target, dtarget_max);
-    for index in 0..candidates.len() {
-        let c = &candidates[index];
+    let all = generate_candidates(target, dtarget_max);
+    let mut ret = Vec::new();
+    for index in 0..all.len() {
+        let c = &all[index];
         if polyline_hits_bbox(polyline, &c.bbox) {
             continue;
         }
@@ -537,23 +540,9 @@ fn place_label(
         if dothers < dtarget {
             continue;
         }
-        result = Some((c.bbox.clone(), dtarget, dothers));
+        ret.push(c.clone());
     }
-    match result {
-        Some((bbox, dtarget, dothers)) => {
-            println!(
-                "[{dtarget_max:.1}] [{:12}] c({:.1},{:.1}) d_t={:.1} d_o = {dothers:.1}]",
-                target.label.text,
-                bbox.x_min(),
-                bbox.y_max(),
-                dtarget,
-            );
-            points[k].label.bbox = bbox;
-        }
-        _ => {
-            println!("failed to find any candidate for [{}]", target.label.text);
-        }
-    }
+    return ret;
 }
 
 pub fn place_labels(
@@ -561,7 +550,28 @@ pub fn place_labels(
     points: &mut Vec<PointFeature>,
     polyline: &Polyline,
 ) {
+    let dtarget_max = 50; //backend.get_eparameters().dtarget_max;
     for k in 0..points.len() {
-        place_label(&backend.get_eparameters(), points, polyline, k);
+        let target = &points[k];
+        let candidates = place_label(&backend.get_eparameters(), points, polyline, k);
+        let best = candidates.last();
+        match best {
+            Some(candidate) => {
+                let bbox = &candidate.bbox;
+                let dothers = 0.0;
+                let dtarget = 0.0;
+                println!(
+                    "[{dtarget_max:.1}] [{:12}] c({:.1},{:.1}) d_t={:.1} d_o = {dothers:.1}]",
+                    target.label.text,
+                    bbox.x_min(),
+                    bbox.y_max(),
+                    dtarget,
+                );
+                points[k].label.bbox = bbox.clone();
+            }
+            _ => {
+                println!("failed to find any candidate for [{}]", target.label.text);
+            }
+        }
     }
 }
