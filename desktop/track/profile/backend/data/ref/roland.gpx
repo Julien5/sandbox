@@ -15,9 +15,9 @@
     <ele>702.5573688269827</ele>
     <name>Waldburg</name>
   </wpt>
-  <wpt lat="47.684793" lon="9.835043">
-    <ele>553.6228007195058</ele>
-    <name>Wangen</name>
+  <wpt lat="47.661952" lon="9.932956">
+    <ele>661.8956756991561</ele>
+    <name>Eglofs</name>
   </wpt>
   <wpt lat="47.695192" lon="10.042475">
     <ele>699.2816729826162</ele>
@@ -50,6 +50,42 @@
   <wpt lat="47.80822" lon="9.642687">
     <ele>470.0840541152287</ele>
     <name>Weingarten</name>
+  </wpt>
+  <wpt lat="47.707507" lon="9.776671">
+    <ele>617.1382181406582</ele>
+    <name>Weissenbach</name>
+  </wpt>
+  <wpt lat="47.684722" lon="9.834221">
+    <ele>553.5642413250675</ele>
+    <name>Wangen</name>
+  </wpt>
+  <wpt lat="47.688045" lon="9.957512">
+    <ele>685.2028570245494</ele>
+    <name>Eisenharz</name>
+  </wpt>
+  <wpt lat="47.702543" lon="9.938549">
+    <ele>630.8998379686386</ele>
+    <name>Albrismuhle</name>
+  </wpt>
+  <wpt lat="47.712556" lon="9.945447">
+    <ele>691.2597455391103</ele>
+    <name>Siggen</name>
+  </wpt>
+  <wpt lat="47.904478" lon="9.831087">
+    <ele>664.8863947505073</ele>
+    <name>Haidgau</name>
+  </wpt>
+  <wpt lat="47.901373" lon="9.808788">
+    <ele>717.8023797771436</ele>
+    <name>Ehrensberg</name>
+  </wpt>
+  <wpt lat="47.901411" lon="9.704483">
+    <ele>583.6967395952909</ele>
+    <name>Reute</name>
+  </wpt>
+  <wpt lat="47.909152" lon="9.431825">
+    <ele>642.5960235407118</ele>
+    <name>Riedhausen</name>
   </wpt>
   <trk>
     <name>roland</name>
