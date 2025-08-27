@@ -482,7 +482,7 @@ fn candidates_at(distance: f64, angle_index: i32, point: &PointFeature) -> Vec<C
 
 fn generate_candidates(point: &PointFeature, dtarget_max: f64) -> Vec<Candidate> {
     let mut ret = Vec::new();
-    for n in (5..100).rev().step_by(5) {
+    for n in (1..100).rev().step_by(5) {
         for a in (0..100).step_by(5) {
             let dtarget = (n as f64 / 100f64) * dtarget_max;
             for c in candidates_at(dtarget, a, point) {
@@ -522,21 +522,11 @@ fn place_label(
     type Dtarget = f64;
     type Dother = f64;
     let mut result: Option<(LabelBoundingBox, Dtarget, Dother)> = None;
-    let mut dothers_max = 0f64;
-    let mut dtarget_min = None;
     let dtarget_max = match parameters.dtarget_max {
         Some(d) => d,
-        _ => 10.0,
+        _ => 50.0,
     };
     let candidates = generate_candidates(target, dtarget_max);
-    for index in 0..candidates.len() {
-        let c = &candidates[index];
-        let dtarget = c.bbox.distance((target.circle.cx, target.circle.cy));
-        if dtarget_min.is_none() || dtarget_min.unwrap() > dtarget {
-            dtarget_min = Some(dtarget);
-        }
-    }
-    let dtarget_min = dtarget_min.unwrap();
     for index in 0..candidates.len() {
         let c = &candidates[index];
         if polyline_hits_bbox(polyline, &c.bbox) {
@@ -546,9 +536,6 @@ fn place_label(
         let (dothers, _) = distance_to_others(c, &points, k);
         if dothers < dtarget {
             continue;
-        }
-        if result.is_none() {
-            result = Some((c.bbox.clone(), dtarget, dothers));
         }
         result = Some((c.bbox.clone(), dtarget, dothers));
     }
