@@ -511,7 +511,7 @@ fn distance_to_others(candidate: &Candidate, points: &Vec<PointFeature>, k: usiz
 type Candidates = Vec<Candidate>;
 type CandidateMap = HashMap<PointFeature, Candidates>;
 
-fn place_label(
+fn candidates_for_point(
     parameters: &parameters::ExperimentalParameters,
     points: &Vec<PointFeature>,
     polyline: &Polyline,
@@ -553,7 +553,7 @@ pub fn place_labels(
     let dtarget_max = 50; //backend.get_eparameters().dtarget_max;
     for k in 0..points.len() {
         let target = &points[k];
-        let candidates = place_label(&backend.get_eparameters(), points, polyline, k);
+        let candidates = candidates_for_point(&backend.get_eparameters(), points, polyline, k);
         let best = candidates.last();
         match best {
             Some(candidate) => {
