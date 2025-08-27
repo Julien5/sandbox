@@ -214,9 +214,7 @@ impl LabelBoundingBox {
     }
     pub fn distance(&self, q: (f64, f64)) -> f64 {
         let p = self.project_on_border(q);
-        let dx = p.0 - q.0;
-        let dy = p.1 - q.1;
-        (dx * dx + dy * dy).sqrt()
+        distance(p, q)
     }
     fn contains(&self, (x, y): (f64, f64)) -> bool {
         if x >= self.x_min() && x <= self.x_max() && y >= self.y_min() && y <= self.y_max() {
@@ -431,11 +429,7 @@ fn cartesian(r: f64, angle: f64) -> (f64, f64) {
     (x, y)
 }
 
-fn candidates_bbox_at(
-    distance: f64,
-    angle_index: i32,
-    point: &PointFeature,
-) -> Vec<LabelBoundingBox> {
+fn bbox_at(distance: f64, angle_index: i32, point: &PointFeature) -> Vec<LabelBoundingBox> {
     let mut ret = Vec::new();
     let steps = 10;
     let bbox = point.label.bounding_box();
@@ -494,7 +488,7 @@ fn candidates_bbox_at(
     ret
 }
 
-fn generate_bbox(point: &PointFeature, dtarget_max: f64) -> Vec<LabelBoundingBox> {
+fn generate_bboxes(point: &PointFeature, dtarget_max: f64) -> Vec<LabelBoundingBox> {
     let mut ret = Vec::new();
     let dtarget_start = 2i32;
     let mut dtarget_min = f64::MAX;
@@ -508,7 +502,7 @@ fn generate_bbox(point: &PointFeature, dtarget_max: f64) -> Vec<LabelBoundingBox
             if dtarget_min > dtarget {
                 dtarget_min = dtarget;
             }
-            for c in candidates_bbox_at(dtarget, a, point) {
+            for c in bbox_at(dtarget, a, point) {
                 ret.push(c);
             }
         }
@@ -516,7 +510,7 @@ fn generate_bbox(point: &PointFeature, dtarget_max: f64) -> Vec<LabelBoundingBox
     let dtarget_min = dtarget_min.ceil() as i32;
     for dtarget in (dtarget_start..dtarget_min).rev() {
         for a in angle_indices {
-            for c in candidates_bbox_at(dtarget as f64, a, point) {
+            for c in bbox_at(dtarget as f64, a, point) {
                 // println!("{dtarget} {a} {})", point.id);
                 ret.push(c);
             }
@@ -581,7 +575,7 @@ fn candidates_for_point(
         Some(d) => d,
         _ => 200.0,
     };
-    let all = generate_bbox(target, dtarget_max);
+    let all = generate_bboxes(target, dtarget_max);
     let mut ret = Vec::new();
     for index in 0..all.len() {
         let c = &all[index];
