@@ -43,6 +43,7 @@ impl Graph {
     }
     pub fn build_map(&mut self) {
         self.map.clear();
+        // O(n^2) if there are fixed number of candidates.
         let nodes: Vec<_> = self.candidates.keys().cloned().collect();
         for node in nodes {
             self.compute_edges(&node);
