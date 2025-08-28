@@ -124,8 +124,10 @@ mod tests {
         graph.add_node(3, CD);
 
         graph.print();
+        println!("max node {}", graph.max_node());
         println!("select {} {}", 1, "c2");
         graph.select(&1, &c2);
         graph.print();
+        println!("max node {}", graph.max_node());
     }
 }
