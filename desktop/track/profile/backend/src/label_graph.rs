@@ -1,3 +1,4 @@
+use crate::label_candidates::Candidate;
 use crate::label_candidates::Candidates;
 use std::collections::HashMap;
 
@@ -18,28 +19,56 @@ impl Graph {
             candidates: CandidateMap::new(),
         }
     }
-    pub fn add_node(&mut self, node: Node) {
-        debug_assert!(!self.map.contains_key(&node));
-        self.map.insert(node, Edges::new());
-    }
-    pub fn add_edge(&mut self, start: usize, end: usize) {
-        self.map.get_mut(&start).unwrap().push(end);
-    }
-    pub fn remove_node_deep(&mut self, a: &Node) {
-        for b in self.map.get(a).unwrap() {
-            let Cb = self.candidates.get(b).unwrap();
-            let mut Cba = Candidates::new();
-            for ca in self.candidates.get(a).unwrap() {
-                for cb in Cb {
-                    if ca.bbox.intersect(&cb.bbox) {
-                        Cba.insert(cb.clone());
-                    }
+    fn intersect(&self, a: &Node, b: &Node) -> bool {
+        for ka in self.candidates.get(a).unwrap() {
+            for kb in self.candidates.get(b).unwrap() {
+                if ka.bbox.intersect(&kb.bbox) {
+                    return true;
                 }
             }
-            let clean = Cb - &Cba;
-            self.candidates.insert(*b, clean);
         }
-        self.map.get_mut(a).unwrap().clear();
+        false
+    }
+    pub fn add_node(&mut self, a: Node, candidates: Candidates) {
+        debug_assert!(!self.map.contains_key(&a));
+        self.candidates.insert(a, candidates);
+        let mut E = Edges::new();
+        for b in self.map.keys().clone() {
+            if self.intersect(&a, b) {
+                E.push(*b);
+            }
+        }
+        self.map.insert(a, E);
+    }
+    pub fn select(&mut self, a: &Node, selected: &Candidate) {
+        // for all b connected to a
+        let B = self.map.get(a).unwrap().clone();
+        for b in B {
+            // remove candidates of b that overlap with the
+            // selected a candidate
+            let Cb = self.candidates.get_mut(&b).unwrap();
+            for k in 0..Cb.len() {
+                let cb = &Cb[k];
+                if selected.bbox.intersect(&cb.bbox) {
+                    // TODO: this is slow if Cb is large.
+                    Cb.remove(k);
+                }
+            }
+            // remove the (b,a) edge
+            let Eb = self.map.get_mut(&b).unwrap();
+            Eb.retain(|&x| x != *a);
+        }
+        // remove a
         self.map.remove(a);
+        self.candidates.remove(a);
+    }
+    pub fn max_node(&self) -> Node {
+        *self
+            .map
+            .iter()
+            .map(|(node, edges)| (node, edges.len()))
+            .max_by_key(|(_node, len)| *len)
+            .unwrap()
+            .0
     }
 }

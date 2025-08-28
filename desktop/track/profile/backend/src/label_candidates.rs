@@ -154,7 +154,6 @@ impl PartialEq for LabelBoundingBox {
     }
 }
 
-use std::collections::BTreeSet;
 use std::fmt;
 impl fmt::Display for LabelBoundingBox {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -223,4 +222,4 @@ impl Ord for Candidate {
     }
 }
 
-pub type Candidates = BTreeSet<Candidate>;
+pub type Candidates = Vec<Candidate>;

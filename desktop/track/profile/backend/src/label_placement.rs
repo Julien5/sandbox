@@ -402,7 +402,7 @@ fn candidates_for_point(
         if dothers < dtarget {
             continue;
         }
-        ret.insert(Candidate::new(c.clone(), dtarget, dothers));
+        ret.push(Candidate::new(c.clone(), dtarget, dothers));
     }
     return ret;
 }
@@ -416,7 +416,7 @@ fn build_graph(
     for k in 0..points.len() {
         let candidates = candidates_for_point(&backend.get_eparameters(), points, polyline, k);
         assert!(!ret.candidates.contains_key(&k));
-        ret.candidates.insert(k, candidates);
+        ret.add_node(k, candidates);
     }
     ret
 }
