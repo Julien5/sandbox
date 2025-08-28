@@ -38,6 +38,9 @@ impl Graph {
                 E.push(*b);
             }
         }
+        for b in &E {
+            self.map.get_mut(b).unwrap().push(a);
+        }
         self.map.insert(a, E);
     }
     pub fn select(&mut self, a: &Node, selected: &Candidate) {
@@ -47,13 +50,7 @@ impl Graph {
             // remove candidates of b that overlap with the
             // selected a candidate
             let Cb = self.candidates.get_mut(&b).unwrap();
-            for k in 0..Cb.len() {
-                let cb = &Cb[k];
-                if selected.bbox.intersect(&cb.bbox) {
-                    // TODO: this is slow if Cb is large.
-                    Cb.remove(k);
-                }
-            }
+            Cb.retain(|cb| !selected.bbox.intersect(&cb.bbox));
             // remove the (b,a) edge
             let Eb = self.map.get_mut(&b).unwrap();
             Eb.retain(|&x| x != *a);
@@ -71,6 +68,21 @@ impl Graph {
             .unwrap()
             .0
     }
+
+    pub fn print(&self) {
+        let mut nodes: Vec<_> = self.map.keys().collect();
+        nodes.sort(); // Sort the keys in ascending order
+
+        for node in nodes {
+            let edges = &self.map[node];
+            let list = edges
+                .iter()
+                .map(|x| x.to_string())
+                .collect::<Vec<_>>()
+                .join(", ");
+            println!("node: {} edges:{}", node, list);
+        }
+    }
 }
 
 #[cfg(test)]
@@ -79,25 +91,41 @@ mod tests {
 
     use super::*;
 
+    fn make_candidate(x: i32, y: i32, w: i32, h: i32) -> Candidate {
+        Candidate::new(
+            LabelBoundingBox::new_tlwh((x as f64, y as f64), w as f64, h as f64),
+            0.,
+            0.,
+        )
+    }
+
     #[test]
     fn test_graph_operations() {
         // Create a new graph
         let mut graph = Graph::new();
+        let A = 0;
+        let mut CA = Candidates::new();
+        let mut CB = Candidates::new();
+        let mut CC = Candidates::new();
+        let mut CD = Candidates::new();
+        let ca = make_candidate(2, 2, 3, 2);
+        let cb = make_candidate(4, 2, 3, 2);
+        assert!(ca.bbox.intersect(&cb.bbox));
+        CA.push(ca);
+        CB.push(cb);
+        CC.push(make_candidate(3, 3, 2, 3));
+        let c2 = make_candidate(4, 3, 2, 3);
+        CC.push(c2.clone());
+        CC.push(make_candidate(3, 8, 2, 3));
+        CD.push(make_candidate(3, 9, 2, 3));
+        graph.add_node(0, CA);
+        graph.add_node(1, CB);
+        graph.add_node(2, CC);
+        graph.add_node(3, CD);
 
-        // Add nodes and candidates (example placeholders)
-        let candidates_a = Candidates::new(); // Replace with actual candidate data
-        let candidates_b = Candidates::new(); // Replace with actual candidate data
-        graph.add_node(1, candidates_a);
-        graph.add_node(2, candidates_b);
-
-        // Perform operations (example placeholders)
-        let f = (0f64, 0f64);
-        let bb = LabelBoundingBox::new_tlbr(f, f);
-        let candidate = Candidate::new(bb, 0f64, 0f64); // Replace with actual candidate initialization
-        graph.select(&1, &candidate);
-
-        // Add assertions (example placeholders)
-        assert!(graph.map.contains_key(&2));
-        assert!(!graph.map.contains_key(&1));
+        graph.print();
+        println!("select {} {}", 1, "c2");
+        graph.select(&1, &c2);
+        graph.print();
     }
 }
