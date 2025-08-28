@@ -72,3 +72,32 @@ impl Graph {
             .0
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::label_candidates::LabelBoundingBox;
+
+    use super::*;
+
+    #[test]
+    fn test_graph_operations() {
+        // Create a new graph
+        let mut graph = Graph::new();
+
+        // Add nodes and candidates (example placeholders)
+        let candidates_a = Candidates::new(); // Replace with actual candidate data
+        let candidates_b = Candidates::new(); // Replace with actual candidate data
+        graph.add_node(1, candidates_a);
+        graph.add_node(2, candidates_b);
+
+        // Perform operations (example placeholders)
+        let f = (0f64, 0f64);
+        let bb = LabelBoundingBox::new_tlbr(f, f);
+        let candidate = Candidate::new(bb, 0f64, 0f64); // Replace with actual candidate initialization
+        graph.select(&1, &candidate);
+
+        // Add assertions (example placeholders)
+        assert!(graph.map.contains_key(&2));
+        assert!(!graph.map.contains_key(&1));
+    }
+}
