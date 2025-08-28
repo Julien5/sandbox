@@ -133,8 +133,8 @@ mod tests {
 
         graph.print();
         println!("max node {}", graph.max_node());
-        println!("select {} {}", 1, "cc2");
-        graph.select(&1, &cb);
+        println!("select {} {}", 1, "cc1");
+        graph.select(&2, &cc1);
         graph.print();
         println!("max node {}", graph.max_node());
     }
