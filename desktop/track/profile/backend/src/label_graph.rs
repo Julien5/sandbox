@@ -65,6 +65,9 @@ impl Graph {
         // remove a
         self.map.remove(a);
         self.candidates.remove(a);
+
+        // this is not enough:
+        // we must remove b-c edges if there is no candidate backing the edge.
     }
     pub fn max_node(&self) -> Node {
         *self
@@ -87,7 +90,12 @@ impl Graph {
                 .map(|x| x.to_string())
                 .collect::<Vec<_>>()
                 .join(", ");
-            println!("node: {} edges:{}", node, list);
+            println!(
+                "node: {:1} edges:{:5} |C|={}",
+                node,
+                list,
+                self.candidates.get(node).unwrap().len()
+            );
         }
     }
 }
@@ -115,10 +123,12 @@ mod tests {
         let mut CB = Candidates::new();
         let mut CC = Candidates::new();
         let mut CD = Candidates::new();
-        let ca = make_candidate(2, 2, 3, 2);
+        let ca1 = make_candidate(0, 0, 2, 2);
+        let ca2 = make_candidate(2, 2, 3, 2);
         let cb = make_candidate(4, 2, 3, 2);
-        assert!(ca.bbox.intersect(&cb.bbox));
-        CA.push(ca);
+        assert!(ca2.bbox.intersect(&cb.bbox));
+        CA.push(ca1);
+        CA.push(ca2);
         CB.push(cb.clone());
         let cc1 = make_candidate(3, 3, 2, 3);
         CC.push(cc1.clone());
@@ -132,10 +142,17 @@ mod tests {
         graph.add_node(3, CD);
 
         graph.print();
-        println!("max node {}", graph.max_node());
+        assert!(graph.max_node() == 2);
         println!("select {} {}", 1, "cc1");
         graph.select(&2, &cc1);
+        assert!(!graph.map.contains_key(&2));
         graph.print();
+        assert!(graph.candidates.get(&0).unwrap().len() == 1);
+        assert!(graph.candidates.get(&1).unwrap().len() == 0);
+        // 0 and 1 should be disconnect since they have no overlaping
+        // candidates
+        assert!(graph.map.get(&0).unwrap().len() == 0);
+        assert!(graph.map.get(&1).unwrap().len() == 0);
         println!("max node {}", graph.max_node());
     }
 }
