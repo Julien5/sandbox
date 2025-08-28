@@ -45,6 +45,13 @@ impl Graph {
     }
     pub fn select(&mut self, a: &Node, selected: &Candidate) {
         // for all b connected to a
+        assert!(self
+            .candidates
+            .get(a)
+            .unwrap()
+            .iter()
+            .position(|c| c == selected)
+            .is_some());
         let B = self.map.get(a).unwrap().clone();
         for b in B {
             // remove candidates of b that overlap with the
@@ -112,10 +119,11 @@ mod tests {
         let cb = make_candidate(4, 2, 3, 2);
         assert!(ca.bbox.intersect(&cb.bbox));
         CA.push(ca);
-        CB.push(cb);
-        CC.push(make_candidate(3, 3, 2, 3));
-        let c2 = make_candidate(4, 3, 2, 3);
-        CC.push(c2.clone());
+        CB.push(cb.clone());
+        let cc1 = make_candidate(3, 3, 2, 3);
+        CC.push(cc1.clone());
+        let cc2 = make_candidate(4, 3, 2, 3);
+        CC.push(cc2.clone());
         CC.push(make_candidate(3, 8, 2, 3));
         CD.push(make_candidate(3, 9, 2, 3));
         graph.add_node(0, CA);
@@ -125,8 +133,8 @@ mod tests {
 
         graph.print();
         println!("max node {}", graph.max_node());
-        println!("select {} {}", 1, "c2");
-        graph.select(&1, &c2);
+        println!("select {} {}", 1, "cc2");
+        graph.select(&1, &cb);
         graph.print();
         println!("max node {}", graph.max_node());
     }
