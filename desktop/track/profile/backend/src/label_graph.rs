@@ -41,7 +41,7 @@ impl Graph {
         }
         self.map.insert(*a, E);
     }
-    pub fn refresh_graph_from_candidates(&mut self) {
+    pub fn build_map(&mut self) {
         self.map.clear();
         let nodes: Vec<_> = self.candidates.keys().cloned().collect();
         for node in nodes {
@@ -70,7 +70,7 @@ impl Graph {
         }
         // remove a
         self.candidates.remove(a);
-        self.refresh_graph_from_candidates();
+        self.build_map();
 
         // this is not enough:
         // we must remove b-c edges if there is no candidate backing the edge.
@@ -148,7 +148,7 @@ mod tests {
         graph.add_node(1, CB);
         graph.add_node(2, CC);
         graph.add_node(3, CD);
-        graph.refresh_graph_from_candidates();
+        graph.build_map();
 
         graph.print();
         assert!(graph.max_node() == 2);
