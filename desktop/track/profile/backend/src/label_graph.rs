@@ -107,6 +107,17 @@ impl Graph {
         }
     }
 
+    pub fn process(&self) -> Vec<(Node, Edges)> {
+        let mut nodes: Vec<_> = self.map.keys().collect();
+        nodes.sort(); // Sort the keys in ascending order
+        let mut sorted: Vec<_> = nodes
+            .iter()
+            .map(|n| (**n, self.map.get(n).unwrap().clone()))
+            .collect();
+        sorted.sort_by(|(n1, E1), (n2, E2)| E1.len().cmp(&E2.len()));
+        sorted
+    }
+
     pub fn best(&self, k: &Node) -> Option<usize> {
         match self.candidates.get(k) {
             Some(candidates) => {

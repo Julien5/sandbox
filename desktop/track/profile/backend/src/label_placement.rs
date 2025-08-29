@@ -393,7 +393,7 @@ fn candidates_for_point(
     let target = &points[k];
     let dtarget_max = match parameters.dtarget_max {
         Some(d) => d,
-        _ => 300.0,
+        _ => 100.0,
     };
     let all = generate_bboxes(target, dtarget_max);
     let mut ret = Candidates::new();
@@ -421,8 +421,13 @@ fn build_graph(
     let mut ret = Graph::new();
     for k in 0..points.len() {
         let candidates = candidates_for_point(&backend.get_eparameters(), points, polyline, k);
+        let selected_indices = label_candidates::select_candidates(&candidates);
+        let selected_candidates: Vec<_> = selected_indices
+            .into_iter()
+            .map(|i| candidates[i].clone())
+            .collect();
         assert!(!ret.candidates.contains_key(&k));
-        ret.add_node(k, candidates);
+        ret.add_node(k, selected_candidates);
     }
     ret.build_map();
     ret
@@ -447,6 +452,16 @@ pub fn place_labels(
     polyline: &Polyline,
 ) -> svg::node::element::Group {
     let G = build_graph(backend, points, polyline);
+    let sorted = G.process();
+    for item in sorted {
+        let (k, others) = item;
+        let name = &points[k].label.text;
+        let othersnames: Vec<_> = others
+            .into_iter()
+            .map(|i| points[i].label.text.clone())
+            .collect();
+        println!("name:{:20} order:{:?}", name, othersnames)
+    }
     debug_assert!(!G.candidates.is_empty());
     let mut debug = svg::node::element::Group::new();
     for k in 0..points.len() {
@@ -455,9 +470,8 @@ pub fn place_labels(
         debug_assert!(G.candidates.contains_key(&target));
         // sort in descending order
         let candidates = G.candidates.get(&target).unwrap();
-        let s = label_candidates::select_candidates(candidates);
-        for k in &s {
-            debug.append(candidate_debug_rectangle(&candidates[*k]));
+        for c in candidates {
+            debug.append(candidate_debug_rectangle(&c));
         }
         let best_index = G.best(&k);
         match best_index {
@@ -469,7 +483,7 @@ pub fn place_labels(
                 println!(
                     "[{k}={:12}] [{}] c({:.1},{:.1}) d_t={:.1} d_o = {:.1}]",
                     target_text,
-                    s.len(),
+                    candidates.len(),
                     bbox.x_min(),
                     bbox.y_max(),
                     dtarget,
