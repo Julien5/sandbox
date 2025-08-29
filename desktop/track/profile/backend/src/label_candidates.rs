@@ -194,7 +194,7 @@ impl PartialEq for Candidate {
 impl Eq for Candidate {}
 
 fn fuzzy_equal(x: f64, y: f64) -> bool {
-    let epsilon = 0.1f64; // effective if epsilon >= 1.
+    let epsilon = 0.0f64; // effective if epsilon >= 1.
     (x - y).abs() < epsilon
 }
 
@@ -223,3 +223,14 @@ impl Ord for Candidate {
 }
 
 pub type Candidates = Vec<Candidate>;
+
+pub fn select_candidates(candidates: &Candidates) -> Vec<usize> {
+    // sort indices by candidate order.
+    let mut sorted: Vec<_> = (0..candidates.len()).collect();
+    sorted.sort_by(|i, j| {
+        let ci = &candidates[*i];
+        let cj = &candidates[*j];
+        ci.partial_cmp(cj).unwrap_or(Ordering::Equal)
+    });
+    sorted.drain(0..4.min(sorted.len())).collect()
+}

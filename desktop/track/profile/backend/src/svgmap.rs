@@ -109,6 +109,7 @@ pub struct Map {
     polyline: Polyline,
     points: Vec<PointFeature>,
     document: Attributes,
+    debug: svg::node::element::Group,
 }
 
 impl Map {
@@ -167,11 +168,12 @@ impl Map {
             }
             points.push(svgPoint);
         }
-        crate::label_placement::place_labels(&backend, &mut points, &polyline);
+        let debug = crate::label_placement::place_labels(&backend, &mut points, &polyline);
         Map {
             polyline,
             points,
             document,
+            debug,
         }
     }
     fn _import(filename: std::path::PathBuf) -> Map {
@@ -241,6 +243,7 @@ impl Map {
             polyline,
             points,
             document,
+            debug: svg::node::element::Group::new(),
         }
     }
 
@@ -281,6 +284,7 @@ impl Map {
             debug_bb = debug_bb.set("stroke", "blue");
             document = document.add(debug_bb);
         }
+        document = document.add(self.debug);
         document.to_string()
     }
 }

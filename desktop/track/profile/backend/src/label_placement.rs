@@ -1,3 +1,6 @@
+use svg::Node;
+
+use crate::label_candidates;
 use crate::label_candidates::Candidate;
 use crate::label_candidates::Candidates;
 use crate::label_candidates::LabelBoundingBox;
@@ -421,13 +424,27 @@ fn build_graph(
     ret
 }
 
+fn make_rect(candidate: &Candidate) -> svg::node::element::Rectangle {
+    let mut debug_bb = svg::node::element::Rectangle::new();
+    let mut bb = &candidate.bbox;
+    debug_bb = debug_bb.set("x", bb.x_min());
+    debug_bb = debug_bb.set("y", bb.y_min());
+    debug_bb = debug_bb.set("width", bb.width());
+    debug_bb = debug_bb.set("height", bb.height());
+    debug_bb = debug_bb.set("fill", "transparent");
+    debug_bb = debug_bb.set("stroke-width", "1");
+    debug_bb = debug_bb.set("stroke", "blue");
+    debug_bb
+}
+
 pub fn place_labels(
     backend: &backend::Backend,
     points: &mut Vec<PointFeature>,
     polyline: &Polyline,
-) {
+) -> svg::node::element::Group {
     let G = build_graph(backend, points, polyline);
     debug_assert!(!G.candidates.is_empty());
+    let mut debug = svg::node::element::Group::new();
     for k in 0..points.len() {
         let target = k;
         let target_text = &points[k].label.text;
@@ -435,6 +452,10 @@ pub fn place_labels(
         // sort in descending order
         let candidates = G.candidates.get(&target).unwrap();
         let best = candidates.iter().min();
+        let s = label_candidates::select_candidates(candidates);
+        for k in s {
+            debug.append(make_rect(&candidates[k]));
+        }
         match best {
             Some(candidate) => {
                 let bbox = &candidate.bbox;
@@ -455,4 +476,5 @@ pub fn place_labels(
             }
         }
     }
+    debug
 }
