@@ -22,7 +22,7 @@ impl Graph {
     fn intersect(&self, a: &Node, b: &Node) -> bool {
         for ca in self.candidates.get(a).unwrap() {
             for cb in self.candidates.get(b).unwrap() {
-                if ca.bbox.intersect(&cb.bbox) {
+                if ca.bbox.overlap(&cb.bbox) {
                     return true;
                 }
             }
@@ -67,7 +67,7 @@ impl Graph {
             // remove candidates of b that overlap with the
             // selected a candidate
             let Cb = self.candidates.get_mut(&b).unwrap();
-            Cb.retain(|cb| !selected.bbox.intersect(&cb.bbox));
+            Cb.retain(|cb| !selected.bbox.overlap(&cb.bbox));
         }
         // remove a
         self.candidates.remove(a);
@@ -134,7 +134,7 @@ mod tests {
         let ca2 = make_candidate(2, 2, 3, 2);
         let cb1 = make_candidate(1, 0, 3, 2);
         let cb2 = make_candidate(4, 2, 3, 2);
-        assert!(ca2.bbox.intersect(&cb2.bbox));
+        assert!(ca2.bbox.overlap(&cb2.bbox));
         CA.push(ca1);
         CA.push(ca2);
         CB.push(cb1.clone());

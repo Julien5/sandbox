@@ -424,7 +424,7 @@ fn build_graph(
     ret
 }
 
-fn make_rect(candidate: &Candidate) -> svg::node::element::Rectangle {
+fn candidate_debug_rectangle(candidate: &Candidate) -> svg::node::element::Rectangle {
     let mut debug_bb = svg::node::element::Rectangle::new();
     let mut bb = &candidate.bbox;
     debug_bb = debug_bb.set("x", bb.x_min());
@@ -433,7 +433,7 @@ fn make_rect(candidate: &Candidate) -> svg::node::element::Rectangle {
     debug_bb = debug_bb.set("height", bb.height());
     debug_bb = debug_bb.set("fill", "transparent");
     debug_bb = debug_bb.set("stroke-width", "1");
-    debug_bb = debug_bb.set("stroke", "blue");
+    debug_bb = debug_bb.set("stroke", "green");
     debug_bb
 }
 
@@ -454,7 +454,7 @@ pub fn place_labels(
         let best = candidates.iter().min();
         let s = label_candidates::select_candidates(candidates);
         for k in s {
-            debug.append(make_rect(&candidates[k]));
+            debug.append(candidate_debug_rectangle(&candidates[k]));
         }
         match best {
             Some(candidate) => {

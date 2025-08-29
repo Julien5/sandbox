@@ -127,7 +127,7 @@ impl LabelBoundingBox {
         }
         false
     }
-    fn intersect_self(&self, other: &Self) -> bool {
+    fn overlap_self(&self, other: &Self) -> bool {
         for p in [
             self.top_left,
             self.bottom_right,
@@ -140,11 +140,17 @@ impl LabelBoundingBox {
         }
         false
     }
-    pub fn intersect(&self, other: &Self) -> bool {
-        if other.intersect_self(self) || self.intersect_self(other) {
+    pub fn overlap(&self, other: &Self) -> bool {
+        if other.overlap_self(self) || self.overlap_self(other) {
             return true;
         }
         false
+    }
+    pub fn overlap_measure(&self, other: &Self) -> f64 {
+        if other.overlap_self(self) || self.overlap_self(other) {
+            return true;
+        }
+        0f64
     }
 }
 
@@ -181,7 +187,7 @@ impl Candidate {
         }
     }
     fn _intersect(&self, other: &Self) -> bool {
-        self.bbox.intersect(&other.bbox)
+        self.bbox.overlap(&other.bbox)
     }
 }
 
