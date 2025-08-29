@@ -391,19 +391,31 @@ fn candidates_for_point(
     let target = &points[k];
     let dtarget_max = match parameters.dtarget_max {
         Some(d) => d,
-        _ => 200.0,
+        _ => 300.0,
     };
     let all = generate_bboxes(target, dtarget_max);
     let mut ret = Candidates::new();
+    let debug = true;
+    let center = format!("({:.0},{:.0})", target.circle.cx, target.circle.cy);
     for index in 0..all.len() {
         let c = &all[index];
+        let good = c.top_left.0 > target.circle.cx && c.top_left.1 > target.circle.cy;
         if polyline_hits_bbox(polyline, &c) {
+            if debug && good {
+                println!("{center} {index} hit line {:}", c.to_string());
+            }
             continue;
         }
         let dtarget = c.distance((target.circle.cx, target.circle.cy));
         let (dothers, _) = distance_to_others(c, &points, &target.id);
         if dothers < dtarget {
+            if debug && good {
+                println!("{center} {index} other too close {:}", c.to_string());
+            }
             continue;
+        }
+        if debug && good {
+            println!("{center} {index} good {:}", c.to_string());
         }
         ret.push(Candidate::new(c.clone(), dtarget, dothers));
     }
@@ -452,9 +464,13 @@ pub fn place_labels(
         debug_assert!(G.candidates.contains_key(&target));
         // sort in descending order
         let candidates = G.candidates.get(&target).unwrap();
-        let s = label_candidates::select_candidates(candidates);
-        for k in s {
-            debug.append(candidate_debug_rectangle(&candidates[k]));
+        let s = if k == 7 {
+            (0..candidates.len()).collect()
+        } else {
+            label_candidates::select_candidates(candidates)
+        };
+        for k in &s {
+            debug.append(candidate_debug_rectangle(&candidates[*k]));
         }
         let best_index = G.best(&k);
         match best_index {
@@ -464,8 +480,9 @@ pub fn place_labels(
                 let dothers = &candidate.dothers;
                 let dtarget = &candidate.dtarget;
                 println!(
-                    "[{:12}] c({:.1},{:.1}) d_t={:.1} d_o = {:.1}]",
+                    "[{k}={:12}] [{}] c({:.1},{:.1}) d_t={:.1} d_o = {:.1}]",
                     target_text,
+                    s.len(),
                     bbox.x_min(),
                     bbox.y_max(),
                     dtarget,
@@ -479,4 +496,32 @@ pub fn place_labels(
         }
     }
     debug
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::label_candidates::LabelBoundingBox;
+
+    use super::*;
+
+    #[test]
+    fn test_bbox() {
+        let id = String::new();
+        let point = PointFeature {
+            id: id.clone(),
+            circle: Circle {
+                id: id.clone(),
+                cx: 0f64,
+                cy: 0f64,
+                r: 1f64,
+                fill: None,
+            },
+            label: Label {
+                id: id.clone(),
+                bbox: LabelBoundingBox::zero(),
+                text: String::from_str("hi").unwrap(),
+            },
+        };
+        let candidates = generate_bboxes(&point, 50.0);
+    }
 }

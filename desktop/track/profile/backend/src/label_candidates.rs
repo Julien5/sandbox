@@ -259,6 +259,9 @@ pub fn select_candidates(candidates: &Candidates) -> Vec<usize> {
         let cj = &candidates[*j];
         ci.partial_cmp(cj).unwrap_or(Ordering::Equal)
     });
+    if sorted.len() <= 4 {
+        return sorted;
+    }
     let mut ret = vec![0];
     let mut previous = &candidates[0];
     for k in sorted {
