@@ -421,6 +421,7 @@ fn build_graph(
         assert!(!ret.candidates.contains_key(&k));
         ret.add_node(k, candidates);
     }
+    ret.build_map();
     ret
 }
 
@@ -451,13 +452,14 @@ pub fn place_labels(
         debug_assert!(G.candidates.contains_key(&target));
         // sort in descending order
         let candidates = G.candidates.get(&target).unwrap();
-        let best = candidates.iter().min();
         let s = label_candidates::select_candidates(candidates);
         for k in s {
             debug.append(candidate_debug_rectangle(&candidates[k]));
         }
-        match best {
-            Some(candidate) => {
+        let best_index = G.best(&k);
+        match best_index {
+            Some(index) => {
+                let candidate = &candidates[index];
                 let bbox = &candidate.bbox;
                 let dothers = &candidate.dothers;
                 let dtarget = &candidate.dtarget;

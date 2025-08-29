@@ -259,7 +259,6 @@ pub fn select_candidates(candidates: &Candidates) -> Vec<usize> {
         let cj = &candidates[*j];
         ci.partial_cmp(cj).unwrap_or(Ordering::Equal)
     });
-    //sorted.drain(0..4.min(sorted.len())).collect()
     let mut ret = vec![0];
     let mut previous = &candidates[0];
     for k in sorted {

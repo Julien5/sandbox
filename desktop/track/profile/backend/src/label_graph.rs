@@ -1,5 +1,6 @@
 use crate::label_candidates::Candidate;
 use crate::label_candidates::Candidates;
+use std::cmp::Ordering;
 use std::collections::HashMap;
 
 type Node = usize;
@@ -103,6 +104,24 @@ impl Graph {
                 }
                 None => println!("node: {:1} edges:{:5} |C|=0", node, list),
             };
+        }
+    }
+
+    pub fn best(&self, k: &Node) -> Option<usize> {
+        match self.candidates.get(k) {
+            Some(candidates) => {
+                if candidates.is_empty() {
+                    return None;
+                }
+                let mut sorted: Vec<_> = (0..candidates.len()).collect();
+                sorted.sort_by(|i, j| {
+                    let ci = &candidates[*i];
+                    let cj = &candidates[*j];
+                    ci.partial_cmp(cj).unwrap_or(Ordering::Equal)
+                });
+                Some(*sorted.first().unwrap())
+            }
+            _ => None,
         }
     }
 }
