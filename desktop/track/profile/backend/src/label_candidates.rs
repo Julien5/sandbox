@@ -146,11 +146,29 @@ impl LabelBoundingBox {
         }
         false
     }
-    pub fn overlap_measure(&self, other: &Self) -> f64 {
-        if other.overlap_self(self) || self.overlap_self(other) {
-            return true;
+    fn area2(&self) -> f64 {
+        let dx = self.x_max() - self.x_min();
+        let dy = self.y_max() - self.y_min();
+        return dx * dy;
+    }
+    fn intersection(&self, other: &Self) -> Option<LabelBoundingBox> {
+        let x_min = self.x_min().max(other.x_min());
+        let y_min = self.y_min().max(other.y_min());
+        let x_max = self.x_max().min(other.x_max());
+        let y_max = self.y_max().min(other.y_max());
+
+        // Check if the intersection is valid (non-negative width and height)
+        if x_min < x_max && y_min < y_max {
+            Some(LabelBoundingBox::new_tlbr((x_min, y_min), (x_max, y_max)))
+        } else {
+            None // No intersection
         }
-        0f64
+    }
+    pub fn overlap_ratio(&self, other: &Self) -> f64 {
+        match self.intersection(other) {
+            Some(bb) => bb.area2() / self.area2(),
+            None => 0f64,
+        }
     }
 }
 
@@ -231,6 +249,9 @@ impl Ord for Candidate {
 pub type Candidates = Vec<Candidate>;
 
 pub fn select_candidates(candidates: &Candidates) -> Vec<usize> {
+    if candidates.is_empty() {
+        return Vec::<usize>::new();
+    }
     // sort indices by candidate order.
     let mut sorted: Vec<_> = (0..candidates.len()).collect();
     sorted.sort_by(|i, j| {
@@ -238,5 +259,17 @@ pub fn select_candidates(candidates: &Candidates) -> Vec<usize> {
         let cj = &candidates[*j];
         ci.partial_cmp(cj).unwrap_or(Ordering::Equal)
     });
-    sorted.drain(0..4.min(sorted.len())).collect()
+    //sorted.drain(0..4.min(sorted.len())).collect()
+    let mut ret = vec![0];
+    let mut previous = &candidates[0];
+    for k in sorted {
+        if candidates[k].bbox.overlap_ratio(&previous.bbox) < 0.5f64 {
+            ret.push(k);
+            previous = &candidates[k];
+        }
+        if ret.len() >= 4 {
+            break;
+        }
+    }
+    ret
 }
