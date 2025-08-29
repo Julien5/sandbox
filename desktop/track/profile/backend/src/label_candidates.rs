@@ -183,8 +183,11 @@ impl fmt::Display for LabelBoundingBox {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "LabelBoundingBox {{ top_left: ({:.0}, {:.0}), bottom_right: ({:.0}, {:.0}) }}",
-            self.top_left.0, self.top_left.1, self.bottom_right.0, self.bottom_right.1
+            "LabelBoundingBox {{ top_left: ({:.2}, {:.2}), (w,h): ({:.2}, {:.2}) }}",
+            self.top_left.0,
+            self.top_left.1,
+            self.width(),
+            self.height()
         )
     }
 }

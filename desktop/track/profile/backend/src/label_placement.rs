@@ -276,15 +276,17 @@ fn bbox_at(distance: f64, angle_index: i32, point: &PointFeature) -> Vec<LabelBo
     let bbox = point.label.bounding_box();
     let width = bbox.width();
     let height = bbox.height();
-    let height_step = height / (steps as f64);
-    let width_step = width / (steps as f64);
+    assert!(width > 0f64);
+    assert!(height > 0f64);
+    let height_step = height / steps as f64;
+    let width_step = width / steps as f64;
     let cx = point.circle.cx;
     let cy = point.circle.cy;
     match angle_index {
         0 => {
             for i in 0..steps {
                 let dy = i as f64 * height_step;
-                let c = LabelBoundingBox::new_blwh((cx + distance, cy + dy), width, height);
+                let c = LabelBoundingBox::new_tlwh((cx + distance, cy + dy), width, height);
                 ret.push(c);
             }
             return ret;
@@ -395,27 +397,16 @@ fn candidates_for_point(
     };
     let all = generate_bboxes(target, dtarget_max);
     let mut ret = Candidates::new();
-    let debug = true;
-    let center = format!("({:.0},{:.0})", target.circle.cx, target.circle.cy);
     for index in 0..all.len() {
         let c = &all[index];
         let good = c.top_left.0 > target.circle.cx && c.top_left.1 > target.circle.cy;
         if polyline_hits_bbox(polyline, &c) {
-            if debug && good {
-                println!("{center} {index} hit line {:}", c.to_string());
-            }
             continue;
         }
         let dtarget = c.distance((target.circle.cx, target.circle.cy));
         let (dothers, _) = distance_to_others(c, &points, &target.id);
         if dothers < dtarget {
-            if debug && good {
-                println!("{center} {index} other too close {:}", c.to_string());
-            }
             continue;
-        }
-        if debug && good {
-            println!("{center} {index} good {:}", c.to_string());
         }
         ret.push(Candidate::new(c.clone(), dtarget, dothers));
     }
@@ -464,11 +455,7 @@ pub fn place_labels(
         debug_assert!(G.candidates.contains_key(&target));
         // sort in descending order
         let candidates = G.candidates.get(&target).unwrap();
-        let s = if k == 7 {
-            (0..candidates.len()).collect()
-        } else {
-            label_candidates::select_candidates(candidates)
-        };
+        let s = label_candidates::select_candidates(candidates);
         for k in &s {
             debug.append(candidate_debug_rectangle(&candidates[*k]));
         }
@@ -507,7 +494,7 @@ mod tests {
     #[test]
     fn test_bbox() {
         let id = String::new();
-        let point = PointFeature {
+        let target = PointFeature {
             id: id.clone(),
             circle: Circle {
                 id: id.clone(),
@@ -518,10 +505,23 @@ mod tests {
             },
             label: Label {
                 id: id.clone(),
-                bbox: LabelBoundingBox::zero(),
+                bbox: LabelBoundingBox {
+                    top_left: (0f64, 0f64),
+                    bottom_right: (10f64, 16f64),
+                },
                 text: String::from_str("hi").unwrap(),
             },
         };
-        let candidates = generate_bboxes(&point, 50.0);
+        //let candidates = generate_bboxes(&target, 50.0);
+        let candidates = bbox_at(10f64, 0, &target);
+        let mut found = false;
+        for c in candidates {
+            let good = c.top_left.0 > target.circle.cx && c.top_left.1 > target.circle.cy;
+            println!("{}", c.to_string());
+            if good {
+                found = true;
+            }
+        }
+        assert!(found);
     }
 }
