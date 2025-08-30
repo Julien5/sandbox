@@ -232,27 +232,28 @@ fn fuzzy_equal(x: f64, y: f64) -> bool {
     (x - y).abs() < epsilon
 }
 
+fn cat(x: f64) -> f64 {
+    (x / 1f64).ceil()
+    //x
+}
+
 use std::cmp::Ordering;
 impl PartialOrd for Candidate {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        if !fuzzy_equal(self.dtarget, other.dtarget) {
-            return self.dtarget.partial_cmp(&other.dtarget);
+        let t1 = cat(self.dtarget);
+        let t2 = cat(other.dtarget);
+        if t1 != t2 {
+            return t1.partial_cmp(&t2);
         }
-        self.dothers.partial_cmp(&other.dothers)
+        let t1 = -self.dothers;
+        let t2 = -other.dothers;
+        t1.partial_cmp(&t2)
     }
 }
 
 impl Ord for Candidate {
     fn cmp(&self, other: &Self) -> Ordering {
-        if !fuzzy_equal(self.dtarget, other.dtarget) {
-            return self
-                .dtarget
-                .partial_cmp(&other.dtarget)
-                .unwrap_or(Ordering::Equal);
-        }
-        (-self.dothers)
-            .partial_cmp(&(-other.dothers))
-            .unwrap_or(Ordering::Equal)
+        self.partial_cmp(&other).unwrap_or(Ordering::Equal)
     }
 }
 

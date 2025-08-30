@@ -17,7 +17,7 @@ Waldburg
 
 </text>
 <circle cx="221.0862808913921" cy="283.8727728706508" id="wp-4/circle" r="4"/>
-<text font-size="16.0" id="wp-4/text" text-anchor="end" x="214.67513758873582" y="287.3407220630819">
+<text font-size="16.0" id="wp-4/text" text-anchor="end" x="214.67513758873582" y="292.4048236782197">
 Weissenbach
 </text>
 <circle cx="253.57654709400458" cy="302.47514753663563" id="wp-5/circle" r="4"/>
@@ -25,7 +25,7 @@ Weissenbach
 Wangen
 </text>
 <circle cx="309.22009537179156" cy="320.768711972858" id="wp-6/circle" r="4"/>
-<text font-size="16.0" id="wp-6/text" text-anchor="start" x="268.88089396552607" y="336.8969152031335">
+<text font-size="16.0" id="wp-6/text" text-anchor="start" x="300.69940568923505" y="336.8969152031335">
 Eglofs
 </text>
 <circle cx="322.7403076723135" cy="298.91306653906213" id="wp-7/circle" r="4"/>
@@ -37,7 +37,7 @@ Eisenharz
 Albrismuhle
 </text>
 <circle cx="315.72051799092105" cy="278.62354040542414" id="wp-9/circle" r="4"/>
-<text font-size="16.0" id="wp-9/text" text-anchor="start" x="279.9491024103197" y="264.3671339448731">
+<text font-size="16.0" id="wp-9/text" text-anchor="start" x="284.18694269157277" y="264.3671339448731">
 Siggen
 </text>
 <circle cx="370.34325754217343" cy="292.35727494339517" id="wp-10/circle" r="4"/>
@@ -49,7 +49,7 @@ Isny
 
 </text>
 <circle cx="358.1265887782406" cy="183.65156161076447" id="wp-12/circle" r="4"/>
-<text font-size="16.0" id="wp-12/text" text-anchor="end" x="353.9069699673637" y="194.71566322590223">
+<text font-size="16.0" id="wp-12/text" text-anchor="start" x="362.3462075891175" y="194.71566322590223">
 Leutkirch
 </text>
 <circle cx="343.84108422177314" cy="154.5075762790002" id="wp-13/circle" r="4"/>
@@ -65,11 +65,11 @@ Bad Wurzach
 Haidgau
 </text>
 <circle cx="237.41906887744744" cy="122.55029392218421" id="wp-16/circle" r="4"/>
-<text font-size="16.0" id="wp-16/text" text-anchor="start" x="209.2705389136378" y="141.21054796002858">
+<text font-size="16.0" id="wp-16/text" text-anchor="start" x="191.4696496488259" y="141.21054796002858">
 Ehrensberg
 </text>
 <circle cx="206.90791695865346" cy="107.72817508020671" id="wp-17/circle" r="4"/>
-<text font-size="16.0" id="wp-17/text" text-anchor="start" x="162.67633801128505" y="90.93971781208681">
+<text font-size="16.0" id="wp-17/text" text-anchor="start" x="175.3867554158965" y="90.93971781208681">
 Bad Waldsee
 </text>
 <circle cx="179.11957891786597" cy="123.08999140050582" id="wp-18/circle" r="4"/>
