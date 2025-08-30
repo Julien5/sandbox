@@ -26,12 +26,10 @@ impl Default for Parameters {
 }
 
 #[derive(Clone)]
-pub struct ExperimentalParameters {
-    pub dtarget_max: Option<f64>,
-}
+pub struct ExperimentalParameters {}
 
 impl Default for ExperimentalParameters {
     fn default() -> ExperimentalParameters {
-        ExperimentalParameters { dtarget_max: None }
+        ExperimentalParameters {}
     }
 }

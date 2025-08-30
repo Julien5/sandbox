@@ -1,6 +1,7 @@
 use svg::Node;
 
 use crate::label_candidates;
+use crate::label_candidates::distance;
 use crate::label_candidates::Candidate;
 use crate::label_candidates::Candidates;
 use crate::label_candidates::LabelBoundingBox;
@@ -335,8 +336,8 @@ fn generate_bboxes(point: &PointFeature, dtarget_max: f64) -> Vec<LabelBoundingB
     let mut ret = Vec::new();
     let width = point.label.bbox.width();
     let height = point.label.bbox.height();
-    let mut dtarget_min = 2f64;
-    let N = 10;
+    let dtarget_min = 2f64;
+    let N = 20;
     let d0 = dtarget_max.sqrt();
     let cx = point.circle.cx;
     let cy = point.circle.cy;
@@ -392,19 +393,18 @@ fn candidates_for_point(
     }
     let target = &points[k];
     let width = target.label.bbox.width();
-    let dtarget_max = match parameters.dtarget_max {
-        Some(d) => d,
-        _ => 100f64,
-    };
+    let dtarget_max = 150f64;
     let all = generate_bboxes(target, dtarget_max);
     let mut ret = Candidates::new();
+    let mut targetpoint = (target.circle.cx, target.circle.cy);
     for index in 0..all.len() {
         let c = &all[index];
         let good = c.top_left.0 > target.circle.cx && c.top_left.1 > target.circle.cy;
         if polyline_hits_bbox(polyline, &c) {
             continue;
         }
-        let dtarget = c.distance((target.circle.cx, target.circle.cy));
+        // let dtarget = distance(c.center(), targetpoint);
+        let dtarget = c.distance(targetpoint);
         let (dothers, _) = distance_to_others(c, &points, &target.id);
         if dothers < dtarget {
             continue;

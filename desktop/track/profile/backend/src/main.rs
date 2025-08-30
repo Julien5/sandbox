@@ -19,8 +19,6 @@ struct Cli {
     max_step_length: Option<i32>,
     #[arg(long, value_name = "experiment_labels")]
     experiment_labels: Option<bool>,
-    #[arg(long, value_name = "dtarget_max")]
-    dtarget_max: Option<f64>,
     #[arg(value_name = "gpx")]
     filename: std::path::PathBuf,
 }
@@ -73,13 +71,6 @@ fn main() -> Result<(), error::Error> {
     match args.debug {
         Some(d) => {
             parameters.debug = d;
-        }
-        _ => {}
-    }
-
-    match args.dtarget_max {
-        Some(d) => {
-            eparameters.dtarget_max = Some(d);
         }
         _ => {}
     }

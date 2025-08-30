@@ -1,4 +1,4 @@
-fn distance((x1, y1): (f64, f64), (x2, y2): (f64, f64)) -> f64 {
+pub fn distance((x1, y1): (f64, f64), (x2, y2): (f64, f64)) -> f64 {
     let dx = x2 - x1;
     let dy = y2 - y1;
     (dx * dx + dy * dy).sqrt()
@@ -73,6 +73,13 @@ impl LabelBoundingBox {
 
     fn top_right(&self) -> (f64, f64) {
         (self.x_max(), self.y_min())
+    }
+
+    pub fn center(&self) -> (f64, f64) {
+        (
+            0.5 * (self.x_min() + self.x_max()),
+            0.5 * (self.y_min() + self.y_max()),
+        )
     }
 
     pub fn x_max(&self) -> f64 {
