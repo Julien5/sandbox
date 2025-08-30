@@ -272,14 +272,18 @@ pub fn select_candidates(candidates: &Candidates) -> Vec<usize> {
     if sorted.len() <= 4 {
         return sorted;
     }
+    // note: the candidates must be sorted
+    for i in 1..candidates.len() {
+        debug_assert!(candidates[i - 1] <= candidates[i]);
+    }
     let mut ret = vec![0];
     let mut previous = &candidates[0];
     for k in sorted {
-        if candidates[k].bbox.overlap_ratio(&previous.bbox) < 0.5f64 {
+        if candidates[k].bbox.overlap_ratio(&previous.bbox) < 0.75f64 {
             ret.push(k);
             previous = &candidates[k];
         }
-        if ret.len() >= 8 {
+        if ret.len() >= 25 {
             break;
         }
     }

@@ -206,6 +206,10 @@ impl Graph {
                         }
                         None => {}
                     }
+                    println!(
+                        "[node:{node:2}] [candidate:{index:2}] it bests from #={}",
+                        candidates.len()
+                    );
                     return Some(index);
                 }
                 println!("all candidates of {node} block some other.");

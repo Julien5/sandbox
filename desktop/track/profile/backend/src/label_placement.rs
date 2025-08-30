@@ -7,6 +7,7 @@ use crate::label_candidates::Candidates;
 use crate::label_candidates::LabelBoundingBox;
 use crate::label_graph::Graph;
 
+use std::cmp::Ordering;
 use std::collections::HashMap;
 pub type Attributes = HashMap<String, svg::node::Value>;
 
@@ -350,6 +351,7 @@ fn filter_candidates(candidates: &mut Candidates, polyline: &Polyline) {
         }
         true
     });
+    candidates.sort_by(|ci, cj| ci.partial_cmp(cj).unwrap_or(Ordering::Equal));
 }
 
 fn build_graph(
@@ -365,7 +367,7 @@ fn build_graph(
         let mut candidates = generate_all_candidates(points, k);
         filter_candidates(&mut candidates, polyline);
         let selected_indices = label_candidates::select_candidates(&candidates);
-        let selected_candidates: Vec<_> = selected_indices
+        let mut selected_candidates: Vec<_> = selected_indices
             .into_iter()
             .map(|i| candidates[i].clone())
             .collect();
@@ -431,7 +433,7 @@ pub fn place_labels(
             .map(|i| candidates[i].clone())
             .collect();
         for c in candidates {
-            if target_text.contains("Ehr") {
+            if false && target_text.contains("Ehr") {
                 debug.append(candidate_debug_rectangle(&c));
             }
         }

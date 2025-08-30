@@ -9,7 +9,7 @@
 Schlier
 </text>
 <circle cx="185.20749591587673" cy="243.51585492626327" id="wp-2/circle" r="4"/>
-<text font-size="16.0" id="wp-2/text" text-anchor="end" x="165.88698784018797" y="264.70815977167655">
+<text font-size="16.0" id="wp-2/text" text-anchor="start" x="128.31303135171657" y="262.1761089641077">
 Waldburg
 </text>
 <circle cx="231.6429766297565" cy="249.23509448834375" id="wp-3/circle" r="4"/>
@@ -21,15 +21,15 @@ Waldburg
 Weissenbach
 </text>
 <circle cx="253.57654709400458" cy="302.47514753663563" id="wp-5/circle" r="4"/>
-<text font-size="16.0" id="wp-5/text" text-anchor="end" x="234.25603901831582" y="313.5392491517734">
+<text font-size="16.0" id="wp-5/text" text-anchor="start" x="203.57418779300232" y="318.60335076691115">
 Wangen
 </text>
 <circle cx="309.22009537179156" cy="320.768711972858" id="wp-6/circle" r="4"/>
-<text font-size="16.0" id="wp-6/text" text-anchor="end" x="289.89958729610277" y="334.3648643955646">
+<text font-size="16.0" id="wp-6/text" text-anchor="start" x="268.88089396552607" y="336.8969152031335">
 Eglofs
 </text>
 <circle cx="322.7403076723135" cy="298.91306653906213" id="wp-7/circle" r="4"/>
-<text font-size="16.0" id="wp-7/text" text-anchor="start" x="320.75155988614785" y="317.57332057690655">
+<text font-size="16.0" id="wp-7/text" text-anchor="start" x="326.07887385161143" y="320.1053713844754">
 Eisenharz
 </text>
 <circle cx="311.9518884590293" cy="286.9930748904226" id="wp-8/circle" r="4"/>
@@ -41,7 +41,7 @@ Albrismuhle
 Siggen
 </text>
 <circle cx="370.34325754217343" cy="292.35727494339517" id="wp-10/circle" r="4"/>
-<text font-size="16.0" id="wp-10/text" text-anchor="end" x="360.69521767866496" y="300.8893257509641">
+<text font-size="16.0" id="wp-10/text" text-anchor="end" x="363.91937374939175" y="300.8893257509641">
 Isny
 </text>
 <circle cx="360.85172066912537" cy="254.09649813229044" id="wp-11/circle" r="4"/>
@@ -49,7 +49,7 @@ Isny
 
 </text>
 <circle cx="358.1265887782406" cy="183.65156161076447" id="wp-12/circle" r="4"/>
-<text font-size="16.0" id="wp-12/text" text-anchor="end" x="338.8060807025518" y="187.1195108031956">
+<text font-size="16.0" id="wp-12/text" text-anchor="end" x="353.9069699673637" y="194.71566322590223">
 Leutkirch
 </text>
 <circle cx="343.84108422177314" cy="154.5075762790002" id="wp-13/circle" r="4"/>
@@ -65,15 +65,15 @@ Bad Wurzach
 Haidgau
 </text>
 <circle cx="237.41906887744744" cy="122.55029392218421" id="wp-16/circle" r="4"/>
-<text font-size="16.0" id="wp-16/text" text-anchor="start" x="173.66876038401404" y="146.27464957516634">
+<text font-size="16.0" id="wp-16/text" text-anchor="start" x="209.2705389136378" y="141.21054796002858">
 Ehrensberg
 </text>
 <circle cx="206.90791695865346" cy="107.72817508020671" id="wp-17/circle" r="4"/>
-<text font-size="16.0" id="wp-17/text" text-anchor="start" x="162.67633801128505" y="88.40766700451793">
+<text font-size="16.0" id="wp-17/text" text-anchor="start" x="162.67633801128505" y="90.93971781208681">
 Bad Waldsee
 </text>
 <circle cx="179.11957891786597" cy="123.08999140050582" id="wp-18/circle" r="4"/>
-<text font-size="16.0" id="wp-18/text" text-anchor="end" x="159.7990708421772" y="118.9617881702303">
+<text font-size="16.0" id="wp-18/text" text-anchor="start" x="144.54821779285362" y="139.21819463078134">
 Reute
 </text>
 <circle cx="144.3509816771625" cy="81.07787006855506" id="wp-19/circle" r="4"/>
@@ -108,14 +108,5 @@ Reute
 <text font-size="16.0" id="" text-anchor="end" x="-2" y="-2">
 
 </text>
-<g>
-<rect fill="transparent" height="16" stroke="green" stroke-width="1" width="84.03157894736842" x="171.66876038401404" y="132.27464957516634"/>
-<rect fill="transparent" height="16" stroke="green" stroke-width="1" width="84.03157894736842" x="195.40327940376324" y="127.21054796002858"/>
-<rect fill="transparent" height="16" stroke="green" stroke-width="1" width="84.03157894736842" x="171.66876038401404" y="132.27464957516634"/>
-<rect fill="transparent" height="16" stroke="green" stroke-width="1" width="84.03157894736844" x="219.1377984235124" y="132.27464957516634"/>
-<rect fill="transparent" height="16" stroke="green" stroke-width="1" width="84.03157894736842" x="171.66876038401404" y="134.80670038273522"/>
-<rect fill="transparent" height="16" stroke="green" stroke-width="1" width="84.03157894736844" x="219.1377984235124" y="134.80670038273522"/>
-<rect fill="transparent" height="16" stroke="green" stroke-width="1" width="84.03157894736842" x="171.66876038401404" y="137.3387511903041"/>
-<rect fill="transparent" height="16" stroke="green" stroke-width="1" width="84.03157894736844" x="219.1377984235124" y="137.3387511903041"/>
-</g>
+<g/>
 </svg>
