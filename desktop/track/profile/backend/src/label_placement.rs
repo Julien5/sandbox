@@ -115,7 +115,6 @@ use std::hash::Hasher;
 use std::str::FromStr;
 
 use crate::backend;
-use crate::parameters;
 impl Hash for PointFeature {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.id.hash(state);
@@ -271,67 +270,6 @@ fn cartesian(r: f64, angle: f64) -> (f64, f64) {
     (x, y)
 }
 
-fn bbox_at(distance: f64, angle_index: i32, point: &PointFeature) -> Vec<LabelBoundingBox> {
-    let mut ret = Vec::new();
-    let steps = 10;
-    let bbox = point.label.bounding_box();
-    let width = bbox.width();
-    let height = bbox.height();
-    assert!(width > 0f64);
-    assert!(height > 0f64);
-    let height_step = height / steps as f64;
-    let width_step = width / steps as f64;
-    let cx = point.circle.cx;
-    let cy = point.circle.cy;
-    match angle_index {
-        0 => {
-            for i in 0..steps {
-                let dy = i as f64 * height_step;
-                let c = LabelBoundingBox::new_tlwh((cx + distance, cy + dy), width, height);
-                ret.push(c);
-            }
-            return ret;
-        }
-        25 => {
-            for i in 0..steps {
-                let dx = i as f64 * width_step;
-                let c = LabelBoundingBox::new_blwh((cx - dx, cy - distance), width, height);
-                ret.push(c);
-            }
-            return ret;
-        }
-        50 => {
-            for i in 0..steps {
-                let dy = i as f64 * height_step;
-                let c = LabelBoundingBox::new_brwh((cx - distance, cy + dy), width, height);
-                ret.push(c);
-            }
-            return ret;
-        }
-        75 => {
-            for i in 0..steps {
-                let dx = i as f64 * width_step;
-                let c = LabelBoundingBox::new_trwh((cx + dx, cy + distance), width, height);
-                ret.push(c);
-            }
-            return ret;
-        }
-        _ => {}
-    }
-
-    let angle = (angle_index as f64) * 2f64 * std::f64::consts::PI;
-    let (epsx, epsy) = cartesian(distance, angle);
-    let p = (cx + epsx, cy + epsy);
-    let c = match (epsx > 0f64, epsy > 0f64) {
-        (true, false) => LabelBoundingBox::new_blwh(p, width, height),
-        (false, false) => LabelBoundingBox::new_brwh(p, width, height),
-        (false, true) => LabelBoundingBox::new_trwh(p, width, height),
-        (true, true) => LabelBoundingBox::new_tlwh(p, width, height),
-    };
-    ret.push(c);
-    ret
-}
-
 fn generate_bboxes(point: &PointFeature, dtarget_max: f64) -> Vec<LabelBoundingBox> {
     let mut ret = Vec::new();
     let width = point.label.bbox.width();
@@ -382,36 +320,36 @@ fn distance_to_others(
     ret
 }
 
-fn candidates_for_point(
-    parameters: &parameters::ExperimentalParameters,
-    points: &Vec<PointFeature>,
-    polyline: &Polyline,
-    k: usize,
-) -> Candidates {
+fn generate_all_candidates(points: &Vec<PointFeature>, k: usize) -> Candidates {
     if points[k].label.text.is_empty() {
         return Candidates::new();
     }
     let target = &points[k];
     let width = target.label.bbox.width();
-    let dtarget_max = 150f64;
+    let dtarget_max = 300f64;
     let all = generate_bboxes(target, dtarget_max);
     let mut ret = Candidates::new();
     let mut targetpoint = (target.circle.cx, target.circle.cy);
     for index in 0..all.len() {
         let c = &all[index];
-        let good = c.top_left.0 > target.circle.cx && c.top_left.1 > target.circle.cy;
-        if polyline_hits_bbox(polyline, &c) {
-            continue;
-        }
         // let dtarget = distance(c.center(), targetpoint);
         let dtarget = c.distance(targetpoint);
         let (dothers, _) = distance_to_others(c, &points, &target.id);
-        if dothers < dtarget {
-            continue;
-        }
         ret.push(Candidate::new(c.clone(), dtarget, dothers));
     }
     return ret;
+}
+
+fn filter_candidates(candidates: &mut Candidates, polyline: &Polyline) {
+    candidates.retain(|c| {
+        if polyline_hits_bbox(polyline, &c.bbox) {
+            return false;
+        }
+        if c.dothers < c.dtarget {
+            return false;
+        }
+        true
+    });
 }
 
 fn build_graph(
@@ -424,7 +362,8 @@ fn build_graph(
         if points[k].label.text.is_empty() {
             continue;
         }
-        let candidates = candidates_for_point(&backend.get_eparameters(), points, polyline, k);
+        let mut candidates = generate_all_candidates(points, k);
+        filter_candidates(&mut candidates, polyline);
         let selected_indices = label_candidates::select_candidates(&candidates);
         let selected_candidates: Vec<_> = selected_indices
             .into_iter()
@@ -480,14 +419,15 @@ pub fn place_labels(
         if target_text.is_empty() {
             continue;
         }
-        let candidates = candidates_for_point(&backend.get_eparameters(), points, polyline, k);
+        let mut candidates = generate_all_candidates(points, k);
+        filter_candidates(&mut candidates, polyline);
         let selected_indices = label_candidates::select_candidates(&candidates);
         let candidatesd: Vec<_> = selected_indices
             .into_iter()
             .map(|i| candidates[i].clone())
             .collect();
         for c in candidates {
-            if target_text == "Bad Waldsee" {
+            if target_text.contains("Albris") {
                 debug.append(candidate_debug_rectangle(&c));
             }
         }
@@ -550,8 +490,7 @@ mod tests {
                 text: String::from_str("hi").unwrap(),
             },
         };
-        //let candidates = generate_bboxes(&target, 50.0);
-        let candidates = bbox_at(10f64, 0, &target);
+        let candidates = generate_bboxes(&target, 50.0);
         let mut found = false;
         for c in candidates {
             let good = c.top_left.0 > target.circle.cx && c.top_left.1 > target.circle.cy;
