@@ -17,7 +17,7 @@ Waldburg
 
 </text>
 <circle cx="221.0862808913921" cy="283.8727728706508" id="wp-4/circle" r="4"/>
-<text font-size="16.0" id="wp-4/text" text-anchor="end" x="214.67513758873582" y="292.4048236782197">
+<text font-size="16.0" id="wp-4/text" text-anchor="end" x="214.67513758873582" y="297.4689252933574">
 Weissenbach
 </text>
 <circle cx="253.57654709400458" cy="302.47514753663563" id="wp-5/circle" r="4"/>
@@ -49,7 +49,7 @@ Isny
 
 </text>
 <circle cx="358.1265887782406" cy="183.65156161076447" id="wp-12/circle" r="4"/>
-<text font-size="16.0" id="wp-12/text" text-anchor="start" x="362.3462075891175" y="194.71566322590223">
+<text font-size="16.0" id="wp-12/text" text-anchor="end" x="353.9069699673637" y="197.2477140334711">
 Leutkirch
 </text>
 <circle cx="343.84108422177314" cy="154.5075762790002" id="wp-13/circle" r="4"/>
@@ -73,7 +73,7 @@ Ehrensberg
 Bad Waldsee
 </text>
 <circle cx="179.11957891786597" cy="123.08999140050582" id="wp-18/circle" r="4"/>
-<text font-size="16.0" id="wp-18/text" text-anchor="start" x="144.54821779285362" y="139.21819463078134">
+<text font-size="16.0" id="wp-18/text" text-anchor="end" x="175.19674775666323" y="139.21819463078134">
 Reute
 </text>
 <circle cx="144.3509816771625" cy="81.07787006855506" id="wp-19/circle" r="4"/>
