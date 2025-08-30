@@ -451,8 +451,8 @@ pub fn place_labels(
     points: &mut Vec<PointFeature>,
     polyline: &Polyline,
 ) -> svg::node::element::Group {
-    let G = build_graph(backend, points, polyline);
-    let sorted = G.process();
+    let mut G = build_graph(backend, points, polyline);
+    let sorted = G.debug();
     for item in sorted {
         let (k, others) = item;
         let name = &points[k].label.text;
@@ -460,30 +460,30 @@ pub fn place_labels(
             .into_iter()
             .map(|i| points[i].label.text.clone())
             .collect();
-        println!("name:{:20} order:{:?}", name, othersnames)
+        println!("[{k:2} name:{:20}] order:{:?}", name, othersnames)
     }
-    debug_assert!(!G.candidates.is_empty());
     let mut debug = svg::node::element::Group::new();
     for k in 0..points.len() {
         let target = k;
         let target_text = &points[k].label.text;
-        debug_assert!(G.candidates.contains_key(&target));
-        // sort in descending order
         let candidates = G.candidates.get(&target).unwrap();
         for c in candidates {
             debug.append(candidate_debug_rectangle(&c));
         }
-        let best_index = G.best(&k);
-        match best_index {
-            Some(index) => {
-                let candidate = &candidates[index];
+    }
+    let best_candidates = G.solve();
+    for k in 0..points.len() {
+        let target = k;
+        let target_text = &points[k].label.text;
+        let best_candidate = best_candidates.get(&k);
+        match best_candidate {
+            Some(candidate) => {
                 let bbox = &candidate.bbox;
                 let dothers = &candidate.dothers;
                 let dtarget = &candidate.dtarget;
                 println!(
-                    "[{k}={:12}] [{}] c({:.1},{:.1}) d_t={:.1} d_o = {:.1}]",
+                    "[{k}={:12}] c({:.1},{:.1}) d_t={:.1} d_o = {:.1}]",
                     target_text,
-                    candidates.len(),
                     bbox.x_min(),
                     bbox.y_max(),
                     dtarget,

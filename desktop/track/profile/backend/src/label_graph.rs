@@ -54,6 +54,12 @@ impl Graph {
         debug_assert!(!self.map.contains_key(&a));
         self.candidates.insert(a, candidates);
     }
+
+    fn remove_node(&mut self, a: &Node) {
+        self.candidates.remove(a);
+        self.build_map();
+    }
+
     pub fn select(&mut self, a: &Node, selected: &Candidate) {
         // for all b connected to a
         assert!(self
@@ -71,11 +77,7 @@ impl Graph {
             Cb.retain(|cb| !selected.bbox.overlap(&cb.bbox));
         }
         // remove a
-        self.candidates.remove(a);
-        self.build_map();
-
-        // this is not enough:
-        // we must remove b-c edges if there is no candidate backing the edge.
+        self.remove_node(a);
     }
     pub fn max_node(&self) -> Node {
         *self
@@ -107,7 +109,41 @@ impl Graph {
         }
     }
 
-    pub fn process(&self) -> Vec<(Node, Edges)> {
+    pub fn candidate_blocks_other(
+        &self,
+        node: &Node,
+        candidate_index: usize,
+        other: &Node,
+    ) -> bool {
+        let this_candidate = &self.candidates.get(node).unwrap()[candidate_index];
+        let other_candidates = &self.candidates.get(other).unwrap();
+        let other_has_label = !other_candidates.is_empty();
+        if !other_has_label {
+            return false;
+        }
+        for k in 0..other_candidates.len() {
+            let other_candidate = &other_candidates[k];
+            if !other_candidate.bbox.overlap(&this_candidate.bbox) {
+                return false;
+            }
+        }
+        true
+    }
+
+    pub fn candidate_blocks_any(&self, node: &Node, candidate_index: usize) -> bool {
+        let mut nodes: Vec<_> = self.map.keys().collect();
+        for other in nodes {
+            if other == node {
+                continue;
+            }
+            if self.candidate_blocks_other(node, candidate_index, other) {
+                return true;
+            }
+        }
+        false
+    }
+
+    pub fn debug(&self) -> Vec<(Node, Edges)> {
         let mut nodes: Vec<_> = self.map.keys().collect();
         nodes.sort(); // Sort the keys in ascending order
         let mut sorted: Vec<_> = nodes
@@ -118,10 +154,29 @@ impl Graph {
         sorted
     }
 
-    pub fn best(&self, k: &Node) -> Option<usize> {
-        match self.candidates.get(k) {
+    pub fn solve(&mut self) -> HashMap<Node, Candidate> {
+        let mut ret = HashMap::new();
+        while !self.map.is_empty() {
+            let m = self.max_node();
+            match self.best_candidate_for_node(&m) {
+                Some(best_index) => {
+                    let best_candidate = self.candidates.get(&m).unwrap()[best_index].clone();
+                    ret.insert(m, best_candidate.clone());
+                    self.select(&m, &best_candidate);
+                }
+                None => {
+                    self.remove_node(&m);
+                }
+            }
+        }
+        ret
+    }
+
+    pub fn best_candidate_for_node(&self, node: &Node) -> Option<usize> {
+        match self.candidates.get(node) {
             Some(candidates) => {
                 if candidates.is_empty() {
+                    println!("{node} has no candidate.");
                     return None;
                 }
                 let mut sorted: Vec<_> = (0..candidates.len()).collect();
@@ -130,9 +185,19 @@ impl Graph {
                     let cj = &candidates[*j];
                     ci.partial_cmp(cj).unwrap_or(Ordering::Equal)
                 });
-                Some(*sorted.first().unwrap())
+                for index in 0..sorted.len() {
+                    if self.candidate_blocks_any(node, index) {
+                        continue;
+                    }
+                    return Some(index);
+                }
+                println!("all candidates of {node} block some other.");
+                None
             }
-            _ => None,
+            _ => {
+                println!("{node} has no candidate.");
+                None
+            }
         }
     }
 }
