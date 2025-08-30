@@ -391,9 +391,10 @@ fn candidates_for_point(
         return Candidates::new();
     }
     let target = &points[k];
+    let width = target.label.bbox.width();
     let dtarget_max = match parameters.dtarget_max {
         Some(d) => d,
-        _ => 100.0,
+        _ => 100f64,
     };
     let all = generate_bboxes(target, dtarget_max);
     let mut ret = Candidates::new();
@@ -420,12 +421,22 @@ fn build_graph(
 ) -> Graph {
     let mut ret = Graph::new();
     for k in 0..points.len() {
+        if points[k].label.text.is_empty() {
+            continue;
+        }
         let candidates = candidates_for_point(&backend.get_eparameters(), points, polyline, k);
         let selected_indices = label_candidates::select_candidates(&candidates);
         let selected_candidates: Vec<_> = selected_indices
             .into_iter()
             .map(|i| candidates[i].clone())
             .collect();
+        println!("## candidates of {}", points[k].label.text);
+        for c in &selected_candidates {
+            println!(
+                "[dtarget={:.1}] [dothers={:.1}] bbox={}",
+                c.dtarget, c.dothers, c.bbox
+            );
+        }
         assert!(!ret.candidates.contains_key(&k));
         ret.add_node(k, selected_candidates);
     }
@@ -466,6 +477,9 @@ pub fn place_labels(
     for k in 0..points.len() {
         let target = k;
         let target_text = &points[k].label.text;
+        if target_text.is_empty() {
+            continue;
+        }
         let candidates = G.candidates.get(&target).unwrap();
         for c in candidates {
             debug.append(candidate_debug_rectangle(&c));
@@ -475,6 +489,9 @@ pub fn place_labels(
     for k in 0..points.len() {
         let target = k;
         let target_text = &points[k].label.text;
+        if target_text.is_empty() {
+            continue;
+        }
         let best_candidate = best_candidates.get(&k);
         match best_candidate {
             Some(candidate) => {

@@ -74,6 +74,11 @@ impl Graph {
             // remove candidates of b that overlap with the
             // selected a candidate
             let Cb = self.candidates.get_mut(&b).unwrap();
+            for cb in Cb.clone() {
+                if selected.bbox.overlap(&cb.bbox) {
+                    println!("remove candidate of {b} because of overlap: {}", cb.bbox);
+                }
+            }
             Cb.retain(|cb| !selected.bbox.overlap(&cb.bbox));
         }
         // remove a
@@ -160,7 +165,13 @@ impl Graph {
             let m = self.max_node();
             match self.best_candidate_for_node(&m) {
                 Some(best_index) => {
-                    let best_candidate = self.candidates.get(&m).unwrap()[best_index].clone();
+                    let candidates = self.candidates.get(&m).unwrap();
+                    let best_candidate = candidates[best_index].clone();
+                    println!(
+                        "[node:{m:2}] => candidate:{best_index} from {:2} [{}]",
+                        candidates.len(),
+                        best_candidate.bbox
+                    );
                     ret.insert(m, best_candidate.clone());
                     self.select(&m, &best_candidate);
                 }
@@ -176,7 +187,7 @@ impl Graph {
         match self.candidates.get(node) {
             Some(candidates) => {
                 if candidates.is_empty() {
-                    println!("{node} has no candidate.");
+                    // println!("{node} has no candidate.");
                     return None;
                 }
                 let mut sorted: Vec<_> = (0..candidates.len()).collect();
