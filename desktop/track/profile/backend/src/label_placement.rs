@@ -422,12 +422,12 @@ pub fn place_labels(
         let mut candidates = generate_all_candidates(points, k);
         filter_candidates(&mut candidates, polyline);
         let selected_indices = label_candidates::select_candidates(&candidates);
-        let candidatesd: Vec<_> = selected_indices
+        let candidates: Vec<_> = selected_indices
             .into_iter()
             .map(|i| candidates[i].clone())
             .collect();
         for c in candidates {
-            if target_text.contains("Albris") {
+            if target_text.contains("Ehr") {
                 debug.append(candidate_debug_rectangle(&c));
             }
         }
