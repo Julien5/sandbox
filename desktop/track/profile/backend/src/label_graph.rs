@@ -135,17 +135,17 @@ impl Graph {
         true
     }
 
-    pub fn candidate_blocks_any(&self, node: &Node, candidate_index: usize) -> bool {
+    pub fn candidate_blocks_any(&self, node: &Node, candidate_index: usize) -> Option<Node> {
         let mut nodes: Vec<_> = self.map.keys().collect();
         for other in nodes {
             if other == node {
                 continue;
             }
             if self.candidate_blocks_other(node, candidate_index, other) {
-                return true;
+                return Some(*other);
             }
         }
-        false
+        None
     }
 
     pub fn debug(&self) -> Vec<(Node, Edges)> {
@@ -197,8 +197,14 @@ impl Graph {
                     ci.partial_cmp(cj).unwrap_or(Ordering::Equal)
                 });
                 for index in 0..sorted.len() {
-                    if self.candidate_blocks_any(node, index) {
-                        continue;
+                    match self.candidate_blocks_any(node, index) {
+                        Some(other_node) => {
+                            println!(
+                                "[node:{node:2}] [candidate:{index:2}] blocks [{other_node:2}]"
+                            );
+                            continue;
+                        }
+                        None => {}
                     }
                     return Some(index);
                 }

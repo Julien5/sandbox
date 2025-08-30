@@ -369,7 +369,11 @@ fn build_graph(
             .into_iter()
             .map(|i| candidates[i].clone())
             .collect();
-        println!("## candidates of {}", points[k].label.text);
+        println!(
+            "## {} candidates of {}",
+            selected_candidates.len(),
+            points[k].label.text
+        );
         for c in &selected_candidates {
             println!(
                 "[dtarget={:.1}] [dothers={:.1}] bbox={}",
