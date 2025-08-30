@@ -333,30 +333,30 @@ fn bbox_at(distance: f64, angle_index: i32, point: &PointFeature) -> Vec<LabelBo
 
 fn generate_bboxes(point: &PointFeature, dtarget_max: f64) -> Vec<LabelBoundingBox> {
     let mut ret = Vec::new();
-    let dtarget_start = 2i32;
-    let mut dtarget_min = f64::MAX;
-    let angle_indices = [0, 12, 25, 38, 50, 62, 75, 90];
-    for n in (5..100).step_by(10) {
-        for a in angle_indices {
-            let dtarget = (n as f64 / 100f64) * dtarget_max;
-            if dtarget < dtarget_start as f64 {
+    let width = point.label.bbox.width();
+    let height = point.label.bbox.height();
+    let mut dtarget_min = 2f64;
+    let N = 10;
+    let d0 = dtarget_max.sqrt();
+    let cx = point.circle.cx;
+    let cy = point.circle.cy;
+    let xmin = cx - d0 - width;
+    let ymin = cy - d0 - height;
+    let xmax = cx + d0;
+    let ymax = cy + d0;
+    let dx = (xmax - xmin) / (N as f64);
+    let dy = (ymax - ymin) / (N as f64);
+    for nx in 0..N {
+        for ny in 0..N {
+            let tl = (xmin + nx as f64 * dx, ymin + ny as f64 * dy);
+            let bb = LabelBoundingBox::new_tlwh(tl, width, height);
+            if bb.contains((cx, cy)) {
                 continue;
             }
-            if dtarget_min > dtarget {
-                dtarget_min = dtarget;
+            if bb.distance((cx, cy)) < dtarget_min {
+                continue;
             }
-            for c in bbox_at(dtarget, a, point) {
-                ret.push(c);
-            }
-        }
-    }
-    let dtarget_min = dtarget_min.ceil() as i32;
-    for dtarget in dtarget_start..dtarget_min {
-        for a in angle_indices {
-            for c in bbox_at(dtarget as f64, a, point) {
-                // println!("{dtarget} {a} {})", point.id);
-                ret.push(c);
-            }
+            ret.push(bb);
         }
     }
     ret
@@ -480,9 +480,16 @@ pub fn place_labels(
         if target_text.is_empty() {
             continue;
         }
-        let candidates = G.candidates.get(&target).unwrap();
+        let candidates = candidates_for_point(&backend.get_eparameters(), points, polyline, k);
+        let selected_indices = label_candidates::select_candidates(&candidates);
+        let candidatesd: Vec<_> = selected_indices
+            .into_iter()
+            .map(|i| candidates[i].clone())
+            .collect();
         for c in candidates {
-            debug.append(candidate_debug_rectangle(&c));
+            if target_text == "Bad Waldsee" {
+                debug.append(candidate_debug_rectangle(&c));
+            }
         }
     }
     let best_candidates = G.solve();

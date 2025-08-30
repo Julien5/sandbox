@@ -25,6 +25,14 @@ impl LabelBoundingBox {
         }
     }
 
+    pub fn new_tlwh(top_left: (f64, f64), width: f64, height: f64) -> Self {
+        let bottom_right = (top_left.0 + width, top_left.1 + height);
+        LabelBoundingBox {
+            top_left,
+            bottom_right,
+        }
+    }
+
     pub fn new_blwh(bottom_left: (f64, f64), width: f64, height: f64) -> Self {
         let top_left = (bottom_left.0, bottom_left.1 - height);
         let bottom_right = (bottom_left.0 + width, bottom_left.1);
@@ -36,14 +44,6 @@ impl LabelBoundingBox {
 
     pub fn new_brwh(bottom_right: (f64, f64), width: f64, height: f64) -> Self {
         let top_left = (bottom_right.0 - width, bottom_right.1 - height);
-        LabelBoundingBox {
-            top_left,
-            bottom_right,
-        }
-    }
-
-    pub fn new_tlwh(top_left: (f64, f64), width: f64, height: f64) -> Self {
-        let bottom_right = (top_left.0 + width, top_left.1 + height);
         LabelBoundingBox {
             top_left,
             bottom_right,
@@ -268,11 +268,11 @@ pub fn select_candidates(candidates: &Candidates) -> Vec<usize> {
     let mut ret = vec![0];
     let mut previous = &candidates[0];
     for k in sorted {
-        if candidates[k].bbox.overlap_ratio(&previous.bbox) < 0.5f64 {
+        if candidates[k].bbox.overlap_ratio(&previous.bbox) < 1.75f64 {
             ret.push(k);
             previous = &candidates[k];
         }
-        if ret.len() >= 4 {
+        if ret.len() >= 400 {
             break;
         }
     }
