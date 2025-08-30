@@ -271,12 +271,13 @@ fn cartesian(r: f64, angle: f64) -> (f64, f64) {
     (x, y)
 }
 
-fn generate_bboxes(point: &PointFeature, dtarget_max: f64) -> Vec<LabelBoundingBox> {
+fn generate_bboxes(point: &PointFeature) -> Vec<LabelBoundingBox> {
     let mut ret = Vec::new();
     let width = point.label.bbox.width();
     let height = point.label.bbox.height();
     let dtarget_min = 2f64;
     let N = 20;
+    let dtarget_max = 500f64;
     let d0 = dtarget_max.sqrt();
     let cx = point.circle.cx;
     let cy = point.circle.cy;
@@ -327,8 +328,7 @@ fn generate_all_candidates(points: &Vec<PointFeature>, k: usize) -> Candidates {
     }
     let target = &points[k];
     let width = target.label.bbox.width();
-    let dtarget_max = 300f64;
-    let all = generate_bboxes(target, dtarget_max);
+    let all = generate_bboxes(target);
     let mut ret = Candidates::new();
     let mut targetpoint = (target.circle.cx, target.circle.cy);
     for index in 0..all.len() {
@@ -426,14 +426,15 @@ pub fn place_labels(
             continue;
         }
         let mut candidates = generate_all_candidates(points, k);
-        filter_candidates(&mut candidates, polyline);
+        /*filter_candidates(&mut candidates, polyline);
         let selected_indices = label_candidates::select_candidates(&candidates);
-        let candidates: Vec<_> = selected_indices
+        let candidatesd: Vec<_> = selected_indices
             .into_iter()
             .map(|i| candidates[i].clone())
-            .collect();
+        .collect();
+        */
         for c in candidates {
-            if false && target_text.contains("Ehr") {
+            if target_text.contains("Hai") {
                 debug.append(candidate_debug_rectangle(&c));
             }
         }
