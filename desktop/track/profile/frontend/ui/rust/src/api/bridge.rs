@@ -1,6 +1,7 @@
 #![allow(non_snake_case)]
 
 use flutter_rust_bridge::frb;
+use tracks::backend;
 
 // must be exported for mirroring Segment.
 pub use std::ops::Range;
@@ -44,7 +45,8 @@ pub struct EventHandler {
 
 #[frb(opaque)]
 pub struct Bridge {
-    backend: tracks::backend::Backend,
+    backend_instance: Option<tracks::backend::Backend>,
+    cb: Option<backend::Callback>,
 }
 use tracks::backend::Event;
 impl tracks::backend::Event for EventHandler {
@@ -141,54 +143,83 @@ pub enum _Error {
 }
 
 impl Bridge {
-    pub async fn create(filename: &str) -> Result<Bridge, Error> {
+    pub async fn init() -> Bridge {
+        Bridge {
+            backend_instance: None,
+            cb: None,
+        }
+    }
+
+    pub async fn loadFilename(&mut self, filename: &str) -> Result<(), Error> {
         match tracks::backend::Backend::from_filename(filename).await {
-            Ok(b) => Ok(Bridge { backend: b }),
+            Ok(b) => {
+                self.backend_instance = Some(b);
+                Ok(())
+            }
             Err(e) => Err(e),
         }
     }
-    pub async fn fromContent(content: &Vec<u8>) -> Result<Bridge, Error> {
-        match tracks::backend::Backend::from_content(content).await {
-            Ok(b) => Ok(Bridge { backend: b }),
+    pub async fn loadContent(&mut self, content: &Vec<u8>) -> Result<(), Error> {
+        let mut backend = tracks::backend::Backend::from_content(content,self.cb.take()).await;
+        match backend {
+            Ok(mut b) => {
+                b.cb = ;
+                self.backend_instance = Some(b);
+                Ok(())
+            }
             Err(e) => Err(e),
         }
     }
-    pub async fn initDemo() -> Result<Bridge, Error> {
-        match tracks::backend::Backend::demo().await {
-            Ok(b) => Ok(Bridge { backend: b }),
+    pub async fn loadDemo(&mut self) -> Result<(), Error> {
+        let mut backend = tracks::backend::Backend::demo().await;
+        match backend {
+            Ok(mut b) => {
+                b.cb = self.cb.take();
+                self.backend_instance = Some(b);
+                Ok(())
+            }
             Err(e) => Err(e),
         }
     }
     #[frb(sync)]
     pub fn setSink(&mut self, sink: StreamSink<String>) -> Result<()> {
-        self.backend.cb = Some(std::sync::Arc::new(EventHandler { sink }));
+        self.cb = Some(std::sync::Arc::new(EventHandler { sink }));
         Ok(())
     }
     pub async fn generatePdf(&mut self) -> Vec<u8> {
-        self.backend.generatePdf()
+        self.backend_instance.as_mut().unwrap().generatePdf()
     }
     pub async fn generateGpx(&mut self) -> Vec<u8> {
-        self.backend.generateGpx()
+        self.backend_instance.as_mut().unwrap().generateGpx()
     }
     #[frb(sync)] //TODO: add segment parameter
     pub fn getWaypoints(&mut self) -> Vec<Waypoint> {
-        self.backend.waypoints.clone()
+        self.backend_instance.as_mut().unwrap().waypoints.clone()
     }
     #[frb(sync)]
     pub fn elevation_gain(&mut self, from: usize, to: usize) -> f64 {
-        self.backend.elevation_gain(from, to)
+        self.backend_instance
+            .as_mut()
+            .unwrap()
+            .elevation_gain(from, to)
     }
     #[frb(sync)]
     pub fn get_parameters(&mut self) -> Parameters {
-        self.backend.get_parameters()
+        self.backend_instance.as_mut().unwrap().get_parameters()
     }
     #[frb(sync)]
     pub fn set_parameters(&mut self, parameters: &Parameters) {
-        self.backend.set_parameters(parameters);
+        self.backend_instance
+            .as_mut()
+            .unwrap()
+            .set_parameters(parameters);
     }
     #[frb(sync)]
     pub fn waypoints_table(&self, segment: &Segment) -> Vec<Waypoint> {
-        self.backend.get_waypoint_table(&segment._impl)
+        self.backend_instance
+            .as_ref()
+            .unwrap()
+            .get_waypoint_table(&segment._impl)
     }
     pub async fn renderSegmentWhat(
         &mut self,
@@ -200,8 +231,12 @@ impl Bridge {
         //let delay = std::time::Duration::from_millis(50);
         //std::thread::sleep(delay);
         println!("{}x{}", W, H);
-        self.backend
-            .render_segment_what(&segment._impl, what, (W, H), RenderDevice::Native)
+        self.backend_instance.as_mut().unwrap().render_segment_what(
+            &segment._impl,
+            what,
+            (W, H),
+            RenderDevice::Native,
+        )
     }
     #[frb(sync)]
     pub fn renderSegmentWhatSync(
@@ -214,17 +249,21 @@ impl Bridge {
         //let delay = std::time::Duration::from_millis(50);
         //std::thread::sleep(delay);
         println!("{}x{}", W, H);
-        self.backend
-            .render_segment_what(&segment._impl, what, (W, H), RenderDevice::Native)
+        self.backend_instance.as_mut().unwrap().render_segment_what(
+            &segment._impl,
+            what,
+            (W, H),
+            RenderDevice::Native,
+        )
     }
     #[frb(sync)]
     pub fn statistics(&self) -> SegmentStatistics {
-        self.backend.statistics()
+        self.backend_instance.as_ref().unwrap().statistics()
     }
 
     #[frb(sync)]
     pub fn segments(&self) -> Vec<Segment> {
-        let S = self.backend.segments();
+        let S = self.backend_instance.as_ref().unwrap().segments();
         let mut ret = Vec::new();
         for s in S {
             ret.push(Segment::create(s));

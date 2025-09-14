@@ -25,7 +25,7 @@ use crate::waypoints_table;
 type DateTime = crate::utm::DateTime;
 pub type Segment = crate::segment::Segment;
 pub type SegmentStatistics = crate::segment::SegmentStatistics;
-pub type Callback = fn(String) -> String;
+pub type Callback = std::sync::Arc<dyn Event + Send + Sync>;
 
 pub trait Event {
     fn send(&mut self, data: &String);
@@ -37,7 +37,7 @@ pub struct Backend {
     pub waypoints: Waypoints,
     pub osmwaypoints: OSMWaypoints,
     track_smooth_elevation: Vec<f64>,
-    pub cb: Option<std::sync::Arc<dyn Event + Send + Sync>>,
+    pub cb: Option<Callback>,
 }
 
 fn waypoint_time(start_time: DateTime, distance: f64, speed: f64) -> DateTime {
@@ -49,6 +49,9 @@ fn waypoint_time(start_time: DateTime, distance: f64, speed: f64) -> DateTime {
 impl Backend {
     pub fn get_parameters(self: &Backend) -> Parameters {
         self.parameters.clone()
+    }
+    pub fn set_sink(&mut self, cb: Callback) {
+        self.cb = Some(cb);
     }
     fn update_waypoints(&mut self) {
         self.waypoints = automatic::generate(&self.track, &self.waypoints, &self.parameters);
@@ -182,7 +185,10 @@ impl Backend {
         ret
     }
 
-    pub async fn from_content(content: &Vec<u8>) -> Result<Backend, Error> {
+    pub async fn from_content(
+        content: &Vec<u8>,
+        mut client: Option<Callback>,
+    ) -> Result<Backend, Error> {
         let mut gpx = gpsdata::read_gpx_content(content)?;
         let segment = match gpsdata::read_segment(&mut gpx) {
             Ok(s) => s,
@@ -210,24 +216,24 @@ impl Backend {
             waypoints: gpxwaypoints,
             osmwaypoints,
             parameters,
-            cb: None,
+            cb: client.take(),
         };
         ret.update_waypoints();
         Ok(ret)
     }
 
-    pub async fn from_filename(filename: &str) -> Result<Backend, Error> {
+    pub async fn from_filename(filename: &str, client: Option<Callback>) -> Result<Backend, Error> {
         let mut f = std::fs::File::open(filename).unwrap();
         let mut buffer = Vec::new();
         // read the whole file
         use std::io::prelude::*;
         f.read_to_end(&mut buffer).unwrap();
-        Self::from_content(&buffer).await
+        Self::from_content(&buffer, client).await
     }
 
-    pub async fn demo() -> Result<Backend, Error> {
+    pub async fn demo(client: Option<Callback>) -> Result<Backend, Error> {
         let content = include_bytes!("../data/ref/roland.gpx");
-        Self::from_content(&content.to_vec()).await
+        Self::from_content(&content.to_vec(), client).await
     }
 
     pub fn epsilon(&self) -> f64 {

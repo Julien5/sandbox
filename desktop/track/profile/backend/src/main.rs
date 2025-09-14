@@ -43,7 +43,7 @@ async fn main() -> Result<(), error::Error> {
 
     log::info!("read gpx {}", gpxinput);
     log::info!("outdir   {}", outdir);
-    let mut backend = Backend::from_filename(gpxinput).await?;
+    let mut backend = Backend::from_filename(gpxinput, None).await?;
 
     let mut parameters = backend.get_parameters();
     match args.interval_length {
