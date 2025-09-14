@@ -25,6 +25,11 @@ use crate::waypoints_table;
 type DateTime = crate::utm::DateTime;
 pub type Segment = crate::segment::Segment;
 pub type SegmentStatistics = crate::segment::SegmentStatistics;
+pub type Callback = fn(String) -> String;
+
+pub trait Event {
+    fn send(&mut self, data: &String);
+}
 
 pub struct Backend {
     parameters: Parameters,
@@ -32,6 +37,7 @@ pub struct Backend {
     pub waypoints: Waypoints,
     pub osmwaypoints: OSMWaypoints,
     track_smooth_elevation: Vec<f64>,
+    pub cb: Option<std::sync::Arc<dyn Event + Send + Sync>>,
 }
 
 fn waypoint_time(start_time: DateTime, distance: f64, speed: f64) -> DateTime {
@@ -204,6 +210,7 @@ impl Backend {
             waypoints: gpxwaypoints,
             osmwaypoints,
             parameters,
+            cb: None,
         };
         ret.update_waypoints();
         Ok(ret)

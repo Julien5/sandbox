@@ -40,6 +40,13 @@ pub fn tick(sink: StreamSink<String>) -> Result<()> {
 #[frb(opaque)]
 pub struct Bridge {
     backend: tracks::backend::Backend,
+    sink: Option<StreamSink<String>>,
+}
+
+impl tracks::backend::Event for Bridge {
+    fn send(&mut self, data: &String) {
+        self.sink.as_mut().unwrap().add(data.clone());
+    }
 }
 
 #[frb(opaque)]
@@ -132,23 +139,44 @@ pub enum _Error {
 impl Bridge {
     pub async fn create(filename: &str) -> Result<Bridge, Error> {
         match tracks::backend::Backend::from_filename(filename).await {
-            Ok(b) => Ok(Bridge { backend: b }),
+            Ok(b) => Ok(Bridge {
+                backend: b,
+                sink: None,
+            }),
             Err(e) => Err(e),
         }
     }
     pub async fn fromContent(content: &Vec<u8>) -> Result<Bridge, Error> {
         match tracks::backend::Backend::from_content(content).await {
-            Ok(b) => Ok(Bridge { backend: b }),
+            Ok(b) => Ok(Bridge {
+                backend: b,
+                sink: None,
+            }),
             Err(e) => Err(e),
         }
     }
     pub async fn initDemo() -> Result<Bridge, Error> {
         match tracks::backend::Backend::demo().await {
-            Ok(b) => Ok(Bridge { backend: b }),
+            Ok(b) => Ok(Bridge {
+                backend: b,
+                sink: None,
+            }),
             Err(e) => Err(e),
         }
     }
-
+    fn eventCallback(&mut self, data: &String) {
+        match &self.sink {
+            Some(s) => {
+                s.add(data.clone());
+            }
+            None => {}
+        }
+    }
+    pub fn setSink(&mut self, sink: StreamSink<String>) -> Result<()> {
+        self.sink = Some(sink);
+        //self.backend.cb = Some;
+        Ok(())
+    }
     pub async fn generatePdf(&mut self) -> Vec<u8> {
         self.backend.generatePdf()
     }
