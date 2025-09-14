@@ -1,6 +1,7 @@
 mod cache;
 mod download;
 mod filesystem;
+#[cfg(target_arch = "wasm32")]
 mod indexdb;
 pub mod osmpoint;
 
