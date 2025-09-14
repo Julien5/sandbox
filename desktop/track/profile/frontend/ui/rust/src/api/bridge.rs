@@ -37,7 +37,7 @@ pub fn tick(sink: StreamSink<String>) -> Result<()> {
     Ok(())
 }
 
-#[frb(opaque)]
+#[frb(ignore)]
 pub struct EventHandler {
     pub sink: StreamSink<String>,
 }
@@ -45,7 +45,6 @@ pub struct EventHandler {
 #[frb(opaque)]
 pub struct Bridge {
     backend: tracks::backend::Backend,
-    event_handler: Option<EventHandler>,
 }
 use tracks::backend::Event;
 impl tracks::backend::Event for EventHandler {
@@ -144,42 +143,25 @@ pub enum _Error {
 impl Bridge {
     pub async fn create(filename: &str) -> Result<Bridge, Error> {
         match tracks::backend::Backend::from_filename(filename).await {
-            Ok(b) => Ok(Bridge {
-                backend: b,
-                event_handler: None,
-            }),
+            Ok(b) => Ok(Bridge { backend: b }),
             Err(e) => Err(e),
         }
     }
     pub async fn fromContent(content: &Vec<u8>) -> Result<Bridge, Error> {
         match tracks::backend::Backend::from_content(content).await {
-            Ok(b) => Ok(Bridge {
-                backend: b,
-                event_handler: None,
-            }),
+            Ok(b) => Ok(Bridge { backend: b }),
             Err(e) => Err(e),
         }
     }
     pub async fn initDemo() -> Result<Bridge, Error> {
         match tracks::backend::Backend::demo().await {
-            Ok(b) => Ok(Bridge {
-                backend: b,
-                event_handler: None,
-            }),
+            Ok(b) => Ok(Bridge { backend: b }),
             Err(e) => Err(e),
         }
     }
-    fn eventCallback(&mut self, data: &String) {
-        match &mut self.event_handler {
-            Some(handler) => {
-                handler.send(data);
-            }
-            None => {}
-        }
-    }
+    #[frb(sync)]
     pub fn setSink(&mut self, sink: StreamSink<String>) -> Result<()> {
-        self.event_handler = Some(EventHandler { sink });
-        //self.backend.cb = Some();
+        self.backend.cb = Some(std::sync::Arc::new(EventHandler { sink }));
         Ok(())
     }
     pub async fn generatePdf(&mut self) -> Vec<u8> {
