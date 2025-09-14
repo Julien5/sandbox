@@ -151,11 +151,60 @@ class _ChooseDataState extends State<ChooseData> {
   }
 }
 
+
+
+class TickWidget extends StatefulWidget {
+  const TickWidget({super.key});
+
+  @override
+  State<TickWidget> createState() => _TickWidgetState();
+}
+
+class _TickWidgetState extends State<TickWidget> {
+  late Stream<int> ticks;
+
+  @override
+  void initState() {
+    super.initState();
+    ticks = bridge.tick();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            const Text("Time since starting Rust stream"),
+            StreamBuilder<int>(
+              stream: ticks,
+              builder: (context, snap) {
+                final style = Theme.of(context).textTheme.headlineMedium;
+                final error = snap.error;
+                if (error != null) {
+                  return Tooltip(
+                      message: error.toString(),
+                      child: Text('Error', style: style));
+                }
+
+                final data = snap.data;
+                if (data != null) return Text('$data second(s)', style: style);
+
+                return const CircularProgressIndicator();
+              },
+            )
+          ],
+        ),
+    );
+  }
+}
+
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext ctx) {
-    return ChooseData();
+    return TickWidget();
+    //return ChooseData();
   }
 }

@@ -130,7 +130,6 @@ class SegmentsProvider extends ChangeNotifier {
     ret._filename = filename;
     developer.log("[filename] $filename");
     ret._bridge = await bridge.Bridge.create(filename: filename);
-    bridge.processStuff(event: rustEvent);
     ret._updateSegments();
     return ret;
   }

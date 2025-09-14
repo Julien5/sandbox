@@ -1,7 +1,6 @@
 #![allow(non_snake_case)]
 
 use flutter_rust_bridge::frb;
-use flutter_rust_bridge::DartFnFuture;
 
 // must be exported for mirroring Segment.
 pub use std::ops::Range;
@@ -16,28 +15,26 @@ pub use tracks::waypoint::WaypointOrigin;
 
 pub use tracks::backend::Segment as SegmentImplementation;
 
-//pub type DartCallback = fn(String, String) -> DartFnFuture<()>;
-/*#[frb]
-pub type DartCallback = Box<dyn Fn(String, String) -> ()>;
+use std::{thread::sleep, time::Duration};
 
-#[frb]
-pub struct Event {
-    cb: DartCallback,
-}
+use crate::frb_generated::StreamSink;
 
-impl Event {
-    pub fn send(&self, addr: String, content: String) {
-        (self.cb)(addr, content);
+const ONE_SECOND: Duration = Duration::from_millis(25);
+use anyhow::Result;
+
+// can't omit the return type yet, this is a bug
+pub fn tick(sink: StreamSink<i32>) -> Result<()> {
+    let mut ticks = 0;
+    loop {
+        sink.add(ticks);
+        sleep(ONE_SECOND);
+        if ticks == i32::MAX {
+            break;
+        }
+        ticks += 1;
+        println!("rust {:2}", ticks);
     }
-    #[frb(sync)]
-    pub fn create(cb: DartCallback) -> Event {
-        Event { cb }
-    }
-}
- */
-
-pub async fn processStuff(event: impl Fn(String) -> DartFnFuture<()>) {
-    event("Tom".to_owned()).await; // Will get `Hello, Tom!`
+    Ok(())
 }
 
 #[frb(opaque)]
