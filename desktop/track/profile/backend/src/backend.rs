@@ -60,7 +60,7 @@ impl Backend {
             debug_assert!(w.get_track_index() < self.track.len());
         }
         waypoint_values::compute_values(&mut self.waypoints, &self.track);
-        log::info!("generated {} waypoints", self.waypoints.len());
+        println!("generated {} waypoints", self.waypoints.len());
     }
     pub fn get_waypoints(&self) -> Vec<Waypoint> {
         return self.waypoints.clone();
@@ -207,6 +207,7 @@ impl Backend {
         project::project_on_track(&track, &mut gpxwaypoints);
         let osmwaypoints = osm::download_for_track(&track, 1000f64).await;
         let parameters = Parameters::default();
+        assert!(client.is_some());
         let mut ret = Backend {
             track_smooth_elevation: elevation::smooth_elevation(
                 &track,
@@ -218,11 +219,14 @@ impl Backend {
             parameters,
             cb: client.take(),
         };
+        assert!(!client.is_some());
+        assert!(ret.cb.is_some());
         ret.update_waypoints();
         Ok(ret)
     }
 
     pub async fn from_filename(filename: &str, client: Option<Callback>) -> Result<Backend, Error> {
+        assert!(client.is_some());
         let mut f = std::fs::File::open(filename).unwrap();
         let mut buffer = Vec::new();
         // read the whole file
@@ -232,8 +236,11 @@ impl Backend {
     }
 
     pub async fn demo(client: Option<Callback>) -> Result<Backend, Error> {
+        assert!(client.is_some());
         let content = include_bytes!("../data/ref/roland.gpx");
-        Self::from_content(&content.to_vec(), client).await
+        let ret = Self::from_content(&content.to_vec(), client).await;
+        assert!(ret.as_ref().unwrap().cb.is_some());
+        ret
     }
 
     pub fn epsilon(&self) -> f64 {
@@ -241,6 +248,7 @@ impl Backend {
     }
 
     pub fn segments(&self) -> Vec<Segment> {
+        assert!(self.cb.is_some());
         let mut ret = Vec::new();
 
         let mut start = 0f64;
@@ -258,6 +266,22 @@ impl Backend {
         }
         ret
     }
+    fn sendEvent(&mut self, event: &String) {
+        assert!(self.cb.is_some());
+        match self.cb.as_mut() {
+            Some(a) => match std::sync::Arc::get_mut(a) {
+                Some(cb) => {
+                    cb.send(&format!("send event ({})", event));
+                }
+                None => {
+                    println!("could not get callback [2]");
+                }
+            },
+            None => {
+                println!("could not get callback [1]");
+            }
+        }
+    }
     pub fn render_segment_what(
         &mut self,
         segment: &Segment,
@@ -265,10 +289,9 @@ impl Backend {
         (W, H): (i32, i32),
         render_device: RenderDevice,
     ) -> String {
-        std::sync::Arc::get_mut(self.cb.as_mut().unwrap())
-            .expect("REASON")
-            .send(&format!("render event ({})", what));
-        log::info!("render_segment_what:{} {}", segment.id, what);
+        assert!(self.cb.is_some());
+        self.sendEvent(&format!("render event ({})", what));
+        println!("render_segment_what:{} {}", segment.id, what);
         match what.as_str() {
             "profile" => self.render_segment(segment, (W, H), render_device),
             "ylabels" => self.render_yaxis_labels_overlay(segment, (W, H), render_device),
@@ -285,7 +308,7 @@ impl Backend {
         (W, H): (i32, i32),
         render_device: RenderDevice,
     ) -> String {
-        log::info!("render_segment:{}", segment.id);
+        println!("render_segment:{}", segment.id);
         let debug = self.get_parameters().debug;
         let ret = svgprofile::profile(&self, &segment, W, H, render_device, debug);
         if self.get_parameters().debug {
@@ -300,7 +323,7 @@ impl Backend {
         (W, H): (i32, i32),
         render_device: RenderDevice,
     ) -> String {
-        log::info!("render_segment_track:{}", segment.id);
+        println!("render_segment_track:{}", segment.id);
         let mut profile = svgprofile::ProfileView::init(&segment.bbox);
         profile.set_render_device(render_device);
         profile.reset_size(W as f64, H as f64);
@@ -322,6 +345,7 @@ impl Backend {
         ret
     }
     pub fn segment_statistics(&self, segment: &Segment) -> SegmentStatistics {
+        assert!(self.cb.is_some());
         let range = &segment.range;
         assert!(range.end > 0);
         SegmentStatistics {
@@ -345,11 +369,11 @@ impl Backend {
         let typbytes = render::make_typst_document(self, (1000, 285));
         //let typbytes = render::compile_pdf(self, debug, (1400, 400));
         let ret = pdf::compile(&typbytes, self.get_parameters().debug);
-        log::info!("generated {} bytes", ret.len());
+        println!("generated {} bytes", ret.len());
         ret
     }
     pub fn generateGpx(&mut self) -> Vec<u8> {
-        log::info!("export {} waypoints", self.waypoints.len());
+        println!("export {} waypoints", self.waypoints.len());
         gpxexport::generate(&self.track, &self.waypoints)
     }
 }
@@ -368,7 +392,7 @@ mod tests {
         for segment in &segments {
             let svg = backend.render_segment(&segment, (1420, 400), RenderDevice::Native);
             let reffilename = std::format!("data/ref/profile-{}.svg", segment.id);
-            log::info!("test {}", reffilename);
+            println!("test {}", reffilename);
             let data = if std::fs::exists(&reffilename).unwrap() {
                 std::fs::read_to_string(&reffilename).unwrap()
             } else {
@@ -379,7 +403,7 @@ mod tests {
             } else {
                 let tmpfilename = std::format!("/tmp/profile-{}.svg", segment.id);
                 std::fs::write(&tmpfilename, svg).unwrap();
-                log::info!("test failed: {} {}", tmpfilename, reffilename);
+                println!("test failed: {} {}", tmpfilename, reffilename);
             }
         }
         assert!(ok_count == segments.len());
@@ -395,7 +419,7 @@ mod tests {
         for segment in &segments {
             let svg = backend.render_segment_map(&segment, (400, 400));
             let reffilename = std::format!("data/ref/map-{}.svg", segment.id);
-            log::info!("test {}", reffilename);
+            println!("test {}", reffilename);
             let data = if std::fs::exists(&reffilename).unwrap() {
                 std::fs::read_to_string(&reffilename).unwrap()
             } else {
@@ -406,7 +430,7 @@ mod tests {
             } else {
                 let tmpfilename = std::format!("/tmp/map-{}.svg", segment.id);
                 std::fs::write(&tmpfilename, svg).unwrap();
-                log::info!("test failed: {} {}", tmpfilename, reffilename);
+                println!("test failed: {} {}", tmpfilename, reffilename);
             }
         }
         assert!(ok_count == segments.len());
@@ -428,7 +452,7 @@ mod tests {
             .await
             .expect("fail");
         let bbox = backend.track.wgs84_bounding_box();
-        log::info!("bbox={:?}", bbox);
+        println!("bbox={:?}", bbox);
         for x in [bbox.min.0, bbox.min.1, bbox.max.0, bbox.max.1] {
             assert!(x > 0f64);
         }

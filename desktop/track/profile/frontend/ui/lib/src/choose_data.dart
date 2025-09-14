@@ -145,6 +145,7 @@ class _ChooseDataState extends State<ChooseData> {
   Widget build(BuildContext ctx) {
     return Consumer<RootModel>(
       builder: (context, rootModel, child) {
+        assert(rootModel.segmentsProvider!=null);
         return buildFromModel(context, rootModel, child);
       },
     );

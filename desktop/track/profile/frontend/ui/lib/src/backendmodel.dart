@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui/src/rust/api/bridge.dart' as bridge;
 
-enum TrackData { profile,  map }
+enum TrackData { profile, map }
 
 class FutureRenderer with ChangeNotifier {
   final bridge.Segment segment;
@@ -115,44 +115,33 @@ class Renderers {
 }
 
 class SegmentsProvider extends ChangeNotifier {
-  late bridge.Bridge _bridge;
+  final bridge.Bridge instance;
   late String _filename;
   final List<Renderers> _segments = [];
   final List<bridge.Waypoint> _waypoints = [];
-  static Stream<String>? _stream;
-  static StreamSubscription<String>? _streamSubscription;
 
-  SegmentsProvider() : _filename = "";
+  SegmentsProvider({required this.instance}) : _filename = "";
 
   static void rustEvent(String content) {
     developer.log("from rust: $content");
   }
 
-  static Future<SegmentsProvider> fromFilename(String filename) async {
-    SegmentsProvider ret = SegmentsProvider();
-    ret._filename = filename;
-    developer.log("[filename] $filename");
-    ret._bridge = await bridge.Bridge.create(filename: filename);
-    ret._updateSegments();
-    return ret;
+  void loadFilename(String filename) async {
+    await instance.loadFilename(filename: filename);
+    _filename = filename;
+    _updateSegments();
   }
 
-  static Future<SegmentsProvider> fromBytes(List<int> bytes) async {
-    SegmentsProvider ret = SegmentsProvider();
-    ret._bridge = await bridge.Bridge.fromContent(content: bytes);
-    ret._updateSegments();
-    return ret;
+  void loadBytes(List<int> bytes) async {
+    await instance.loadContent(content: bytes);
+    _updateSegments();
   }
 
-  static Future<SegmentsProvider> demo() async {
-    SegmentsProvider ret = SegmentsProvider();
-    ret._bridge = await bridge.Bridge.initDemo();
-    _stream= ret._bridge.setSink();
-    _streamSubscription = _stream!.listen( (s) {
-      developer.log(s);
-    }); 
-    ret._updateSegments();
-    return ret;
+  void loadDemo() async {
+    developer.log("load demo");
+    await instance.loadDemo();
+    developer.log("load demo 2");
+    _updateSegments();
   }
 
   String filename() {
@@ -165,35 +154,30 @@ class SegmentsProvider extends ChangeNotifier {
     super.dispose();
   }
 
-  void setContent(List<int> content) async {
-    _bridge = await bridge.Bridge.fromContent(content: content);
-    _updateSegments();
-  }
-
   bridge.Parameters parameters() {
-    return _bridge.getParameters();
+    return instance.getParameters();
   }
 
   void setParameters(bridge.Parameters p) {
-    _bridge.setParameters(parameters: p);
+    instance.setParameters(parameters: p);
     _updateSegments();
   }
 
   Future<List<int>> generatePdf() {
-    return _bridge.generatePdf();
+    return instance.generatePdf();
   }
 
   Future<List<int>> generateGpx() {
-    return _bridge.generateGpx();
+    return instance.generateGpx();
   }
 
   void _updateSegments() {
-    var segments = _bridge.segments();
+    var segments = instance.segments();
     if (_segments.length != segments.length) {
       _segments.clear();
       for (var segment in segments) {
-        var t = ProfileRenderer(_bridge, segment);
-        var m = MapRenderer(_bridge, segment);
+        var t = ProfileRenderer(instance, segment);
+        var m = MapRenderer(instance, segment);
         _segments.add(Renderers(t, m));
       }
     }
@@ -203,7 +187,7 @@ class SegmentsProvider extends ChangeNotifier {
     }
 
     _waypoints.clear();
-    var wayPoints = _bridge.getWaypoints();
+    var wayPoints = instance.getWaypoints();
     for (var w in wayPoints) {
       _waypoints.add(w);
     }
@@ -222,11 +206,11 @@ class SegmentsProvider extends ChangeNotifier {
   }
 
   List<bridge.Waypoint> waypointTable(bridge.Segment segment) {
-    return _bridge.waypointsTable(segment: segment);
+    return instance.waypointsTable(segment: segment);
   }
 
   String renderSegmentYAxis(bridge.Segment segment, Size size) {
-    return _bridge.renderSegmentWhatSync(
+    return instance.renderSegmentWhatSync(
       segment: segment,
       what: "ylabels",
       w: size.width.floor(),
@@ -235,14 +219,38 @@ class SegmentsProvider extends ChangeNotifier {
   }
 
   bridge.SegmentStatistics statistics() {
-    return _bridge.statistics();
+    return instance.statistics();
   }
 }
 
 class RootModel extends ChangeNotifier {
-  List<SegmentsProvider> list = [];
+  SegmentsProvider? segmentsProvider;
+  Stream<String>? _stream;
+  String? _event;
+  RootModel() {
+    developer.log("root model created");
+  }
 
-  RootModel();
+  void onEvent(String event) {
+    developer.log("event received: $event");
+    _event = event;
+    //notifyListeners();
+  }
+
+  String? lastEvent() {
+    return _event;
+  }
+
+  Future<void> init() async {
+    var instance = await bridge.Bridge.init();
+    developer.log("set sink");
+    _stream = instance.setSink();
+    _stream!.listen((event) {
+      onEvent(event);
+    });
+    segmentsProvider = SegmentsProvider(instance: instance);
+    developer.log("root model init");
+  }
 
   @override
   void dispose() {
@@ -251,32 +259,32 @@ class RootModel extends ChangeNotifier {
   }
 
   Future<void> createSegmentsProvider(String filename) async {
-    var ret = await SegmentsProvider.fromFilename(filename);
-    list.add(ret);
+    assert(segmentsProvider != null);
+    segmentsProvider!.loadFilename(filename);
     notifyListeners();
   }
 
   Future<void> createSegmentsProviderFromBytes(List<int> bytes) async {
-    var ret = await SegmentsProvider.fromBytes(bytes);
-    list.add(ret);
+    assert(segmentsProvider != null);
+    segmentsProvider!.loadBytes(bytes);
     notifyListeners();
   }
 
   Future<void> createSegmentsProviderForDemo() async {
-    var ret = await SegmentsProvider.demo();
-    list.add(ret);
+    assert(segmentsProvider != null);
+    developer.log("root model load demo");
+    segmentsProvider!.loadDemo();
+    developer.log("root model load demo");
     notifyListeners();
   }
 
   void unload() {
-    list.clear();
+    developer.log("unload: FIXME");
+    //segmentsProvider = null;
     notifyListeners();
   }
 
   SegmentsProvider? provider() {
-    if (list.isEmpty) {
-      return null;
-    }
-    return list.first;
+    return segmentsProvider;
   }
 }

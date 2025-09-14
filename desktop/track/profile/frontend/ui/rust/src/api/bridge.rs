@@ -27,7 +27,7 @@ use anyhow::Result;
 pub fn tick(sink: StreamSink<String>) -> Result<()> {
     let mut ticks = 0;
     loop {
-        sink.add(format!("ticks={}", ticks));
+        let _ = sink.add(format!("ticks={}", ticks));
         sleep(ONE_SECOND);
         if ticks == i32::MAX {
             break;
@@ -51,7 +51,7 @@ pub struct Bridge {
 use tracks::backend::Event;
 impl tracks::backend::Event for EventHandler {
     fn send(&mut self, data: &String) {
-        self.sink.add(data.clone());
+        let _ = self.sink.add(data.clone());
     }
 }
 
@@ -151,7 +151,8 @@ impl Bridge {
     }
 
     pub async fn loadFilename(&mut self, filename: &str) -> Result<(), Error> {
-        match tracks::backend::Backend::from_filename(filename).await {
+        assert!(self.cb.is_some());
+        match tracks::backend::Backend::from_filename(filename, self.cb.take()).await {
             Ok(b) => {
                 self.backend_instance = Some(b);
                 Ok(())
@@ -160,10 +161,10 @@ impl Bridge {
         }
     }
     pub async fn loadContent(&mut self, content: &Vec<u8>) -> Result<(), Error> {
-        let mut backend = tracks::backend::Backend::from_content(content,self.cb.take()).await;
+        assert!(self.cb.is_some());
+        let backend = tracks::backend::Backend::from_content(content, self.cb.take()).await;
         match backend {
-            Ok(mut b) => {
-                b.cb = ;
+            Ok(b) => {
                 self.backend_instance = Some(b);
                 Ok(())
             }
@@ -171,10 +172,12 @@ impl Bridge {
         }
     }
     pub async fn loadDemo(&mut self) -> Result<(), Error> {
-        let mut backend = tracks::backend::Backend::demo().await;
+        assert!(self.cb.is_some());
+        let taken = self.cb.take();
+        assert!(!self.cb.is_some());
+        let backend = tracks::backend::Backend::demo(taken).await;
         match backend {
-            Ok(mut b) => {
-                b.cb = self.cb.take();
+            Ok(b) => {
                 self.backend_instance = Some(b);
                 Ok(())
             }
@@ -183,6 +186,7 @@ impl Bridge {
     }
     #[frb(sync)]
     pub fn setSink(&mut self, sink: StreamSink<String>) -> Result<()> {
+        println!("set sink bridge");
         self.cb = Some(std::sync::Arc::new(EventHandler { sink }));
         Ok(())
     }
