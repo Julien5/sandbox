@@ -38,14 +38,19 @@ pub fn tick(sink: StreamSink<String>) -> Result<()> {
 }
 
 #[frb(opaque)]
-pub struct Bridge {
-    backend: tracks::backend::Backend,
-    sink: Option<StreamSink<String>>,
+pub struct EventHandler {
+    pub sink: StreamSink<String>,
 }
 
-impl tracks::backend::Event for Bridge {
+#[frb(opaque)]
+pub struct Bridge {
+    backend: tracks::backend::Backend,
+    event_handler: Option<EventHandler>,
+}
+use tracks::backend::Event;
+impl tracks::backend::Event for EventHandler {
     fn send(&mut self, data: &String) {
-        self.sink.as_mut().unwrap().add(data.clone());
+        self.sink.add(data.clone());
     }
 }
 
@@ -141,7 +146,7 @@ impl Bridge {
         match tracks::backend::Backend::from_filename(filename).await {
             Ok(b) => Ok(Bridge {
                 backend: b,
-                sink: None,
+                event_handler: None,
             }),
             Err(e) => Err(e),
         }
@@ -150,7 +155,7 @@ impl Bridge {
         match tracks::backend::Backend::from_content(content).await {
             Ok(b) => Ok(Bridge {
                 backend: b,
-                sink: None,
+                event_handler: None,
             }),
             Err(e) => Err(e),
         }
@@ -159,22 +164,22 @@ impl Bridge {
         match tracks::backend::Backend::demo().await {
             Ok(b) => Ok(Bridge {
                 backend: b,
-                sink: None,
+                event_handler: None,
             }),
             Err(e) => Err(e),
         }
     }
     fn eventCallback(&mut self, data: &String) {
-        match &self.sink {
-            Some(s) => {
-                s.add(data.clone());
+        match &mut self.event_handler {
+            Some(handler) => {
+                handler.send(data);
             }
             None => {}
         }
     }
     pub fn setSink(&mut self, sink: StreamSink<String>) -> Result<()> {
-        self.sink = Some(sink);
-        //self.backend.cb = Some;
+        self.event_handler = Some(EventHandler { sink });
+        //self.backend.cb = Some();
         Ok(())
     }
     pub async fn generatePdf(&mut self) -> Vec<u8> {
