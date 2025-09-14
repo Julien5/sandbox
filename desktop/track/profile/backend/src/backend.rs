@@ -259,6 +259,9 @@ impl Backend {
         (W, H): (i32, i32),
         render_device: RenderDevice,
     ) -> String {
+        std::sync::Arc::get_mut(self.cb.as_mut().unwrap())
+            .expect("REASON")
+            .send(&format!("render event ({})", what));
         log::info!("render_segment_what:{} {}", segment.id, what);
         match what.as_str() {
             "profile" => self.render_segment(segment, (W, H), render_device),

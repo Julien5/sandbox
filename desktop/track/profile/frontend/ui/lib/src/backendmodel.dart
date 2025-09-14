@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer' as developer;
 
 import 'package:flutter/material.dart';
@@ -118,6 +119,8 @@ class SegmentsProvider extends ChangeNotifier {
   late String _filename;
   final List<Renderers> _segments = [];
   final List<bridge.Waypoint> _waypoints = [];
+  static Stream<String>? _stream;
+  static StreamSubscription<String>? _streamSubscription;
 
   SegmentsProvider() : _filename = "";
 
@@ -144,6 +147,10 @@ class SegmentsProvider extends ChangeNotifier {
   static Future<SegmentsProvider> demo() async {
     SegmentsProvider ret = SegmentsProvider();
     ret._bridge = await bridge.Bridge.initDemo();
+    _stream= ret._bridge.setSink();
+    _streamSubscription = _stream!.listen( (s) {
+      developer.log(s);
+    }); 
     ret._updateSegments();
     return ret;
   }

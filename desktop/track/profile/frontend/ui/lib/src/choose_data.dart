@@ -204,7 +204,7 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext ctx) {
-    return TickWidget();
-    //return ChooseData();
+    //return TickWidget();
+    return ChooseData();
   }
 }
