@@ -161,7 +161,7 @@ class TickWidget extends StatefulWidget {
 }
 
 class _TickWidgetState extends State<TickWidget> {
-  late Stream<int> ticks;
+  late Stream<String> ticks;
 
   @override
   void initState() {
@@ -176,7 +176,7 @@ class _TickWidgetState extends State<TickWidget> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             const Text("Time since starting Rust stream"),
-            StreamBuilder<int>(
+            StreamBuilder<String>(
               stream: ticks,
               builder: (context, snap) {
                 final style = Theme.of(context).textTheme.headlineMedium;
@@ -188,7 +188,7 @@ class _TickWidgetState extends State<TickWidget> {
                 }
 
                 final data = snap.data;
-                if (data != null) return Text('$data second(s)', style: style);
+                if (data != null) return Text('rust: $data', style: style);
 
                 return const CircularProgressIndicator();
               },

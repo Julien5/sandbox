@@ -23,10 +23,10 @@ const ONE_SECOND: Duration = Duration::from_millis(25);
 use anyhow::Result;
 
 // can't omit the return type yet, this is a bug
-pub fn tick(sink: StreamSink<i32>) -> Result<()> {
+pub fn tick(sink: StreamSink<String>) -> Result<()> {
     let mut ticks = 0;
     loop {
-        sink.add(ticks);
+        sink.add(format!("ticks={}", ticks));
         sleep(ONE_SECOND);
         if ticks == i32::MAX {
             break;
