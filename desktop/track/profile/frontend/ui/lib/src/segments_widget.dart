@@ -2,6 +2,7 @@ import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:ui/src/backendmodel.dart';
+import 'package:ui/src/eventwidget.dart';
 import 'package:ui/src/routes.dart';
 import 'package:ui/src/segment_stack.dart';
 
@@ -122,7 +123,7 @@ class SegmentsProviderWidget extends StatelessWidget {
           builder: (context, child) {
             return Scaffold(
               appBar: AppBar(
-                title: const Text('Preview'),
+                title: EventProvider(model:rootModel.eventModel),
                 actions: <Widget>[exportButton(context)],
               ),
               body: SegmentsConsumer(),

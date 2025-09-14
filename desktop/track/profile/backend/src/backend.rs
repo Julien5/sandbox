@@ -271,7 +271,7 @@ impl Backend {
         match self.cb.as_mut() {
             Some(a) => match std::sync::Arc::get_mut(a) {
                 Some(cb) => {
-                    cb.send(&format!("send event ({})", event));
+                    cb.send(&format!("{}", event));
                 }
                 None => {
                     println!("could not get callback [2]");
@@ -290,7 +290,7 @@ impl Backend {
         render_device: RenderDevice,
     ) -> String {
         assert!(self.cb.is_some());
-        self.sendEvent(&format!("render event ({})", what));
+        self.sendEvent(&format!("{}", what));
         println!("render_segment_what:{} {}", segment.id, what);
         match what.as_str() {
             "profile" => self.render_segment(segment, (W, H), render_device),

@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:ui/src/backendmodel.dart';
 
 class EventProvider extends StatelessWidget {
-  final RootModel? model;
+  final EventModel? model;
   const EventProvider({super.key, this.model});
 
   @override
@@ -34,7 +34,7 @@ class _EventConsumerState extends State<EventConsumer> {
 
   @override
   Widget build(BuildContext ctx) {
-    return Consumer<RootModel>(
+    return Consumer<EventModel>(
       builder: (context, model, child) {
         String? event = model.lastEvent();
         return Text("event:$event");

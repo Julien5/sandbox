@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:ui/src/backendmodel.dart';
+import 'package:ui/src/eventwidget.dart';
 import 'package:ui/src/routes.dart';
 import 'package:ui/src/rust/api/bridge.dart' as bridge;
 import 'package:ui/src/statistics_widget.dart';
@@ -334,9 +335,9 @@ class _SegmentsSettingsState extends State<SegmentsSettings> {
 class SettingsWidget extends StatelessWidget {
   const SettingsWidget({super.key});
 
-  Widget wait() {
+  Widget wait(RootModel rootModel) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Segments')),
+      appBar: AppBar(title: EventProvider(model:rootModel.eventModel)),
       body: Center(child: Column(children: [Text("loading...")])),
     );
   }
@@ -346,7 +347,7 @@ class SettingsWidget extends StatelessWidget {
     return Consumer<RootModel>(
       builder: (context, rootModel, child) {
         if (rootModel.provider() == null) {
-          return wait();
+          return wait(rootModel);
         }
         developer.log(
           "[SegmentsProviderWidget] ${rootModel.provider()?.filename()} length=${rootModel.provider()?.segments().length}",
@@ -368,7 +369,7 @@ class SettingsWidget extends StatelessWidget {
           value: rootModel.provider(),
           builder: (context, child) {
             return Scaffold(
-              appBar: AppBar(title: const Text('Settings')),
+              appBar: AppBar(title: EventProvider(model:rootModel.eventModel)),
               body: Center(
                 child: Container(
                   constraints: const BoxConstraints(maxWidth: 500),

@@ -223,31 +223,41 @@ class SegmentsProvider extends ChangeNotifier {
   }
 }
 
-class RootModel extends ChangeNotifier {
-  SegmentsProvider? segmentsProvider;
-  Stream<String>? _stream;
+class EventModel extends ChangeNotifier {
+Stream<String>? stream;
   String? _event;
-  RootModel() {
-    developer.log("root model created");
+  EventModel({required this.stream});
+
+  void start() {
+    stream!.listen((event) {
+      onEvent(event);
+      notifyListeners();
+    });
   }
 
   void onEvent(String event) {
     developer.log("event received: $event");
     _event = event;
-    //notifyListeners();
+    notifyListeners();
   }
 
   String? lastEvent() {
     return _event;
   }
+} 
+
+class RootModel extends ChangeNotifier {
+  SegmentsProvider? segmentsProvider;
+  EventModel? eventModel;
+  RootModel() {
+    developer.log("root model created");
+  }
 
   Future<void> init() async {
     var instance = await bridge.Bridge.init();
     developer.log("set sink");
-    _stream = instance.setSink();
-    _stream!.listen((event) {
-      onEvent(event);
-    });
+    eventModel = EventModel(stream: instance.setSink());
+    eventModel!.start();
     segmentsProvider = SegmentsProvider(instance: instance);
     developer.log("root model init");
   }

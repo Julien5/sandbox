@@ -47,7 +47,7 @@ class Application extends StatelessWidget {
           onGenerateRoute: RouteManager.generateRoute,
           initialRoute: RouteManager.home,
           home: Scaffold(
-            appBar: AppBar(title: EventProvider(model:rootModel)),
+            appBar: AppBar(title: EventProvider(model:rootModel!.eventModel)),
             body: HomePage(),
           ),
           theme: ThemeData(
