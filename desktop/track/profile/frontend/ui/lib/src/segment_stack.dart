@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:ui/src/backendmodel.dart';
 import 'package:ui/src/future_rendering_widget.dart';
-import 'package:ui/src/hardlegend.dart';
+// import 'package:ui/src/hardlegend.dart';
 import 'package:ui/src/minisvg.dart';
 import 'package:ui/src/waypoints_widget.dart';
 

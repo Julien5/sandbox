@@ -121,11 +121,16 @@ class SegmentsProvider extends ChangeNotifier {
 
   SegmentsProvider() : _filename = "";
 
+  static void rustEvent(String content) {
+    developer.log("from rust: $content");
+  }
+
   static Future<SegmentsProvider> fromFilename(String filename) async {
     SegmentsProvider ret = SegmentsProvider();
     ret._filename = filename;
     developer.log("[filename] $filename");
     ret._bridge = await bridge.Bridge.create(filename: filename);
+    bridge.processStuff(event: rustEvent);
     ret._updateSegments();
     return ret;
   }

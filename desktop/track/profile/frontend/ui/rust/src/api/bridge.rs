@@ -1,6 +1,7 @@
 #![allow(non_snake_case)]
 
 use flutter_rust_bridge::frb;
+use flutter_rust_bridge::DartFnFuture;
 
 // must be exported for mirroring Segment.
 pub use std::ops::Range;
@@ -14,6 +15,30 @@ pub use tracks::waypoint::WaypointInfo;
 pub use tracks::waypoint::WaypointOrigin;
 
 pub use tracks::backend::Segment as SegmentImplementation;
+
+//pub type DartCallback = fn(String, String) -> DartFnFuture<()>;
+/*#[frb]
+pub type DartCallback = Box<dyn Fn(String, String) -> ()>;
+
+#[frb]
+pub struct Event {
+    cb: DartCallback,
+}
+
+impl Event {
+    pub fn send(&self, addr: String, content: String) {
+        (self.cb)(addr, content);
+    }
+    #[frb(sync)]
+    pub fn create(cb: DartCallback) -> Event {
+        Event { cb }
+    }
+}
+ */
+
+pub async fn processStuff(event: impl Fn(String) -> DartFnFuture<()>) {
+    event("Tom".to_owned()).await; // Will get `Hello, Tom!`
+}
 
 #[frb(opaque)]
 pub struct Bridge {
@@ -126,6 +151,7 @@ impl Bridge {
             Err(e) => Err(e),
         }
     }
+
     pub async fn generatePdf(&mut self) -> Vec<u8> {
         self.backend.generatePdf()
     }
