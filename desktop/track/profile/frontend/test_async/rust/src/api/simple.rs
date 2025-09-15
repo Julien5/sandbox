@@ -27,7 +27,7 @@ pub async fn process(count: &i32) -> i32 {
 
 /* stream */
 
-const ONE_SECOND: std::time::Duration = std::time::Duration::from_millis(1000);
+const ONE_SECOND: std::time::Duration = std::time::Duration::from_millis(100);
 
 use crate::frb_generated::StreamSink;
 pub fn ticksink(sink: StreamSink<String>) -> anyhow::Result<()> {
@@ -76,9 +76,10 @@ impl Backend {
     }
 
     pub async fn long_process(&mut self) {
-        for step in 0..10 {
+        println!("long_process");
+        for step in 0..10000 {
             self.send(&format!("process: {}", step));
-            let _ = std::thread::sleep(ONE_SECOND);
+            //let _ = std::thread::sleep(ONE_SECOND);
             println!("rust:step: {}", step);
         }
     }
