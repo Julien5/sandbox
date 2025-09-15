@@ -54,6 +54,8 @@ pub trait Sender {
     fn send(&mut self, data: &String);
 }
 
+pub type SenderHandler = std::sync::Arc<dyn Sender + Send + Sync>;
+
 impl Sender for EventSender {
     fn send(&mut self, data: &String) {
         let _ = self.sink.add(data.clone());
@@ -62,7 +64,7 @@ impl Sender for EventSender {
 
 #[frb(opaque)]
 pub struct Backend {
-    pub sender: Option<EventSender>,
+    pub sender: Option<SenderHandler>,
 }
 
 impl Backend {
@@ -72,18 +74,22 @@ impl Backend {
     }
     #[frb(sync)]
     pub fn set_sink(&mut self, sink: StreamSink<String>) -> anyhow::Result<()> {
-        self.sender = Some(EventSender { sink });
+        self.sender = Some(std::sync::Arc::new(EventSender { sink }));
         Ok(())
     }
-    fn send(&mut self, data: &String) {
-        let _ = self.sender.as_mut().unwrap().send(&data);
+
+    async fn send(&mut self, data: &String) {
+        let _ = std::sync::Arc::get_mut(self.sender.as_mut().unwrap())
+            .unwrap()
+            .send(&data);
+        let tick = std::time::Duration::from_millis(0);
+        let _ = wasmtimer::tokio::sleep(tick).await;
     }
 
     pub async fn long_process(&mut self) {
         println!("long_process");
-        for step in 0..100 {
-            self.send(&format!("process: {}", step));
-            let _ = wasmtimer::tokio::sleep(SEC).await;
+        for step in 0..1000000 {
+            self.send(&format!("process: {}", step)).await;
             println!("rust:step: {}", step);
         }
     }
