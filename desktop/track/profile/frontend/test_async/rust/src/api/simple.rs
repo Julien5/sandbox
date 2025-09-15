@@ -50,8 +50,12 @@ pub struct Sender {
     sink: StreamSink<String>,
 }
 
-impl Sender {
-    pub fn send(&mut self, data: &String) {
+pub trait SenderTrait {
+    fn send(&mut self, data: &String);
+}
+
+impl SenderTrait for Sender {
+    fn send(&mut self, data: &String) {
         let _ = self.sink.add(data.clone());
     }
 }
