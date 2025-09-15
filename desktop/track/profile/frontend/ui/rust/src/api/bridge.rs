@@ -48,7 +48,6 @@ pub struct Bridge {
     backend_instance: Option<tracks::backend::Backend>,
     cb: Option<backend::Callback>,
 }
-use tracks::backend::Event;
 impl tracks::backend::Event for EventHandler {
     fn send(&mut self, data: &String) {
         let _ = self.sink.add(data.clone());

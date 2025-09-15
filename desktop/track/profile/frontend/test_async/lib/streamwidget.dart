@@ -67,8 +67,8 @@ class _BackendStreamWidgetState extends State<BackendStreamWidget> {
     ticks = backend.setSink();
   }
 
-  void onPressed() {
-    backend.longProcess();
+  void onPressed() async {
+    await backend.longProcess();
   }
 
   @override
