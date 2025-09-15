@@ -27,14 +27,14 @@ pub async fn process(count: &i32) -> i32 {
 
 /* stream */
 
-const ONE_SECOND: std::time::Duration = std::time::Duration::from_millis(100);
+const SEC: std::time::Duration = std::time::Duration::from_millis(100);
 
 use crate::frb_generated::StreamSink;
 pub fn ticksink(sink: StreamSink<String>) -> anyhow::Result<()> {
     let mut ticks = 0;
     loop {
         let _ = sink.add(format!("ticks={}", ticks));
-        let _ = std::thread::sleep(ONE_SECOND);
+        let _ = std::thread::sleep(SEC);
         if ticks == i32::MAX {
             break;
         }
@@ -46,19 +46,23 @@ pub fn ticksink(sink: StreamSink<String>) -> anyhow::Result<()> {
 
 #[frb(opaque)]
 #[derive(Clone)]
-pub struct Sender {
+pub struct EventSender {
     sink: StreamSink<String>,
 }
 
-impl Sender {
-    pub fn send(&mut self, data: &String) {
+pub trait Sender {
+    fn send(&mut self, data: &String);
+}
+
+impl Sender for EventSender {
+    fn send(&mut self, data: &String) {
         let _ = self.sink.add(data.clone());
     }
 }
 
 #[frb(opaque)]
 pub struct Backend {
-    pub sender: Option<Sender>,
+    pub sender: Option<EventSender>,
 }
 
 impl Backend {
@@ -68,7 +72,7 @@ impl Backend {
     }
     #[frb(sync)]
     pub fn set_sink(&mut self, sink: StreamSink<String>) -> anyhow::Result<()> {
-        self.sender = Some(Sender { sink });
+        self.sender = Some(EventSender { sink });
         Ok(())
     }
     fn send(&mut self, data: &String) {
@@ -77,9 +81,9 @@ impl Backend {
 
     pub async fn long_process(&mut self) {
         println!("long_process");
-        for step in 0..10000 {
+        for step in 0..100 {
             self.send(&format!("process: {}", step));
-            let _ = wasmtimer::tokio::sleep(ONE_SECOND).await;
+            let _ = wasmtimer::tokio::sleep(SEC).await;
             println!("rust:step: {}", step);
         }
     }
