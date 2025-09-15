@@ -21,6 +21,7 @@ use crate::waypoint::WaypointInfo;
 use crate::waypoint::Waypoints;
 use crate::waypoint_values;
 use crate::waypoints_table;
+use wasmtimer::tokio::*;
 
 type DateTime = crate::utm::DateTime;
 pub type Segment = crate::segment::Segment;
@@ -266,12 +267,14 @@ impl Backend {
         }
         ret
     }
-    fn sendEvent(&mut self, event: &String) {
+    async fn sendEvent(&mut self, data: &String) {
         assert!(self.cb.is_some());
         match self.cb.as_mut() {
             Some(a) => match std::sync::Arc::get_mut(a) {
                 Some(cb) => {
-                    cb.send(&format!("{}", event));
+                    cb.send(&format!("{}", data));
+                    let tick = std::time::Duration::from_millis(0);
+                    let _ = wasmtimer::tokio::sleep(tick).await;
                 }
                 None => {
                     println!("could not get callback [2]");
@@ -282,7 +285,7 @@ impl Backend {
             }
         }
     }
-    pub fn render_segment_what(
+    pub async fn render_segment_what(
         &mut self,
         segment: &Segment,
         what: String,
@@ -290,7 +293,7 @@ impl Backend {
         render_device: RenderDevice,
     ) -> String {
         assert!(self.cb.is_some());
-        self.sendEvent(&format!("{}", what));
+        self.sendEvent(&format!("{}", what)).await;
         println!("render_segment_what:{} {}", segment.id, what);
         match what.as_str() {
             "profile" => self.render_segment(segment, (W, H), render_device),

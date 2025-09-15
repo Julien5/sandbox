@@ -209,8 +209,8 @@ class SegmentsProvider extends ChangeNotifier {
     return instance.waypointsTable(segment: segment);
   }
 
-  String renderSegmentYAxis(bridge.Segment segment, Size size) {
-    return instance.renderSegmentWhatSync(
+  Future<String> renderSegmentYAxis(bridge.Segment segment, Size size) async {
+    return instance.renderSegmentWhat(
       segment: segment,
       what: "ylabels",
       w: size.width.floor(),

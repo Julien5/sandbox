@@ -234,30 +234,11 @@ impl Bridge {
         //let delay = std::time::Duration::from_millis(50);
         //std::thread::sleep(delay);
         println!("{}x{}", W, H);
-        self.backend_instance.as_mut().unwrap().render_segment_what(
-            &segment._impl,
-            what,
-            (W, H),
-            RenderDevice::Native,
-        )
-    }
-    #[frb(sync)]
-    pub fn renderSegmentWhatSync(
-        &mut self,
-        segment: &Segment,
-        what: String,
-        W: i32,
-        H: i32,
-    ) -> String {
-        //let delay = std::time::Duration::from_millis(50);
-        //std::thread::sleep(delay);
-        println!("{}x{}", W, H);
-        self.backend_instance.as_mut().unwrap().render_segment_what(
-            &segment._impl,
-            what,
-            (W, H),
-            RenderDevice::Native,
-        )
+        self.backend_instance
+            .as_mut()
+            .unwrap()
+            .render_segment_what(&segment._impl, what, (W, H), RenderDevice::Native)
+            .await
     }
     #[frb(sync)]
     pub fn statistics(&self) -> SegmentStatistics {
