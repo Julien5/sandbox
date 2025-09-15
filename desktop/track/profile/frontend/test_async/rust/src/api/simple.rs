@@ -79,7 +79,7 @@ impl Backend {
         println!("long_process");
         for step in 0..10000 {
             self.send(&format!("process: {}", step));
-            //let _ = std::thread::sleep(ONE_SECOND);
+            let _ = wasmtimer::tokio::sleep(ONE_SECOND).await;
             println!("rust:step: {}", step);
         }
     }
