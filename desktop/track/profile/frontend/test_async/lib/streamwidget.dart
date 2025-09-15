@@ -48,3 +48,55 @@ class _StreamWidgetState extends State<StreamWidget> {
     );
   }
 }
+
+class BackendStreamWidget extends StatefulWidget {
+  const BackendStreamWidget({super.key});
+
+  @override
+  State<BackendStreamWidget> createState() => _BackendStreamWidgetState();
+}
+
+class _BackendStreamWidgetState extends State<BackendStreamWidget> {
+  late Stream<String> ticks;
+  late Backend backend;
+
+  @override
+  void initState() {
+    backend = Backend.make();
+    super.initState();
+    ticks = backend.setSink();
+  }
+
+  void onPressed() {
+    backend.longProcess();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          ElevatedButton(onPressed: onPressed, child: const Text("start")),
+          const Text("Long Process"),
+          StreamBuilder<String>(
+            stream: ticks,
+            builder: (context, snap) {
+              final error = snap.error;
+              String text = "<null>";
+              if (error != null) {
+                text = error.toString();
+                developer.log("error: ${error.toString()}");
+              }
+              final data = snap.data;
+              if (data != null) {
+                text = data;
+              }
+              return Text('text=$text');
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}

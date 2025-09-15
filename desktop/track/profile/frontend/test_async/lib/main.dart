@@ -15,18 +15,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var text = greet(name: "Tom");
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(title: const Text('async')),
         body: Center(
           child: Column(
             children: [
-              Text(
-                'Action: Call Rust `greet("Tom")`\nResult: `${greet(name: "Tom")}`',
-              ),
+              Text('rust says: $text'),
               SizedBox(height: 100),
               // AsyncTestWidget(),
-              StreamWidget(),
+              // StreamWidget(),
+              BackendStreamWidget(),
             ],
           ),
         ),
