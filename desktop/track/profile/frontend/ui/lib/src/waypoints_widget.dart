@@ -23,9 +23,9 @@ class WayPointsTableState extends State<WayPointsTable> {
 
   @override
   Widget build(BuildContext context) {
-    RootModel rootModel=Provider.of<RootModel>(context);
+    RootModel rootModel = Provider.of<RootModel>(context);
     var segments = rootModel.segments();
-    var segment=segments[widget.segment];
+    var segment = segments[widget.segment];
     var local = segment!.tableWaypoints;
 
     developer.log("[WayPointsViewState] [build] #_waypoints=${local.length}");
@@ -48,7 +48,7 @@ class WayPointsTableState extends State<WayPointsTable> {
       ],
       rows:
           local.asMap().entries.map((entry) {
-            var index=entry.key;
+            var index = entry.key;
             var info = entry.value.info!;
             var dt = DateTime.parse(info.time);
             var km = info.distance / 1000;
@@ -87,11 +87,8 @@ class WayPointsConsumer extends StatelessWidget {
     return Consumer<ProfileRenderer>(
       builder: (context, wp, child) {
         var segment = wp.segment;
-        return Center(
-          child: WayPointsTable(
-            segment: segment,
-          ),
-        );
+        return Text("segment ${segment.id()}");
+        //return Center(child: WayPointsTable(segment: segment));
       },
     );
   }

@@ -45,17 +45,16 @@ class RootModel extends ChangeNotifier {
     return _segments;
   }
 
-  void updateSegments(bridge.Bridge bridge) {
+  void updateSegments() {
     assert(_segments.isEmpty);
-    var segments = bridge.segments();
+    var segments = _bridge.segments();
 
     for (var segment in segments) {
-      var t = ProfileRenderer(bridge, segment);
-      var m = MapRenderer(bridge, segment);
-      var y = YAxisRenderer(bridge, segment);
-      var W = bridge.waypointsTable(segment: segment);
+      var t = ProfileRenderer(_bridge, segment);
+      var m = MapRenderer(_bridge, segment);
+      var y = YAxisRenderer(_bridge, segment);
+      var W = _bridge.waypointsTable(segment: segment);
       _segments[segment]=SegmentData(renderers: Renderers(t, y, m), tableWaypoints: W);
     }
-    notifyListeners();
   }
 }

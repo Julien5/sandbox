@@ -188,8 +188,9 @@ class YAxisConsumer extends StatelessWidget {
     return Consumer<YAxisRenderer>(
       builder: (context, yRenderer, child) {
         var size = Size(1000, 285);
-        String svg = yRenderer.result();
-        return Stack(children: [MiniSvgWidget(svg: svg, size: size)]);
+        return Text("i am the yaxis");
+        //String svg = yRenderer.result();
+        //return Stack(children: [MiniSvgWidget(svg: svg, size: size)]);
       },
     );
   }

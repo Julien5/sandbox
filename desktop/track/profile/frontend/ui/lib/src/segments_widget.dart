@@ -15,6 +15,7 @@ class RenderingsProvider extends MultiProvider {
         providers: [
           ChangeNotifierProvider.value(value: r.profileRendering),
           ChangeNotifierProvider.value(value: r.mapRendering),
+          ChangeNotifierProvider.value(value: r.yaxisRendering),
         ],
         child: child,
       );
@@ -26,6 +27,7 @@ class SegmentsView extends StatelessWidget {
   List<RenderingsProvider> renderingProviders(RootModel rootModel) {
     List<RenderingsProvider> ret = [];
     developer.log("[_initRenderingProviders]");
+    rootModel.updateSegments();
     var S = rootModel.segments();
     developer.log("[S]=${S.length}");
     assert(ret.isEmpty);
