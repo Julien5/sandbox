@@ -65,13 +65,12 @@ class _ChooseDataState extends State<ChooseData> {
   }
 
   Future<void> create(RootModel model, FindResult findResult) async {
-    model.unload();
     if (findResult.demo) {
-      await model.createSegmentsProviderForDemo(); // Await the async call
+      await model.loadDemo(); // Await the async call
     } else if (findResult.bytes != null) {
-      await model.createSegmentsProviderFromBytes(findResult.bytes!);
+      //await model.createSegmentsProviderFromBytes(findResult.bytes!);
     } else if (findResult.filename != null) {
-      await model.createSegmentsProvider(findResult.filename!);
+      //await model.createSegmentsProvider(findResult.filename!);
     } else {
       assert(false);
     }

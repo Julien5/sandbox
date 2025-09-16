@@ -110,7 +110,7 @@ pub enum _Error {
 use tracks::backend;
 impl Bridge {
     #[frb(sync)]
-    pub fn make(filename: &str) -> Bridge {
+    pub fn make() -> Bridge {
         Bridge {
             backend: backend::Backend::make(),
         }
@@ -133,10 +133,6 @@ impl Bridge {
     #[frb(sync)] //TODO: add segment parameter
     pub fn get_waypoints(&mut self) -> Vec<Waypoint> {
         self.backend.get_waypoints()
-    }
-    #[frb(sync)]
-    pub fn elevation_gain(&mut self, from: usize, to: usize) -> f64 {
-        self.backend.elevation_gain(from, to)
     }
     #[frb(sync)]
     pub fn get_parameters(&mut self) -> Parameters {

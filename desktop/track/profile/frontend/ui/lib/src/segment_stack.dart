@@ -2,27 +2,11 @@ import 'dart:developer' as developer;
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:ui/src/backendmodel.dart';
 import 'package:ui/src/future_rendering_widget.dart';
-import 'package:ui/src/hardlegend.dart';
+import 'package:ui/src/futurerenderer.dart';
+//import 'package:ui/src/hardlegend.dart';
 import 'package:ui/src/minisvg.dart';
 import 'package:ui/src/waypoints_widget.dart';
-
-class Legend extends StatelessWidget {
-  const Legend({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Consumer<ProfileRenderer>(
-      builder: (context, trackRenderer, child) {
-        SegmentsProvider model = Provider.of<SegmentsProvider>(context);
-        var size = Size(1000, 285);
-        String svg = model.renderSegmentYAxis(trackRenderer.segment, size);
-        return Stack(children: [MiniSvgWidget(svg: svg, size: size)]);
-      },
-    );
-  }
-}
 
 class SegmentScrollView extends StatelessWidget {
   const SegmentScrollView({super.key});
@@ -54,7 +38,7 @@ class SegmentStack extends StatelessWidget {
                   left: 0,
                   top: 0,
                   bottom: 0,
-                  child: SizedBox(width: 50, child: Legend()),
+                  child: SizedBox(width: 50, child: YAxisConsumer()),
                 ),
             ],
           ),
@@ -75,7 +59,7 @@ class SegmentView extends StatelessWidget {
 
   Widget rowWithMap(Widget table) {
     var hspace = const Expanded(child: SizedBox(width: 10));
-    var _map = Container(
+    /*var _map = Container(
       // Another fixed-width child.
       color: const Color(0xfff01f01),
       width: 300, // Changed to width
@@ -83,6 +67,7 @@ class SegmentView extends StatelessWidget {
       alignment: Alignment.center,
       child: const Text('Fixed Width Content 3'),
     );
+    */
     var map = MapConsumer();
     var row = Expanded(
       child: Row(
@@ -190,6 +175,21 @@ class _ProfileConsumerState extends State<ProfileConsumer> {
         // at the list view level. Because "Callbacks are not fired immediately
         // on visibility changes."
         return FutureRenderingWidget(future: pRenderer);
+      },
+    );
+  }
+}
+
+class YAxisConsumer extends StatelessWidget {
+  const YAxisConsumer({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<YAxisRenderer>(
+      builder: (context, yRenderer, child) {
+        var size = Size(1000, 285);
+        String svg = yRenderer.result();
+        return Stack(children: [MiniSvgWidget(svg: svg, size: size)]);
       },
     );
   }
