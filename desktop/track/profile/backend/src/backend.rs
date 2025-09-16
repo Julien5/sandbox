@@ -75,20 +75,24 @@ impl Backend {
     pub fn setSegmentLength(&mut self, length: f64) {
         self.dmut().setSegmentLength(length)
     }
-
     pub fn elevation_gain(&self, from: usize, to: usize) -> f64 {
-        debug_assert!(from <= to);
-        let mut ret = 0f64;
-        for k in from..to {
-            if k == 0 {
-                continue;
-            }
-            let d = self.d().track_smooth_elevation[k] - self.d().track_smooth_elevation[k - 1];
-            if d > 0f64 {
-                ret += d;
-            }
-        }
-        ret
+        self.d().elevation_gain(from, to)
+    }
+    pub fn render_segment_what(
+        &mut self,
+        segment: &Segment,
+        what: String,
+        (W, H): (i32, i32),
+        render_device: RenderDevice,
+    ) -> String {
+        self.dmut()
+            .render_segment_what(segment, what, (W, H), render_device)
+    }
+    pub fn get_waypoints(&self) -> Vec<Waypoint> {
+        return self.d().get_waypoints();
+    }
+    pub fn get_waypoint_table(&self, segment: &Segment) -> Vec<Waypoint> {
+        return self.d().get_waypoint_table(segment);
     }
 
     pub async fn load_content(&mut self, content: &Vec<u8>) -> Result<(), Error> {
@@ -134,7 +138,7 @@ impl Backend {
         self.load_content(&buffer).await
     }
 
-    pub async fn self_demo(&mut self) -> Result<(), Error> {
+    pub async fn load_demo(&mut self) -> Result<(), Error> {
         let content = include_bytes!("../data/ref/roland.gpx");
         self.load_content(&content.to_vec()).await
     }
