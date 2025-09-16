@@ -66,18 +66,6 @@ impl Backend {
     pub fn segments(&self) -> Vec<Segment> {
         self.d().segments()
     }
-    pub fn setStartTime(&mut self, rfc3339: String) {
-        self.dmut().setStartTime(rfc3339)
-    }
-    pub fn setSpeed(&mut self, s: f64) {
-        self.dmut().setSpeed(s)
-    }
-    pub fn setSegmentLength(&mut self, length: f64) {
-        self.dmut().setSegmentLength(length)
-    }
-    pub fn elevation_gain(&self, from: usize, to: usize) -> f64 {
-        self.d().elevation_gain(from, to)
-    }
     pub fn render_segment_what(
         &mut self,
         segment: &Segment,
@@ -472,9 +460,15 @@ mod tests {
             .load_filename("data/blackforest.gpx")
             .await
             .expect("fail");
-        backend.setStartTime(String::from("2007-03-01T13:00:00Z"));
-        backend.setStartTime(String::from("2025-07-12T06:32:36Z"));
-        backend.setStartTime(String::from("2025-07-12T06:32:36.215033Z"));
+        backend
+            .dmut()
+            .setStartTime(String::from("2007-03-01T13:00:00Z"));
+        backend
+            .dmut()
+            .setStartTime(String::from("2025-07-12T06:32:36Z"));
+        backend
+            .dmut()
+            .setStartTime(String::from("2025-07-12T06:32:36.215033Z"));
     }
 
     #[tokio::test]
