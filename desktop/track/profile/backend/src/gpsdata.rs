@@ -19,6 +19,35 @@ pub fn read_gpx_content(bytes: &Vec<u8>) -> Result<gpx::Gpx, Error> {
     }
 }
 
+pub fn read_karl_segment(gpx: &mut gpx::Gpx) -> Result<gpx::TrackSegment, Error> {
+    let mut tracks = std::collections::BTreeMap::<usize, gpx::Track>::new();
+    for k in 0..gpx.tracks.len() {
+        match &gpx.tracks[k].name {
+            None => continue,
+            Some(text) => {
+                if text.to_lowercase().starts_with("start") {
+                    log::info!("insert {} at {}", text, 0);
+                    tracks.insert(0, gpx.tracks[k].clone());
+                    continue;
+                }
+                let n = text.to_lowercase().trim_ascii().chars().nth(1).unwrap();
+                let i = n.to_digit(10).unwrap() as usize;
+                log::info!("insert {} at {}", text, i);
+                tracks.insert(i, gpx.tracks[k].clone());
+            }
+        }
+    }
+    let mut ret = gpx::TrackSegment::new();
+    for (index, track) in &tracks {
+        let points = &track.segments.first().unwrap().points;
+        for k in 0..points.len() {
+            ret.points.push(points[k].clone());
+        }
+    }
+
+    Ok(ret)
+}
+
 pub fn read_segment(gpx: &mut gpx::Gpx) -> Result<gpx::TrackSegment, Error> {
     let mut t0 = gpx.tracks.swap_remove(0);
     if t0.segments.is_empty() {
