@@ -13,7 +13,7 @@ pub fn show_waypoints_in_table(
     bbox: &gpsdata::ProfileBoundingBox,
 ) -> Vec<usize> {
     // the waypoints indices visible in this profile..
-    let mut indices: Vec<usize> = (0..waypoints.len())
+    let indices: Vec<usize> = (0..waypoints.len())
         .collect::<Vec<usize>>()
         .into_iter()
         .filter(|k| {

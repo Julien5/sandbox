@@ -38,7 +38,7 @@ pub fn read_karl_segment(gpx: &mut gpx::Gpx) -> Result<gpx::TrackSegment, Error>
         }
     }
     let mut ret = gpx::TrackSegment::new();
-    for (index, track) in &tracks {
+    for (_index, track) in &tracks {
         let points = &track.segments.first().unwrap().points;
         for k in 0..points.len() {
             ret.points.push(points[k].clone());

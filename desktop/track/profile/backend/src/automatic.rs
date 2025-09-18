@@ -29,9 +29,9 @@ fn order(ret: &mut Waypoints, track: &track::Track) {
     }
 }
 
-fn douglas(track: &track::Track, params: &Parameters) -> Waypoints {
+fn douglas(track: &track::Track) -> Waypoints {
     let mut ret = Vec::new();
-    let indexes = track.interesting_indexes(params.epsilon);
+    let indexes = track.interesting_indexes(10f64);
     for idx in indexes {
         let wgs = track.wgs84[idx].clone();
         let utm = track.utm[idx].clone();
@@ -184,7 +184,7 @@ fn remove_near_waypoints(track: &track::Track, W: &mut Waypoints) -> Waypoints {
 pub fn generate(track: &track::Track, waypoints: &Waypoints, params: &Parameters) -> Vec<Waypoint> {
     let mut ret = Vec::new();
     ret.extend(gpxwaypoints(waypoints));
-    ret.extend(douglas(track, params));
+    ret.extend(douglas(track));
     order(&mut ret, &track);
     ret = remove_near_waypoints(&track, &mut ret);
     for w in &ret {

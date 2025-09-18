@@ -316,10 +316,6 @@ impl BackendData {
         ret
     }
 
-    pub fn epsilon(&self) -> f64 {
-        self.parameters.epsilon
-    }
-
     pub fn segments(&self) -> Vec<Segment> {
         let mut ret = Vec::new();
 
