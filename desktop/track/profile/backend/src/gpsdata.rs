@@ -19,55 +19,30 @@ pub fn read_gpx_content(bytes: &Vec<u8>) -> Result<gpx::Gpx, Error> {
     }
 }
 
-pub fn read_karl_segment(gpx: &gpx::Gpx) -> Result<gpx::TrackSegment, Error> {
-    let mut tracks = std::collections::BTreeMap::<usize, gpx::Track>::new();
-    for k in 0..gpx.tracks.len() {
-        match &gpx.tracks[k].name {
-            None => continue,
-            Some(data) => {
-                let text = data.to_lowercase();
-                if text.starts_with("start") {
-                    log::info!("insert {} at {}", text, 0);
-                    tracks.insert(0, gpx.tracks[k].clone());
-                    continue;
-                };
-                match text.chars().nth(1) {
-                    None => {
-                        return Err(Error::GPXInvalid);
-                    }
-                    Some(data) => {
-                        if data.to_digit(10).is_none() {
-                            return Err(Error::GPXInvalid);
-                        }
-                        let i = data.to_digit(10).unwrap() as usize;
-                        log::info!("insert {} at {}", text, i);
-                        tracks.insert(i, gpx.tracks[k].clone());
-                    }
-                }
-            }
+pub fn read_segment(gpx: &mut gpx::Gpx) -> Result<gpx::TrackSegment, Error> {
+    let tracks = &mut gpx.tracks;
+    tracks.sort_by_key(|track| {
+        let zero = "A".to_string();
+        if track.name.is_none() {
+            return zero;
         }
-    }
-    if tracks.is_empty() {
-        return Err(Error::GPXInvalid);
-    }
+        let name = track.name.as_ref().unwrap().to_lowercase();
+        if name.contains("start") {
+            return zero;
+        }
+        return name;
+    });
     let mut ret = gpx::TrackSegment::new();
-    for (_index, track) in &tracks {
+    for track in tracks {
         let points = &track.segments.first().unwrap().points;
         for k in 0..points.len() {
             ret.points.push(points[k].clone());
         }
     }
-
-    Ok(ret)
-}
-
-pub fn read_segment(gpx: &gpx::Gpx) -> Result<gpx::TrackSegment, Error> {
-    let mut t0 = &gpx.tracks[0];
-    if t0.segments.is_empty() {
+    if ret.points.is_empty() {
         return Err(Error::GPXHasNoSegment);
     }
-    let s0 = t0.segments[0].clone();
-    Ok(s0)
+    Ok(ret)
 }
 
 #[derive(Clone)]
