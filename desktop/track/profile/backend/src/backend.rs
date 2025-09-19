@@ -121,10 +121,15 @@ impl Backend {
         self.send(&"read gpx".to_string()).await;
         let mut gpx = gpsdata::read_gpx_content(content)?;
         self.send(&"read segment".to_string()).await;
-        let segment = match gpsdata::read_karl_segment(&mut gpx) {
-            Ok(s) => s,
-            Err(e) => {
-                return Err(e);
+        let as_karl = gpsdata::read_karl_segment(&gpx);
+        let segment = if as_karl.is_ok() {
+            as_karl.unwrap()
+        } else {
+            match gpsdata::read_segment(&gpx) {
+                Ok(s) => s,
+                Err(e) => {
+                    return Err(e);
+                }
             }
         };
         self.send(&"read track".to_string()).await;
