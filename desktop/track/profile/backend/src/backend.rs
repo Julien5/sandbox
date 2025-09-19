@@ -456,7 +456,7 @@ mod tests {
             } else {
                 let tmpfilename = std::format!("/tmp/profile-{}.svg", segment.id);
                 std::fs::write(&tmpfilename, svg).unwrap();
-                log::info!("test failed: {} {}", tmpfilename, reffilename);
+                println!("test failed: {} {}", tmpfilename, reffilename);
             }
         }
         assert!(ok_count == segments.len());
@@ -485,7 +485,7 @@ mod tests {
             } else {
                 let tmpfilename = std::format!("/tmp/map-{}.svg", segment.id);
                 std::fs::write(&tmpfilename, svg).unwrap();
-                log::info!("test failed: {} {}", tmpfilename, reffilename);
+                println!("test failed: {} {}", tmpfilename, reffilename);
             }
         }
         assert!(ok_count == segments.len());

@@ -23,10 +23,17 @@ pub fn read_segment(gpx: &mut gpx::Gpx) -> Result<gpx::TrackSegment, Error> {
     let tracks = &mut gpx.tracks;
     tracks.sort_by_key(|track| {
         let zero = "A".to_string();
+        let infinity = "ziel".to_string();
         if track.name.is_none() {
             return zero;
         }
         let name = track.name.as_ref().unwrap().to_lowercase();
+        if name.contains("end") {
+            return infinity;
+        }
+        if name.contains("ziel") {
+            return infinity;
+        }
         if name.contains("start") {
             return zero;
         }
