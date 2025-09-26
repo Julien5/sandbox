@@ -1,9 +1,9 @@
 #![allow(non_snake_case)]
 
+use crate::osm::osmpoint::OSMPoint;
 use crate::track::Track;
-use crate::waypoint;
 use crate::waypoint::WGS84Point;
-use crate::waypoint::Waypoints;
+use crate::waypoint::Waypoint;
 use sphere_knn::SphereKnnGetters;
 
 #[derive(Clone)]
@@ -42,9 +42,9 @@ fn convert(track: &Track) -> Vec<IndexedWGS84Point> {
     ret
 }
 
-pub fn nearest_neighboor(
+pub fn nearest_neighboor<T: Projectable>(
     track: &Track,
-    waypoints: &Vec<waypoint::Waypoint>,
+    waypoints: &Vec<T>,
 ) -> std::collections::BTreeMap<usize, usize> {
     log::trace!("build tree");
     let find_nearest = sphere_knn::run(convert(&track));
@@ -53,10 +53,10 @@ pub fn nearest_neighboor(
     for k in 0..waypoints.len() {
         let point = &waypoints[k];
         let result = find_nearest(
-            point.wgs84.latitude(),
-            point.wgs84.longitude(),
+            point.latitude(),
+            point.longitude(),
             sphere_knn::Opts {
-                max_distance_threshold_meters: Some(1000f64),
+                max_distance_threshold_meters: Some(20000f64),
                 number_results: Some(1 as usize),
             },
         );
@@ -71,11 +71,41 @@ pub fn nearest_neighboor(
     ret
 }
 
-pub fn project_on_track(track: &Track, waypoints: &mut Waypoints) {
+pub trait Projectable {
+    fn latitude(&self) -> f64;
+    fn longitude(&self) -> f64;
+    fn set_track_index(&mut self, index: usize);
+}
+
+impl Projectable for Waypoint {
+    fn latitude(&self) -> f64 {
+        self.wgs84.latitude()
+    }
+    fn longitude(&self) -> f64 {
+        self.wgs84.longitude()
+    }
+    fn set_track_index(&mut self, index: usize) {
+        self.track_index = Some(index);
+    }
+}
+
+impl Projectable for OSMPoint {
+    fn latitude(&self) -> f64 {
+        self.wgs84.latitude()
+    }
+    fn longitude(&self) -> f64 {
+        self.wgs84.longitude()
+    }
+    fn set_track_index(&mut self, index: usize) {
+        self.track_index = Some(index);
+    }
+}
+
+pub fn project_on_track<T: Projectable>(track: &Track, waypoints: &mut Vec<T>) {
     let indexmap = nearest_neighboor(&track, &waypoints);
     debug_assert!(waypoints.len() >= indexmap.len());
     for (src, dest) in indexmap {
-        waypoints[src].track_index = Some(dest);
+        waypoints[src].set_track_index(dest);
     }
 }
 

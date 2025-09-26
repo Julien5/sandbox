@@ -98,6 +98,7 @@ fn read_download_element(element: &serde_json::Value) -> Result<OSMPoint, String
     let city = OSMPoint {
         wgs84: WGS84Point::new_lonlat(&lon, &lat),
         tags,
+        track_index: None,
     };
     Ok(city)
 }

@@ -131,7 +131,7 @@ impl Backend {
         let default_params = Parameters::default();
         self.send(&"read waypoints".to_string()).await;
         let mut gpxwaypoints = gpsdata::read_waypoints(&gpx);
-        project::project_on_track(&track, &mut gpxwaypoints);
+        project::project_on_track::<Waypoint>(&track, &mut gpxwaypoints);
         self.send(&"download osm data".to_string()).await;
         let osmwaypoints = osm::download_for_track(&track).await;
         let parameters = Parameters::default();
@@ -199,29 +199,9 @@ impl BackendData {
         self.update_waypoints();
     }
 
-    pub fn osmwaypoints(&self) -> Waypoints {
-        let mut osmwaypoints = self
-            .osmwaypoints
-            .points
-            .iter()
-            .map(|o| o.waypoint())
-            .collect::<Vec<_>>();
-        project::project_on_track(&self.track, &mut osmwaypoints);
-        osmwaypoints.retain(|w| {
-            if w.track_index.is_none() {
-                return false;
-            }
-            let p = &self.track.wgs84[w.track_index.unwrap()];
-            let q = &w.wgs84;
-            distance_wgs84(p, q) < 250f64
-        });
-        osmwaypoints.retain(|w| w.track_index.is_some());
-        osmwaypoints
-    }
-
     pub fn get_waypoint_table(&self, segment: &Segment) -> Vec<Waypoint> {
         let mut waypoints = self.gpxwaypoints.clone();
-        waypoints.extend_from_slice(&self.osmwaypoints());
+        //waypoints.extend_from_slice(&self.osmwaypoints());
         waypoints.retain(|w| {
             let p = &self.track.wgs84[w.track_index.unwrap()];
             let q = &w.wgs84;

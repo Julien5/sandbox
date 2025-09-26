@@ -13,6 +13,7 @@ use crate::gpsdata::ProfileBoundingBox;
 use crate::label_placement;
 use crate::label_placement::bbox::LabelBoundingBox;
 use crate::label_placement::*;
+use crate::osm::osmpoint::OSMType;
 use crate::segment;
 use crate::waypoint::WaypointOrigin;
 use elements::*;
@@ -297,25 +298,28 @@ impl ProfileView {
             points.push(PointFeature::new(id, circle, label));
         }
 
-        let osmpoints = &backend.osmwaypoints();
+        let osmpoints = &backend.osmwaypoints.points;
+        log::info!("osmpoints={}", osmpoints.len());
         for k in 0..osmpoints.len() {
-            let w = &osmpoints[k];
-            let index = w.track_index.unwrap();
-            let trackpoint = &track.wgs84[index];
-            let x = track.distance(index);
-            let delta = distance_wgs84(&w.wgs84, &trackpoint);
-            let y = trackpoint.z();
-            let maxdelta = 500f64;
-            if delta > maxdelta {
+            let w = &osmpoints[k].waypoint();
+            if w.track_index.is_none() {
                 continue;
             }
+            let index = w.track_index.unwrap();
+            let trackpoint = &track.wgs84[index];
+            let delta = distance_wgs84(trackpoint, &w.wgs84);
+            if delta > 1000f64 {
+                continue;
+            }
+            let x = track.distance(index);
+            let y = trackpoint.z();
             if !bbox.contains(&(x, y)) {
                 continue;
             }
             if w.name.is_none() {
                 continue;
             }
-            /*if !range.contains(&w.track_index.unwrap()) {
+            /*if !range.contains(&index) {
                 continue;
             }*/
             let (xg, yg) = self.toSD(&(x, y));
@@ -326,8 +330,21 @@ impl ProfileView {
             circle.cx = xg;
             circle.cy = yg;
             let id = format!("wp-{}", n);
-            circle.r = 5f64;
-            circle.fill = Some("Gray".to_string());
+            match osmpoints[k].kind() {
+                OSMType::City => {
+                    circle.r = 5f64;
+                    circle.fill = Some("Gray".to_string());
+                }
+                OSMType::Village => {
+                    circle.r = 2f64;
+                    circle.fill = Some("Gray".to_string());
+                }
+                OSMType::MountainPass => {
+                    circle.r = 3f64;
+                    circle.fill = Some("Blue".to_string());
+                }
+            }
+
             label.set_text(w.name.clone().unwrap().trim());
             label.id = format!("wp-{}/text", k);
             points.push(PointFeature::new(id, circle, label));

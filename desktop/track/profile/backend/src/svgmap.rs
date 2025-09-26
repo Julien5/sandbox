@@ -160,14 +160,14 @@ impl MapData {
             points.push(PointFeature::new(id, circle, label));
         }
 
-        let osmpoints = &backend.osmwaypoints();
+        let osmpoints = &backend.osmwaypoints.points;
         for k in 0..osmpoints.len() {
             let w = &osmpoints[k];
             let utm = projection.project(&w.wgs84);
             if !bbox.contains(&utm.xy()) {
                 continue;
             }
-            if w.name.is_none() {
+            if w.name().is_none() {
                 continue;
             }
             if !range.contains(&w.track_index.unwrap()) {
@@ -183,7 +183,7 @@ impl MapData {
             circle.r = 5f64;
             circle.fill = Some("Gray".to_string());
             let mut label = Label::new();
-            label.set_text(w.name.clone().unwrap().trim());
+            label.set_text(w.name().clone().unwrap().trim());
             label.id = format!("wp-{}/text", k);
             points.push(PointFeature::new(id, circle, label));
         }

@@ -9,7 +9,6 @@ use crate::bboxes::*;
 use crate::gpsdata::distance_wgs84;
 use crate::project;
 use crate::track::*;
-use crate::waypoint::*;
 use osmpoint::*;
 
 pub fn osm3(bbox: &WGS84BoundingBox) -> String {
@@ -17,19 +16,6 @@ pub fn osm3(bbox: &WGS84BoundingBox) -> String {
         "({:0.3},{:0.3},{:0.3},{:0.3})",
         bbox.min.1, bbox.min.0, bbox.max.1, bbox.max.0
     )
-}
-
-fn retain(waypoints: &mut Waypoints, track: &Track, delta: f64) {
-    // TODO: make that faster, by holding the tree (?)
-    project::project_on_track(track, waypoints);
-    waypoints.retain(|w| {
-        if w.track_index.is_none() {
-            return false;
-        }
-        let index = w.track_index.unwrap();
-        let d = distance_wgs84(&track.wgs84[index], &w.wgs84);
-        d < delta
-    })
 }
 
 async fn download_chunk_real(
@@ -112,5 +98,21 @@ async fn process(bbox: &WGS84BoundingBox) -> OSMPoints {
 pub async fn download_for_track(track: &Track) -> OSMPoints {
     let bbox = track.wgs84_bounding_box();
     assert!(!bbox.empty());
-    process(&bbox).await
+    let mut ret = process(&bbox).await;
+    // TODO: make that faster, by holding the tree (?)
+    project::project_on_track::<OSMPoint>(track, &mut ret.points);
+    ret.points.retain(|w| {
+        if w.track_index.is_none() {
+            return false;
+        }
+        let index = w.track_index.unwrap();
+        let d = distance_wgs84(&track.wgs84[index], &w.wgs84);
+        let delta = match w.kind() {
+            OSMType::City => 100000f64,
+            OSMType::Village => 500f64,
+            OSMType::MountainPass => 500f64,
+        };
+        d < delta
+    });
+    ret
 }

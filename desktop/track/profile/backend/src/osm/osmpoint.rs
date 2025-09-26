@@ -19,6 +19,7 @@ pub enum OSMType {
 pub struct OSMPoint {
     pub wgs84: WGS84Point,
     pub tags: Tags,
+    pub track_index: Option<usize>,
 }
 
 fn read<T>(data: Option<&String>) -> Option<T>
@@ -72,7 +73,7 @@ impl OSMPoint {
             }
             _ => {}
         }
-        match self.tags.get("moutain_pass") {
+        match self.tags.get("mountain_pass") {
             Some(pass) => {
                 if pass == "yes" {
                     return OSMType::MountainPass;
@@ -83,13 +84,9 @@ impl OSMPoint {
         OSMType::Village
     }
     pub fn waypoint(&self) -> Waypoint {
-        let ele = match self.ele() {
-            Some(m) => m,
-            None => 0f64,
-        };
         Waypoint {
             wgs84: self.wgs84.clone(),
-            track_index: None,
+            track_index: self.track_index,
             name: self.name().clone(),
             description: None,
             info: None,
