@@ -107,7 +107,7 @@ fn read_downloaded_elements(elements: &serde_json::Value) -> OSMPoints {
     let mut ret = Vec::new();
     for e in elements.as_array().unwrap() {
         match read_download_element(e) {
-            Ok(city) => ret.push(city),
+            Ok(point) => ret.push(point),
             Err(_msg) => {
                 //log::info!("{} with {}", msg, e);
             }

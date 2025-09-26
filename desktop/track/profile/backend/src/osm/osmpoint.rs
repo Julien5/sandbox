@@ -6,6 +6,13 @@ use serde_json::json;
 
 pub type Tags = std::collections::BTreeMap<String, String>;
 
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+pub enum OSMType {
+    City,
+    MountainPass,
+    Village,
+}
+
 #[derive(Clone, Serialize, Deserialize)]
 pub struct OSMPoint {
     pub lat: f64,
@@ -52,6 +59,28 @@ impl OSMPoint {
     pub fn population(&self) -> Option<i32> {
         read::<i32>(self.tags.get("population"))
     }
+    pub fn kind(&self) -> OSMType {
+        match self.tags.get("place") {
+            Some(place) => {
+                if place == "town" {
+                    return OSMType::City;
+                }
+                if place == "village" {
+                    return OSMType::Village;
+                }
+            }
+            _ => {}
+        }
+        match self.tags.get("moutain_pass") {
+            Some(pass) => {
+                if pass == "yes" {
+                    return OSMType::MountainPass;
+                }
+            }
+            _ => {}
+        }
+        OSMType::Village
+    }
 }
 
 impl fmt::Display for OSMPoint {
@@ -73,13 +102,6 @@ impl fmt::Display for OSMPoint {
             },
         )
     }
-}
-
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
-pub enum OSMType {
-    City,
-    MountainPass,
-    Village,
 }
 
 #[derive(Clone, Serialize, Deserialize)]

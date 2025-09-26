@@ -29,16 +29,6 @@ fn retain(waypoints: &mut Waypoints, track: &Track, delta: f64) {
         }
         let index = w.track_index.unwrap();
         let d = distance_wgs84(&track.wgs84[index], &w.wgs84);
-        match w.name.as_ref() {
-            Some(name) => {
-                if name.contains("Brest") || name.contains("Carhaix") {
-                    log::info!("name={name} => d={} delta={}", d, delta);
-                    log::info!("p1={:?}", &w.wgs84);
-                    log::info!("p2={:?}", &track.wgs84[index]);
-                }
-            }
-            _ => {}
-        }
         d < delta
     })
 }
@@ -154,26 +144,19 @@ async fn process(bbox: &WGS84BoundingBox, kind: &str) -> OSMPoints {
 
 pub type OSMWaypoints = BTreeMap<OSMType, Waypoints>;
 
-pub async fn download_for_track(track: &Track, distance: f64) -> OSMWaypoints {
+pub async fn download_for_track(track: &Track) -> OSMWaypoints {
     let mut ret = OSMWaypoints::new();
     let bbox = track.wgs84_bounding_box();
     assert!(!bbox.empty());
 
-    let mut cities = convert_osmpoints(&process(&bbox, "town").await);
-    retain(&mut cities, track, 10f64 * distance);
+    let cities = convert_osmpoints(&process(&bbox, "town").await);
     ret.insert(OSMType::City, cities);
 
-    let mut passes = convert_osmpoints(&process(&bbox, "passes").await);
-    retain(&mut passes, track, 2f64 * distance);
+    let passes = convert_osmpoints(&process(&bbox, "passes").await);
     ret.insert(OSMType::MountainPass, passes);
 
-    let mut villages = process(&bbox, "village").await;
-    villages.points.retain(|p| match p.population() {
-        Some(number) => number >= 1000,
-        None => false,
-    });
-    let mut v = convert_osmpoints(&villages);
-    retain(&mut v, track, distance * 0.5f64);
+    let villages = process(&bbox, "village").await;
+    let v = convert_osmpoints(&villages);
     ret.insert(OSMType::Village, v);
 
     ret

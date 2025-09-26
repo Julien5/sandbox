@@ -133,7 +133,7 @@ impl Backend {
         let mut gpxwaypoints = gpsdata::read_waypoints(&gpx);
         project::project_on_track(&track, &mut gpxwaypoints);
         self.send(&"download osm data".to_string()).await;
-        let osmwaypoints = osm::download_for_track(&track, 1000f64).await;
+        let osmwaypoints = osm::download_for_track(&track).await;
         let parameters = Parameters::default();
         self.send(&"compute elevation".to_string()).await;
         let mut data = BackendData {
