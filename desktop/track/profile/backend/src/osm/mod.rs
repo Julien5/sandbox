@@ -101,6 +101,7 @@ pub async fn download_for_track(track: &Track) -> OSMPoints {
     let mut ret = process(&bbox).await;
     // TODO: make that faster, by holding the tree (?)
     project::project_on_track::<OSMPoint>(track, &mut ret.points);
+    // TODO: take the population into account
     ret.points.retain(|w| {
         if w.track_index.is_none() {
             return false;
