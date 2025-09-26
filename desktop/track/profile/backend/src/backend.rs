@@ -10,10 +10,10 @@ use crate::osm;
 use crate::osm::osmpoint::OSMPoints;
 use crate::parameters::Parameters;
 use crate::pdf;
+use crate::profile;
 use crate::project;
 use crate::render;
 use crate::svgmap;
-use crate::svgprofile;
 use crate::track;
 use crate::waypoint::Waypoint;
 use crate::waypoint::WaypointInfo;
@@ -284,7 +284,7 @@ impl BackendData {
     pub fn render_segment(&mut self, segment: &Segment, (W, H): (i32, i32)) -> String {
         log::info!("render_segment:{}", segment.id);
         let debug = self.get_parameters().debug;
-        let ret = svgprofile::profile(&self, &segment, W, H, debug);
+        let ret = profile::profile(&self, &segment, W, H, debug);
         if self.get_parameters().debug {
             let filename = std::format!("/tmp/profile-{}.svg", segment.id);
             std::fs::write(filename, &ret).expect("Unable to write file");
@@ -293,7 +293,7 @@ impl BackendData {
     }
     fn render_yaxis_labels_overlay(&mut self, segment: &Segment, (W, H): (i32, i32)) -> String {
         log::info!("render_segment_track:{}", segment.id);
-        let mut profile = svgprofile::ProfileView::init(&segment.bbox, W, H);
+        let mut profile = profile::ProfileView::init(&segment.bbox, W, H);
         profile.add_yaxis_labels_overlay();
         let ret = profile.render();
         if self.get_parameters().debug {
