@@ -207,6 +207,11 @@ impl BackendData {
             .map(|o| o.waypoint())
             .collect::<Vec<_>>();
         project::project_on_track(&self.track, &mut osmwaypoints);
+        osmwaypoints.retain(|w| {
+            let p = &self.track.wgs84[w.track_index.unwrap()];
+            let q = &w.wgs84;
+            distance_wgs84(p, q) < 250f64
+        });
         osmwaypoints.retain(|w| w.track_index.is_some());
         osmwaypoints
     }
