@@ -345,7 +345,7 @@ impl ProfileView {
                 }
             }
 
-            label.set_text(w.name.clone().unwrap().trim());
+            label.set_text(osmpoints[k].short_name().unwrap().as_str());
             label.id = format!("wp-{}/text", k);
             points.push(PointFeature::new(id, circle, label));
         }

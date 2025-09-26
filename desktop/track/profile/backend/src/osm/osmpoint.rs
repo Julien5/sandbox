@@ -38,18 +38,31 @@ where
     return None;
 }
 
+fn shorten_name(name: &String) -> String {
+    if name.len() < 10 {
+        return name.clone();
+    }
+    let parts = name.split_whitespace().collect::<Vec<_>>();
+    let n = 1;
+    for n in 0..parts.len() {
+        let mut ret = parts.clone();
+        ret.truncate(n);
+        let candidate = ret.join(" ");
+        if candidate.len() > 5 {
+            return candidate;
+        }
+    }
+    name.clone()
+}
+
 impl OSMPoint {
     pub fn ele(&self) -> Option<f64> {
         read::<f64>(self.tags.get("ele"))
     }
     pub fn name(&self) -> Option<String> {
-        let mut ret = self.tags.get("short_name");
+        let ret = self.tags.get("name");
         if ret.is_some() {
-            return ret.cloned();
-        }
-        ret = self.tags.get("name");
-        if ret.is_some() {
-            return ret.cloned();
+            return Some(ret.unwrap().clone());
         }
         for (k, v) in &self.tags {
             if k.contains("name") {
@@ -57,6 +70,12 @@ impl OSMPoint {
             }
         }
         return None;
+    }
+    pub fn short_name(&self) -> Option<String> {
+        match self.name() {
+            Some(n) => Some(shorten_name(&n)),
+            None => None,
+        }
     }
     pub fn population(&self) -> Option<i32> {
         read::<i32>(self.tags.get("population"))

@@ -104,7 +104,7 @@ pub async fn download_for_track(track: &Track) -> OSMPoints {
     // TODO: take the population into account
     ret.points.retain(|w| {
         if w.track_index.is_none() {
-            return false;
+            return w.kind() == OSMType::City;
         }
         let index = w.track_index.unwrap();
         let d = distance_wgs84(&track.wgs84[index], &w.wgs84);

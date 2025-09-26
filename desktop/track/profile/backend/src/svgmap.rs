@@ -183,7 +183,7 @@ impl MapData {
             circle.r = 5f64;
             circle.fill = Some("Gray".to_string());
             let mut label = Label::new();
-            label.set_text(w.name().clone().unwrap().trim());
+            label.set_text(w.short_name().clone().unwrap().trim());
             label.id = format!("wp-{}/text", k);
             points.push(PointFeature::new(id, circle, label));
         }
