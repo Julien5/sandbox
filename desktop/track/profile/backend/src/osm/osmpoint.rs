@@ -17,8 +17,7 @@ pub enum OSMType {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct OSMPoint {
-    pub lat: f64,
-    pub lon: f64,
+    pub wgs84: WGS84Point,
     pub tags: Tags,
 }
 
@@ -84,13 +83,12 @@ impl OSMPoint {
         OSMType::Village
     }
     pub fn waypoint(&self) -> Waypoint {
-        let (lon, lat) = (self.lon, self.lat);
         let ele = match self.ele() {
             Some(m) => m,
             None => 0f64,
         };
         Waypoint {
-            wgs84: WGS84Point::new(&lon, &lat, &ele),
+            wgs84: self.wgs84.clone(),
             track_index: None,
             name: self.name().clone(),
             description: None,
@@ -110,8 +108,8 @@ impl fmt::Display for OSMPoint {
             } else {
                 self.name().clone().unwrap()
             },
-            self.lon,
-            self.lat,
+            self.wgs84.longitude(),
+            self.wgs84.latitude(),
             if self.ele().is_none() {
                 0f64
             } else {

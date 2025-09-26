@@ -1,13 +1,18 @@
 use std::str::FromStr;
 
+use serde::{Deserialize, Serialize};
+
 use crate::{elevation, track};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct WGS84Point(f64, f64, f64);
 
 impl WGS84Point {
     pub fn new(lon: &f64, lat: &f64, ele: &f64) -> WGS84Point {
         WGS84Point(*lon, *lat, *ele)
+    }
+    pub fn new_lonlat(lon: &f64, lat: &f64) -> WGS84Point {
+        WGS84Point(*lon, *lat, 0f64)
     }
     pub fn from_xy(xy: &(f64, f64)) -> WGS84Point {
         WGS84Point(xy.0, xy.1, 0f64)

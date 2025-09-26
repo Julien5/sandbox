@@ -82,7 +82,7 @@ pub async fn write(bboxes: &Vec<WGS84BoundingBox>, points: &OSMPoints) {
             .points
             .iter()
             .filter(|p| {
-                let coord = (p.lon, p.lat);
+                let coord = (p.wgs84.longitude(), p.wgs84.latitude());
                 atom.contains(&coord)
             })
             .cloned()

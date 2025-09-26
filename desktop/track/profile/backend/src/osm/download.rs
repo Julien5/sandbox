@@ -1,6 +1,8 @@
 use reqwest::Client;
 use serde_json::Value;
 
+use crate::waypoint::WGS84Point;
+
 use super::osmpoint::*;
 use log;
 
@@ -93,7 +95,10 @@ fn read_download_element(element: &serde_json::Value) -> Result<OSMPoint, String
     let lat = read_f64(map, "lat");
     let lon = read_f64(map, "lon");
     let tags = read_tags(map.get("tags").unwrap());
-    let city = OSMPoint { lat, lon, tags };
+    let city = OSMPoint {
+        wgs84: WGS84Point::new_lonlat(&lon, &lat),
+        tags,
+    };
     Ok(city)
 }
 
