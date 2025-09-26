@@ -1,9 +1,13 @@
 #![allow(non_snake_case)]
+mod elements;
+mod ticks;
 
+use ::svg::Node;
 use std::str::FromStr;
 
 use crate::backend;
 use crate::bbox::BoundingBox;
+use crate::gpsdata;
 use crate::gpsdata::distance_wgs84;
 use crate::gpsdata::ProfileBoundingBox;
 use crate::label_placement;
@@ -11,195 +15,7 @@ use crate::label_placement::bbox::LabelBoundingBox;
 use crate::label_placement::*;
 use crate::segment;
 use crate::waypoint::WaypointOrigin;
-use svg::Node;
-
-type Data = svg::node::element::path::Data;
-type Group = svg::node::element::Group;
-type Rect = svg::node::element::Path;
-type Path = svg::node::element::Path;
-type Text = svg::node::element::Text;
-
-use crate::gpsdata;
-
-fn line(p1: (f64, f64), p2: (f64, f64)) -> Data {
-    Data::new().move_to(p1).line_to(p2)
-}
-
-fn bbox(TL: (f64, f64), BR: (f64, f64)) -> Data {
-    Data::new()
-        .move_to((TL.0, TL.1))
-        .line_to((TL.0, BR.1))
-        .line_to((BR.0, BR.1))
-        .line_to((BR.0, TL.1))
-        .line_to((TL.0, TL.1))
-}
-
-fn rect(id: &str, color: &str, data: Data) -> Rect {
-    Rect::new().set("id", id).set("fill", color).set("d", data)
-}
-
-fn bbrect(id: &str, color: &str, TL: (f64, f64), BR: (f64, f64)) -> Rect {
-    rect(id, color, bbox(TL, BR))
-}
-
-fn transformSL(_W: f64, _H: f64, _Mleft: f64, _Mbottom: f64) -> String {
-    format!("translate({} {})", 0, 0)
-}
-
-fn transformSB(_W: f64, H: f64, Mleft: f64, Mbottom: f64) -> String {
-    format!("translate({} {})", Mleft, H - Mbottom)
-}
-
-fn transformSD(_W: f64, _H: f64, Mleft: f64, _Mbottom: f64, _WD: f64) -> String {
-    format!("translate({} {})", Mleft, 0)
-}
-
-fn dashed(from: (f64, f64), to: (f64, f64)) -> Path {
-    let p = Path::new()
-        .set("stroke", "black")
-        .set("stroke-dasharray", "1.0,2.5,5.0,5.0,10.0,5.0")
-        .set("d", line(from, to));
-    p
-}
-
-fn stroke(width: &str, from: (f64, f64), to: (f64, f64)) -> Path {
-    let p = Path::new()
-        .set("stroke-width", width)
-        .set("stroke", "black")
-        .set("d", line(from, to));
-    p
-}
-
-fn textx(label: &str, pos: (f64, f64)) -> Text {
-    let ret = Text::new(label)
-        .set("text-anchor", "middle")
-        .set("x", pos.0)
-        .set("y", pos.1);
-    ret
-}
-
-fn ytick_text(label: &str, pos: (f64, f64)) -> Text {
-    let ret = Text::new(label)
-        .set("text-anchor", "end")
-        .set("x", pos.0)
-        .set("y", pos.1);
-    ret
-}
-
-fn texty_overlay(label: &str, pos: (f64, f64)) -> Text {
-    let ret = Text::new(label)
-        .set("text-anchor", "end")
-        .set("transform", format!("translate({} {})", pos.0, pos.1))
-        .set("font-size", "10");
-    ret
-}
-
-fn snap_ceil(x: f64, step: f64) -> f64 {
-    (x / step).ceil() * step
-}
-
-fn snap_floor(x: f64, step: f64) -> f64 {
-    (x / step).floor() * step
-}
-
-fn xtick_delta(bbox: &ProfileBoundingBox, W: f64) -> f64 {
-    let min = 50f64 * bbox.width() / W;
-    for candidate in [1, 2, 10, 20, 50, 100, 250] {
-        let ret = 1000f64 * candidate as f64;
-        if ret > min {
-            return ret;
-        }
-    }
-    100f64
-}
-
-fn xticks_all(bbox: &ProfileBoundingBox, W: f64) -> Vec<f64> {
-    let mut ret = Vec::new();
-    let _D = bbox.width();
-    let delta = xtick_delta(bbox, W);
-    let mut start = snap_floor(bbox.min.0, delta);
-    start = start.max(0f64);
-    let stop = snap_ceil(bbox.max.0, delta);
-    let mut p = start;
-    while p <= stop {
-        ret.push(p);
-        p = p + delta;
-    }
-    ret
-}
-
-fn xticks_dashed(bbox: &ProfileBoundingBox, H: f64) -> Vec<f64> {
-    let mut ret = xticks_all(bbox, H);
-    let mut k = 0;
-    ret.retain(|_x| {
-        k += 1;
-        (k % 2) == 0
-    });
-    ret
-}
-
-fn xticks(bbox: &ProfileBoundingBox, H: f64) -> Vec<f64> {
-    let mut ret = xticks_all(bbox, H);
-    let mut k = 0;
-    ret.retain(|_y| {
-        k += 1;
-        (k % 2) != 0
-    });
-    ret
-}
-
-/* ** */
-
-fn ytick_delta(height: &f64, H: f64) -> f64 {
-    let min = 20f64 * height / H;
-    for candidate in [10, 20, 50, 100, 200, 250, 500, 1000] {
-        let ret = candidate as f64;
-        if ret > min {
-            return ret;
-        }
-    }
-    100f64
-}
-
-fn yticks_all(bbox: &ProfileBoundingBox, H: f64) -> Vec<f64> {
-    let mut ret = Vec::new();
-    let delta = ytick_delta(&bbox.height().max(750f64), H);
-    let mut start = snap_floor(bbox.min.1, delta) - delta;
-    start = start.max(0f64);
-    let mut stop = snap_ceil(bbox.max.1, delta) + 2f64 * delta;
-    while stop - start < 750f64 {
-        start -= delta;
-        start = start.max(0f64);
-        stop += delta;
-    }
-
-    let mut p = start;
-    while p <= stop {
-        ret.push(p);
-        p = p + delta;
-    }
-    ret
-}
-
-fn yticks_dashed(bbox: &ProfileBoundingBox, H: f64) -> Vec<f64> {
-    let mut ret = yticks_all(bbox, H);
-    let mut k = 0;
-    ret.retain(|_y| {
-        k += 1;
-        (k % 2) == 0
-    });
-    ret
-}
-
-fn yticks(bbox: &ProfileBoundingBox, H: f64) -> Vec<f64> {
-    let mut ret = yticks_all(bbox, H);
-    let mut k = 0;
-    ret.retain(|_y| {
-        k += 1;
-        (k % 2) != 0
-    });
-    ret
-}
+use elements::*;
 
 struct ProfileModel {
     polyline: Polyline,
@@ -222,7 +38,7 @@ pub struct ProfileView {
 }
 
 fn fix_ymargins(bbox: &ProfileBoundingBox, H: f64) -> ProfileBoundingBox {
-    let ticks = yticks(bbox, H);
+    let ticks = ticks::yticks(bbox, H);
     let mut ret = bbox.clone();
     ret.min.1 = ticks.first().unwrap().clone();
     ret.max.1 = ticks.last().unwrap().clone();
@@ -315,7 +131,7 @@ impl ProfileView {
             Woutput = 50f64;
         }
 
-        let document = svg::Document::new()
+        let document = ::svg::Document::new()
             .set("width", Woutput)
             .set("height", self.H)
             .add(world);
@@ -324,7 +140,7 @@ impl ProfileView {
     }
 
     pub fn add_yaxis_labels_overlay(&mut self) {
-        for ytick in yticks(&self.bboxdata, self.H) {
+        for ytick in ticks::yticks(&self.bboxdata, self.H) {
             let pos = self.toSD(&(self.bboxview.min.0, ytick));
             let yd = pos.1;
             if yd > self.HD() {
@@ -349,10 +165,10 @@ impl ProfileView {
         self.SD.append(stroke(stroke_width, (0f64, HD), (WD, HD)));
         self.SD.append(stroke(stroke_width, (WD, 0f64), (WD, HD)));
 
-        let _xticks = xticks(&self.bboxdata, self.W);
-        let _xticks_dashed = xticks_dashed(&self.bboxdata, self.W);
-        let _yticks = yticks(&self.bboxdata, self.H);
-        let _yticks_dashed = yticks_dashed(&self.bboxdata, self.H);
+        let _xticks = ticks::xticks(&self.bboxdata, self.W);
+        let _xticks_dashed = ticks::xticks_dashed(&self.bboxdata, self.W);
+        let _yticks = ticks::yticks(&self.bboxdata, self.H);
+        let _yticks_dashed = ticks::yticks_dashed(&self.bboxdata, self.H);
 
         log::debug!(" x={:?}", _xticks);
         log::debug!("xd={:?}", _xticks_dashed);
@@ -401,12 +217,12 @@ impl ProfileView {
 
     pub fn render_model(&mut self) {
         let model = self.model.as_ref().unwrap();
-        let mut svgpath = svg::node::element::Path::new();
+        let mut svgpath = elements::Path::new();
         for (k, v) in model.polyline.to_attributes().clone() {
             svgpath = svgpath.set(k, v);
         }
         self.SD.append(svgpath);
-        let mut points_group = svg::node::element::Group::new();
+        let mut points_group = elements::Group::new();
         for point in &model.points {
             point.render_in_group(&mut points_group);
         }
