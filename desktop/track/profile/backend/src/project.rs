@@ -42,27 +42,29 @@ fn convert(track: &Track) -> Vec<IndexedWGS84Point> {
     ret
 }
 
-pub fn nearest_neighboor(track: &Track, waypoints: &Vec<waypoint::Waypoint>) -> Vec<usize> {
+pub fn nearest_neighboor(
+    track: &Track,
+    waypoints: &Vec<waypoint::Waypoint>,
+) -> std::collections::BTreeMap<usize, usize> {
     log::trace!("build tree");
     let find_nearest = sphere_knn::run(convert(&track));
     log::trace!("project {} points", waypoints.len());
-    let mut ret = Vec::new();
-    for point in waypoints {
+    let mut ret = std::collections::BTreeMap::new();
+    for k in 0..waypoints.len() {
+        let point = &waypoints[k];
         let result = find_nearest(
             point.wgs84.latitude(),
             point.wgs84.longitude(),
             sphere_knn::Opts {
-                max_distance_threshold_meters: None,
+                max_distance_threshold_meters: Some(1000f64),
                 number_results: Some(1 as usize),
             },
         );
         match result.first() {
             Some(res) => {
-                ret.push(res.index);
+                ret.insert(k, res.index);
             }
-            None => {
-                assert!(false);
-            }
+            None => {}
         }
     }
     log::trace!("project done");
@@ -70,10 +72,10 @@ pub fn nearest_neighboor(track: &Track, waypoints: &Vec<waypoint::Waypoint>) -> 
 }
 
 pub fn project_on_track(track: &Track, waypoints: &mut Waypoints) {
-    let indexes = nearest_neighboor(&track, &waypoints);
-    debug_assert_eq!(waypoints.len(), indexes.len());
-    for k in 0..indexes.len() {
-        waypoints[k].track_index = Some(indexes[k]);
+    let indexmap = nearest_neighboor(&track, &waypoints);
+    debug_assert!(waypoints.len() >= indexmap.len());
+    for (src, dest) in indexmap {
+        waypoints[src].track_index = Some(dest);
     }
 }
 

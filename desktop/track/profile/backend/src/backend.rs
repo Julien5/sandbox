@@ -208,6 +208,9 @@ impl BackendData {
             .collect::<Vec<_>>();
         project::project_on_track(&self.track, &mut osmwaypoints);
         osmwaypoints.retain(|w| {
+            if w.track_index.is_none() {
+                return false;
+            }
             let p = &self.track.wgs84[w.track_index.unwrap()];
             let q = &w.wgs84;
             distance_wgs84(p, q) < 250f64
