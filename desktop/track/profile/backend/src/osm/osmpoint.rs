@@ -4,6 +4,8 @@ use std::str::FromStr;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
+use crate::waypoint::{WGS84Point, Waypoint, WaypointOrigin};
+
 pub type Tags = std::collections::BTreeMap<String, String>;
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
@@ -80,6 +82,21 @@ impl OSMPoint {
             _ => {}
         }
         OSMType::Village
+    }
+    pub fn waypoint(&self) -> Waypoint {
+        let (lon, lat) = (self.lon, self.lat);
+        let ele = match self.ele() {
+            Some(m) => m,
+            None => 0f64,
+        };
+        Waypoint {
+            wgs84: WGS84Point::new(&lon, &lat, &ele),
+            track_index: None,
+            name: self.name().clone(),
+            description: None,
+            info: None,
+            origin: WaypointOrigin::OpenStreetMap,
+        }
     }
 }
 

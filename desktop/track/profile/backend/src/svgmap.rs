@@ -160,47 +160,34 @@ impl MapData {
             points.push(PointFeature::new(id, circle, label));
         }
 
-        for (kind, osmpoints) in &backend.osmwaypoints {
-            for k in 0..osmpoints.len() {
-                let w = &osmpoints[k];
-                let utm = projection.project(&w.wgs84);
-                if !bbox.contains(&utm.xy()) {
-                    continue;
-                }
-                if w.name.is_none() {
-                    continue;
-                }
-                if !range.contains(&w.track_index.unwrap()) {
-                    continue;
-                }
-                let mut circle = Circle::new();
-                let (x, y) = to_graphics_coordinates(&bbox, &utm, W, H, margin);
-                let n = points.len();
-                circle.id = format!("wp-{}/circle", n);
-                circle.cx = x;
-                circle.cy = y;
-                let id = format!("wp-{}", n);
-                use super::osm::osmpoint::OSMType::*;
-                match kind {
-                    City => {
-                        circle.r = 5f64;
-                        circle.fill = Some("Gray".to_string());
-                    }
-                    Village => {
-                        circle.r = 3f64;
-                        circle.fill = Some("Gray".to_string());
-                    }
-                    MountainPass => {
-                        circle.r = 3f64;
-                        circle.fill = Some("Blue".to_string());
-                    }
-                }
-                let mut label = Label::new();
-                label.set_text(w.name.clone().unwrap().trim());
-                label.id = format!("wp-{}/text", k);
-                points.push(PointFeature::new(id, circle, label));
+        let osmpoints = &backend.osmwaypoints();
+        for k in 0..osmpoints.len() {
+            let w = &osmpoints[k];
+            let utm = projection.project(&w.wgs84);
+            if !bbox.contains(&utm.xy()) {
+                continue;
             }
+            if w.name.is_none() {
+                continue;
+            }
+            if !range.contains(&w.track_index.unwrap()) {
+                continue;
+            }
+            let mut circle = Circle::new();
+            let (x, y) = to_graphics_coordinates(&bbox, &utm, W, H, margin);
+            let n = points.len();
+            circle.id = format!("wp-{}/circle", n);
+            circle.cx = x;
+            circle.cy = y;
+            let id = format!("wp-{}", n);
+            circle.r = 5f64;
+            circle.fill = Some("Gray".to_string());
+            let mut label = Label::new();
+            label.set_text(w.name.clone().unwrap().trim());
+            label.id = format!("wp-{}/text", k);
+            points.push(PointFeature::new(id, circle, label));
         }
+
         let result = crate::label_placement::place_labels_gen(
             &mut points,
             generate_candidates_bboxes,

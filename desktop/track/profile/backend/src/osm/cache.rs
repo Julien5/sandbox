@@ -17,7 +17,7 @@ fn cache_dir() -> String {
     return format!("{}/{}", standart_cache_dir, "WPX");
 }
 
-pub fn cache_filename(bbox: &WGS84BoundingBox, kind: &str) -> String {
+pub fn cache_filename(bbox: &WGS84BoundingBox) -> String {
     let mut s = super::osm3(bbox).to_string();
     // (49.000,8.400,49.100,8.500)
     // ->49.000/8.400/49.100/8.500
@@ -25,7 +25,7 @@ pub fn cache_filename(bbox: &WGS84BoundingBox, kind: &str) -> String {
     s = s.replace(")", "");
     s = s.replace(",", "/");
 
-    format!("{}/{}", s, kind)
+    format!("{}/{}", s, "data")
 }
 
 fn cache_path(filename: &String) -> String {
@@ -62,20 +62,20 @@ async fn hit_cache_worker(path: &String) -> bool {
     super::indexdb::hit_cache(&path).await
 }
 
-pub async fn hit_cache(bbox: &WGS84BoundingBox, kind: &str) -> bool {
-    let filename = cache_filename(bbox, kind);
+pub async fn hit_cache(bbox: &WGS84BoundingBox) -> bool {
+    let filename = cache_filename(bbox);
     return hit_cache_worker(&filename).await;
 }
 
-pub async fn read(bbox: &WGS84BoundingBox, kind: &str) -> Option<OSMPoints> {
-    let filename = cache_filename(bbox, kind);
+pub async fn read(bbox: &WGS84BoundingBox) -> Option<OSMPoints> {
+    let filename = cache_filename(bbox);
     match read_worker(&filename).await {
         Some(data) => Some(OSMPoints::from_string(&data)),
         _ => None,
     }
 }
 
-pub async fn write(bboxes: &Vec<WGS84BoundingBox>, points: &OSMPoints, kind: &str) {
+pub async fn write(bboxes: &Vec<WGS84BoundingBox>, points: &OSMPoints) {
     for atom in bboxes {
         let local = points
             .clone()
@@ -87,7 +87,7 @@ pub async fn write(bboxes: &Vec<WGS84BoundingBox>, points: &OSMPoints, kind: &st
             })
             .cloned()
             .collect::<Vec<_>>();
-        let path = cache_filename(atom, kind);
+        let path = cache_filename(atom);
         let out = OSMPoints { points: local };
         write_worker(&path, out.as_string()).await;
     }

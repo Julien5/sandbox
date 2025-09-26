@@ -7,7 +7,7 @@ use crate::gpsdata::distance_wgs84;
 use crate::gpsdata::ProfileBoundingBox;
 use crate::gpxexport;
 use crate::osm;
-use crate::osm::OSMWaypoints;
+use crate::osm::osmpoint::OSMPoints;
 use crate::parameters::Parameters;
 use crate::pdf;
 use crate::project;
@@ -26,7 +26,7 @@ pub struct BackendData {
     pub parameters: Parameters,
     pub track: track::Track,
     pub gpxwaypoints: Waypoints,
-    pub osmwaypoints: OSMWaypoints,
+    pub osmwaypoints: OSMPoints,
     pub track_smooth_elevation: Vec<f64>,
 }
 
@@ -199,11 +199,21 @@ impl BackendData {
         self.update_waypoints();
     }
 
+    pub fn osmwaypoints(&self) -> Waypoints {
+        let mut osmwaypoints = self
+            .osmwaypoints
+            .points
+            .iter()
+            .map(|o| o.waypoint())
+            .collect::<Vec<_>>();
+        project::project_on_track(&self.track, &mut osmwaypoints);
+        osmwaypoints.retain(|w| w.track_index.is_some());
+        osmwaypoints
+    }
+
     pub fn get_waypoint_table(&self, segment: &Segment) -> Vec<Waypoint> {
         let mut waypoints = self.gpxwaypoints.clone();
-        for (_kind, points) in &self.osmwaypoints {
-            waypoints.extend_from_slice(points);
-        }
+        waypoints.extend_from_slice(&self.osmwaypoints());
         waypoints.retain(|w| {
             let p = &self.track.wgs84[w.track_index.unwrap()];
             let q = &w.wgs84;

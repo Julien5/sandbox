@@ -46,22 +46,17 @@ async fn dl_worker(req: &str) -> Option<String> {
     }
 }
 
-pub async fn places(bbox: &str, place: &str) -> Option<String> {
+pub async fn all(bbox: &str) -> Option<String> {
     let timeout = 250;
-    let req = format!(
-        "[out:json][timeout:{}];nwr[\"place\"=\"{}\"]{};out geom;",
-        timeout, place, bbox
-    );
-    dl_worker(&req).await
-}
-
-pub async fn passes(bbox: &str) -> Option<String> {
-    let timeout = 250;
-    let req = format!(
-        "[out:json][timeout:{}];node[mountain_pass=\"yes\"]{};out geom;",
-        timeout, bbox
-    );
-    dl_worker(&req).await
+    let header = format!("[out:json][timeout:{}]", timeout);
+    let mut reqs = Vec::new();
+    reqs.push(format!("node[\"mountain_pass\"=\"yes\"]{}", bbox));
+    reqs.push(format!("nwr[\"place\"=\"town\"]{}", bbox));
+    reqs.push(format!("nwr[\"place\"=\"village\"]{}", bbox));
+    let body = reqs.join(";");
+    let footer = "out geom".to_string();
+    let request = format!("{};({};);{};", header, body, footer);
+    dl_worker(&request).await
 }
 
 fn read_f64(map: &serde_json::Map<String, Value>, name: &str) -> f64 {

@@ -481,55 +481,42 @@ impl ProfileView {
             points.push(PointFeature::new(id, circle, label));
         }
 
-        for (kind, osmpoints) in &backend.osmwaypoints {
-            for k in 0..osmpoints.len() {
-                let w = &osmpoints[k];
-                let index = w.track_index.unwrap();
-                let trackpoint = &track.wgs84[index];
-                let x = track.distance(index);
-                let delta = distance_wgs84(&w.wgs84, &trackpoint);
-                let y = trackpoint.z();
-                let maxdelta = 500f64;
-                if delta > maxdelta {
-                    continue;
-                }
-                if !bbox.contains(&(x, y)) {
-                    continue;
-                }
-                if w.name.is_none() {
-                    continue;
-                }
-                /*if !range.contains(&w.track_index.unwrap()) {
-                    continue;
-                }*/
-                let (xg, yg) = self.toSD(&(x, y));
-                let n = points.len();
-                let mut circle = label_placement::Circle::new();
-                let mut label = label_placement::Label::new();
-                circle.id = format!("wp-{}/circle", n);
-                circle.cx = xg;
-                circle.cy = yg;
-                let id = format!("wp-{}", n);
-                use super::osm::osmpoint::OSMType::*;
-                match kind {
-                    City => {
-                        circle.r = 5f64;
-                        circle.fill = Some("Gray".to_string());
-                    }
-                    Village => {
-                        circle.r = 3f64;
-                        circle.fill = Some("Gray".to_string());
-                    }
-                    MountainPass => {
-                        circle.r = 3f64;
-                        circle.fill = Some("Blue".to_string());
-                    }
-                }
-                label.set_text(w.name.clone().unwrap().trim());
-                label.id = format!("wp-{}/text", k);
-                points.push(PointFeature::new(id, circle, label));
+        let osmpoints = &backend.osmwaypoints();
+        for k in 0..osmpoints.len() {
+            let w = &osmpoints[k];
+            let index = w.track_index.unwrap();
+            let trackpoint = &track.wgs84[index];
+            let x = track.distance(index);
+            let delta = distance_wgs84(&w.wgs84, &trackpoint);
+            let y = trackpoint.z();
+            let maxdelta = 500f64;
+            if delta > maxdelta {
+                continue;
             }
+            if !bbox.contains(&(x, y)) {
+                continue;
+            }
+            if w.name.is_none() {
+                continue;
+            }
+            /*if !range.contains(&w.track_index.unwrap()) {
+                continue;
+            }*/
+            let (xg, yg) = self.toSD(&(x, y));
+            let n = points.len();
+            let mut circle = label_placement::Circle::new();
+            let mut label = label_placement::Label::new();
+            circle.id = format!("wp-{}/circle", n);
+            circle.cx = xg;
+            circle.cy = yg;
+            let id = format!("wp-{}", n);
+            circle.r = 5f64;
+            circle.fill = Some("Gray".to_string());
+            label.set_text(w.name.clone().unwrap().trim());
+            label.id = format!("wp-{}/text", k);
+            points.push(PointFeature::new(id, circle, label));
         }
+
         let result = label_placement::place_labels_gen(
             &mut points,
             generate_candidates_bboxes,
