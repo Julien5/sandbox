@@ -2,8 +2,8 @@ import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
-import 'package:ui/src/backendmodel.dart';
-import 'package:ui/src/choose_data.dart';
+import 'package:ui/src/models/root.dart';
+import 'package:ui/src/screens/home/home_screen.dart';
 import 'package:ui/src/routes.dart';
 import 'package:ui/src/rust/frb_generated.dart';
 
@@ -40,7 +40,7 @@ class Application extends StatelessWidget {
           initialRoute: RouteManager.home,
           home: Scaffold(
             appBar: AppBar(title: Text('WPX ${packageInfo!.version} ')),
-            body: HomePage(),
+            body: HomeScreen(),
           ),
           theme: ThemeData(
             pageTransitionsTheme: PageTransitionsTheme(

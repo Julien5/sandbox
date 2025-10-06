@@ -3,10 +3,10 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:ui/src/backendmodel.dart';
+import 'package:ui/src/models/root.dart';
 import 'package:ui/src/routes.dart';
 import 'package:ui/src/rust/api/bridge.dart' as bridge;
-import 'package:ui/src/statistics_widget.dart';
+import 'statistics_widget.dart';
 
 class Selector extends StatelessWidget {
   final String text;
@@ -370,8 +370,8 @@ class _SegmentsSettingsState extends State<SegmentsSettings> {
   }
 }
 
-class SettingsWidget extends StatelessWidget {
-  const SettingsWidget({super.key});
+class SettingsScreen extends StatelessWidget {
+  const SettingsScreen({super.key});
 
   Widget wait() {
     return Scaffold(

@@ -1,10 +1,10 @@
 import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:ui/src/backendmodel.dart';
-import 'package:ui/src/futurerenderer.dart';
+import 'package:ui/src/models/root.dart';
+import 'package:ui/src/models/futurerenderer.dart';
 import 'package:ui/src/routes.dart';
-import 'package:ui/src/segment_stack.dart';
+import 'segment_stack.dart';
 
 class RenderingsProvider extends MultiProvider {
   final Renderers renderers;
@@ -82,8 +82,8 @@ class SegmentsConsumer extends StatelessWidget {
   }
 }
 
-class SegmentsScaffold extends StatelessWidget {
-  const SegmentsScaffold({super.key});
+class SegmentsScreen extends StatelessWidget {
+  const SegmentsScreen({super.key});
 
   Widget exportButton(BuildContext context) {
     return ElevatedButton(

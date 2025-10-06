@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 //import 'package:flutter_svg/flutter_svg.dart';
-import 'package:ui/src/futurerenderer.dart';
-import 'package:ui/src/minisvg.dart';
+import 'package:ui/src/models/futurerenderer.dart';
+import 'package:ui/src/widgets/minisvg.dart';
 
 class FutureRenderingWidget extends StatefulWidget {
   final FutureRenderer future;

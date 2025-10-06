@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:ui/src/future_rendering_widget.dart';
-import 'package:ui/src/futurerenderer.dart';
+import 'future_rendering_widget.dart';
+import 'package:ui/src/models/futurerenderer.dart';
 //import 'package:ui/src/hardlegend.dart';
-import 'package:ui/src/waypoints_widget.dart';
+import 'waypoints_widget.dart';
 
 class SegmentScrollView extends StatelessWidget {
   const SegmentScrollView({super.key});
