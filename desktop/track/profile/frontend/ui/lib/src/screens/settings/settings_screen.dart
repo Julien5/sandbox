@@ -79,11 +79,11 @@ double stepSize(double km) {
   return 1;
 }
 
-class SegmentLengthSelector extends StatelessWidget {
+class SegmentLengthSelectorO extends StatelessWidget {
   final double trackLengthKm;
   final dynamic Function(double) onChanged;
   final double value;
-  const SegmentLengthSelector({
+  const SegmentLengthSelectorO({
     super.key,
     required this.trackLengthKm,
     required this.onChanged,
@@ -95,13 +95,76 @@ class SegmentLengthSelector extends StatelessWidget {
     double step = stepSize(trackLengthKm);
     double min = snapFloor(trackLengthKm / 2, step);
     double max = snapCeil(trackLengthKm, step);
-    
+
     developer.log("L=[$trackLengthKm]: step=[$step] => [$min]-[$max] ($value)");
-    return Selector(
-      min: min,
-      max: max,
-      text: "",
+    return Slider(
+      min: 50,
+      max: 200,
+      divisions: 50, // not good yet.
       value: value,
+      label: "$value",
+      onChanged: onChanged,
+    );
+  }
+}
+
+class SegmentLengthSelector extends StatefulWidget {
+  final double trackLengthKm;
+  final dynamic Function(double) onChanged;
+  final double value;
+  const SegmentLengthSelector({
+    super.key,
+    required this.trackLengthKm,
+    required this.onChanged,
+    required this.value,
+  });
+
+  @override
+  State<SegmentLengthSelector> createState() => _SegmentLengthSelectorState();
+}
+
+class _SegmentLengthSelectorState extends State<SegmentLengthSelector> {
+  int index = 0;
+  final List<double> values = [2, 3, 10, 50, 100];
+  @override
+  void initState() {
+    super.initState();
+    index = getIndex(widget.value);
+  }
+
+  int getIndex(double value) {
+    for (final (index, item) in values.indexed) {
+      if (item > value) {
+        return index-1;
+      }
+    }
+    return values.length - 1;
+  }
+
+  double getValue(int index) {
+    return values[index];
+  }
+
+  void onChanged(double sliderIndex) {
+    int index=sliderIndex.round();
+    widget.onChanged(getValue(index));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    double step = stepSize(widget.trackLengthKm);
+    double min = snapFloor(widget.trackLengthKm / 2, step);
+    double max = snapCeil(widget.trackLengthKm, step);
+
+    developer.log(
+      "L=[${widget.trackLengthKm}]: step=[$step] => [$min]-[$max] (${widget.value})",
+    );
+    return Slider(
+      min: 0,
+      max: values.length - 1,
+      divisions: values.length-1, // not good yet.
+      value: getIndex(widget.value).toDouble(),
+      label: "${widget.value}",
       onChanged: onChanged,
     );
   }
