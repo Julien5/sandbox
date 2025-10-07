@@ -133,12 +133,18 @@ class _SegmentLengthSelectorState extends State<SegmentLengthSelector> {
   }
 
   int getIndex(double value) {
-    for (final (index, item) in values.indexed) {
-      if (item > value) {
-        return index-1;
+    int closestIndex = 0;
+    double smallestDifference = double.infinity;
+
+    for (int i = 0; i < values.length; i++) {
+      double difference = (values[i] - value).abs();
+      if (difference < smallestDifference) {
+        smallestDifference = difference;
+        closestIndex = i;
       }
     }
-    return values.length - 1;
+
+    return closestIndex;
   }
 
   double getValue(int index) {
@@ -146,7 +152,7 @@ class _SegmentLengthSelectorState extends State<SegmentLengthSelector> {
   }
 
   void onChanged(double sliderIndex) {
-    int index=sliderIndex.round();
+    int index = sliderIndex.round();
     widget.onChanged(getValue(index));
   }
 
@@ -162,7 +168,7 @@ class _SegmentLengthSelectorState extends State<SegmentLengthSelector> {
     return Slider(
       min: 0,
       max: values.length - 1,
-      divisions: values.length-1, // not good yet.
+      divisions: values.length - 1, // not good yet.
       value: getIndex(widget.value).toDouble(),
       label: "${widget.value}",
       onChanged: onChanged,
