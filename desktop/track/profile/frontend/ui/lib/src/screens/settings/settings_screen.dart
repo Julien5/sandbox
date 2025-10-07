@@ -109,12 +109,12 @@ class SegmentLengthSelectorO extends StatelessWidget {
 }
 
 class SegmentLengthSelector extends StatefulWidget {
-  final double trackLengthKm;
+  final double trackLength;
   final dynamic Function(double) onChanged;
   final double value;
   const SegmentLengthSelector({
     super.key,
-    required this.trackLengthKm,
+    required this.trackLength,
     required this.onChanged,
     required this.value,
   });
@@ -123,15 +123,30 @@ class SegmentLengthSelector extends StatefulWidget {
   State<SegmentLengthSelector> createState() => _SegmentLengthSelectorState();
 }
 
-class _SegmentLengthSelectorState extends State<SegmentLengthSelector> {
-  int index = 0;
-  final List<double> values = [2, 3, 10, 50, 100];
-  @override
-  void initState() {
-    super.initState();
-    index = getIndex(widget.value);
+class SegmentLengthSliderValues {
+  List<double> values = [];
+  SegmentLengthSliderValues(double trackLength) {
+    double km = trackLength / 1000;
+    values = [2, 5, 10];
+    if (km > 10) {
+      values = [5, 10, 25, 50];
+    }
+    if (km > 50) {
+      values = [10, 25, 50, 100];
+    }
+    if (km > 100) {
+      values = [25, 50, 100, 150, 200];
+    }
+    if (km > 200) {
+      values = [50, 100, 150, 200, 400];
+    }
+    if (km > 400) {
+      values = [100, 150, 200, 300, 600];
+    }
+    if (km > 600) {
+      values = [100, 150, 200, 300, 600, 1000];
+    }
   }
-
   int getIndex(double value) {
     int closestIndex = 0;
     double smallestDifference = double.infinity;
@@ -150,27 +165,44 @@ class _SegmentLengthSelectorState extends State<SegmentLengthSelector> {
   double getValue(int index) {
     return values[index];
   }
+  int length() {
+    return values.length;
+  }
+  double project(double value) {
+    return getValue(getIndex(value));
+  }
+}
+
+class _SegmentLengthSelectorState extends State<SegmentLengthSelector> {
+  int index = 0;
+  late SegmentLengthSliderValues values;
+  @override
+  void initState() {
+    developer.log("initState");
+    super.initState();
+    values = SegmentLengthSliderValues(widget.trackLength);
+    index = values.getIndex(widget.value);
+  }
 
   void onChanged(double sliderIndex) {
     int index = sliderIndex.round();
-    widget.onChanged(getValue(index));
+    widget.onChanged(values.getValue(index)*1000);
+  }
+  double currentWidgetIndex() {
+    return values.getIndex(widget.value/1000).toDouble();
   }
 
   @override
   Widget build(BuildContext context) {
-    double step = stepSize(widget.trackLengthKm);
-    double min = snapFloor(widget.trackLengthKm / 2, step);
-    double max = snapCeil(widget.trackLengthKm, step);
-
     developer.log(
-      "L=[${widget.trackLengthKm}]: step=[$step] => [$min]-[$max] (${widget.value})",
+      "L=[${widget.trackLength}] => ${widget.value})",
     );
     return Slider(
       min: 0,
-      max: values.length - 1,
-      divisions: values.length - 1, // not good yet.
-      value: getIndex(widget.value).toDouble(),
-      label: "${widget.value}",
+      max: values.length() - 1,
+      divisions: values.length() - 1, // not good yet.
+      value: currentWidgetIndex(),
+      label: "${values.project(widget.value)}",
       onChanged: onChanged,
     );
   }
@@ -179,14 +211,19 @@ class _SegmentLengthSelectorState extends State<SegmentLengthSelector> {
 class _SegmentsSettingsState extends State<SegmentsSettings> {
   DateTime startTime = DateTime.now();
   double speed = 15 * 1000.0 / 3600;
-  double segmentLength = 100000;
+  double segmentLength = 10000;
   double maxStepSize = 5000;
 
   @override
   void initState() {
     super.initState();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       readModel();
+      RootModel rootModel = Provider.of<RootModel>(context, listen: false);
+      developer.log("E=${rootModel.statistics().distanceEnd}");
+      double trackLength=rootModel.statistics().distanceEnd;
+      segmentLength = SegmentLengthSliderValues(trackLength).project(trackLength)*1000/2;
       setState(() {});
     });
   }
@@ -288,7 +325,7 @@ class _SegmentsSettingsState extends State<SegmentsSettings> {
   @override
   Widget build(BuildContext ctx) {
     RootModel model = Provider.of<RootModel>(ctx);
-    double trackLengthKm = model.statistics().distanceEnd / 1000;
+    double trackLength = model.statistics().distanceEnd;
     developer.log("[SegmentsConsumer] length=${model.segments().length}");
     Table table1 = Table(
       columnWidths: const {
@@ -379,11 +416,11 @@ class _SegmentsSettingsState extends State<SegmentsSettings> {
               height: 60,
               alignment: Alignment.centerLeft,
               child: SegmentLengthSelector(
-                trackLengthKm: trackLengthKm,
-                value: segmentLength / 1000,
+                trackLength: trackLength,
+                value: segmentLength,
                 onChanged:
                     (value) => setState(() {
-                      segmentLength = value * 1000;
+                      segmentLength = value;
                     }),
               ),
             ),
