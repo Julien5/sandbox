@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'package:flutter/material.dart';
 import 'mapview.dart';
 import 'profileview.dart';
@@ -11,16 +13,47 @@ class SegmentViewVertical extends StatelessWidget {
       builder: (context, constraints) {
         double profileHeight = constraints.maxWidth * (285.0 / 400);
         double mapHeight = constraints.maxWidth;
-        Widget profile = ProfileStack(profileHeight: profileHeight);
-        Widget map = ConstrainedBox(
-          constraints: BoxConstraints(maxHeight: mapHeight),
-          child: MapConsumer(),
+        developer.log("profileHeight= $profileHeight");
+        Widget p = ProfileStack(profileHeight: profileHeight);
+        /*Widget profile = Padding(
+          padding: EdgeInsets.all(20.0),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.blue),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Center(child: p),
+          ),
+        );*/
+        BoxConstraints box = BoxConstraints(maxWidth: 200, maxHeight: 200);
+        ButtonStyle style = ButtonStyle(
+          shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18.0),
+              side: BorderSide(color: Colors.blue),
+            ),
+          ),
         );
-        var hline = const Divider(
-          height: 1, // Thickness of the divider
-          color: Colors.grey, // Light stroke color
+        Widget profile = ElevatedButton(
+          onPressed: () {
+            developer.log("hi profile");
+          },
+          style: style,
+          child: ConstrainedBox(constraints: box, child: p),
         );
-        return Column(children: [Expanded(flex:285,child:profile), hline, Expanded(flex:400,child:map)]);
+        Widget map = ElevatedButton(
+          onPressed: () {
+            developer.log("hi map");
+          },
+          style: style,
+          child: ConstrainedBox(constraints: box, child: MapConsumer()),
+        );
+        return Column(
+          children: [
+            Expanded(child: Center(child: profile)),
+            Expanded(child: Center(child: map)),
+          ],
+        );
       },
     );
   }
