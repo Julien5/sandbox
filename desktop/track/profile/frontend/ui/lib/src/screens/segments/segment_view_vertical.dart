@@ -29,10 +29,11 @@ class SegmentViewVertical extends StatelessWidget {
         ButtonStyle style = ButtonStyle(
           shape: WidgetStateProperty.all<RoundedRectangleBorder>(
             RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(18.0),
+              borderRadius: BorderRadius.circular(10.0),
               side: BorderSide(color: Colors.blue),
             ),
           ),
+          overlayColor: WidgetStateProperty.all(Colors.transparent), // No hover color
         );
         Widget profile = ElevatedButton(
           onPressed: () {
@@ -44,6 +45,12 @@ class SegmentViewVertical extends StatelessWidget {
         Widget map = ElevatedButton(
           onPressed: () {
             developer.log("hi map");
+          },
+          onLongPress: () {
+            developer.log("edit map");
+          },
+          onHover: (b) {
+            developer.log("hover map $b");
           },
           style: style,
           child: ConstrainedBox(constraints: box, child: MapConsumer()),
