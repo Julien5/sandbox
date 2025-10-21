@@ -24,7 +24,7 @@ pub enum InputType {
 
 #[derive(Clone, Serialize, Deserialize, PartialEq, Debug)]
 pub struct TrackProjection {
-    pub track_index: f64,
+    pub track_floating_index: f64,
     pub euclidean: MercatorPoint,
     pub elevation: f64,
     pub track_distance: f64,
@@ -122,7 +122,7 @@ impl InputPoint {
     pub fn round_track_index(&self) -> Option<usize> {
         match &self.track_projection {
             None => None,
-            Some(p) => Some(p.track_index.round() as usize),
+            Some(p) => Some(p.track_floating_index.round() as usize),
         }
     }
     pub fn distance_to_track(&self) -> f64 {

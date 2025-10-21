@@ -63,27 +63,46 @@ fn important(p: &InputPoint) -> bool {
     false
 }
 
-pub fn profile_points(segment: &Segment, parameters: &Parameters) -> Vec<InputPoint> {
-    let mut ret = segment.points.clone();
-    ret.retain(|p| {
-        let distance = p.distance_to_track();
-        match p.kind() {
-            InputType::MountainPass | InputType::Peak => {
-                return distance < 250f64;
-            }
-            InputType::Hamlet => {
-                return false;
-            }
-            InputType::GPX => {
-                return distance < 250f64;
-            }
-            InputType::City | InputType::Village => {
-                return important(p);
-            }
-        }
-    });
-    for w in &mut ret {
-        w.label_placement_order = placement_order_profile(&w);
+type Interval = std::ops::Range<usize>;
+type Points = Vec<InputPoint>;
+
+fn contains(interval: &Interval, point: &InputPoint) -> bool {
+    //let index = point.track_projection.as_ref().unwrap().track_index();
+    true
+}
+
+fn largest_interval(segment: &Segment, points: &Points) -> Interval {
+    let mut indices: Vec<_> = points
+        .iter()
+        .map(|p| {
+            p.track_projection
+                .as_ref()
+                .unwrap()
+                .track_floating_index
+                .floor() as usize
+        })
+        .collect();
+    indices.sort();
+    let mut prev = 0usize;
+    let mut intervals = Vec::new();
+    for i in indices {
+        intervals.push(Interval {
+            start: prev,
+            end: i,
+        });
+        prev = i;
     }
+    intervals.push(Interval {
+        start: prev,
+        end: segment.range.end,
+    });
+    intervals.sort_by_key(|i| i.len());
+    intervals.first().unwrap().clone()
+}
+
+pub fn profile_points(segment: &Segment, parameters: &Parameters) -> Vec<InputPoint> {
+    let mut ret = Vec::new();
+    let interval = largest_interval(segment, &ret);
+    //points.iter().filter(|p| p.
     ret
 }

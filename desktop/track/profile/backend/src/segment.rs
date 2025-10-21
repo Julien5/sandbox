@@ -116,7 +116,7 @@ impl Segment {
         debug_assert!(df <= di);
 
         point.track_projection = Some(TrackProjection {
-            track_index: floating_index,
+            track_floating_index: floating_index,
             euclidean,
             elevation,
             track_distance,
