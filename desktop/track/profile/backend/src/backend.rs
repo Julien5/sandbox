@@ -290,7 +290,7 @@ impl BackendData {
 
 #[cfg(test)]
 mod tests {
-    use crate::backend::Backend;
+    use crate::{backend::Backend, parameters::Parameters};
 
     #[tokio::test]
     async fn svg_profile() {
@@ -332,7 +332,7 @@ mod tests {
         let segments = backend.segments();
         let mut ok_count = 0;
         for segment in &segments {
-            let svg = segment.render_map((400, 400), true);
+            let svg = segment.render_map((400, 400), &Parameters::default());
             let reffilename = std::format!("data/ref/map-{}.svg", segment.id);
             println!("test {}", reffilename);
             let data = if std::fs::exists(&reffilename).unwrap() {
