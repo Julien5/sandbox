@@ -67,20 +67,14 @@ type Interval = std::ops::Range<usize>;
 type Points = Vec<InputPoint>;
 
 fn contains(interval: &Interval, point: &InputPoint) -> bool {
-    //let index = point.track_projection.as_ref().unwrap().track_index();
-    true
+    let index = point.track_projection.as_ref().unwrap().track_index;
+    interval.start <= index && index < interval.end
 }
 
 fn largest_interval(segment: &Segment, points: &Points) -> Interval {
     let mut indices: Vec<_> = points
         .iter()
-        .map(|p| {
-            p.track_projection
-                .as_ref()
-                .unwrap()
-                .track_floating_index
-                .floor() as usize
-        })
+        .map(|p| p.track_projection.as_ref().unwrap().track_index)
         .collect();
     indices.sort();
     let mut prev = 0usize;
@@ -102,7 +96,27 @@ fn largest_interval(segment: &Segment, points: &Points) -> Interval {
 
 pub fn profile_points(segment: &Segment, parameters: &Parameters) -> Vec<InputPoint> {
     let mut ret = Vec::new();
-    let interval = largest_interval(segment, &ret);
-    //points.iter().filter(|p| p.
+    let mut candidates = segment.points.clone();
+    while ret.len() != parameters.profile_options.npoints {
+        let interval = largest_interval(segment, &ret);
+        // keep points in the interval
+        assert!(!candidates.is_empty());
+        let mut inner: Vec<_> = candidates
+            .iter()
+            .filter(|p| contains(&interval, p))
+            .collect();
+        inner.sort_by_key(|p| placement_order_profile(p));
+        if inner.is_empty() {
+            break;
+        }
+        let selected = inner.first().unwrap().to_owned().clone();
+        // TODO: implement == for InputPoint
+        let index = candidates
+            .iter()
+            .position(|p| p.wgs84 == selected.wgs84)
+            .unwrap();
+        candidates.remove(index);
+        ret.push(selected.clone());
+    }
     ret
 }

@@ -117,6 +117,7 @@ impl Segment {
 
         point.track_projection = Some(TrackProjection {
             track_floating_index: floating_index,
+            track_index: index1,
             euclidean,
             elevation,
             track_distance,
