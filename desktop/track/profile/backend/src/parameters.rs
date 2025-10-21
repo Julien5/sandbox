@@ -10,12 +10,14 @@ pub enum ProfileIndication {
 #[derive(Clone)]
 pub struct ProfileOptions {
     pub elevation_indicators: std::collections::HashSet<ProfileIndication>,
+    pub npoints: i32,
 }
 
 impl Default for ProfileOptions {
     fn default() -> ProfileOptions {
         ProfileOptions {
             elevation_indicators: std::collections::HashSet::default(),
+            npoints: 15,
         }
     }
 }
