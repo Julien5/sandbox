@@ -23,7 +23,7 @@ pub type Segment = crate::segment::Segment;
 pub type SegmentStatistics = crate::segment::SegmentStatistics;
 
 pub struct BackendData {
-    pub inputpoints_tree: locate::Locate,
+    pub inputpoints_tree: locate::IndexedPointsTree,
     pub parameters: Parameters,
     pub track: std::sync::Arc<track::Track>,
     pub inputpoints: InputPointMap,
@@ -119,7 +119,7 @@ impl Backend {
         // project::project_on_track::<InputPoint>(&track, &mut inputpoints.points);
         let parameters = Parameters::default();
         self.send(&"compute elevation".to_string()).await;
-        let pointstree = locate::Locate::from_points(&inputpoints.as_vector());
+        let pointstree = locate::IndexedPointsTree::from_points(&inputpoints.as_vector());
         let data = BackendData {
             inputpoints_tree: pointstree,
             track: std::sync::Arc::new(gpxdata.track),
@@ -202,7 +202,7 @@ impl BackendData {
             }
             let profile_bbox = ProfileBoundingBox::from_track(&self.track, &range);
             let map_bbox = svgmap::bounding_box(&self.track, &range);
-            let tracktree = locate::Locate::from_track(&self.track, &range);
+            let tracktree = locate::IndexedPointsTree::from_track(&self.track, &range);
             log::trace!("make segment: {:.1} {:.1}", start / 1000f64, end / 1000f64);
             ret.push(Segment::new(
                 k,

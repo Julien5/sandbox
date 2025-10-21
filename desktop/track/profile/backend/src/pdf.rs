@@ -55,7 +55,6 @@ fn get_client() -> reqwest::Client {
 
 #[cfg(not(feature = "typstpdf"))]
 pub async fn compile_remote(document: &str) -> Vec<u8> {
-    use reqwest::{Client, ClientBuilder};
     let url = format!("{}/api/typst", get_host().unwrap());
     let client = get_client();
     let response = client

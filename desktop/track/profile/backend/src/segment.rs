@@ -12,7 +12,7 @@ pub struct Segment {
     pub range: std::ops::Range<usize>,
     pub profile_bbox: gpsdata::ProfileBoundingBox,
     pub map_bbox: EuclideanBoundingBox,
-    pub track_tree: locate::Locate,
+    pub track_tree: locate::IndexedPointsTree,
     pub track: std::sync::Arc<Track>,
     pub points: Vec<InputPoint>,
 }
@@ -30,7 +30,7 @@ impl Segment {
         range: std::ops::Range<usize>,
         bbox: &gpsdata::ProfileBoundingBox,
         mbbox: &EuclideanBoundingBox,
-        track_tree: locate::Locate,
+        track_tree: locate::IndexedPointsTree,
         track: std::sync::Arc<Track>,
         inputpoints: &InputPointMap,
     ) -> Segment {
@@ -89,7 +89,7 @@ impl Segment {
 
     fn compute_track_projection(
         track: &track::Track,
-        tracktree: &locate::Locate,
+        tracktree: &locate::IndexedPointsTree,
         point: &mut InputPoint,
     ) {
         let index = tracktree.nearest_neighbor(&point.euclidian).unwrap();
@@ -128,7 +128,7 @@ impl Segment {
         inputpoints: &InputPointMap,
         _bbox: &EuclideanBoundingBox,
         track: &track::Track,
-        tracktree: &locate::Locate,
+        tracktree: &locate::IndexedPointsTree,
     ) -> Vec<InputPoint> {
         let mut ret = Vec::new();
         let mut bbox = _bbox.clone();
