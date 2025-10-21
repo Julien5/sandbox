@@ -87,7 +87,11 @@ impl Segment {
         }
     }
 
-    fn compute_relation(track: &track::Track, tracktree: &locate::Locate, point: &mut InputPoint) {
+    fn compute_track_projection(
+        track: &track::Track,
+        tracktree: &locate::Locate,
+        point: &mut InputPoint,
+    ) {
         let index = tracktree.nearest_neighbor(&point.euclidian).unwrap();
         let (index1, index2) = Self::two_closest_index(track, &index, point);
         let p1 = &track.euclidian[index1];
@@ -139,7 +143,7 @@ impl Segment {
             let points = _points.unwrap();
             for p in points {
                 let mut c = p.clone();
-                Self::compute_relation(track, tracktree, &mut c);
+                Self::compute_track_projection(track, tracktree, &mut c);
                 ret.push(c);
             }
         }
