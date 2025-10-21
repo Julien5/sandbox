@@ -97,16 +97,16 @@ impl Segment {
         let p1 = &track.euclidian[index1];
         let p2 = &track.euclidian[index2];
         let linestring: geo::LineString = vec![p1.xy(), p2.xy()].into();
-        let findex = linestring
+        let index_floating_part = linestring
             .line_locate_point(&geo::point!(point.euclidian.xy()))
             .unwrap();
-        assert!(findex <= 1f64);
-        let rindex = index1 as f64 + findex;
+        assert!(0.0 <= index_floating_part && index_floating_part <= 1f64);
+        let floating_index = index1 as f64 + index_floating_part;
         let t1 = &track.euclidian[index1];
         let t2 = &track.euclidian[index2];
         let a1 = (t1.0, t1.1, track.elevation(index1));
         let a2 = (t2.0, t2.1, track.elevation(index2));
-        let m = Self::middle_point(&a1, &a2, findex);
+        let m = Self::middle_point(&a1, &a2, index_floating_part);
         let euclidean = MercatorPoint::from_xy(&(m.0, m.1));
         let elevation = m.2;
         let track_distance = euclidean.d2(&point.euclidian).sqrt();
@@ -117,7 +117,7 @@ impl Segment {
         debug_assert!(df <= di);
 
         point.track_projection = Some(TrackProjection {
-            track_index: rindex,
+            track_index: floating_index,
             euclidean,
             elevation,
             track_distance,
