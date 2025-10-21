@@ -48,7 +48,7 @@ impl Segment {
 
     pub fn render_profile(&self, (width, height): (i32, i32), parameters: &Parameters) -> String {
         log::info!("render profile:{}", self.id);
-        let points = self.profile_points();
+        let points = self.profile_points(parameters);
         let ret = profile::profile(
             &self.track,
             &points,
@@ -56,7 +56,6 @@ impl Segment {
             &parameters.profile_options,
             width,
             height,
-            parameters.debug,
         );
         if parameters.debug {
             let filename = std::format!("/tmp/profile-{}.svg", self.id);
@@ -193,7 +192,7 @@ impl Segment {
         false
     }
 
-    pub fn profile_points(&self) -> Vec<InputPoint> {
+    pub fn profile_points(&self, _parameters: &Parameters) -> Vec<InputPoint> {
         let mut ret = self.points.clone();
         ret.retain(|p| {
             let distance = self.distance_to_track(&p);
@@ -218,11 +217,11 @@ impl Segment {
         ret
     }
 
-    pub fn render_map(&self, (width, height): (i32, i32), debug: bool) -> String {
+    pub fn render_map(&self, (width, height): (i32, i32), parameters: &Parameters) -> String {
         log::info!("render map:{}", self.id);
-        let points = self.map_points();
-        let ret = svgmap::map(&self.track, &points, &self, width, height, debug);
-        if debug {
+        let points = self.map_points(parameters);
+        let ret = svgmap::map(&self.track, &points, &self, width, height, parameters.debug);
+        if parameters.debug {
             let filename = std::format!("/tmp/map-{}.svg", self.id);
             std::fs::write(filename, &ret).expect("Unable to write file");
         }
@@ -278,8 +277,8 @@ impl Segment {
         }
     }
 
-    fn map_points(&self) -> Vec<InputPoint> {
-        let profile = self.profile_points();
+    fn map_points(&self, parameters: &Parameters) -> Vec<InputPoint> {
+        let profile = self.profile_points(parameters);
         // at most 15 points on the map.
         let nextra = if profile.len() >= 15 {
             0

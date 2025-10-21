@@ -375,7 +375,7 @@ impl ProfileView {
         self.SD.append(points_group);
     }
 
-    pub fn add_track(&mut self, track: &Track, inputpoints: &Vec<InputPoint>, _debug: bool) {
+    pub fn add_track(&mut self, track: &Track, inputpoints: &Vec<InputPoint>) {
         let bbox = &self.bboxview;
 
         /*if render_device != RenderDevice::PDF {
@@ -505,11 +505,10 @@ pub fn profile(
     options: &ProfileOptions,
     W: i32,
     H: i32,
-    debug: bool,
 ) -> String {
     let mut view = ProfileView::init(&segment.profile_bbox, options, W, H);
     view.add_canvas();
-    view.add_track(&track, inputpoints, debug);
+    view.add_track(&track, inputpoints);
     view.render_model();
     view.render()
 }

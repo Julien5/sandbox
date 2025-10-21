@@ -165,7 +165,7 @@ impl BackendData {
         ret
     }
     pub fn get_waypoints(&self, segment: &Segment) -> Vec<Waypoint> {
-        let points = segment.profile_points();
+        let points = segment.profile_points(&self.get_parameters());
         self.export_points(&points)
     }
 
@@ -228,7 +228,7 @@ impl BackendData {
         match what.as_str() {
             "profile" => segment.render_profile((W, H), &self.parameters),
             "ylabels" => self.render_yaxis_labels_overlay(segment, (W, H)),
-            "map" => segment.render_map((W, H), self.parameters.debug),
+            "map" => segment.render_map((W, H), &self.parameters),
             _ => {
                 // assert!(false);
                 String::new()
@@ -249,7 +249,7 @@ impl BackendData {
         ret
     }
     pub fn render_segment_map(&self, segment: &Segment, (W, H): (i32, i32)) -> String {
-        let ret = segment.render_map((W, H), self.parameters.debug);
+        let ret = segment.render_map((W, H), &self.parameters);
         if self.get_parameters().debug {
             let filename = std::format!("/tmp/map-{}.svg", segment.id);
             std::fs::write(filename, &ret).expect("Unable to write file");
