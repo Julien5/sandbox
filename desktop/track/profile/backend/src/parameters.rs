@@ -17,7 +17,7 @@ impl Default for ProfileOptions {
     fn default() -> ProfileOptions {
         ProfileOptions {
             elevation_indicators: std::collections::HashSet::default(),
-            npoints: 15,
+            npoints: 5,
         }
     }
 }

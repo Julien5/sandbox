@@ -4,11 +4,16 @@ use crate::{
     backend::Segment,
     inputpoint::{InputPoint, InputType, TrackProjection},
     parameters::Parameters,
+    track::Track,
 };
 
 fn placement_order_profile(point: &InputPoint) -> usize {
     let delta = point.distance_to_track();
     let kind = point.kind();
+    let population = match point.population() {
+        Some(p) => p,
+        None => 0,
+    };
     let mut ret = 1;
     if kind == InputType::GPX && delta < 1000f64 {
         return ret;
@@ -18,15 +23,15 @@ fn placement_order_profile(point: &InputPoint) -> usize {
         return ret;
     }
     ret += 1;
-    if kind == InputType::Village && delta < 1000f64 {
-        return ret;
-    }
-    ret += 1;
-    if kind == InputType::Village && delta < 200f64 {
+    if kind == InputType::Village && delta < 1000f64 && population > 1000 {
         return ret;
     }
     ret += 1;
     if (kind == InputType::MountainPass || kind == InputType::Peak) && delta < 500f64 {
+        return ret;
+    }
+    ret += 1;
+    if kind == InputType::Village && delta < 200f64 {
         return ret;
     }
     ret += 10;
@@ -74,6 +79,14 @@ fn contains(interval: &Interval, point: &InputPoint) -> bool {
     interval.start <= index && index < interval.end
 }
 
+fn tight(interval: &mut Interval, track: &Track) {
+    let dstart = track.distance(interval.start);
+    let dend = track.distance(interval.end - 1);
+    let margin = (dend - dstart) / 8f64;
+    interval.start = track.index_after(dstart + margin);
+    interval.end = track.index_before(dend - margin);
+}
+
 fn largest_interval(segment: &Segment, points: &Points) -> Interval {
     let mut indices: Vec<_> = points
         .iter()
@@ -106,14 +119,15 @@ pub fn profile_points(segment: &Segment, parameters: &Parameters) -> Vec<InputPo
         .map(|(i, p)| (i, p.clone()))
         .collect();
     while ret.len() != parameters.profile_options.npoints {
-        let interval = largest_interval(segment, &ret);
+        let mut interval = largest_interval(segment, &ret);
+        tight(&mut interval, &segment.track);
         // keep points in the interval
         assert!(!candidates.is_empty());
         let mut inner = candidates.clone();
         inner.retain(|index, p| contains(&interval, p));
         let mut selected = if inner.is_empty() {
             let d0 = segment.track.distance(interval.start);
-            let d1 = segment.track.distance(interval.end);
+            let d1 = segment.track.distance(interval.end - 1);
             let dmid = 0.5 * (d0 + d1);
             log::trace!("{:.1} {:.1} => {:.1}", d0, d1, dmid);
             let indx = segment.track.index_after(dmid);
