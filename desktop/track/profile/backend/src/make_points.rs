@@ -121,15 +121,15 @@ pub fn profile_points(segment: &Segment, parameters: &Parameters) -> Vec<InputPo
     while ret.len() != parameters.profile_options.npoints {
         let mut interval = largest_interval(segment, &ret);
         tight(&mut interval, &segment.track);
+        let d0 = segment.track.distance(interval.start);
+        let d1 = segment.track.distance(interval.end - 1);
+        log::trace!("{:.1} {:.1}", d0 / 1000f64, d1 / 1000f64,);
         // keep points in the interval
         assert!(!candidates.is_empty());
         let mut inner = candidates.clone();
         inner.retain(|index, p| contains(&interval, p));
         let mut selected = if inner.is_empty() {
-            let d0 = segment.track.distance(interval.start);
-            let d1 = segment.track.distance(interval.end - 1);
             let dmid = 0.5 * (d0 + d1);
-            log::trace!("{:.1} {:.1} => {:.1}", d0, d1, dmid);
             let indx = segment.track.index_after(dmid);
             let wgs = &segment.track.wgs84[indx];
             let euc = &segment.track.euclidian[indx];
