@@ -109,13 +109,15 @@ pub fn profile_points(segment: &Segment, parameters: &Parameters) -> Vec<InputPo
         if inner.is_empty() {
             break;
         }
-        let selected = inner.first().unwrap().to_owned().clone();
+        let mut selected = inner.first().unwrap().to_owned().clone();
+        selected.label_placement_order = 1 + ret.len();
         // TODO: implement == for InputPoint
         let index = candidates
             .iter()
             .position(|p| p.wgs84 == selected.wgs84)
             .unwrap();
         candidates.remove(index);
+        log::trace!("point:{:?}", selected);
         ret.push(selected.clone());
     }
     ret

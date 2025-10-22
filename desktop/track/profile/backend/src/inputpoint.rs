@@ -39,7 +39,7 @@ pub struct InputPoint {
     pub track_projection: Option<TrackProjection>,
     // <= 5 => the label is forcefully placed, with overlap
     // >5 => the label is not placed if no non-overlaping candidate is found.
-    pub label_placement_order: i32,
+    pub label_placement_order: usize,
 }
 
 impl PartialEq for InputPoint {
@@ -92,7 +92,7 @@ impl InputPoint {
             euclidian: euclidean.clone(),
             track_projection: None,
             tags: Tags::new(),
-            label_placement_order: i32::MAX,
+            label_placement_order: usize::MAX,
         }
     }
     pub fn from_gpx(
@@ -117,7 +117,7 @@ impl InputPoint {
             track_projection: None,
             tags,
             euclidian: euclidean.clone(),
-            label_placement_order: i32::MAX,
+            label_placement_order: usize::MAX,
         }
     }
     pub fn round_track_index(&self) -> Option<usize> {

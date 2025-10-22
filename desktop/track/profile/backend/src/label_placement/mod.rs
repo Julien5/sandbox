@@ -93,7 +93,7 @@ pub struct PointFeature {
     id: String,
     circle: PointFeatureDrawing,
     label: Label,
-    placement_order: i32,
+    placement_order: usize,
 }
 
 pub type CandidatesGenerator = fn(&PointFeature) -> Vec<LabelBoundingBox>;
@@ -114,7 +114,7 @@ impl PointFeature {
         id: String,
         circle: PointFeatureDrawing,
         label: Label,
-        priority: i32,
+        priority: usize,
     ) -> PointFeature {
         PointFeature {
             id,
@@ -349,7 +349,7 @@ fn filter_sort_candidates(
 
 fn build_graph_gen(
     points: &Vec<PointFeature>,
-    priority: &i32,
+    priority: &usize,
     gen: CandidatesGenerator,
     drawingbox: &BoundingBox,
     obstacles: &Obstacles,
@@ -406,7 +406,7 @@ pub struct PlacementResult {
 
 fn place_labels_gen_worker(
     points: &mut Vec<PointFeature>,
-    priority: &i32,
+    priority: &usize,
     gen: CandidatesGenerator,
     bbox: &BoundingBox,
     obstacles: &Obstacles,

@@ -175,9 +175,9 @@ impl Segment {
         ret
     }
 
-    fn placement_order_map(point: &InputPoint) -> i32 {
+    fn placement_order_map(point: &InputPoint) -> usize {
         if point.name().is_none() {
-            return i32::MAX - 10;
+            return usize::MAX - 10;
         }
         match point.kind() {
             InputType::Hamlet => {
@@ -225,7 +225,7 @@ impl Segment {
         ret.extend_from_slice(&extra);
         for w in &mut ret {
             if profile.contains(&w) {
-                assert!(w.label_placement_order < i32::MAX);
+                assert!(w.label_placement_order < usize::MAX);
             } else {
                 w.label_placement_order = Self::placement_order_map(&w) + 5;
             }
