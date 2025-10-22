@@ -24,7 +24,7 @@ class _PointsSliderState extends State<PointsSlider> {
       readModel();
       RootModel rootModel = Provider.of<RootModel>(context, listen: false);
       developer.log("E=${rootModel.statistics().distanceEnd}");
-      _sliderValues.init([5, 8, 10, 15, 20], 10);
+      _sliderValues.init([0, 5, 10, 15, 20, 25], 10);
       setState(() {});
     });
   }
