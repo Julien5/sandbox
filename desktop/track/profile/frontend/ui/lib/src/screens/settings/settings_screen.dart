@@ -110,7 +110,7 @@ class _SegmentsSettingsState extends State<SegmentsSettings> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      readModel();
+      //? readModel();
       RootModel rootModel = Provider.of<RootModel>(context, listen: false);
       developer.log("E=${rootModel.statistics().distanceEnd}");
 

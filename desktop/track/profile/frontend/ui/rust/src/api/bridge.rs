@@ -70,6 +70,7 @@ pub enum _ProfileIndication {
 #[frb(mirror(ProfileOptions))]
 pub struct _ProfileOptions {
     pub elevation_indicators: std::collections::HashSet<ProfileIndication>,
+    pub npoints: usize,
 }
 
 #[frb(mirror(Parameters))]

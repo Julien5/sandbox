@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ui/src/screens/segments/vertical/pointsslider.dart';
 import 'indicatorselector.dart';
 import 'segmentflipbox.dart';
 
@@ -16,6 +17,7 @@ class SegmentViewVertical extends StatelessWidget {
           SegmentFlipBox(),
           SizedBox(height: 50),
           ElevationIndicatorChooser(),
+          PointCountChooser(),
         ],
       ),
     );
