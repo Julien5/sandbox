@@ -49,6 +49,7 @@ impl Segment {
     pub fn render_profile(&self, (width, height): (i32, i32), parameters: &Parameters) -> String {
         log::info!("render profile:{}", self.id);
         let points = self.profile_points(parameters);
+        log::trace!("points:{:?}", points.len());
         let ret = profile::profile(
             &self.track,
             &points,
@@ -227,7 +228,7 @@ impl Segment {
             if profile.contains(&w) {
                 assert!(w.label_placement_order < usize::MAX);
             } else {
-                w.label_placement_order = Self::placement_order_map(&w) + 5;
+                w.label_placement_order = Self::placement_order_map(&w) + profile.len();
             }
         }
         ret

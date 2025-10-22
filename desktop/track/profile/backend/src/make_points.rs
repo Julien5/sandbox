@@ -1,17 +1,20 @@
+use std::collections::HashMap;
+
 use crate::{
     backend::Segment,
-    inputpoint::{InputPoint, InputType},
+    inputpoint::{InputPoint, InputType, TrackProjection},
     parameters::Parameters,
 };
 
-fn placement_order_profile(point: &InputPoint) -> i32 {
+fn placement_order_profile(point: &InputPoint) -> usize {
     let delta = point.distance_to_track();
     let kind = point.kind();
     let mut ret = 1;
-    if kind == InputType::City && delta < 1000f64 {
+    if kind == InputType::GPX && delta < 1000f64 {
         return ret;
     }
-    if (kind == InputType::MountainPass || kind == InputType::Peak) && delta < 500f64 {
+    ret += 1;
+    if kind == InputType::City && delta < 1000f64 {
         return ret;
     }
     ret += 1;
@@ -19,14 +22,14 @@ fn placement_order_profile(point: &InputPoint) -> i32 {
         return ret;
     }
     ret += 1;
-    if kind == InputType::City && delta < 10000f64 {
-        return ret;
-    }
-    ret += 1;
     if kind == InputType::Village && delta < 200f64 {
         return ret;
     }
     ret += 1;
+    if (kind == InputType::MountainPass || kind == InputType::Peak) && delta < 500f64 {
+        return ret;
+    }
+    ret += 10;
     ret
 }
 
@@ -91,33 +94,53 @@ fn largest_interval(segment: &Segment, points: &Points) -> Interval {
         end: segment.range.end,
     });
     intervals.sort_by_key(|i| i.len());
-    intervals.first().unwrap().clone()
+    intervals.last().unwrap().clone()
 }
 
 pub fn profile_points(segment: &Segment, parameters: &Parameters) -> Vec<InputPoint> {
     let mut ret = Vec::new();
-    let mut candidates = segment.points.clone();
+    let mut candidates: HashMap<usize, InputPoint> = segment
+        .points
+        .iter()
+        .enumerate()
+        .map(|(i, p)| (i, p.clone()))
+        .collect();
     while ret.len() != parameters.profile_options.npoints {
         let interval = largest_interval(segment, &ret);
         // keep points in the interval
         assert!(!candidates.is_empty());
-        let mut inner: Vec<_> = candidates
-            .iter()
-            .filter(|p| contains(&interval, p))
-            .collect();
-        inner.sort_by_key(|p| placement_order_profile(p));
-        if inner.is_empty() {
-            break;
-        }
-        let mut selected = inner.first().unwrap().to_owned().clone();
-        selected.label_placement_order = 1 + ret.len();
-        // TODO: implement == for InputPoint
-        let index = candidates
-            .iter()
-            .position(|p| p.wgs84 == selected.wgs84)
-            .unwrap();
-        candidates.remove(index);
-        log::trace!("point:{:?}", selected);
+        let mut inner = candidates.clone();
+        inner.retain(|index, p| contains(&interval, p));
+        let mut selected = if inner.is_empty() {
+            let d0 = segment.track.distance(interval.start);
+            let d1 = segment.track.distance(interval.end);
+            let dmid = 0.5 * (d0 + d1);
+            log::trace!("{:.1} {:.1} => {:.1}", d0, d1, dmid);
+            let indx = segment.track.index_after(dmid);
+            let wgs = &segment.track.wgs84[indx];
+            let euc = &segment.track.euclidian[indx];
+            let mut p = InputPoint::from_wgs84(&wgs, &euc);
+            p.track_projection = Some(TrackProjection {
+                track_floating_index: indx as f64,
+                track_index: indx,
+                track_distance: 0f64,
+                elevation: wgs.z(),
+                euclidean: euc.clone(),
+            });
+            p.tags
+                .insert("name".to_string(), format!("Point-{}", ret.len()));
+            p
+        } else {
+            let mut innerv: Vec<_> = inner.iter().map(|(index, p)| (index, p)).collect();
+            innerv.sort_by_key(|(index, p)| placement_order_profile(p));
+            let first = innerv.first().unwrap();
+            let index = first.0;
+            let point = first.1;
+            candidates.remove(index);
+            point.clone()
+        };
+        selected.label_placement_order = placement_order_profile(&selected);
+        log::trace!("=> selected {:?}", selected.name());
         ret.push(selected.clone());
     }
     ret
