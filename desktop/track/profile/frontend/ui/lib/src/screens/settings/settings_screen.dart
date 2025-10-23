@@ -154,6 +154,7 @@ class _SegmentsSettingsState extends State<SegmentsSettings> {
         smoothWidth: oldParameters.smoothWidth,
         profileOptions: oldParameters.profileOptions,
         debug: oldParameters.debug,
+        npoints: oldParameters.npoints,
       );
       rootModel.setParameters(newParameters);
     } catch (e,stacktrace) {

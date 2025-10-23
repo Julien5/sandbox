@@ -27,6 +27,6 @@ async fn compile_remote(document: &str) -> Vec<u8> {
     data.unwrap().to_vec()
 }
 
-pub async fn compile(document: &str, debug: bool) -> Vec<u8> {
+pub async fn compile(document: &str) -> Vec<u8> {
     compile_remote(document).await
 }

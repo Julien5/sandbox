@@ -2507,8 +2507,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   Parameters dco_decode_parameters(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 8)
-      throw Exception('unexpected arr length: expect 8 but see ${arr.length}');
+    if (arr.length != 9)
+      throw Exception('unexpected arr length: expect 9 but see ${arr.length}');
     return Parameters(
       debug: dco_decode_bool(arr[0]),
       maxStepSize: dco_decode_f_64(arr[1]),
@@ -2518,6 +2518,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       segmentOverlap: dco_decode_f_64(arr[5]),
       smoothWidth: dco_decode_f_64(arr[6]),
       profileOptions: dco_decode_profile_options(arr[7]),
+      npoints: dco_decode_i_32(arr[8]),
     );
   }
 
@@ -2531,11 +2532,10 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ProfileOptions dco_decode_profile_options(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 2)
-      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    if (arr.length != 1)
+      throw Exception('unexpected arr length: expect 1 but see ${arr.length}');
     return ProfileOptions(
       elevationIndicators: dco_decode_Set_profile_indication_None(arr[0]),
-      npoints: dco_decode_String(arr[1]),
     );
   }
 
@@ -3012,6 +3012,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_segmentOverlap = sse_decode_f_64(deserializer);
     var var_smoothWidth = sse_decode_f_64(deserializer);
     var var_profileOptions = sse_decode_profile_options(deserializer);
+    var var_npoints = sse_decode_i_32(deserializer);
     return Parameters(
       debug: var_debug,
       maxStepSize: var_maxStepSize,
@@ -3021,6 +3022,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       segmentOverlap: var_segmentOverlap,
       smoothWidth: var_smoothWidth,
       profileOptions: var_profileOptions,
+      npoints: var_npoints,
     );
   }
 
@@ -3039,11 +3041,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_elevationIndicators = sse_decode_Set_profile_indication_None(
       deserializer,
     );
-    var var_npoints = sse_decode_String(deserializer);
-    return ProfileOptions(
-      elevationIndicators: var_elevationIndicators,
-      npoints: var_npoints,
-    );
+    return ProfileOptions(elevationIndicators: var_elevationIndicators);
   }
 
   @protected
@@ -3554,6 +3552,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_f_64(self.segmentOverlap, serializer);
     sse_encode_f_64(self.smoothWidth, serializer);
     sse_encode_profile_options(self.profileOptions, serializer);
+    sse_encode_i_32(self.npoints, serializer);
   }
 
   @protected
@@ -3575,7 +3574,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       self.elevationIndicators,
       serializer,
     );
-    sse_encode_String(self.npoints, serializer);
   }
 
   @protected

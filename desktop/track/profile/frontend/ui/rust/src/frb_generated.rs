@@ -2766,12 +2766,12 @@ const _: fn() = || {
         let _: f64 = Parameters.segment_overlap;
         let _: f64 = Parameters.smooth_width;
         let _: crate::api::bridge::ProfileOptions = Parameters.profile_options;
+        let _: i32 = Parameters.npoints;
     }
     {
         let ProfileOptions = None::<crate::api::bridge::ProfileOptions>.unwrap();
         let _: std::collections::HashSet<crate::api::bridge::ProfileIndication> =
             ProfileOptions.elevation_indicators;
-        let _: String = ProfileOptions.npoints;
     }
     {
         let SegmentStatistics = None::<crate::api::bridge::SegmentStatistics>.unwrap();
@@ -3095,6 +3095,7 @@ impl SseDecode for crate::api::bridge::Parameters {
         let mut var_segmentOverlap = <f64>::sse_decode(deserializer);
         let mut var_smoothWidth = <f64>::sse_decode(deserializer);
         let mut var_profileOptions = <crate::api::bridge::ProfileOptions>::sse_decode(deserializer);
+        let mut var_npoints = <i32>::sse_decode(deserializer);
         return crate::api::bridge::Parameters {
             debug: var_debug,
             max_step_size: var_maxStepSize,
@@ -3104,6 +3105,7 @@ impl SseDecode for crate::api::bridge::Parameters {
             segment_overlap: var_segmentOverlap,
             smooth_width: var_smoothWidth,
             profile_options: var_profileOptions,
+            npoints: var_npoints,
         };
     }
 }
@@ -3127,10 +3129,8 @@ impl SseDecode for crate::api::bridge::ProfileOptions {
         let mut var_elevationIndicators = <std::collections::HashSet<
             crate::api::bridge::ProfileIndication,
         >>::sse_decode(deserializer);
-        let mut var_npoints = <String>::sse_decode(deserializer);
         return crate::api::bridge::ProfileOptions {
             elevation_indicators: var_elevationIndicators,
-            npoints: var_npoints,
         };
     }
 }
@@ -3550,6 +3550,7 @@ impl flutter_rust_bridge::IntoDart for FrbWrapper<crate::api::bridge::Parameters
             self.0.segment_overlap.into_into_dart().into_dart(),
             self.0.smooth_width.into_into_dart().into_dart(),
             self.0.profile_options.into_into_dart().into_dart(),
+            self.0.npoints.into_into_dart().into_dart(),
         ]
         .into_dart()
     }
@@ -3590,11 +3591,7 @@ impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<crate::api::bridge::ProfileInd
 // Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for FrbWrapper<crate::api::bridge::ProfileOptions> {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
-        [
-            self.0.elevation_indicators.into_into_dart().into_dart(),
-            self.0.npoints.into_into_dart().into_dart(),
-        ]
-        .into_dart()
+        [self.0.elevation_indicators.into_into_dart().into_dart()].into_dart()
     }
 }
 impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
@@ -3923,6 +3920,7 @@ impl SseEncode for crate::api::bridge::Parameters {
         <f64>::sse_encode(self.segment_overlap, serializer);
         <f64>::sse_encode(self.smooth_width, serializer);
         <crate::api::bridge::ProfileOptions>::sse_encode(self.profile_options, serializer);
+        <i32>::sse_encode(self.npoints, serializer);
     }
 }
 
@@ -3950,7 +3948,6 @@ impl SseEncode for crate::api::bridge::ProfileOptions {
             self.elevation_indicators,
             serializer,
         );
-        <String>::sse_encode(self.npoints, serializer);
     }
 }
 

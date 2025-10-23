@@ -53,6 +53,7 @@ class _PointsSliderState extends State<PointsSlider> {
       smoothWidth: oldParameters.smoothWidth,
       profileOptions: newProfileOptions,
       debug: oldParameters.debug,
+      npoints: oldParameters.npoints,
     );
     rootModel.setParameters(newParameters);
   }
