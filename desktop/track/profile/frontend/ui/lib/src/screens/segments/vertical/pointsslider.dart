@@ -32,7 +32,7 @@ class _PointsSliderState extends State<PointsSlider> {
   void readModel() {
     RootModel rootModel = Provider.of<RootModel>(context, listen: false);
     Parameters p = rootModel.parameters();
-    //_sliderValues.setValue(p.profileOptions.npoints.toDouble());
+    _sliderValues.setValue(p.profileOptions.npoints.toDouble());
   }
 
   void updateModel() {
@@ -40,7 +40,7 @@ class _PointsSliderState extends State<PointsSlider> {
     Parameters oldParameters = rootModel.parameters();
     ProfileOptions newProfileOptions = ProfileOptions(
       elevationIndicators: oldParameters.profileOptions.elevationIndicators,
-      //npoints: selectedValue!.toDouble(),
+      npoints: selectedValue!.toInt(),
     );
 
     developer.log("set parameters on root model to update all segments");
@@ -53,7 +53,6 @@ class _PointsSliderState extends State<PointsSlider> {
       smoothWidth: oldParameters.smoothWidth,
       profileOptions: newProfileOptions,
       debug: oldParameters.debug,
-      npoints: oldParameters.npoints,
     );
     rootModel.setParameters(newParameters);
   }

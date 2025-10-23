@@ -55,8 +55,7 @@ class RootModel extends ChangeNotifier {
 
   void setParameters(bridge.Parameters p) {
     _bridge.setParameters(parameters: p);
-    developer.log('[root mode]: setParameters()');
-    //notifyListeners();
+    notifyListeners();
   }
 
   Future<List<int>> generateGpx() {
@@ -72,7 +71,6 @@ class RootModel extends ChangeNotifier {
   }
 
   List<bridge.Segment> segments() {
-    developer.log('[root mode]: segments()');
     return _bridge.segments();
   }
  

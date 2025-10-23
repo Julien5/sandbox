@@ -118,8 +118,7 @@ pub fn profile_points(segment: &Segment, parameters: &Parameters) -> Vec<InputPo
         .enumerate()
         .map(|(i, p)| (i, p.clone()))
         .collect();
-    while ret.len() != 15 {
-        //parameters.profile_options.npoints as usize {
+    while ret.len() != parameters.profile_options.npoints as usize {
         let mut interval = largest_interval(segment, &ret);
         tight(&mut interval, &segment.track);
         let d0 = segment.track.distance(interval.start);
