@@ -217,6 +217,9 @@ class _SegmentsSettingsState extends State<SegmentsSettings> {
 
   @override
   Widget build(BuildContext ctx) {
+    RootModel model = Provider.of<RootModel>(ctx);
+    assert(model.segments().isNotEmpty);
+    developer.log("[Settings] length=${model.segments().length}");
     Table table1 = Table(
       columnWidths: const {
         0: FlexColumnWidth(), // Fixed width for the first column
