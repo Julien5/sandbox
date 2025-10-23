@@ -93,6 +93,7 @@ impl Backend {
         self.dmut().generateGpx()
     }
     pub fn segments(&self) -> Vec<Segment> {
+        println!("d.segments()");
         self.d().segments()
     }
     pub fn render_segment_what(
@@ -190,6 +191,7 @@ impl BackendData {
     }
 
     pub fn segments(&self) -> Vec<Segment> {
+        println!("impl.segments()");
         let mut ret = Vec::new();
 
         let mut start = 0f64;

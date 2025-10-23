@@ -16,8 +16,8 @@ class SegmentViewVertical extends StatelessWidget {
         children: [
           SegmentFlipBox(),
           SizedBox(height: 50),
-          ElevationIndicatorChooser(),
-          PointCountChooser(),
+          //ElevationIndicatorChooser(),
+          //PointCountChooser(),
         ],
       ),
     );

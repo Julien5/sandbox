@@ -2,6 +2,9 @@
 
 use flutter_rust_bridge::frb;
 
+// general note: dont use usize on web
+// see eg. https://github.com/fzyzcjy/flutter_rust_bridge/issues/2035
+
 // must be exported for mirroring Segment.
 pub use std::ops::Range;
 pub use tracks::backend::SegmentStatistics;
@@ -70,7 +73,6 @@ pub enum _ProfileIndication {
 #[frb(mirror(ProfileOptions))]
 pub struct _ProfileOptions {
     pub elevation_indicators: std::collections::HashSet<ProfileIndication>,
-    pub npoints: usize,
 }
 
 #[frb(mirror(Parameters))]
@@ -206,6 +208,7 @@ impl Bridge {
 
     #[frb(sync)]
     pub fn segments(&self) -> Vec<Segment> {
+        println!("segments()");
         let S = self.backend.segments();
         let mut ret = Vec::new();
         for s in S {

@@ -91,13 +91,13 @@ List<double> segmentLengthSliderValues(double trackLength) {
 List<double> fromKmh(List<double> list) {
   List<double> ret = list;
   for (int k = 0; k < list.length; ++k) {
-    ret[k] = list[k] * 1000/3600;
+    ret[k] = list[k] * 1000 / 3600;
   }
   return ret;
 }
 
 List<double> speedSliderValues() {
-  return fromKmh([5, 10, 12.5, 13.5,15, 18.0, 20, 25, 28]);
+  return fromKmh([5, 10, 12.5, 13.5, 15, 18.0, 20, 25, 28]);
 }
 
 class _SegmentsSettingsState extends State<SegmentsSettings> {
@@ -119,7 +119,7 @@ class _SegmentsSettingsState extends State<SegmentsSettings> {
       _segmentLengthSliderValues.init(values, trackLength / 2);
 
       values = speedSliderValues();
-      _speedSliderValues.init(values, 15/3.6);
+      _speedSliderValues.init(values, 15 / 3.6);
       setState(() {});
     });
   }
@@ -129,30 +129,39 @@ class _SegmentsSettingsState extends State<SegmentsSettings> {
     bridge.Parameters parameters = rootModel.parameters();
     startTime = DateTime.parse(parameters.startTime);
     _speedSliderValues.setValue(parameters.speed);
-    _segmentLengthSliderValues.setValue(parameters.segmentLength/1.1);
+    _segmentLengthSliderValues.setValue(parameters.segmentLength / 1.1);
   }
 
   void writeModel(BuildContext context) {
-    RootModel rootModel = Provider.of<RootModel>(context, listen: false);
-    bridge.Parameters oldParameters = rootModel.parameters();
-    String rfc3339time = startTime.toIso8601String();
-    if (!rfc3339time.endsWith("Z")) {
-      rfc3339time = "${rfc3339time}Z";
+    // smoke
+    try {
+      RootModel rootModel = Provider.of<RootModel>(context, listen: false);
+      developer.log('[1]');
+      bridge.Parameters oldParameters = rootModel.parameters();
+      developer.log('[2]');
+      String rfc3339time = startTime.toIso8601String();
+      if (!rfc3339time.endsWith("Z")) {
+        rfc3339time = "${rfc3339time}Z";
+      }
+      var realLength = _segmentLengthSliderValues.current() * 1.1;
+      var overlap = _segmentLengthSliderValues.current() * 0.1;
+      bridge.Parameters newParameters = bridge.Parameters(
+        speed: _speedSliderValues.current(),
+        startTime: rfc3339time,
+        segmentLength: realLength,
+        segmentOverlap: overlap,
+        maxStepSize: oldParameters.maxStepSize,
+        smoothWidth: oldParameters.smoothWidth,
+        profileOptions: oldParameters.profileOptions,
+        debug: oldParameters.debug,
+      );
+      rootModel.setParameters(newParameters);
+    } catch (e,stacktrace) {
+      // No specified type, handles all
+      developer.log('Something really unknown: $e');
+      debugPrintStack(stackTrace: stacktrace, label: 'my_label', maxFrames: 50);
     }
-    var realLength = _segmentLengthSliderValues.current()*1.1;
-    var overlap = _segmentLengthSliderValues.current()*0.1;
-    bridge.Parameters newParameters = bridge.Parameters(
-      speed: _speedSliderValues.current(),
-      startTime: rfc3339time,
-      segmentLength: realLength,
-      segmentOverlap: overlap,
-      maxStepSize: oldParameters.maxStepSize,
-      smoothWidth: oldParameters.smoothWidth,
-      profileOptions: oldParameters.profileOptions,
-      debug: oldParameters.debug,
-    );
-    rootModel.setParameters(newParameters);
-    Navigator.of(context).pushNamed(RouteManager.segmentsView);
+    //Navigator.of(context).pushNamed(RouteManager.segmentsView);
   }
 
   Future<void> _selectTime(BuildContext context) async {
@@ -215,6 +224,13 @@ class _SegmentsSettingsState extends State<SegmentsSettings> {
     return "Segment length: ${km.toStringAsFixed(1)} km";
   }
 
+  void onSegmentLengthChanged(double value) {    
+    writeModel(context);
+    setState(() {
+      _segmentLengthSliderValues.setValue(value);
+    });
+  }
+
   @override
   Widget build(BuildContext ctx) {
     RootModel model = Provider.of<RootModel>(ctx);
@@ -274,9 +290,7 @@ class _SegmentsSettingsState extends State<SegmentsSettings> {
       children: [
         Row(
           children: [
-            Expanded(
-              child: Text(speedAsString()),
-            ),
+            Expanded(child: Text(speedAsString())),
             Expanded(
               child: SliderValuesWidget(
                 values: _speedSliderValues,
@@ -284,23 +298,20 @@ class _SegmentsSettingsState extends State<SegmentsSettings> {
                     (value) => setState(() {
                       _speedSliderValues.setValue(value);
                     }),
-                formatLabel: (value) => "${(value*3600/1000).toStringAsFixed(1)} km/h",
+                formatLabel:
+                    (value) =>
+                        "${(value * 3600 / 1000).toStringAsFixed(1)} km/h",
               ),
             ),
           ],
         ),
         Row(
           children: [
-            Expanded(
-              child: Text(segmentLengthAsString()),
-            ),
+            Expanded(child: Text(segmentLengthAsString())),
             Expanded(
               child: SliderValuesWidget(
                 values: _segmentLengthSliderValues,
-                onChanged:
-                    (value) => setState(() {
-                      _segmentLengthSliderValues.setValue(value);
-                    }),
+                onChanged: onSegmentLengthChanged,
                 formatLabel: (value) => "${(value / 1000).floor()} km",
               ),
             ),
