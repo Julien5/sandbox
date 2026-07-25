@@ -16,50 +16,54 @@ pub fn init_app() {
 fn init_android_context() {
     use std::ffi::c_void;
 
-    // Check if ndk_context is already initialized (via android-activity/ndk-glue)
     if std::panic::catch_unwind(ndk_context::android_context).is_ok() {
         return;
     }
 
-    // Get the JavaVM via the JNI invocation API
     let jvm_ptr = get_java_vm();
     let Some(jvm_ptr) = jvm_ptr else {
         log::warn!("Could not get JavaVM — MIDI will not work on Android");
         return;
     };
 
-    // Initialize ndk_context with a null context_jobject.
-    // jni-min-helper will detect null and fall back to ActivityThread.
     unsafe {
         ndk_context::initialize_android_context(jvm_ptr as *mut c_void, std::ptr::null_mut());
     }
 }
 
+// Resolve JNI_GetCreatedJavaVMs via dlsym at runtime (not link-time),
+// since the symbol is not exported by any shared library linked to our .so.
 #[cfg(target_os = "android")]
-type JniInt = i32;
+fn get_java_vm() -> Option<*mut std::ffi::c_void> {
+    use std::ffi::CString;
 
-#[cfg(target_os = "android")]
-enum JniJavaVm {}
+    type JniGetCreatedJavaVMs = unsafe extern "C" fn(
+        *mut *mut std::ffi::c_void,
+        i32,
+        *mut i32,
+    ) -> i32;
 
-#[cfg(target_os = "android")]
-extern "C" {
-    fn JNI_GetCreatedJavaVMs(
-        vm_buf: *mut *mut JniJavaVm,
-        buf_len: JniInt,
-        n_vms: *mut JniInt,
-    ) -> JniInt;
-}
+    extern "C" {
+        fn dlsym(handle: *mut std::ffi::c_void, symbol: *const u8) -> *mut std::ffi::c_void;
+    }
 
-#[cfg(target_os = "android")]
-fn get_java_vm() -> Option<*mut JniJavaVm> {
-    unsafe {
-        let mut vm: *mut JniJavaVm = std::ptr::null_mut();
-        let mut n_vms: JniInt = 0;
-        let result = JNI_GetCreatedJavaVMs(&mut vm, 1, &mut n_vms);
-        if result == 0 && n_vms > 0 && !vm.is_null() {
-            Some(vm)
-        } else {
-            None
-        }
+    // RTLD_DEFAULT on Linux/Android = ((void*)0)
+    const RTLD_DEFAULT: *mut std::ffi::c_void = std::ptr::null_mut();
+
+    let symbol = CString::new("JNI_GetCreatedJavaVMs").ok()?;
+    let func_ptr = unsafe { dlsym(RTLD_DEFAULT, symbol.as_ptr() as *const u8) };
+    if func_ptr.is_null() {
+        return None;
+    }
+
+    let func: JniGetCreatedJavaVMs = unsafe { std::mem::transmute(func_ptr) };
+
+    let mut vm: *mut std::ffi::c_void = std::ptr::null_mut();
+    let mut n_vms: i32 = 0;
+    let result = unsafe { func(&mut vm, 1, &mut n_vms) };
+    if result == 0 && n_vms > 0 && !vm.is_null() {
+        Some(vm)
+    } else {
+        None
     }
 }
