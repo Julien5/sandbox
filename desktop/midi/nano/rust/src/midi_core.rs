@@ -9,8 +9,8 @@ const NOTE_NAMES: &[&str] = &[
 ];
 
 const SCALE_NOTES: &[u8] = &[
-    48, 50, 52, 53, 55, 57, 59, 60, 62, 64, 65, 67, 69, 71, 72,
-    71, 69, 67, 65, 64, 62, 60, 59, 57, 55, 53, 52, 50, 48,
+    48, 50, 52, 53, 55, 57, 59, 60, 62, 64, 65, 67, 69, 71, 72, 71, 69, 67, 65, 64, 62, 60, 59, 57,
+    55, 53, 52, 50, 48,
 ];
 
 pub type EventSender = Arc<dyn Fn(String) + Send + Sync>;
@@ -25,20 +25,24 @@ static CONNECTION: Mutex<Option<MidiInputConnection<()>>> = Mutex::new(None);
 static SIM_STOP: Mutex<Option<Arc<AtomicBool>>> = Mutex::new(None);
 
 fn simulation_setting() -> Option<String> {
-    if let Ok(val) = std::env::var("SIMULATION") {
-        if !val.is_empty() {
-            return Some(val);
+    let val = std::env::var("SIMULATION").ok().or_else(|| {
+        #[cfg(target_os = "android")]
+        {
+            android_system_property("debug.nano.sim")
         }
-    }
-    #[cfg(target_os = "android")]
-    {
-        if let Some(val) = android_system_property("debug.nano.sim") {
-            if !val.is_empty() {
-                return Some(val);
-            }
+        #[cfg(not(target_os = "android"))]
+        {
+            None
         }
+    })?;
+    if val.is_empty() {
+        return None;
     }
-    None
+    if val == "infinity" || val.parse::<u32>().is_ok() {
+        Some(val)
+    } else {
+        None
+    }
 }
 
 #[cfg(target_os = "android")]
@@ -126,9 +130,9 @@ pub fn connect_midi(port_index: u32) -> Result<String, String> {
     if !simulation_enabled() {
         let midi_in = MidiInput::new("nano").map_err(|e| e.to_string())?;
         let _ports = midi_in.ports();
-        let _in_port = _ports.get(port_index as usize).ok_or_else(|| {
-            "Port no longer available".to_string()
-        })?;
+        let _in_port = _ports
+            .get(port_index as usize)
+            .ok_or_else(|| "Port no longer available".to_string())?;
 
         *CONNECT_STATE.lock().unwrap() = Some(ConnectState {
             midi_in: Some(midi_in),
@@ -215,16 +219,14 @@ fn start_simulated_stream(sender: EventSender) {
                     if stop.load(Ordering::Relaxed) {
                         return;
                     }
-                    let msg_on =
-                        format_midi_event(&[0x90, note, 0x40]).unwrap_or_default();
+                    let msg_on = format_midi_event(&[0x90, note, 0x40]).unwrap_or_default();
                     sender(msg_on);
                     thread::sleep(Duration::from_millis(150));
 
                     if stop.load(Ordering::Relaxed) {
                         return;
                     }
-                    let msg_off =
-                        format_midi_event(&[0x80, note, 0x00]).unwrap_or_default();
+                    let msg_off = format_midi_event(&[0x80, note, 0x00]).unwrap_or_default();
                     sender(msg_off);
                     thread::sleep(Duration::from_millis(30));
                 }
