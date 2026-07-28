@@ -1,17 +1,25 @@
 # nano
 
-A new Flutter project.
+Android build and run:
 
-## Getting Started
+- connect over wifi: 
+```
+adb connect 192.168.1.101:41353
+```
 
-This project is a starting point for a Flutter application.
+- build crate
+```
+~/projects/notes/tools/build.sh --target android-arm64 --mode debug
+```
 
-A few resources to get you started if this is your first Flutter project:
+- set/unset simulation
+```
+adb shell setprop debug.nano.sim 0 # no sim 
+adb shell setprop debug.nano.sim 3 # 3 loops
+adb shell setprop debug.nano.sim infinity # loops forever 
+```
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- start on device 
+```
+2>&1 flutter run -d 192.168.1.101:41353 --verbose | tee /tmp/run.lo
+```

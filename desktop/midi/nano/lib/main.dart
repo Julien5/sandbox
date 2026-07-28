@@ -1,26 +1,32 @@
 import 'package:flutter/material.dart';
-import 'package:nano/src/rust/api/simple.dart';
+import 'package:provider/provider.dart';
+import 'package:nano/src/providers/midi_provider.dart';
 import 'package:nano/src/rust/frb_generated.dart';
+import 'package:nano/src/screens/device_list_screen.dart';
 
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   await RustLib.init();
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => MidiProvider()..init(),
+      child: const NanoApp(),
+    ),
+  );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class NanoApp extends StatelessWidget {
+  const NanoApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(title: const Text('flutter_rust_bridge quickstart')),
-        body: Center(
-          child: Text(
-            'Action: Call Rust `greet("Tom")`\nResult: `${greet(name: "Tom")}`',
-          ),
-        ),
+      title: 'Nano MIDI',
+      theme: ThemeData(
+        colorSchemeSeed: Colors.indigo,
+        useMaterial3: true,
       ),
+      home: const DeviceListScreen(),
     );
   }
 }
